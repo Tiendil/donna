@@ -1,13 +1,14 @@
 import re
 
 import typer
-
+import shutil
 from donna.cli.application import app
 from donna.cli.types import ActionRequestIdArgument
 from donna.cli.utils import output_cells
 from donna.domain.types import OperationId, OperationResultId, Slug, StoryId
 from donna.stories import domain
 from donna.workflows.operations import storage
+from donna.domain.layout import layout
 
 SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
@@ -62,6 +63,11 @@ def start_workflow(story_id: str, workflow_id: str) -> None:
     plan = domain.Plan.load(StoryId(story_id))
 
     output_cells(plan.run())
+
+
+@stories_cli.command()
+def remove_all() -> None:
+    shutil.rmtree(layout().stories)
 
 
 app.add_typer(stories_cli, name="stories", help="Manage stories")

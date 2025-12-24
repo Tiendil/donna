@@ -28,3 +28,4 @@
 * TODO Make all ids in the format <int>:<ascii-checksum> where ascii-checksum is just a representation of the integer in ascii symbols [a-zA-Z0-9], this will help to control mistakes from the agents and humans
 * TODO consolidate all action request logic in a single module
 * TODO replace all NotImplementedError exceptions with custom exceptions and smart error handling
+* TODO review the dictionary of primary terms

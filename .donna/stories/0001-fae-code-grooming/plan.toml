@@ -1,7 +1,0 @@
-story_id = "0001-fae-code-grooming"
-active_tasks = []
-queue = []
-action_requests = []
-events = []
-last_cells = []
-started = true
