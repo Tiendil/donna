@@ -1,14 +1,15 @@
 import re
+import shutil
 
 import typer
-import shutil
+
 from donna.cli.application import app
 from donna.cli.types import ActionRequestIdArgument
 from donna.cli.utils import output_cells
+from donna.domain.layout import layout
 from donna.domain.types import OperationId, OperationResultId, Slug, StoryId
 from donna.stories import domain
 from donna.workflows.operations import storage
-from donna.domain.layout import layout
 
 SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
