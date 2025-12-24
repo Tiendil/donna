@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "donna"
+name = "Donna"
 version = "0.1"
 description = "LLM agents tasks helper."
 # readme = "README.md"
