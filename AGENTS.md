@@ -4,18 +4,28 @@ This document provides instructions and guidelines for the AI agents working on 
 
 Every agent MUST follow the rules and guidelines outlined in this document when performing their work.
 
+## Project intro
+
+`Donna` is a CLI tool that helps manage the work of AI agents like Codex.
+
+It is designed to to invert control flow: instead of agents deciding what to do next, the `donna` tells agents what to do next by following predefined workflows.
+
+The core idea is that most of high-level workflows are more algorithmic than it may seem at first glance. For example, it may be difficult to fix a particular type issue in the codebase, but the overall process of polishing the codebase is quite linear:
+
+1. Ensure all tests pass.
+2. Ensure the code is formatted correctly.
+3. Ensure there are no linting errors.
+4. Go to the step 1 if you changed something in the process.
+5. Finish.
+
+We may need coding agents on the each step of the process, but there no reason for agents to manage the whole grooming loop by themselves — it take longer time, spends tokens and may lead to confusion of agents.
+
 ## Points of interests
 
 - `./.agents/` — a directory containing project-specific agent instructions and templates.
-- `./.agents/TOOLS.md` — a list of AI tools available specifically for this project.
-- `./.agents/RULES.md` — extra rules and permissions for agents.
-- `./specs/` — a directory containing project specifications and design documents.
-- `./specs/README.md` — an overview of the project specifications.
-- `./donna/` — a directory containing source code of `donna` tool for managing agent's work. It is developed in parallel with the project.
-- `~/.my-local-agents/` — a directory containing global agent instructions, templates and tools that can be used in any project.
-- `~/.my-local-agents/TOOLS.md` — a list of AI tools available globally on this system.
+- `./donna/` — a directory containing source code of `donna` tool.
 
-`.agents` directory MUST be only in the root of the project.
+`.agents` directory exists only in the root of the project.
 
 ## Project Overview
 
