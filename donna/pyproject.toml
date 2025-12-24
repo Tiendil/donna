@@ -1,0 +1,95 @@
+[tool.poetry]
+name = "Donna"
+version = "0.1"
+description = "LLM agents tasks helper."
+# readme = "README.md"
+# repository = "https://github.com/Tiendil/brigid"
+authors = ["Aliaksei Yaletski (Tiendil) <a.eletsky@gmail.com>"]
+license = "BSD-3-Clause"
+# keywords = []
+# classifiers = []
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+pydantic = "2.12.*"
+tomli-w = "1.2.*"
+
+typer = "0.20.*"
+
+[tool.poetry.group.dev.dependencies]
+isort = "7.0.*"
+black = "25.12.*"
+autoflake = "2.3.*"
+
+flake8 = "7.3.*"
+flake8-docstrings = "1.7.*"
+flake8-functions = "0.0.*"
+flake8-annotations-complexity = "0.1.*"
+flake8-cognitive-complexity = "0.1.*"
+flake8-pytest = "1.4.*"
+flake8-bandit = "4.1.*"
+flake8-absolute-import = "1.0.*"
+flake8-print = "5.0.*"
+flake8-pyproject = "1.2.*"
+flake8-eradicate = "1.5.*"
+
+mypy = "1.19.*"
+
+[tool.poetry.scripts]
+donna = "donna.cli.__main__:app"
+
+[build-system]
+requires = ["poetry-core>=1.8.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
+line_length = 119
+
+[tool.black]
+line-length = 119
+
+[tool.flake8]
+ignore = [
+  "D100",
+  "D101",
+  "D102",
+  "D103",
+  "D104",
+  "D105",
+  "D106",
+  "D107",
+  "D200",
+  "D400",
+  "D401",
+  "S101",
+  "S113",
+  "S311",
+  "W503",
+  "CFQ004",
+  "E203",  # blake formats [x:y] with spaves
+]
+max-line-length = 119
+exclude = [
+  "build",
+  "donna.egg-info",
+]
+
+[tool.autoflake]
+in_place = true
+remove_all_unused_imports = true
+remove_unused_variables = true
+recursive = true
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]
+strict = true
+implicit_reexport = true
+allow_untyped_calls = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+warn_untyped_fields = true

@@ -1,0 +1,31 @@
+
+* TODO partialy automate tools registration
+
+** TODO generate text to insert into codex configs?
+* TODO TOML doesn't support None, which is very inconvinient for storing contexts since they can contain any data.
+* TODO since every scenario & unit of work in story is treckable, we may want to use integers instead UUIDs as ids for them.
+* TODO each cli command should have detailed description
+* TODO protect each of cli commands with is_story_exists check
+* TODO some cli commands take long text inputs, allow reading them from files
+* TODO some cli commands take long text inputs, allow redirecting them from stdin
+* TODO do we need to return short "operation is successful" messages from cli commands?
+* TODO automatic action request finish on artifact creation
+* TODO when we want to get an artifact from the story we do not load the whole index — artifact id should be enough.
+* TODO need some task/command to output the whole story spec
+* TODO freeze pydantic models which are possible
+* TODO codex should explain what it is doing, while executing requests from donna
+* TODO currently operation graphs look like overcomplicated state machines, we may want to do one of:
+** simplify them by refactoring into more classical state machines
+** refactor into smth more powerful than state machines
+* TODO rename scenarios into skills?
+* TODO install donna as a skill
+** easy mode — one of possible skills to use
+** hard mode — forse agent to work via donna
+* TODO default donna operation that navigates user to others
+** check if uncompleted stories exists, list them if so
+** ask the user if the new story should be started
+* TODO move workflow cli commands into a separate module (from the stories module)
+* TODO Make all ids in the format <int>:<ascii-checksum> where ascii-checksum is just a representation of the integer in ascii symbols [a-zA-Z0-9], this will help to control mistakes from the agents and humans
+* TODO consolidate all action request logic in a single module
+* TODO replace all NotImplementedError exceptions with custom exceptions and smart error handling
+* TODO review the dictionary of primary terms
