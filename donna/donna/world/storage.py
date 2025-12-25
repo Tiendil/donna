@@ -1,5 +1,4 @@
-
-from typing import Iterable, Protocol, TypeVar
+from typing import Iterable, Protocol
 
 
 class StorageItem[ID](Protocol):

@@ -4,11 +4,9 @@ from donna.core.entities import BaseEntity
 from donna.domain.types import (
     ActionRequestId,
     ArtifactId,
-    OperationId,
     StoryId,
     TaskId,
     WorkUnitId,
-    new_action_request_id,
 )
 
 
