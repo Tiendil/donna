@@ -32,6 +32,7 @@
 * TODO complex story workflow
 ** TODO choose the name for the story
 ** TODO simplest linear workflow: agent description -> goals -> objectives -> risks -> plan -> exectution -> grooming
+** TODO custom command to run a specific subflow? Or whould we rest it to the agent? It look like agent can deside better.
 ** TODO list based artifacts
 *** TODO LIST artifacts with operations add, remove, replace
 *** TODO iterate and groom over goals & objectives
