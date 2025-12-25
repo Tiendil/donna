@@ -1,8 +1,12 @@
 
-from typing import Iterable
+from typing import Iterable, Protocol, TypeVar
 
 
-class Storage[ID, ITEM]:
+class StorageItem[ID](Protocol):
+    id: ID
+
+
+class Storage[ID, ITEM: StorageItem[ID]]:
     __slots__ = ("_items", "item_name")
 
     def __init__(self, item_name: str) -> None:

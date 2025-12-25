@@ -1,5 +1,5 @@
 import pathlib
-import importlib
+import importlib.util
 from donna.domain.types import OperationId
 from donna.workflows.operations import Operation
 from donna.register.storage import Storage

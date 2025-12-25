@@ -6,5 +6,5 @@ app = typer.Typer()
 
 
 @app.callback()
-def initialize():
+def initialize() -> None:
     register()

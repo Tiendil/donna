@@ -10,6 +10,7 @@ from donna.domain.types import (
     WorkUnitId,
     new_action_request_id,
 )
+from donna.machine.cells import AgentMessage
 
 
 class ActionRequest(BaseEntity):
