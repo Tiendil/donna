@@ -1,7 +1,7 @@
-from donna.agents.domain import AgentMessage
-from donna.artifacts.domain import ArtifactsIndex
+from donna.machine.cells import AgentMessage
+from donna.machine.artifacts import ArtifactsIndex
 from donna.core.entities import BaseEntity
-from donna.domain.layout import layout
+from donna.world.layout import layout
 from donna.domain.types import ActionRequestId, OperationId, Slug, StoryId
 from donna.workflows.plans import Plan, get_plan
 from donna.workflows.tasks import Task, WorkUnit
@@ -9,6 +9,10 @@ from donna.workflows.tasks import Task, WorkUnit
 
 class Story(BaseEntity):
     id: StoryId
+
+    @classmethod
+    def load(cls, story_id: StoryId) -> "Story":
+        return cls.from_toml(layout().story(story_id).read_text())
 
     def save(self) -> None:
         layout().story(self.id).write_text(self.to_toml())
@@ -60,15 +64,6 @@ def start_workflow(story_id: StoryId, operation_id: OperationId) -> None:
     plan.add_task(task, start)
 
     plan.save()
-
-
-def get_story(story_id: StoryId) -> Story:
-    story_path = layout().story(story_id)
-
-    if not story_path.exists():
-        raise NotImplementedError(f"Story with '{story_id}' does not exist")
-
-    return Story.from_toml(story_path.read_text())
 
 
 # TODO: very unoptimal, improve later
