@@ -100,7 +100,7 @@ create_detailed_description = StoryCycleStep(
     description.
 
     1. Explain in a few sentences what someone gains after these changes and how they can see it working. State the
-       user-visible behavior you will enable.
+       user-visible workflow you will enable.
     2. Add the description as an artifact `{scheme.requested_artifact_id}` to the story.
     3. Mark this action request as completed.
     """
@@ -128,7 +128,7 @@ describe_big_picture = StoryCycleStep(
 
     You MUST now produce a big-picture high-level summary of the work to be done:
 
-    1. Explain in a few sentences what behavior you will change in the codebase to achieve the goal.
+    1. Explain in a few sentences what workflow you will change in the codebase to achieve the goal.
     2. Add the description as an artifact `{scheme.requested_artifact_id}` to the story.
     3. Mark this action request as completed.
     """

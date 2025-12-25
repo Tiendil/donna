@@ -6,7 +6,7 @@ from donna.machine.operations import Operation
 from donna.world.layout import layout
 from donna.world.storage import Storage
 
-BASE_BEHAVIORS_DIR = pathlib.Path(__file__).parent.parent / "behaviors"
+BASE_WORKFLOWS_DIR = pathlib.Path(__file__).parent.parent / "workflows"
 
 
 class PrimitivesRegister:
@@ -21,8 +21,8 @@ class PrimitivesRegister:
 
         # TODO: this paths are not idiomatic anymore
         #       we should find a better way to organize code
-        discover_operations(self, BASE_BEHAVIORS_DIR)
-        discover_operations(self, layout().behaviors)
+        discover_operations(self, BASE_WORKFLOWS_DIR)
+        discover_operations(self, layout().workflows)
 
         self.initialized = True
 
@@ -48,12 +48,12 @@ def discover_operations(register: PrimitivesRegister, directory: pathlib.Path) -
     - Recursively import all .py files in the given directory and try add operations from them
     - .py files processed in alphabetical order
     """
-    for behavior_file in sorted(directory.rglob("*.py")):
-        module_name = f"donna_import_{id(behavior_file)}_{behavior_file.name.replace('.', '_')}"
-        module_spec = importlib.util.spec_from_file_location(module_name, behavior_file)
+    for workflow_file in sorted(directory.rglob("*.py")):
+        module_name = f"donna_import_{id(workflow_file)}_{workflow_file.name.replace('.', '_')}"
+        module_spec = importlib.util.spec_from_file_location(module_name, workflow_file)
 
         if module_spec is None or module_spec.loader is None:
-            raise NotImplementedError(f"Cannot load behavior module from '{behavior_file}'")
+            raise NotImplementedError(f"Cannot load workflow module from '{workflow_file}'")
 
         module = importlib.util.module_from_spec(module_spec)
         module_spec.loader.exec_module(module)
