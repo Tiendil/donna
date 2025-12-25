@@ -34,7 +34,7 @@ def create(slug: str) -> None:
 
 @stories_cli.command(name="continue")
 def _continue(story_id: str) -> None:
-    story = stories.get_story(StoryId(story_id))
+    story = stories.Story.load(StoryId(story_id))
 
     plan = stories.Plan.load(story.id)
 

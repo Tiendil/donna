@@ -52,6 +52,7 @@ class Operation(BaseEntity):
         return self.export is not None
 
     def workflow_cell(self) -> WorkflowCell:
+        assert self.export is not None
         return WorkflowCell(
             story_id=None,
             task_id=None,

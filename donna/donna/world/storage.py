@@ -1,11 +1,14 @@
-from typing import Iterable, Protocol
+from typing import Iterable, Protocol, TypeVar, Generic, cast
+
+ID = TypeVar("ID")
+ITEM = TypeVar("ITEM")
 
 
-class StorageItem[ID](Protocol):
+class StorageItem(Protocol[ID]):
     id: ID
 
 
-class Storage[ID, ITEM: StorageItem[ID]]:
+class Storage(Generic[ID, ITEM]):
     __slots__ = ("_items", "item_name")
 
     def __init__(self, item_name: str) -> None:
@@ -13,10 +16,11 @@ class Storage[ID, ITEM: StorageItem[ID]]:
         self._items: dict[ID, ITEM] = {}
 
     def add(self, item: ITEM) -> None:
-        if item.id in self._items:
-            raise NotImplementedError(f"{self.item_name} with id '{item.id}' already exists")
+        storage_item = cast(StorageItem[ID], item)
+        if storage_item.id in self._items:
+            raise NotImplementedError(f"{self.item_name} with id '{storage_item.id}' already exists")
 
-        self._items[item.id] = item
+        self._items[storage_item.id] = item
 
     def get(self, id: ID) -> ITEM:
         if id not in self._items:
