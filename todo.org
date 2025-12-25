@@ -56,4 +56,5 @@
 * TODO codex struggle with artifact names (skips file extensions, until explicitly told to use the full name). Maybe we should simplify artifact names?
 * TODO CLI commands should output there results & logs in a consistent way
 * TODO optimize imports by moving most used ones to \__init__.py files
-* TODO rename all variations of "workflow" into "behavior"
+* TODO rename all appearences of variations of "workflow" into "behavior", do not forget to update AGENTS.md and .donna directory
+* TODO donna command to output the current state of the story (tasks, action requests). So it can be run like `watch donna status`
