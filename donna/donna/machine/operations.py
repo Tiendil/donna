@@ -2,9 +2,10 @@ import importlib.util
 import pathlib
 from typing import TYPE_CHECKING, Iterable, Iterator
 
-from donna.agents.domain import ActionRequest, WorkflowCell
+from donna.machine.cells import WorkflowCell
+from donna.machine.action_requests import ActionRequest
 from donna.core.entities import BaseEntity
-from donna.domain.layout import layout
+from donna.world import layout
 from donna.domain.types import EventId, OperationId, OperationResultId
 from donna.stories.events import Event, EventTemplate
 from donna.workflows.tasks import Task, TaskState, WorkUnit

@@ -2,7 +2,7 @@ import pathlib
 
 import typer
 
-from donna.artifacts import domain as artifacts_domain
+from donna.machine import artifacts as artifacts_domain
 from donna.cli.application import app
 from donna.cli.utils import output_cells
 from donna.domain.types import ArtifactId, StoryId

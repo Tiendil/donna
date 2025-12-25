@@ -4,9 +4,9 @@ from tempfile import NamedTemporaryFile
 
 import pydantic
 
-from donna.agents.domain import AgentArtifact, AgentCellHistory
+from donna.machine.cells import AgentArtifact, AgentCellHistory
 from donna.core.entities import BaseEntity
-from donna.domain.layout import layout
+from donna.world.layout import layout
 from donna.domain.types import ArtifactId, StoryId
 
 

@@ -1,9 +1,9 @@
 import pathlib
 import importlib.util
 from donna.domain.types import OperationId
-from donna.workflows.operations import Operation
-from donna.register.storage import Storage
-from donna.domain.world import layout
+from donna.machine import Operation
+from donna.world.storage import Storage
+from donna.world import layout
 
 
 BASE_BEHAVIORS_DIR = pathlib.Path(__file__).parent.parent / "behaviors"
