@@ -55,7 +55,9 @@ class StoryCycleStep(RequestAction):
         artifacts = ArtifactsIndex.load(task.story_id)
 
         if not artifacts.has(PLAN_ID):
-            raise NotImplementedError("Plan artifact is not available yet. STOP any work and ask the developer for help.")
+            raise NotImplementedError(
+                "Plan artifact is not available yet. STOP any work and ask the developer for help."
+            )
 
         artifact = artifacts.get_artifact(PLAN_ID)
         return artifact.content
