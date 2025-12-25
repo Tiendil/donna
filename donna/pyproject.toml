@@ -6,10 +6,9 @@ build-backend = "poetry.core.masonry.api"
 name = "donna"
 version = "0.1.0"
 description = "A deterministic workflow and state orchestration engine for LLM agents."
-readme = "../README.md"
+readme = "README.md"
 requires-python = ">=3.12,<4.0"
 license = "BSD-3-Clause"
-license-files = ["../LICENSE"]
 authors = [
   { name = "Aliaksei Yaletski", email = "a.eletsky@gmail.com" },
 ]
