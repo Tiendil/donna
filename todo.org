@@ -29,3 +29,20 @@
 * TODO consolidate all action request logic in a single module
 * TODO replace all NotImplementedError exceptions with custom exceptions and smart error handling
 * TODO review the dictionary of primary terms
+* TODO complex story workflow
+** TODO choose the name for the story
+** TODO simplest linear workflow: agent description -> goals -> objectives -> risks -> plan -> exectution -> grooming
+** TODO list based artifacts
+*** TODO LIST artifacts with operations add, remove, replace
+*** TODO iterate and groom over goals & objectives
+*** TODO iterate over risks
+*** TODO build plan from objectives and risks
+*** TODO execute the plan by taking actions from the plan
+** TODO graph-bases execution of the plan:
+*** TODO buiild things-to-do by iterating over it in the contexts of objectives and risjs
+*** TODO GRAPH(-LIST) artifacts with additiona operations to describe dependencies between list items
+*** TODO build plan on top of things-to-do list
+** TODO verify all risks are closed and rollback to planing if not
+** TODO verify all objectives are met and rollback to planing if not
+** TODO Split the whole worfklow into smaller scenarios/tasks?
+** TODO prepare a report after the story is finished
