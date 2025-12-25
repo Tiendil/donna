@@ -8,6 +8,7 @@ from donna.cli.types import ActionRequestIdArgument
 from donna.cli.utils import output_cells
 from donna.domain.types import OperationId, OperationResultId, Slug, StoryId
 from donna.machine import stories
+from donna.world.layout import layout
 from donna.world.primitives_register import register
 
 

@@ -29,11 +29,11 @@ class ActionRequest(BaseEntity):
         )
 
     def cells(self) -> list[AgentMessage]:
-        from donna.workflows.operations import storage
+        from donna.world.primitives_register import register
 
         results = []
 
-        operation = storage().get(self.operation_id)
+        operation = register().operations.get(self.operation_id)
 
         for result in operation.results:
             results.append(f"- `{result.id}` — {result.description}")

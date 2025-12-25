@@ -1,13 +1,14 @@
 import textwrap
 
-from donna.agents.domain import ActionRequest
-from donna.artifacts.domain import ArtifactsIndex
+from donna.machine.action_requests import ActionRequest
+from donna.machine.artifacts import ArtifactsIndex
 from donna.domain.types import ArtifactId
-from donna.workflows.operations import FinishTask, RequestAction, Simple, Export, OperationResult as OR
-from donna.stories.events import EventTemplate as ET
+from donna.primitives.operations import Finish, RequestAction, Broadcast
+from donna.machine.operations import OperationExport as Export, OperationResult as OR
+from donna.machine.events import EventTemplate as ET
 
 
-start = Simple(
+start = Broadcast(
     id="donna:grooming",
     export=Export(name="Groom the donna's code",
                   description="Initiate operations to groom and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc."),
@@ -116,7 +117,7 @@ run_mypy = RequestAction(
 )
 
 
-finish = FinishTask(
+finish = Finish(
     id="donna:grooming:finish",
     results=[],
     trigger_on=[run_mypy.result("completed").event_id]

@@ -3,12 +3,12 @@ import pydantic
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import AgentCellHistory, AgentMessage
 from donna.core.entities import BaseEntity
-from donna.domain.layout import layout
+from donna.world.layout import layout
 from donna.domain.types import ActionRequestId, OperationResultId, StoryId, TaskId, WorkUnitId
-from donna.stories.events import Event
-from donna.workflows.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState
-from donna.workflows.operations import storage
-from donna.workflows.tasks import Task, TaskState, WorkUnit, WorkUnitState
+from donna.machine.events import Event
+from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState
+from donna.world.primitives_register import register
+from donna.machine.tasks import Task, TaskState, WorkUnit, WorkUnitState
 
 
 # TODO: somehow separate methods that save plan and those that do not
@@ -84,11 +84,11 @@ class Plan(BaseEntity):
         task_id = self.active_tasks[-1].id
 
         for event in self.events:
-            for opeation in storage().all():
-                for event_template in opeation.trigger_on:
+            for operation in register().operations.values():
+                for event_template in operation.trigger_on:
                     if event_template.match(event):
                         # TODO: we may want store an event in the work unit
-                        new_work_unit = WorkUnit.build(task_id=task_id, operation=opeation.id)
+                        new_work_unit = WorkUnit.build(task_id=task_id, operation=operation.id)
                         self.queue.append(new_work_unit)
 
         self.events.clear()
@@ -208,7 +208,7 @@ class Plan(BaseEntity):
 
         operation_id = self.get_action_request(request_id).operation_id
 
-        operation = storage().get(operation_id)
+        operation = register().operations.get(operation_id)
 
         result = operation.result(result_id)
 

@@ -1,13 +1,14 @@
 import copy
 from typing import TYPE_CHECKING, Any
 
-from donna.agents.domain import ActionRequest, AgentCell
+from donna.machine.action_requests import ActionRequest
+from donna.machine.cells import AgentCell
 from donna.domain.types import WorkUnitId
-from donna.stories.events import Event
-from donna.workflows.tasks import Task, TaskState, WorkUnit
+from donna.machine.events import Event
+from donna.machine.tasks import Task, TaskState, WorkUnit
 
 if TYPE_CHECKING:
-    from donna.workflows.plans import Plan
+    from donna.machine.plans import Plan
 
 
 class Change:

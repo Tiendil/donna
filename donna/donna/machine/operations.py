@@ -11,7 +11,7 @@ from donna.machine.events import Event, EventTemplate
 from donna.machine.tasks import Task, TaskState, WorkUnit
 
 if TYPE_CHECKING:
-    from donna.workflows.changes import Change
+    from donna.machine.changes import Change
 
 
 class OperationExport(BaseEntity):
