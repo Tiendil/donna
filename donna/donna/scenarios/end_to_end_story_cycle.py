@@ -13,9 +13,10 @@ GOALS_ID = ArtifactId("story-goals.md")
 OBJECTIVES_ID = ArtifactId("story-objectives.md")
 DEFINITION_OF_DONE_ID = ArtifactId("story-definition-of-done.md")
 RISKS_ID = ArtifactId("story-risks.md")
+PLAN_ID = ArtifactId("story-development-plan.md")
 
 
-class StoryBuilder(RequestAction):
+class StoryCycleStep(RequestAction):
     requested_artifact_id: ArtifactId
 
     def context_partial_description(self, task: Task) -> str:
@@ -50,15 +51,24 @@ class StoryBuilder(RequestAction):
 
         return "\n".join(specification)
 
+    def context_plan(self, task: Task) -> str:
+        artifacts = ArtifactsIndex.load(task.story_id)
 
-start = StoryBuilder(
-    id=OperationId("donna:describe_story"),
+        if not artifacts.has(PLAN_ID):
+            raise NotImplementedError("Plan artifact is not available yet. STOP any work and ask the developer for help.")
+
+        artifact = artifacts.get_artifact(PLAN_ID)
+        return artifact.content
+
+
+start = StoryCycleStep(
+    id=OperationId("donna:end_to_end_story_cycle"),
     export=Export(
         name="Describe the story",
         description="Create a detailed description of the story based on the developer's request.",
     ),
     trigger_on=[],
-    results=[OperationResult.completed(EventId("donna:describe_story:developer_description_provided"))],
+    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:developer_description_provided"))],
     requested_artifact_id=DEVELOPER_DESCRIPTION_ID,
     request_template=textwrap.dedent(
         """
@@ -70,10 +80,10 @@ start = StoryBuilder(
 )
 
 
-create_detailed_description = StoryBuilder(
-    id=OperationId("donna:describe_story:create_detailed_description"),
+create_detailed_description = StoryCycleStep(
+    id=OperationId("donna:end_to_end_story_cycle:create_detailed_description"),
     trigger_on=[EventTemplate(id=start.result(OperationResultId("completed")).event_id, operation_id=None)],
-    results=[OperationResult.completed(EventId("donna:describe_story:agent_description_created"))],
+    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:agent_description_created"))],
     requested_artifact_id=AGENT_DESCRIPTION_ID,
     request_template=textwrap.dedent(
         """
@@ -95,15 +105,15 @@ create_detailed_description = StoryBuilder(
 )
 
 
-describe_big_picture = StoryBuilder(
-    id=OperationId("donna:describe_story:describe_big_picture"),
+describe_big_picture = StoryCycleStep(
+    id=OperationId("donna:end_to_end_story_cycle:describe_big_picture"),
     trigger_on=[
         EventTemplate(
             id=create_detailed_description.result(OperationResultId("completed")).event_id,
             operation_id=None,
         )
     ],
-    results=[OperationResult.completed(EventId("donna:describe_story:big_picture_described"))],
+    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:big_picture_described"))],
     requested_artifact_id=BIG_PICTURE_DESCRIPTION_ID,
     request_template=textwrap.dedent(
         """
@@ -123,15 +133,15 @@ describe_big_picture = StoryBuilder(
 )
 
 
-list_primary_goals = StoryBuilder(
-    id=OperationId("donna:describe_story:list_primary_goals"),
+list_primary_goals = StoryCycleStep(
+    id=OperationId("donna:end_to_end_story_cycle:list_primary_goals"),
     trigger_on=[
         EventTemplate(
             id=describe_big_picture.result(OperationResultId("completed")).event_id,
             operation_id=None,
         )
     ],
-    results=[OperationResult.completed(EventId("donna:describe_story:primary_goals_listed"))],
+    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:primary_goals_listed"))],
     requested_artifact_id=GOALS_ID,
     request_template=textwrap.dedent(
         """
@@ -151,15 +161,15 @@ list_primary_goals = StoryBuilder(
 )
 
 
-list_objectives = StoryBuilder(
-    id=OperationId("donna:describe_story:list_objectives"),
+list_objectives = StoryCycleStep(
+    id=OperationId("donna:end_to_end_story_cycle:list_objectives"),
     trigger_on=[
         EventTemplate(
             id=list_primary_goals.result(OperationResultId("completed")).event_id,
             operation_id=None,
         )
     ],
-    results=[OperationResult.completed(EventId("donna:describe_story:objectives_listed"))],
+    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:objectives_listed"))],
     requested_artifact_id=OBJECTIVES_ID,
     request_template=textwrap.dedent(
         """
@@ -179,15 +189,15 @@ list_objectives = StoryBuilder(
 )
 
 
-list_definition_of_done = StoryBuilder(
-    id=OperationId("donna:describe_story:list_definition_of_done"),
+list_definition_of_done = StoryCycleStep(
+    id=OperationId("donna:end_to_end_story_cycle:list_definition_of_done"),
     trigger_on=[
         EventTemplate(
             id=list_objectives.result(OperationResultId("completed")).event_id,
             operation_id=None,
         )
     ],
-    results=[OperationResult.completed(EventId("donna:describe_story:definition_of_done_listed"))],
+    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:definition_of_done_listed"))],
     requested_artifact_id=DEFINITION_OF_DONE_ID,
     request_template=textwrap.dedent(
         """
@@ -206,15 +216,15 @@ list_definition_of_done = StoryBuilder(
     ),
 )
 
-list_risks_and_challenges = StoryBuilder(
-    id=OperationId("donna:describe_story:list_risks_and_challenges"),
+list_risks_and_challenges = StoryCycleStep(
+    id=OperationId("donna:end_to_end_story_cycle:list_risks_and_challenges"),
     trigger_on=[
         EventTemplate(
             id=list_definition_of_done.result(OperationResultId("completed")).event_id,
             operation_id=None,
         )
     ],
-    results=[OperationResult.completed(EventId("donna:describe_story:risks_and_challenges_listed"))],
+    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:risks_and_challenges_listed"))],
     requested_artifact_id=RISKS_ID,
     request_template=textwrap.dedent(
         """
@@ -233,12 +243,66 @@ list_risks_and_challenges = StoryBuilder(
     ),
 )
 
-finish = FinishTask(
-    id=OperationId("donna:describe_story:finish_story_loop"),
-    results=[],
+plan_story_execution = StoryCycleStep(
+    id=OperationId("donna:end_to_end_story_cycle:plan_story_execution"),
     trigger_on=[
         EventTemplate(
             id=list_risks_and_challenges.result(OperationResultId("completed")).event_id,
+            operation_id=None,
+        )
+    ],
+    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:story_execution_planned"))],
+    requested_artifact_id=PLAN_ID,
+    request_template=textwrap.dedent(
+        """
+    Here is the  story specification.
+
+    ```
+    {partial_description}
+    ```
+
+    You MUST create a detailed work plan for this task.
+
+    1. Break down the work into manageable steps and outline the approach you will take to implement the task.
+    2. Add the plan as an artifact `{scheme.requested_artifact_id}` to the story.
+    3. Mark this action request as completed.
+    """
+    ),
+)
+
+execute_story_plan = StoryCycleStep(
+    id=OperationId("donna:end_to_end_story_cycle:execute_story_plan"),
+    trigger_on=[
+        EventTemplate(
+            id=plan_story_execution.result(OperationResultId("completed")).event_id,
+            operation_id=None,
+        )
+    ],
+    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:story_plan_executed"))],
+    requested_artifact_id=ArtifactId("no-artifact-here"),
+    request_template=textwrap.dedent(
+        """
+    Here is the work plan for the story.
+
+    ```
+    {plan}
+    ```
+
+    You MUST thoroughly execute the plan step by step to finish the work.
+
+    1. Follow the plan carefully and implement the necessary changes to complete the task.
+    2. Mark this action request as completed when the work is done.
+    """
+    ),
+)
+
+
+finish = FinishTask(
+    id=OperationId("donna:end_to_end_story_cycle:finish_story_loop"),
+    results=[],
+    trigger_on=[
+        EventTemplate(
+            id=plan_story_execution.result(OperationResultId("completed")).event_id,
             operation_id=None,
         )
     ],

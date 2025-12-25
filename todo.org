@@ -50,3 +50,4 @@
 ** TODO basic / lowest unit tests for primitive operations
 ** TODO domain-level unit tests
 ** TODO intergration tests for workflows/stories/scenarios
+* TODO split scenarios descriptions into code and configs, since most of them are configs
