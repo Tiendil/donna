@@ -46,3 +46,7 @@
 ** TODO verify all objectives are met and rollback to planing if not
 ** TODO Split the whole worfklow into smaller scenarios/tasks?
 ** TODO prepare a report after the story is finished
+* TODO tests
+** TODO basic / lowest unit tests for primitive operations
+** TODO domain-level unit tests
+** TODO intergration tests for workflows/stories/scenarios
