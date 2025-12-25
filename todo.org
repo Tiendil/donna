@@ -51,3 +51,4 @@
 ** TODO domain-level unit tests
 ** TODO intergration tests for workflows/stories/scenarios
 * TODO split scenarios descriptions into code and configs, since most of them are configs
+* TODO end_to_end_story_cycle — maybe we should move the whole task flows into a separate package? or organize them better?
