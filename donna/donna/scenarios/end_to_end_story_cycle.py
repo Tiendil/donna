@@ -297,12 +297,32 @@ execute_story_plan = StoryCycleStep(
 )
 
 
+groom_the_result = StoryCycleStep(
+    id=OperationId("donna:end_to_end_story_cycle:groom_the_result"),
+    trigger_on=[
+        EventTemplate(
+            id=execute_story_plan.result(OperationResultId("completed")).event_id,
+            operation_id=None,
+        )
+    ],
+    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:result_groomed"))],
+    requested_artifact_id=ArtifactId("no-artifact-here"),
+    request_template=textwrap.dedent(
+        """
+    You have completed the work according to the plan.
+
+    Run the grooming workflow to ensure that the result is polished, clean, and ready for review.
+    """
+    ),
+)
+
+
 finish = FinishTask(
     id=OperationId("donna:end_to_end_story_cycle:finish_story_loop"),
     results=[],
     trigger_on=[
         EventTemplate(
-            id=plan_story_execution.result(OperationResultId("completed")).event_id,
+            id=groom_the_result.result(OperationResultId("completed")).event_id,
             operation_id=None,
         )
     ],
