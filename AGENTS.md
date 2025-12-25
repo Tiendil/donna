@@ -86,7 +86,7 @@ Use the next commands to work with artifacts related to your story:
 Command parameters:
 
 - `<story-id>` — the story id you got when you created or continued the story.
-- `<artifact-id>` — a slug identifying the artifact within the story.
+- `<artifact-id>` — a identifier for the artifact within the story. **ALWAYS USE THE EXECT FULL ID WHEN REFERENCING AN ARTIFACT.** Including file extension if any.
 - `<content-type>` — classic MIME type of the artifact content, e.g. `text/markdown`, `text/plain`, `application/json`, etc.
 - `<description>` — a short text describing what the artifact is about / what it contains.
 - `<content>` — the actual TEXT content of the artifact.
