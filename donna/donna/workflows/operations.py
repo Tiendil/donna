@@ -170,6 +170,9 @@ class RequestAction(Operation):
             name = method_name[len("context_") :]
             value = getattr(self, method_name)(task)
 
+            if value is None:
+                continue
+
             context[name] = value
 
         context["scheme"] = self

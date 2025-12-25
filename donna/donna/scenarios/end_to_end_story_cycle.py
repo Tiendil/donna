@@ -51,13 +51,11 @@ class StoryCycleStep(RequestAction):
 
         return "\n".join(specification)
 
-    def context_plan(self, task: Task) -> str:
+    def context_plan(self, task: Task) -> str | None:
         artifacts = ArtifactsIndex.load(task.story_id)
 
         if not artifacts.has(PLAN_ID):
-            raise NotImplementedError(
-                "Plan artifact is not available yet. STOP any work and ask the developer for help."
-            )
+            return None
 
         artifact = artifacts.get_artifact(PLAN_ID)
         return artifact.content
