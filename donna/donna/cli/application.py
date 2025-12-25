@@ -1,6 +1,6 @@
 import typer
 
-from donna.world import register
+from donna.world.primitives_register import register
 
 app = typer.Typer()
 

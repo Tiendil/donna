@@ -1,6 +1,7 @@
 import pydantic
 
-from donna.agents.domain import ActionRequest, AgentCellHistory, AgentMessage
+from donna.machine.action_requests import ActionRequest
+from donna.machine.cells import AgentCellHistory, AgentMessage
 from donna.core.entities import BaseEntity
 from donna.domain.layout import layout
 from donna.domain.types import ActionRequestId, OperationResultId, StoryId, TaskId, WorkUnitId

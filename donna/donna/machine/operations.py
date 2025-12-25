@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING, Iterable, Iterator
 from donna.machine.cells import WorkflowCell
 from donna.machine.action_requests import ActionRequest
 from donna.core.entities import BaseEntity
-from donna.world import layout
+from donna.world.layout import layout
 from donna.domain.types import EventId, OperationId, OperationResultId
-from donna.stories.events import Event, EventTemplate
-from donna.workflows.tasks import Task, TaskState, WorkUnit
+from donna.machine.events import Event, EventTemplate
+from donna.machine.tasks import Task, TaskState, WorkUnit
 
 if TYPE_CHECKING:
     from donna.workflows.changes import Change

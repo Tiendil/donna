@@ -3,8 +3,8 @@ from donna.machine.artifacts import ArtifactsIndex
 from donna.core.entities import BaseEntity
 from donna.world.layout import layout
 from donna.domain.types import ActionRequestId, OperationId, Slug, StoryId
-from donna.workflows.plans import Plan, get_plan
-from donna.workflows.tasks import Task, WorkUnit
+from donna.machine.plans import Plan, get_plan
+from donna.machine.tasks import Task, WorkUnit
 
 
 class Story(BaseEntity):

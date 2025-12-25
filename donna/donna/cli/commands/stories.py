@@ -6,10 +6,10 @@ import typer
 from donna.cli.application import app
 from donna.cli.types import ActionRequestIdArgument
 from donna.cli.utils import output_cells
-from donna.world import layout
 from donna.domain.types import OperationId, OperationResultId, Slug, StoryId
-from donna.stories import domain
-from donna.workflows.operations import storage
+from donna.machine import stories
+from donna.world.primitives_register import register
+
 
 SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
@@ -26,25 +26,25 @@ def create(slug: str) -> None:
         )
         raise typer.Exit(code=1)
 
-    story = domain.create_story(Slug(slug))
+    story = stories.create_story(Slug(slug))
 
     output_cells([cell.render() for cell in story.cells()])
 
 
 @stories_cli.command(name="continue")
 def _continue(story_id: str) -> None:
-    story = domain.get_story(StoryId(story_id))
+    story = stories.get_story(StoryId(story_id))
 
-    plan = domain.Plan.load(story.id)
+    plan = stories.Plan.load(story.id)
 
     output_cells(plan.run())
 
 
 @stories_cli.command()
 def action_request_completed(request_id: ActionRequestIdArgument, result_id: str) -> None:
-    story_id = domain.find_action_request_story(request_id)
+    story_id = stories.find_action_request_story(request_id)
 
-    plan = domain.Plan.load(story_id)
+    plan = stories.Plan.load(story_id)
 
     plan.complete_action_request(request_id, OperationResultId(result_id))
 
@@ -53,15 +53,15 @@ def action_request_completed(request_id: ActionRequestIdArgument, result_id: str
 
 @stories_cli.command()
 def list_workflows() -> None:
-    cells = [cell.render() for cell in storage().workflow_cells()]
+    cells = [operation.workflow_cell().render() for operation in register().operations.values()]
     output_cells(cells)
 
 
 @stories_cli.command()
 def start_workflow(story_id: str, workflow_id: str) -> None:
-    domain.start_workflow(StoryId(story_id), OperationId(workflow_id))
+    stories.start_workflow(StoryId(story_id), OperationId(workflow_id))
 
-    plan = domain.Plan.load(StoryId(story_id))
+    plan = stories.Plan.load(StoryId(story_id))
 
     output_cells(plan.run())
 

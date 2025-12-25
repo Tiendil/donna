@@ -55,3 +55,4 @@
 * TODO end_to_end_story_cycle — maybe we should move the whole task flows into a separate package? or organize them better?
 * TODO codex struggle with artifact names (skips file extensions, until explicitly told to use the full name). Maybe we should simplify artifact names?
 * TODO CLI commands should output there results & logs in a consistent way
+* TODO optimize imports by moving most used ones to \__init__.py files
