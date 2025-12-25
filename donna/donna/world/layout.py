@@ -15,7 +15,7 @@ class Layout:
         self.config = self.donna / "config.toml"
 
         self.stories = self.donna / "stories"
-        self.scenarios = self.donna / "scenarios"
+        self.behaviors = self.donna / "behaviors"
 
     def story_dir(self, story_id: StoryId) -> pathlib.Path:
         return self.stories / story_id
@@ -49,7 +49,7 @@ class Layout:
 
     def sync(self) -> None:
         self.stories.mkdir(exist_ok=True)
-        self.scenarios.mkdir(exist_ok=True)
+        self.behaviors.mkdir(exist_ok=True)
 
     def is_story_exists(self, story: StoryId) -> bool:
         return self.story_dir(story).exists()
