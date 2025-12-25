@@ -1,9 +1,9 @@
 import copy
 from typing import TYPE_CHECKING, Any
 
+from donna.domain.types import WorkUnitId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import AgentCell
-from donna.domain.types import WorkUnitId
 from donna.machine.events import Event
 from donna.machine.tasks import Task, TaskState, WorkUnit
 

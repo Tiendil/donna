@@ -1,14 +1,14 @@
 import pydantic
 
+from donna.core.entities import BaseEntity
+from donna.domain.types import ActionRequestId, OperationResultId, StoryId, TaskId, WorkUnitId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import AgentCellHistory, AgentMessage
-from donna.core.entities import BaseEntity
-from donna.world.layout import layout
-from donna.domain.types import ActionRequestId, OperationResultId, StoryId, TaskId, WorkUnitId
-from donna.machine.events import Event
 from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState
-from donna.world.primitives_register import register
+from donna.machine.events import Event
 from donna.machine.tasks import Task, TaskState, WorkUnit, WorkUnitState
+from donna.world.layout import layout
+from donna.world.primitives_register import register
 
 
 # TODO: somehow separate methods that save plan and those that do not

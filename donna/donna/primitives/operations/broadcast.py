@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, Iterator
 
 from donna.machine.events import Event
-from donna.machine.tasks import Task, WorkUnit
 from donna.machine.operations import Operation
+from donna.machine.tasks import Task, WorkUnit
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change

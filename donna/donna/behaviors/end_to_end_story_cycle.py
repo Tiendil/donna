@@ -1,12 +1,13 @@
 import textwrap
 
-from donna.machine.artifacts import ArtifactsIndex
 from donna.domain.types import ArtifactId, EventId, OperationId, OperationResultId
+from donna.machine.artifacts import ArtifactsIndex
 from donna.machine.events import EventTemplate
-from donna.machine.operations import OperationExport as Export, OperationResult
+from donna.machine.operations import OperationExport as Export
+from donna.machine.operations import OperationResult
+from donna.machine.tasks import Task
 from donna.primitives.operations.finish import Finish as FinishTask
 from donna.primitives.operations.request_action import RequestAction
-from donna.machine.tasks import Task
 
 DEVELOPER_DESCRIPTION_ID = ArtifactId("story-description-from-developer.md")
 AGENT_DESCRIPTION_ID = ArtifactId("story-description-from-agent.md")

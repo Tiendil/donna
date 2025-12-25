@@ -4,10 +4,10 @@ from tempfile import NamedTemporaryFile
 
 import pydantic
 
-from donna.machine.cells import AgentArtifact, AgentCellHistory
 from donna.core.entities import BaseEntity
-from donna.world.layout import layout
 from donna.domain.types import ArtifactId, StoryId
+from donna.machine.cells import AgentArtifact, AgentCellHistory
+from donna.world.layout import layout
 
 
 class ArtifactIndexItem(BaseEntity):

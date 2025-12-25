@@ -1,4 +1,4 @@
-from typing import Iterable, Protocol, TypeVar, Generic, cast
+from typing import Generic, Iterable, Protocol, TypeVar, cast
 
 ID = TypeVar("ID")
 ITEM = TypeVar("ITEM")

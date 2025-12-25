@@ -2,10 +2,10 @@ import pathlib
 
 import typer
 
-from donna.machine import artifacts as artifacts_domain
 from donna.cli.application import app
 from donna.cli.utils import output_cells
 from donna.domain.types import ArtifactId, StoryId
+from donna.machine import artifacts as artifacts_domain
 
 artifacts_cli = typer.Typer()
 

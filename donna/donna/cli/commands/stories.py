@@ -11,7 +11,6 @@ from donna.machine import stories
 from donna.world.layout import layout
 from donna.world.primitives_register import register
 
-
 SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
@@ -54,9 +53,9 @@ def action_request_completed(request_id: ActionRequestIdArgument, result_id: str
 
 @stories_cli.command()
 def list_workflows() -> None:
-    cells = [operation.workflow_cell().render()
-             for operation in register().operations.values()
-             if operation.is_workflow()]
+    cells = [
+        operation.workflow_cell().render() for operation in register().operations.values() if operation.is_workflow()
+    ]
     output_cells(cells)
 
 
