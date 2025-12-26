@@ -37,3 +37,10 @@ Also, some capability names may intersect with default capabilities. That can be
 2. There may be difficult for agents to keep in mind what capabilities are supported for the artifact they work with.
 
 We may need to introduce a powerfull but simple way to introspect artifact capabilities.
+
+3. Even simple capabilities like `add-item` may have different semantics for different artifact kinds.
+
+For example:
+
+- a simple list of text items will accept any text as an item content
+- a list of tasks may expect the item content to be a valid task description, maybe in JSON or TODO format
