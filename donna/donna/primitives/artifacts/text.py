@@ -24,7 +24,7 @@ class TextArtifact(ArtifactKind):
         cli = typer.Typer()
 
         @cli.command()
-        def write(story_id: StoryId, artifact_id: ArtifactId, content: str) -> None:
+        def write(story_id: str, artifact_id: str, content: str) -> None:
             index = ArtifactsIndex.load(story_id)
 
             if not index.has(artifact_id):
@@ -32,14 +32,14 @@ class TextArtifact(ArtifactKind):
 
             path = index.artifact_path(artifact_id)
 
-            with path.open("r") as f:
+            with path.open("w", encoding="utf-8") as f:
                 f.write(content)
                 f.flush()
 
             typer.echo(f'Wrote content to artifact "{artifact_id}" in story "{story_id}"')
 
         @cli.command()
-        def read(story_id: StoryId, artifact_id: ArtifactId) -> None:
+        def read(story_id: str, artifact_id: str) -> None:
             index = ArtifactsIndex.load(story_id)
 
             if not index.has(artifact_id):

@@ -15,17 +15,6 @@ artifacts_cli = typer.Typer()
 #       in most cases we may want to remove all the story
 
 
-@artifacts_cli.callback()
-def artifacts_callback() -> None:
-    for artifact in register().artifacts.values():
-        kind_cli = artifact.create_cli_commands()
-        artifacts_cli.add_typer(
-            kind_cli,
-            name=artifact.id,
-            help=f'Commands to manage "{artifact.id}" artifacts',
-        )
-
-
 @artifacts_cli.command()
 def list(story_id: str) -> None:
     index = artifacts_domain.ArtifactsIndex.load(StoryId(story_id))
@@ -77,5 +66,13 @@ def copy_from_story(story_id: str, artifact_id: str, path: pathlib.Path) -> None
 
     index.copy_from_story(artifact_id=ArtifactId(artifact_id), path=path, rewrite=True)
 
+
+for artifact_kind in register().artifacts.values():
+    kind_cli = artifact_kind.create_cli_commands()
+    artifacts_cli.add_typer(
+        kind_cli,
+        name=artifact_kind.id,
+        help=f'Commands to manage "{artifact_kind.id}" artifacts',
+    )
 
 app.add_typer(artifacts_cli, name="artifacts", help="Manage artifacts")
