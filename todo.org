@@ -56,7 +56,7 @@
 * TODO CLI commands should output there results & logs in a consistent way (i.e. by the same code)
 * TODO optimize imports by moving most used ones to \__init__.py files
 * TODO donna command to output the current state of the story (tasks, action requests). So it can be run like `watch donna status`
-* TODO `behavior` can be something on top of workflows
+* TODO `behavior` can be something on top of workflows. Maybe it be a constructor of workflows. I.e. user define own workflow by parametrizing them via `behavior`.
 * Universal IDs format notes:
 ** It will be nice to have shorter IDs like `<type>-<int>-<control-sum>` instead of full UUIDs and simple ints. It should help both humans and agents to work with them.
 *** It should be not problem to use integer ids for the parallel execution, since we rarely create entities => there should not be a problem with using a kind of locking mechanism.
