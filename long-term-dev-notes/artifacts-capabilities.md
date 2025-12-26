@@ -26,6 +26,16 @@ That will give us a simpler and unified CLI interface for artifacts, like
 - The command `donna artifacts write <artifact-id> <content>` will work for all artifacts that support `write-as-text` capability.
 - The command `donna artifacts add-item <artifact-id> <item-id> <item-content>` will work for all artifacts that support `add-item` capability.
 
+# Advantages
+
+1. List of core/base capabilities can simplify/unify operations implementation — make them artifact-agnostic.
+
+2. It will be easier to add special kind of artifacts, that simulates the base one:
+
+- Performance-optimized artifacts.
+- Dynamically processed artifacts, for examle, an artifact that represents a web page and fetches the page on the first read.
+- Artifacts with hidden behavior, for example, an artifact that encrypts/decrypts content on write/read operations, or an artifact that maintains a special sorting order for the graph or list artifacts.
+
 # Questions
 
 1. Some developers may want to introduce very specific artifact kinds with very specific operations over them.
