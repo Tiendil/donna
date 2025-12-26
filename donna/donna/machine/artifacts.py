@@ -98,11 +98,14 @@ class ArtifactsIndex(BaseEntity):
 
         return register().artifacts.get(item.kind).load(self.story_id, artifact_id)
 
-    def extract_to(self, artifact_id: ArtifactId, path: pathlib.Path, rewrite: bool) -> None:
+    def copy_from_story(self, artifact_id: ArtifactId, path: pathlib.Path) -> None:
         if not self.has(artifact_id):
             raise NotImplementedError(f"Artifact with id '{artifact_id}' does not exist in story '{self.story_id}'")
 
-        if path.exists() and not rewrite:
-            raise NotImplementedError(f"Path '{path}' already exists")
+        shutil.copy2(self.artifact_path(artifact_id), path)
 
-        shutil.copy2(layout().story_artifact(self.story_id, artifact_id), path)
+    def copy_to_story(self, artifact_id: ArtifactId, path: pathlib.Path) -> None:
+        if not self.has(artifact_id):
+            raise NotImplementedError(f"Artifact with id '{artifact_id}' does not exist in story '{self.story_id}'")
+
+        shutil.copy2(path, self.artifact_path(artifact_id))

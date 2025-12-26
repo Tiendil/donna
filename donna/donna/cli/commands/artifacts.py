@@ -63,28 +63,18 @@ def has(story_id: str, artifact_id: str) -> None:
 def copy_into_story(
     story_id: str,
     artifact_id: str,
-    content_type: str,
-    description: str,
     path: pathlib.Path,
 ) -> None:
     index = artifacts_domain.ArtifactsIndex.load(StoryId(story_id))
 
-    index.add_artifact(
-        id=ArtifactId(artifact_id),
-        content_type=content_type,
-        description=description,
-        path=path,
-        rewrite=True,
-    )
-
-    index.save()
+    index.copy_to_story(artifact_id=ArtifactId(artifact_id), path=path, rewrite=True)
 
 
 @artifacts_cli.command()
 def copy_from_story(story_id: str, artifact_id: str, path: pathlib.Path) -> None:
     index = artifacts_domain.ArtifactsIndex.load(StoryId(story_id))
 
-    index.extract_to(artifact_id=ArtifactId(artifact_id), path=path, rewrite=True)
+    index.copy_from_story(artifact_id=ArtifactId(artifact_id), path=path, rewrite=True)
 
 
 app.add_typer(artifacts_cli, name="artifacts", help="Manage artifacts")
