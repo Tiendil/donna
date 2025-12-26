@@ -1,9 +1,9 @@
 import importlib.util
 import pathlib
 
-from donna.domain.types import OperationId, ArtifactKindId
-from donna.machine.operations import Operation
+from donna.domain.types import ArtifactKindId, OperationId
 from donna.machine.artifacts import ArtifactKind
+from donna.machine.operations import Operation
 from donna.world.layout import layout
 from donna.world.storage import Storage
 

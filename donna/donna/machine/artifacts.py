@@ -1,20 +1,19 @@
 import pathlib
 import shutil
-from tempfile import NamedTemporaryFile
 
-import typer
 import pydantic
+import typer
 
 from donna.core.entities import BaseEntity
-from donna.domain.types import ArtifactId, StoryId, ArtifactKindId
-from donna.machine.cells import AgentArtifact, AgentCellHistory
+from donna.domain.types import ArtifactId, ArtifactKindId, StoryId
+from donna.machine.cells import AgentCellHistory
 from donna.world.layout import layout
 
 
 class ArtifactKind(BaseEntity):
     id: ArtifactKindId
 
-    def load(self, story_id: StoryId, artifact_id: ArtifactId) -> 'Artifact':
+    def load(self, story_id: StoryId, artifact_id: ArtifactId) -> "Artifact":
         raise NotImplementedError("You must implement this method in subclasses")
 
     def create_cli_commands(self) -> typer.Typer:

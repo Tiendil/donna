@@ -6,6 +6,7 @@ from donna.machine.events import EventTemplate
 from donna.machine.operations import OperationExport as Export
 from donna.machine.operations import OperationResult
 from donna.machine.tasks import Task
+from donna.primitives.artifacts.text import ArtifactContent
 from donna.primitives.operations.finish import Finish as FinishTask
 from donna.primitives.operations.request_action import RequestAction
 
@@ -49,6 +50,7 @@ class StoryCycleStep(RequestAction):
             specification.append(f"# {title}")
             specification.append("")
             artifact = artifacts.get_artifact(artifact_id)
+            assert isinstance(artifact, ArtifactContent)
             specification.append(artifact.content)
             specification.append("")
 
@@ -61,6 +63,7 @@ class StoryCycleStep(RequestAction):
             return None
 
         artifact = artifacts.get_artifact(PLAN_ID)
+        assert isinstance(artifact, ArtifactContent)
         return artifact.content
 
 

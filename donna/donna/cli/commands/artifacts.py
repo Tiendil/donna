@@ -1,11 +1,12 @@
 import pathlib
 
 import typer
-from donna.world.primitives_register import register
+
 from donna.cli.application import app
 from donna.cli.utils import output_cells
-from donna.domain.types import ArtifactId, StoryId, ArtifactKindId
+from donna.domain.types import ArtifactId, ArtifactKindId, StoryId
 from donna.machine import artifacts as artifacts_domain
+from donna.world.primitives_register import register
 
 artifacts_cli = typer.Typer()
 
@@ -29,7 +30,7 @@ def create(story_id: str, artifact_kind: str, artifact_id: str, content_type: st
         id=ArtifactId(artifact_id),
         kind=ArtifactKindId(artifact_kind),
         content_type=content_type,
-        description=description
+        description=description,
     )
 
     index.save()
@@ -57,14 +58,14 @@ def copy_into_story(
 ) -> None:
     index = artifacts_domain.ArtifactsIndex.load(StoryId(story_id))
 
-    index.copy_to_story(artifact_id=ArtifactId(artifact_id), path=path, rewrite=True)
+    index.copy_to_story(artifact_id=ArtifactId(artifact_id), path=path)
 
 
 @artifacts_cli.command()
 def copy_from_story(story_id: str, artifact_id: str, path: pathlib.Path) -> None:
     index = artifacts_domain.ArtifactsIndex.load(StoryId(story_id))
 
-    index.copy_from_story(artifact_id=ArtifactId(artifact_id), path=path, rewrite=True)
+    index.copy_from_story(artifact_id=ArtifactId(artifact_id), path=path)
 
 
 for artifact_kind in register().artifacts.values():
