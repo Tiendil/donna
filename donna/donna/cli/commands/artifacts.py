@@ -1,7 +1,7 @@
 import pathlib
 
 import typer
-
+from donna.world.primitives_register import register
 from donna.cli.application import app
 from donna.cli.utils import output_cells
 from donna.domain.types import ArtifactId, StoryId
@@ -15,6 +15,17 @@ artifacts_cli = typer.Typer()
 #       in most cases we may want to remove all the story
 
 
+@artifacts_cli.callback()
+def artifacts_callback() -> None:
+    for artifact in register().artifacts.values():
+        kind_cli = artifact.create_cli_commands()
+        artifacts_cli.add_typer(
+            kind_cli,
+            name=artifact.kind,
+            help=f'Commands to manage "{artifact.kind}" artifacts',
+        )
+
+
 @artifacts_cli.command()
 def list(story_id: str) -> None:
     index = artifacts_domain.ArtifactsIndex.load(StoryId(story_id))
@@ -22,27 +33,18 @@ def list(story_id: str) -> None:
 
 
 @artifacts_cli.command()
-def write(story_id: str, artifact_id: str, content_type: str, description: str, content: str) -> None:
+def create(story_id: str, artifact_id: str, content_type: str, description: str) -> None:
     index = artifacts_domain.ArtifactsIndex.load(StoryId(story_id))
 
-    index.add_text(
+    index.add(
         id=ArtifactId(artifact_id),
         content_type=content_type,
-        description=description,
-        content=content,
-        rewrite=True,
+        description=description
     )
 
     index.save()
 
-
-@artifacts_cli.command()
-def read(story_id: str, artifact_id: str) -> None:
-    index = artifacts_domain.ArtifactsIndex.load(StoryId(story_id))
-
-    artifact = index.get_artifact(ArtifactId(artifact_id))
-
-    output_cells(artifact.cells())
+    typer.echo(f'artifact "{artifact_id}" created')
 
 
 @artifacts_cli.command()

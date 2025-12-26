@@ -19,6 +19,8 @@ Thus, there may be various scopes for ids: world, story, artifact.
 
 However, scopes may complicate referencing entities from other scopes. For example, and item in a list artifact A may want to refer to an item in another list artifact B.
 
+For example, currently we getting artifact by pair `story-id` + `artifact-id` which is not very convenient.
+
 2. We may want to use some global, or locally-global counters for various entities to generate integer parts of the ids.
 
 However, most of the entities can be counted on the fly => for them we may skip storing the counters.

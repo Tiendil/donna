@@ -1,8 +1,9 @@
 import importlib.util
 import pathlib
 
-from donna.domain.types import OperationId
+from donna.domain.types import OperationId, ArtifactKindId
 from donna.machine.operations import Operation
+from donna.machine.artifacts import ArtifactKind
 from donna.world.layout import layout
 from donna.world.storage import Storage
 
@@ -14,6 +15,7 @@ class PrimitivesRegister:
     def __init__(self) -> None:
         self.initialized = False
         self.operations: Storage[OperationId, Operation] = Storage("operation")
+        self.artifacts: Storage[ArtifactKindId, ArtifactKind] = Storage("artifact_kind")
 
     def initialize(self) -> None:
         if self.initialized:
@@ -63,3 +65,6 @@ def discover_operations(register: PrimitivesRegister, directory: pathlib.Path) -
 
             if isinstance(attr, Operation):
                 register.operations.add(attr)
+
+            if isinstance(attr, ArtifactKind):
+                register.artifacts.add(attr)

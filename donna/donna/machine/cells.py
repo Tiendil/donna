@@ -7,6 +7,7 @@ from donna.domain.types import (
     StoryId,
     TaskId,
     WorkUnitId,
+    ArtifactKindId
 )
 
 
@@ -65,6 +66,7 @@ class AgentMessage(AgentCell):
 
 class AgentArtifact(AgentCell):
     artifact_id: ArtifactId
+    artifact_kind: ArtifactKindId
     content_type: str
     description: str
     content: str
@@ -74,6 +76,7 @@ class AgentArtifact(AgentCell):
         base_meta.update(
             {
                 "artifact_id": str(self.artifact_id),
+                "artifact_kind": str(self.artifact_kind),
                 "artifact_content_type": self.content_type,
                 "artifact_description": self.description,
             }
