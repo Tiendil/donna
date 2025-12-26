@@ -17,7 +17,7 @@ It should be not problem to use integer ids in the case of parallel execution, s
 
 Thus, there may be various scopes for ids: world, story, artifact.
 
-However, scopes may complicate referencing entities from other scopes.
+However, scopes may complicate referencing entities from other scopes. For example, and item in a list artifact A may want to refer to an item in another list artifact B.
 
 2. We may want to use some global, or locally-global counters for various entities to generate integer parts of the ids.
 
