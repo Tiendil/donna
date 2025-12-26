@@ -66,13 +66,14 @@ class ArtifactsIndex(BaseEntity):
     def add(
         self,
         id: ArtifactId,
+        kind: ArtifactKindId,
         content_type: str,
         description: str,
     ) -> None:
         if self.has(id):
             raise NotImplementedError(f"Artifact with id '{id}' already exists in story '{self.story_id}'")
 
-        item = ArtifactIndexItem(id=id, content_type=content_type, description=description)
+        item = ArtifactIndexItem(id=id, kind=kind, content_type=content_type, description=description)
 
         self.artifacts.append(item)
 

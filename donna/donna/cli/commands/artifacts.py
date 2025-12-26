@@ -4,7 +4,7 @@ import typer
 from donna.world.primitives_register import register
 from donna.cli.application import app
 from donna.cli.utils import output_cells
-from donna.domain.types import ArtifactId, StoryId
+from donna.domain.types import ArtifactId, StoryId, ArtifactKindId
 from donna.machine import artifacts as artifacts_domain
 
 artifacts_cli = typer.Typer()
@@ -21,8 +21,8 @@ def artifacts_callback() -> None:
         kind_cli = artifact.create_cli_commands()
         artifacts_cli.add_typer(
             kind_cli,
-            name=artifact.kind,
-            help=f'Commands to manage "{artifact.kind}" artifacts',
+            name=artifact.id,
+            help=f'Commands to manage "{artifact.id}" artifacts',
         )
 
 
@@ -33,11 +33,12 @@ def list(story_id: str) -> None:
 
 
 @artifacts_cli.command()
-def create(story_id: str, artifact_id: str, content_type: str, description: str) -> None:
+def create(story_id: str, artifact_kind: str, artifact_id: str, content_type: str, description: str) -> None:
     index = artifacts_domain.ArtifactsIndex.load(StoryId(story_id))
 
     index.add(
         id=ArtifactId(artifact_id),
+        kind=ArtifactKindId(artifact_kind),
         content_type=content_type,
         description=description
     )
