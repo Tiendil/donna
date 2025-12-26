@@ -77,15 +77,21 @@ Artifact is any file or document related and created specifically for a story:
 Use the next commands to work with artifacts related to your story:
 
 - `./bin/donna.sh artifacts list <story-id>` — list all artifacts related to the story.
-- `./bin/donna.sh artifacts write <story-id> <artifact-id> <content-type> <description> <content>` — create or update a TEXT artifact related to the story.
-- `./bin/donna.sh artifacts read <story-id> <artifact-id>` — outputs the content of the TEXT artifact related to the story.
+- `./bin/dinna.sh artifacts create <story-id> <artifact-kind> <artifact-id> <content-type> <description>` — create a new artifact related to the story. The new artifact will be empty.
+- `./bin/donna.sh artifacts text write <story-id> <artifact-id> <content>` — create or update a `text` artifact related to the story.
+- `./bin/donna.sh artifacts text read <story-id> <artifact-id>` — outputs the content of the `text` artifact related to the story.
 - `./bin/donna.sh artifacts has <story-id> <artifact-id>` — checks if the artifact related to the story exists.
-- `./bin/donna.sh artifacts copy-into-sotry <story-id> <artifact-id> <content-type> <description> <path>` — create or update a BINARY artifact related to the story from the specified file path.
+- `./bin/donna.sh artifacts copy-into-sotry <story-id> <artifact-id> <path>` — create or update a BINARY artifact related to the story from the specified file path.
 - `./bin/donna.sh artifacts copy-from-story <story-id> <artifact-id> <path>` — copies the BINARY artifact related to the story into the specified file path.
+
+Supported artifact kinds:
+
+- `text` — text-based artifact. You can read and write its content as text.
 
 Command parameters:
 
 - `<story-id>` — the story id you got when you created or continued the story.
+- `<artifact-kind>` — the kind of the artifact. Supported kinds are listed above.
 - `<artifact-id>` — a identifier for the artifact within the story. **ALWAYS USE THE EXECT FULL ID WHEN REFERENCING AN ARTIFACT.** Including file extension if any.
 - `<content-type>` — classic MIME type of the artifact content, e.g. `text/markdown`, `text/plain`, `application/json`, etc.
 - `<description>` — a short text describing what the artifact is about / what it contains.
