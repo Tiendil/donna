@@ -25,7 +25,6 @@
 ** check if uncompleted stories exists, list them if so
 ** ask the user if the new story should be started
 * TODO move workflow cli commands into a separate module (from the stories module)
-* TODO Make all ids in the format <type>-<int>-<ascii-checksum> where ascii-checksum is just a representation of the integer in ascii symbols [a-zA-Z0-9], this will help to control mistakes from the agents and humans
 * TODO consolidate all action request logic in a single module
 * TODO replace all NotImplementedError exceptions with custom exceptions and smart error handling
 * TODO review the dictionary of primary terms
@@ -58,3 +57,12 @@
 * TODO optimize imports by moving most used ones to \__init__.py files
 * TODO donna command to output the current state of the story (tasks, action requests). So it can be run like `watch donna status`
 * TODO `behavior` can be something on top of workflows
+* Universal IDs format notes:
+** It will be nice to have shorter IDs like `<type>-<int>-<control-sum>` instead of full UUIDs and simple ints. It should help both humans and agents to work with them.
+*** It should be not problem to use integer ids for the parallel execution, since we rarely create entities => there should not be a problem with using a kind of locking mechanism.
+** However, there are a lot of questions with implementation.
+** It would be easier to track them gloally for the project, but it may be confusing when ids of local entities will jump around.
+*** Thus, there may be various scopes for ids: world, story, artifact.
+** We may want to use some global, or locally-global counters for various entities to generate integer parts of the ids. However, most of the entities can be counted on the fly => for them we may skip storing the counters. But we may want to use counters becaue of uniformity.
+** Some entities, like artifacts, may be intended to be unique named in some context. For example, it is easy to mention `risks.md` artifact in the story operations, rather than `artifact-<random-int>-<random-string>-risks.md` — no need to pass the id around.
+** We do not need to work with ids of some entities (like work units, changes, cells) => they may use simpler approach to ids, like uuids. However, we may want to unify all ids to the same format.
