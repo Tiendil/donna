@@ -17,6 +17,8 @@ It should be not problem to use integer ids in the case of parallel execution, s
 
 Thus, there may be various scopes for ids: world, story, artifact.
 
+The scopes may help with develpment in branches, it may be enough to have story-scoped ids for most entities.
+
 However, scopes may complicate referencing entities from other scopes. For example, and item in a list artifact A may want to refer to an item in another list artifact B.
 
 For example, currently we getting artifact by pair `story-id` + `artifact-id` which is not very convenient.
