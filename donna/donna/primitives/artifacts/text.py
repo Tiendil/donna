@@ -1,7 +1,7 @@
 import typer
 from tempfile import NamedTemporaryFile
-from donna.domain.types import ArtifactId, StoryId, ArtifactKind
-from donna.machine.artifacts import ArtifactsIndex, Artifact
+from donna.domain.types import ArtifactId, StoryId, ArtifactKindId
+from donna.machine.artifacts import ArtifactsIndex, Artifact, ArtifactKind
 from donna.machine.cells import AgentArtifact, AgentCellHistory
 from donna.cli.utils import output_cells
 

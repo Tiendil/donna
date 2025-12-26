@@ -1,5 +1,5 @@
-from donna.domain.types import ArtifactKind
-from donna.printers.artifacts.text import TextArtifact
+from donna.domain.types import ArtifactKindId
+from donna.primitives.artifacts.text import TextArtifact
 
 
-text = TextArtifact(kind=ArtifactKind("text"))
+text = TextArtifact(id=ArtifactKindId("text"))

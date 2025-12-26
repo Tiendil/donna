@@ -9,11 +9,10 @@ from donna.core.entities import BaseEntity
 from donna.domain.types import ArtifactId, StoryId, ArtifactKindId
 from donna.machine.cells import AgentArtifact, AgentCellHistory
 from donna.world.layout import layout
-from donna.world.primitives_register import register
 
 
 class ArtifactKind(BaseEntity):
-    kind: ArtifactKindId
+    id: ArtifactKindId
 
     def load(self, story_id: StoryId, artifact_id: ArtifactId) -> 'Artifact':
         raise NotImplementedError("You must implement this method in subclasses")
@@ -91,6 +90,8 @@ class ArtifactsIndex(BaseEntity):
         path.unlink()
 
     def get_artifact(self, artifact_id: ArtifactId) -> Artifact:
+        from donna.world.primitives_register import register
+
         item = self.get(artifact_id)
 
         if item is None:
