@@ -10,3 +10,5 @@
 - `code` — artifact that contains code snippets and can, for example, validate their syntax.
 - `script` — executable code snippets
 - `toml` / `json` / `yaml` — structured data artifacts with validation and maybe some querying capabilities.
+
+3. For list and graph items we may want to specify their content types, e.g. list of markdown artifacts, graph of code artifacts, etc. However, this approach may be better suitable for the case of separating artifact content from metadata (see point 1).
