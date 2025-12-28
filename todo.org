@@ -57,3 +57,11 @@
 * TODO optimize imports by moving most used ones to \__init__.py files
 * TODO donna command to output the current state of the story (tasks, action requests). So it can be run like `watch donna status`
 * TODO `behavior` can be something on top of workflows. Maybe it be a constructor of workflows. I.e. user define own workflow by parametrizing them via `behavior`.
+* TODO Refactor artifacts to records
+** TODO remove whole artifacts code
+** TODO update AGENTS.md
+** TODO update cli
+** TODO register for record types
+** TODO text type
+** TODO tags for records
+** TODO knowlege base
