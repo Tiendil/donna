@@ -1,7 +1,7 @@
 import pathlib
 
 from donna.core import utils
-from donna.domain.types import ArtifactId, StoryId
+from donna.domain.types import RecordId, StoryId, RecordKindId
 
 # TODO: Make configurable
 DONNA_DIR_NAME = ".donna"
@@ -29,14 +29,14 @@ class Layout:
     def story_log(self, story_id: StoryId) -> pathlib.Path:
         return self.story_dir(story_id) / "log.toml"
 
-    def story_artifacts_dir(self, story_id: StoryId) -> pathlib.Path:
-        return self.story_dir(story_id) / "artifacts"
+    def story_records_dir(self, story_id: StoryId) -> pathlib.Path:
+        return self.story_dir(story_id) / "records"
 
-    def story_artifacts_index(self, story_id: StoryId) -> pathlib.Path:
-        return self.story_artifacts_dir(story_id) / "index.toml"
+    def story_records_index(self, story_id: StoryId) -> pathlib.Path:
+        return self.story_records_dir(story_id) / "index.toml"
 
-    def story_artifact(self, story_id: StoryId, artifact_id: ArtifactId) -> pathlib.Path:
-        return self.story_artifacts_dir(story_id) / artifact_id
+    def story_record_kind(self, story_id: StoryId, record_id: RecordId, kind: RecordKindId) -> pathlib.Path:
+        return self.story_records_dir(story_id) / f"{record_id}-{kind}.toml"
 
     def next_story_number(self) -> int:
         existing_ids = [

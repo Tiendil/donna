@@ -1,7 +1,7 @@
 import textwrap
 
 from donna.core.entities import BaseEntity
-from donna.domain.types import ActionRequestId, ArtifactId, ArtifactKindId, StoryId, TaskId, WorkUnitId
+from donna.domain.types import ActionRequestId, RecordId, RecordKindId, StoryId, TaskId, WorkUnitId
 
 
 class AgentCellHistory(BaseEntity):
@@ -55,29 +55,6 @@ class AgentMessage(AgentCell):
 
     def custom_body(self) -> str:
         return self.message
-
-
-class AgentArtifact(AgentCell):
-    artifact_id: ArtifactId
-    artifact_kind: ArtifactKindId
-    content_type: str
-    description: str
-    content: str
-
-    def meta(self) -> dict[str, str]:
-        base_meta = super().meta()
-        base_meta.update(
-            {
-                "artifact_id": str(self.artifact_id),
-                "artifact_kind": str(self.artifact_kind),
-                "artifact_content_type": self.content_type,
-                "artifact_description": self.description,
-            }
-        )
-        return base_meta
-
-    def custom_body(self) -> str:
-        return self.content
 
 
 class WorkflowCell(AgentCell):

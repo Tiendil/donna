@@ -3,11 +3,11 @@ from typing import NewType
 
 StoryId = NewType("StoryId", str)
 WorkUnitId = NewType("WorkUnitId", uuid.UUID)
-ArtifactId = NewType("ArtifactId", str)
+RecordId = NewType("RecordId", str)
 ActionRequestId = NewType("ActionRequestId", uuid.UUID)
 EventId = NewType("EventId", str)
 OperationId = NewType("OperationId", str)
-ArtifactKindId = NewType("ArtifactKindId", str)
+RecordKindId = NewType("RecordKindId", str)
 TaskId = NewType("TaskId", uuid.UUID)
 OperationResultId = NewType("OperationResultId", str)
 Slug = NewType("Slug", str)
