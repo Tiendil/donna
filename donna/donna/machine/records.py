@@ -94,9 +94,6 @@ class RecordsIndex(BaseEntity):
         self.records = [record for record in self.records if record.id != record_id]
         # path.unlink()
 
-    def record_kind_path(self, record_id: RecordId, kind: RecordKindId) -> pathlib.Path:
-        return layout().story_record_kind(self.story_id, record_id, kind)
-
     def set_record_kind_item(self, record_id: RecordId, item: RecordKind) -> RecordKindItem:
         from donna.world.primitives_register import register
 
