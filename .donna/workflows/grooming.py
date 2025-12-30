@@ -1,8 +1,8 @@
 import textwrap
 
 from donna.machine.action_requests import ActionRequest
-from donna.machine.artifacts import ArtifactsIndex
-from donna.domain.types import ArtifactId
+from donna.machine.records import RecordsIndex
+from donna.domain.types import RecordId
 from donna.primitives.operations import Finish, RequestAction, Broadcast
 from donna.machine.operations import OperationExport as Export, OperationResult as OR
 from donna.machine.events import EventTemplate as ET

@@ -67,3 +67,4 @@
 ** TODO knowlege base
 ** TODO default format for record kinds? json vs toml
 ** TODO when deleting the whole record, also delete all its kinds
+** TODO review & fix end_to_end_story_cycle

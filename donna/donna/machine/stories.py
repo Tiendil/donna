@@ -1,6 +1,6 @@
 from donna.core.entities import BaseEntity
 from donna.domain.types import ActionRequestId, OperationId, Slug, StoryId
-from donna.machine.artifacts import ArtifactsIndex
+from donna.machine.records import RecordsIndex
 from donna.machine.cells import AgentMessage
 from donna.machine.plans import Plan, get_plan
 from donna.machine.tasks import Task, WorkUnit
@@ -41,16 +41,16 @@ def create_story(slug: Slug) -> Story:
 
     plan = Plan.build(story_id)
 
-    artifacts_index = ArtifactsIndex(story_id=story_id, artifacts=[])
+    records_index = RecordsIndex(story_id=story_id, records=[])
 
     layout().story_dir(story_id).mkdir(parents=True, exist_ok=True)
-    layout().story_artifacts_dir(story_id).mkdir(parents=True, exist_ok=True)
+    layout().story_records_dir(story_id).mkdir(parents=True, exist_ok=True)
 
     story.save()
 
     plan.save()
 
-    artifacts_index.save()
+    records_index.save()
 
     return story
 

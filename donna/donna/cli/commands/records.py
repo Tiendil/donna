@@ -1,5 +1,7 @@
 import pathlib
 
+from typing import Sequence
+
 import typer
 
 from donna.cli.application import app
@@ -75,7 +77,7 @@ def kind_set(
 def kind_remove(
     story_id: str,
     record_id: str,
-    record_kinds: list[str],
+    record_kinds: Sequence[str],
 ) -> None:
     index = r_domain.RecordsIndex.load(StoryId(story_id))
 
@@ -90,7 +92,7 @@ def kind_remove(
 def kind_get(
     story_id: str,
     record_id: str,
-    record_kinds: list[str],
+    record_kinds: Sequence[str],
 ) -> None:
     index = r_domain.RecordsIndex.load(StoryId(story_id))
 
