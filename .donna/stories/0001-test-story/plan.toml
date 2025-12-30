@@ -1,0 +1,7 @@
+story_id = "0001-test-story"
+active_tasks = []
+queue = []
+action_requests = []
+events = []
+last_cells = []
+started = false
