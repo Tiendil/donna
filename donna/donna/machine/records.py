@@ -27,6 +27,9 @@ class RecordIndexItem(BaseEntity):
     kinds: list[RecordKindId]
     description: str
 
+    # TODO: we may want to make queue items frozen later
+    model_config = pydantic.ConfigDict(frozen=False)
+
 
 class RecordKindItem(BaseEntity):
     kind: RecordKindId
