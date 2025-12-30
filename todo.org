@@ -63,7 +63,6 @@
 ** DONE update cli
 ** DONE register for record types
 ** DONE text type
-** TODO tags for records
 ** DONE knowlege base
 ** TODO default format for record kinds? json vs toml
 ** DONE when deleting the whole record, also delete all its kinds
