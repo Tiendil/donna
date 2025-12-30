@@ -68,7 +68,7 @@ class RecordsIndex(BaseEntity):
         id: RecordId,
         description: str,
     ) -> None:
-        if self.has(id):
+        if self.has_record(id):
             raise NotImplementedError(f"Record with id '{id}' already exists in story '{self.story_id}'")
 
         item = RecordIndexItem(id=id, kinds=[], description=description)
