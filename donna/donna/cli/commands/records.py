@@ -96,10 +96,12 @@ def kind_get(
 ) -> None:
     index = r_domain.RecordsIndex.load(StoryId(story_id))
 
-    items = index.get_record_kind_items(record_id, [RecordKindId(kind) for kind in record_kinds])
+    item = index.get_record(record_id)
 
-    for item in items:
-        output_cells(item.cells())
+    record_kinds = index.get_record_kind_items(record_id, [RecordKindId(kind) for kind in record_kinds])
+
+    for record in record_kinds:
+        output_cells(record.cells(item))
 
 
 app.add_typer(records_cli, name="records", help="Manage records")
