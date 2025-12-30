@@ -1,6 +1,6 @@
 import pathlib
 
-from typing import Sequence
+from typing import List
 
 import typer
 
@@ -77,7 +77,7 @@ def kind_set(
 def kind_remove(
     story_id: str,
     record_id: str,
-    record_kinds: Sequence[str],
+    record_kinds: List[str],
 ) -> None:
     index = r_domain.RecordsIndex.load(StoryId(story_id))
 
@@ -92,7 +92,7 @@ def kind_remove(
 def kind_get(
     story_id: str,
     record_id: str,
-    record_kinds: Sequence[str],
+    record_kinds: List[str],
 ) -> None:
     index = r_domain.RecordsIndex.load(StoryId(story_id))
 
@@ -100,3 +100,6 @@ def kind_get(
 
     for item in items:
         output_cells(item.cells())
+
+
+app.add_typer(records_cli, name="records", help="Manage records")
