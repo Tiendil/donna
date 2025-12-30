@@ -1,6 +1,3 @@
-import pathlib
-import shutil
-
 import pydantic
 
 from donna.core.entities import BaseEntity
@@ -33,9 +30,8 @@ class RecordIndexItem(BaseEntity):
 
 class RecordKindItem(BaseEntity):
     kind: RecordKindId
-    # story_id: StoryId
 
-    def cells(self, record: RecordIndexItem) -> list[AgentCellHistory]:
+    def cells(self, story_id: StoryId, record: RecordIndexItem) -> list[AgentCellHistory]:
         raise NotImplementedError("You must implement this method in subclasses")
 
 
@@ -78,26 +74,20 @@ class RecordsIndex(BaseEntity):
 
         self.records.append(item)
 
-        # self.record_path(id).touch()
-
-    # def record_path(self, record_id: RecordId) -> pathlib.Path:
-    #     if not self.has(record_id):
-    #         raise NotImplementedError(f"Record with id '{record_id}' does not exist in story '{self.story_id}'")
-
-    #     return layout().story_record(self.story_id, record_id)
-
     def delete_record(self, record_id: RecordId) -> None:
         from donna.world.primitives_register import register
 
         item = self.get_record(record_id)
 
+        if item is None:
+            raise NotImplementedError(f"Record with id '{record_id}' does not exist in story '{self.story_id}'")
+
         for kind in item.kinds:
             register().records.get(kind).remove(self.story_id, record_id)
 
         self.records = [record for record in self.records if record.id != record_id]
-        # path.unlink()
 
-    def set_record_kind_item(self, record_id: RecordId, record_item: RecordKind) -> RecordKindItem:
+    def set_record_kind_item(self, record_id: RecordId, record_item: RecordKindItem) -> RecordKindItem:
         from donna.world.primitives_register import register
 
         item = self.get_record(record_id)
@@ -110,9 +100,7 @@ class RecordsIndex(BaseEntity):
 
         register().records.get(record_item.kind).save(self.story_id, record_id, record_item)
 
-        # with self.record_kind_path(record_id, item.kind).open("w", encoding="utf-8") as f:
-        #     content = item.to_toml()
-        #     f.write(content)
+        return record_item
 
     def remove_record_kind_items(self, record_id: RecordId, kinds: list[RecordKindId]) -> None:
         from donna.world.primitives_register import register
@@ -127,25 +115,27 @@ class RecordsIndex(BaseEntity):
 
         item.kinds = [k for k in item.kinds if k not in kinds]
 
-    def get_record_kind_items(self, record_id: RecordId, kinds: list[RecordKindId]) -> list[RecordKindItem]:
+    def get_record_kind_items(
+        self, record_id: RecordId, kinds: list[RecordKindId]
+    ) -> list[RecordKindItem | None]:
         from donna.world.primitives_register import register
 
-        item = self.get_record(record_id)
+        record = self.get_record(record_id)
 
-        if item is None:
+        if record is None:
             raise NotImplementedError(f"Record with id '{record_id}' does not exist in story '{self.story_id}'")
 
-        result: list[RecordKindItem] = []
+        result: list[RecordKindItem | None] = []
 
         for kind in kinds:
-            if kind not in item.kinds:
+            if kind not in record.kinds:
                 result.append(None)
                 continue
 
             record_kind = register().records.get(kind)
 
-            item = record_kind.load(self.story_id, record_id)
+            record_kind_item = record_kind.load(self.story_id, record_id)
 
-            result.append(item)
+            result.append(record_kind_item)
 
         return result

@@ -1,13 +1,14 @@
 import textwrap
 
-from donna.domain.types import RecordId, EventId, OperationId, OperationResultId
-from donna.machine.records import RecordsIndex
+from donna.domain.types import EventId, OperationId, OperationResultId, RecordId, RecordKindId
 from donna.machine.events import EventTemplate
 from donna.machine.operations import OperationExport as Export
 from donna.machine.operations import OperationResult
+from donna.machine.records import RecordsIndex
 from donna.machine.tasks import Task
 from donna.primitives.operations.finish import Finish as FinishTask
 from donna.primitives.operations.request_action import RequestAction
+from donna.primitives.records.pure_text import PureText
 
 DEVELOPER_DESCRIPTION_ID = RecordId("story-description-from-developer.md")
 AGENT_DESCRIPTION_ID = RecordId("story-description-from-agent.md")
@@ -17,6 +18,26 @@ OBJECTIVES_ID = RecordId("story-objectives.md")
 DEFINITION_OF_DONE_ID = RecordId("story-definition-of-done.md")
 RISKS_ID = RecordId("story-risks.md")
 PLAN_ID = RecordId("story-development-plan.md")
+PURE_TEXT_KIND_ID = RecordKindId("pure_text")
+
+
+def _get_pure_text_content(records: RecordsIndex, record_id: RecordId) -> str | None:
+    record = records.get_record(record_id)
+
+    if record is None:
+        return None
+
+    record_kind_items = records.get_record_kind_items(record_id, [PURE_TEXT_KIND_ID])
+
+    if not record_kind_items:
+        return None
+
+    record_kind_item = record_kind_items[0]
+
+    if record_kind_item is None or not isinstance(record_kind_item, PureText):
+        return None
+
+    return record_kind_item.content
 
 
 class StoryCycleStep(RequestAction):
@@ -43,13 +64,17 @@ class StoryCycleStep(RequestAction):
         specification = []
 
         for title, record_id in parts:
-            if not records.has(record_id):
+            if not records.has_record(record_id):
                 break
 
             specification.append(f"# {title}")
             specification.append("")
-            record = records.get_record(record_id)
-            specification.append(record.content)
+            content = _get_pure_text_content(records, record_id)
+
+            if content is None:
+                break
+
+            specification.append(content)
             specification.append("")
 
         return "\n".join(specification)
@@ -57,12 +82,10 @@ class StoryCycleStep(RequestAction):
     def context_plan(self, task: Task) -> str | None:
         records = RecordsIndex.load(task.story_id)
 
-        if not records.has(PLAN_ID):
+        if not records.has_record(PLAN_ID):
             return None
 
-        record = records.get_record(PLAN_ID)
-
-        return record.content
+        return _get_pure_text_content(records, PLAN_ID)
 
 
 start = StoryCycleStep(

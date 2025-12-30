@@ -1,9 +1,9 @@
 import importlib.util
 import pathlib
 
-from donna.domain.types import RecordKindId, OperationId
-from donna.machine.records import RecordKind
+from donna.domain.types import OperationId, RecordKindId
 from donna.machine.operations import Operation
+from donna.primitives.records.base import RecordKind
 from donna.world.layout import layout
 from donna.world.storage import Storage
 

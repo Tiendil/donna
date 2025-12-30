@@ -1,13 +1,11 @@
-
-from typing import Literal
 from donna.domain.types import RecordId, RecordKindId, StoryId
-from donna.primitives.records import base
-from donna.machine.records import RecordKindItem, RecordIndexItem
 from donna.machine.cells import AgentCell, AgentCellHistory
+from donna.machine.records import RecordIndexItem, RecordKindItem
+from donna.primitives.records import base
 
 
 class PureText(RecordKindItem):
-    kind: Literal["pure_text"] = "pure_text"
+    kind: RecordKindId = RecordKindId("pure_text")  # TODO: kind must be defined in workflows?
     media_type: str
     content: str
 
@@ -41,10 +39,8 @@ class AgentRecordPureText(AgentCell):
             {
                 "record_id": str(self.record_id),
                 "description": self.description,
-
                 "record_kind": str(self.record_kind),
                 "media_type": self.media_type,
-
             }
         )
         return base_meta

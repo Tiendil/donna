@@ -1,7 +1,7 @@
 import textwrap
 
 from donna.core.entities import BaseEntity
-from donna.domain.types import ActionRequestId, RecordId, RecordKindId, StoryId, TaskId, WorkUnitId
+from donna.domain.types import ActionRequestId, StoryId, TaskId, WorkUnitId
 
 
 class AgentCellHistory(BaseEntity):

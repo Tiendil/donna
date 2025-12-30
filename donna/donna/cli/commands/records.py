@@ -1,5 +1,3 @@
-import pathlib
-
 from typing import List
 
 import typer
@@ -81,7 +79,9 @@ def kind_remove(
 ) -> None:
     index = r_domain.RecordsIndex.load(StoryId(story_id))
 
-    index.remove_record_kind_items(record_id, [RecordKindId(kind) for kind in record_kinds])
+    record_id_value = RecordId(record_id)
+
+    index.remove_record_kind_items(record_id_value, [RecordKindId(kind) for kind in record_kinds])
 
     index.save()
 
@@ -96,12 +96,18 @@ def kind_get(
 ) -> None:
     index = r_domain.RecordsIndex.load(StoryId(story_id))
 
-    item = index.get_record(record_id)
+    record_id_value = RecordId(record_id)
+    record = index.get_record(record_id_value)
 
-    record_kinds = index.get_record_kind_items(record_id, [RecordKindId(kind) for kind in record_kinds])
+    if record is None:
+        raise NotImplementedError(f"Record '{record_id}' does not exist in story '{story_id}'")
 
-    for record in record_kinds:
-        output_cells(record.cells(StoryId(story_id), item))
+    record_kind_items = index.get_record_kind_items(record_id_value, [RecordKindId(kind) for kind in record_kinds])
+
+    for record_kind_item in record_kind_items:
+        if record_kind_item is None:
+            continue
+        output_cells(record_kind_item.cells(StoryId(story_id), record))
 
 
 app.add_typer(records_cli, name="records", help="Manage records")

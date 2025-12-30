@@ -1,10 +1,10 @@
-
-from donna.domain.types import RecordId, RecordKindId, StoryId
-from donna.machine.records import RecordKind, RecordKindItem
+from donna.domain.types import RecordId, StoryId
+from donna.machine.records import RecordKind as BaseRecordKind
+from donna.machine.records import RecordKindItem
 from donna.world.layout import layout
 
 
-class RecordKind(RecordKind):
+class RecordKind(BaseRecordKind):
     item_class: type[RecordKindItem]
 
     def save(self, story_id: StoryId, record_id: RecordId, item: RecordKindItem) -> None:

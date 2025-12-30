@@ -1,7 +1,7 @@
 import pathlib
 
 from donna.core import utils
-from donna.domain.types import RecordId, StoryId, RecordKindId
+from donna.domain.types import RecordId, RecordKindId, StoryId
 
 # TODO: Make configurable
 DONNA_DIR_NAME = ".donna"
