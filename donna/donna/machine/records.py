@@ -94,18 +94,18 @@ class RecordsIndex(BaseEntity):
         self.records = [record for record in self.records if record.id != record_id]
         # path.unlink()
 
-    def set_record_kind_item(self, record_id: RecordId, item: RecordKind) -> RecordKindItem:
+    def set_record_kind_item(self, record_id: RecordId, record_item: RecordKind) -> RecordKindItem:
         from donna.world.primitives_register import register
 
-        item = self.get(record_id)
+        item = self.get_record(record_id)
 
         if item is None:
             raise NotImplementedError(f"Record with id '{record_id}' does not exist in story '{self.story_id}'")
 
-        if item.kind not in item.kinds:
-            item.kinds.append(item.kind)
+        if record_item.kind not in item.kinds:
+            item.kinds.append(record_item.kind)
 
-        register().records.get(item.kind).save(self.story_id, record_id, item)
+        register().records.get(record_item.kind).save(self.story_id, record_id, record_item)
 
         # with self.record_kind_path(record_id, item.kind).open("w", encoding="utf-8") as f:
         #     content = item.to_toml()
@@ -114,7 +114,7 @@ class RecordsIndex(BaseEntity):
     def remove_record_kind_items(self, record_id: RecordId, kinds: list[RecordKindId]) -> None:
         from donna.world.primitives_register import register
 
-        item = self.get(record_id)
+        item = self.get_record(record_id)
 
         if item is None:
             raise NotImplementedError(f"Record with id '{record_id}' does not exist in story '{self.story_id}'")
@@ -127,7 +127,7 @@ class RecordsIndex(BaseEntity):
     def get_record_kind_items(self, record_id: RecordId, kinds: list[RecordKindId]) -> list[RecordKindItem]:
         from donna.world.primitives_register import register
 
-        item = self.get(record_id)
+        item = self.get_record(record_id)
 
         if item is None:
             raise NotImplementedError(f"Record with id '{record_id}' does not exist in story '{self.story_id}'")
@@ -144,3 +144,5 @@ class RecordsIndex(BaseEntity):
             item = record_kind.load(self.story_id, record_id)
 
             result.append(item)
+
+        return result

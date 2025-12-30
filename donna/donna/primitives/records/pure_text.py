@@ -1,7 +1,7 @@
 
 from typing import Literal
 from donna.domain.types import RecordId, RecordKindId
-from donna.machine.primitives.records import base
+from donna.primitives.records import base
 from donna.machine.records import RecordKindItem, RecordIndexItem
 from donna.machine.cells import AgentCell, AgentCellHistory
 
@@ -50,6 +50,5 @@ class AgentRecordPureText(AgentCell):
         return self.content
 
 
-class RecordKind(base.RecordKind):
-    id = "pure_text"
-    item_class = PureText
+class PureTextKind(base.RecordKind):
+    pass

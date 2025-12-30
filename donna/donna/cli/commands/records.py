@@ -65,7 +65,7 @@ def kind_set(
 
     index.set_record_kind_item(
         record_id=record_id_value,
-        item=kind.item_class.from_toml(item),
+        record_item=kind.item_class.from_json(item),
     )
 
     index.save()

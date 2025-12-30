@@ -28,3 +28,10 @@ class BaseEntity(pydantic.BaseModel):
     def from_toml(cls: type[BASE_ENTITY], toml_str: str) -> BASE_ENTITY:
         data = tomllib.loads(toml_str)
         return cls.model_validate(data)
+
+    def to_json(self) -> str:
+        return self.model_dump_json()
+
+    @classmethod
+    def from_json(cls: type[BASE_ENTITY], json_data: str) -> BASE_ENTITY:
+        return cls.model_validate_json(json_data)

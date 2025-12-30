@@ -1,4 +1,8 @@
 story_id = "0001-test-story"
-records = [
-    { id = "test-record", kinds = [], description = "some test record" },
+
+[[records]]
+id = "test-record"
+kinds = [
+    "pure_text",
 ]
+description = "some test record"

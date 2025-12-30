@@ -65,6 +65,8 @@ def discover_operations(register: PrimitivesRegister, directory: pathlib.Path) -
 
             if isinstance(attr, Operation):
                 register.operations.add(attr)
+                continue
 
             if isinstance(attr, RecordKind):
-                register.artifacts.add(attr)
+                register.records.add(attr)
+                continue
