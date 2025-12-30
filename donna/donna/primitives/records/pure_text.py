@@ -1,6 +1,6 @@
 
 from typing import Literal
-from donna.domain.types import RecordId, RecordKindId
+from donna.domain.types import RecordId, RecordKindId, StoryId
 from donna.primitives.records import base
 from donna.machine.records import RecordKindItem, RecordIndexItem
 from donna.machine.cells import AgentCell, AgentCellHistory
@@ -11,9 +11,12 @@ class PureText(RecordKindItem):
     media_type: str
     content: str
 
-    def cells(self, record: RecordIndexItem) -> list[AgentCellHistory]:
+    def cells(self, story_id: StoryId, record: RecordIndexItem) -> list[AgentCellHistory]:
         return [
             AgentRecordPureText(
+                story_id=story_id,
+                task_id=None,
+                work_unit_id=None,
                 record_id=record.id,
                 description=record.description,
                 record_kind=self.kind,

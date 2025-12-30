@@ -101,7 +101,7 @@ def kind_get(
     record_kinds = index.get_record_kind_items(record_id, [RecordKindId(kind) for kind in record_kinds])
 
     for record in record_kinds:
-        output_cells(record.cells(item))
+        output_cells(record.cells(StoryId(story_id), item))
 
 
 app.add_typer(records_cli, name="records", help="Manage records")
