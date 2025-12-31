@@ -20,7 +20,8 @@ class BaseEntity(pydantic.BaseModel):
         return self.model_copy(update=kwargs, deep=True)
 
     def to_json(self) -> str:
-        return self.model_dump_json()
+        # TODO: make indent configurable
+        return self.model_dump_json(indent=2)
 
     @classmethod
     def from_json(cls: type[BASE_ENTITY], json_data: str) -> BASE_ENTITY:
