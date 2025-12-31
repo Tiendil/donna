@@ -40,7 +40,7 @@ def _get_text_content(records: RecordsIndex, kind_spec: RecordKindSpec) -> str |
 
 
 class StoryCycleStep(RequestAction):
-    requested_kind_spec: RecordKindSpec
+    requested_kind_spec: RecordKindSpec | None
 
     def context_partial_description(self, task: Task) -> str:
         records = RecordsIndex.load(task.story_id)
@@ -305,7 +305,7 @@ execute_story_plan = StoryCycleStep(
         )
     ],
     results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:story_plan_executed"))],
-    requested_kind_spec=RecordId("no-record-here"),
+    requested_kind_spec=None,
     request_template=textwrap.dedent(
         """
     Here is the work plan for the story.
@@ -332,7 +332,7 @@ groom_the_result = StoryCycleStep(
         )
     ],
     results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:result_groomed"))],
-    requested_kind_spec=RecordId("no-record-here"),
+    requested_kind_spec=None,
     request_template=textwrap.dedent(
         """
     You have completed the work according to the plan.
