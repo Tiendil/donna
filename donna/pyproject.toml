@@ -25,7 +25,6 @@ classifiers = [
 ]
 dependencies = [
   "pydantic>=2.12,<2.13",
-  "tomli-w>=1.2,<1.3",
   "typer>=0.20,<0.21",
 ]
 
