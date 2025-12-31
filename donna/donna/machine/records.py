@@ -115,9 +115,7 @@ class RecordsIndex(BaseEntity):
 
         item.kinds = [k for k in item.kinds if k not in kinds]
 
-    def get_record_kind_items(
-        self, record_id: RecordId, kinds: list[RecordKindId]
-    ) -> list[RecordKindItem | None]:
+    def get_record_kind_items(self, record_id: RecordId, kinds: list[RecordKindId]) -> list[RecordKindItem | None]:
         from donna.world.primitives_register import register
 
         record = self.get_record(record_id)

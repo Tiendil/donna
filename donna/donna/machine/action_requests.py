@@ -49,7 +49,11 @@ class ActionRequest(BaseEntity):
         """
         ).format(request=self.request, operation_results=operation_results)
 
-        return [Cell.build_markdown(kind="action_request",
-                                    content=message,
-                                    story_id=self.story_id,
-                                    action_request_id=self.id)]
+        return [
+            Cell.build_markdown(
+                kind="action_request",
+                content=message,
+                story_id=self.story_id,
+                action_request_id=str(self.id),
+            )
+        ]

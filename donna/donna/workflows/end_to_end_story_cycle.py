@@ -21,7 +21,7 @@ PLAN_ID = RecordId("story-development-plan.md")
 PURE_TEXT_KIND_ID = RecordKindId("pure_text")
 
 
-def _get_pure_text_content(records: RecordsIndex, record_id: RecordId) -> str | None:
+def _get_text_content(records: RecordsIndex, record_id: RecordId) -> str | None:
     record = records.get_record(record_id)
 
     if record is None:
@@ -69,7 +69,7 @@ class StoryCycleStep(RequestAction):
 
             specification.append(f"# {title}")
             specification.append("")
-            content = _get_pure_text_content(records, record_id)
+            content = _get_text_content(records, record_id)
 
             if content is None:
                 break
@@ -85,7 +85,7 @@ class StoryCycleStep(RequestAction):
         if not records.has_record(PLAN_ID):
             return None
 
-        return _get_pure_text_content(records, PLAN_ID)
+        return _get_text_content(records, PLAN_ID)
 
 
 start = StoryCycleStep(

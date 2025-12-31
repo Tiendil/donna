@@ -55,7 +55,7 @@ class Operation(BaseEntity):
         assert self.export is not None
 
         return Cell.build_markdown(
-            kind='workflow',
+            kind="workflow",
             content=self.export.description,
             workflow_id=self.id,
             workflow_name=self.export.name,
