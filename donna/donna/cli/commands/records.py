@@ -107,7 +107,7 @@ def kind_get(
     for record_kind_item in record_kind_items:
         if record_kind_item is None:
             continue
-        output_cells(record_kind_item.cells(StoryId(story_id), record))
+        output_cells(record_kind_item.cells(record))
 
 
 app.add_typer(records_cli, name="records", help="Manage records")
