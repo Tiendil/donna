@@ -35,7 +35,6 @@ class RecordIndexItem(BaseEntity):
 
 class RecordKindSpec(BaseEntity):
     record_id: RecordIdTemplate
-    record_prefix: str
     kind: RecordKindId
 
     @property
