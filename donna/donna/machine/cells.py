@@ -15,22 +15,28 @@ MetaValue = str | int | bool | None
 
 class Cell(BaseEntity):
     id: uuid.UUID = pydantic.Field(default_factory=uuid.uuid4)
-    content: str
+    content: str | None
     meta: dict[str, MetaValue] = pydantic.Field(default_factory=dict)
 
     # TODO: we may want to make queue items frozen later
     model_config = pydantic.ConfigDict(frozen=False)
 
     @classmethod
-    def build(cls, kind: str, media_type: str, content: str, **meta: MetaValue) -> "Cell":
+    def build(cls, kind: str, media_type: str | None, content: str | None, **meta: MetaValue) -> "Cell":
         cell = cls(content=content)
         cell.set_meta("kind", kind)
-        cell.set_meta("media_type", media_type)
+
+        if media_type is not None:
+            cell.set_meta("media_type", media_type)
 
         for key, value in meta.items():
             cell.set_meta(key, value)
 
         return cell
+
+    @classmethod
+    def build_meta(cls, kind: str, **meta: MetaValue) -> "Cell":
+        return cls.build(kind=kind, media_type=None, content="", **meta)
 
     @classmethod
     def build_text(cls, kind: str, content: str, **meta: MetaValue) -> "Cell":
@@ -58,19 +64,24 @@ class Cell(BaseEntity):
 
     def render(self) -> str:
 
-        meta = "\n".join(f"{key}: {value}" for key, value in self.meta.items())
+        id = self.short_id()
 
-        cell = textwrap.dedent(
-            """
-        --DONNA-CELL-{id} BEGING--
-        {meta}
+        lines = [f'--DONNA-CELL-{id} BEGIN--']
 
-        {content}
-        --DONNA-CELL-{id} END--
-        """
-        ).format(content=self.content, meta=meta, id=self.short_id())
+        for meta_key, meta_value in self.meta.items():
+            lines.append(f"{meta_key}: {meta_value}")
 
-        return cell.strip()
+        if self.meta and self.content:
+            lines.append("")
+
+        if self.content:
+            lines.append(self.content)
+
+        lines.append(f'--DONNA-CELL-{id} END--')
+
+        cell = "\n".join(lines).strip()
+
+        return cell
 
 
 class AgentCell(BaseEntity):
@@ -104,18 +115,3 @@ class AgentCell(BaseEntity):
 
     def custom_body(self) -> str:
         raise NotImplementedError()
-
-
-class AgentMessage(AgentCell):
-    message: str
-    action_request_id: ActionRequestId | None
-
-    def meta(self) -> dict[str, str]:
-        base_meta = super().meta()
-
-        base_meta["action_request_id"] = str(self.action_request_id) if self.action_request_id is not None else ""
-
-        return base_meta
-
-    def custom_body(self) -> str:
-        return self.message

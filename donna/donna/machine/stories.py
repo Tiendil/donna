@@ -1,6 +1,6 @@
 from donna.core.entities import BaseEntity
 from donna.domain.types import ActionRequestId, OperationId, Slug, StoryId
-from donna.machine.cells import AgentMessage
+from donna.machine.cells import Cell
 from donna.machine.plans import Plan, get_plan
 from donna.machine.records import RecordsIndex
 from donna.machine.tasks import Task, WorkUnit
@@ -17,16 +17,8 @@ class Story(BaseEntity):
     def save(self) -> None:
         layout().story(self.id).write_text(self.to_json())
 
-    def cells(self) -> list[AgentMessage]:
-        return [
-            AgentMessage(
-                story_id=self.id,
-                task_id=None,
-                work_unit_id=None,
-                message=f"Story ID: {self.id}",
-                action_request_id=None,
-            )
-        ]
+    def cells(self) -> list[Cell]:
+        return [Cell.build_meta(kind="story_info", story_id=self.id)]
 
 
 def create_story(slug: Slug) -> Story:

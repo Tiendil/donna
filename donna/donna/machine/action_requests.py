@@ -7,7 +7,7 @@ from donna.domain.types import (
     StoryId,
     new_action_request_id,
 )
-from donna.machine.cells import AgentMessage
+from donna.machine.cells import Cell
 
 
 class ActionRequest(BaseEntity):
@@ -25,7 +25,7 @@ class ActionRequest(BaseEntity):
             operation_id=operation_id,
         )
 
-    def cells(self) -> list[AgentMessage]:
+    def cells(self) -> list[Cell]:
         from donna.world.primitives_register import register
 
         results = []
@@ -49,12 +49,7 @@ class ActionRequest(BaseEntity):
         """
         ).format(request=self.request, operation_results=operation_results)
 
-        return [
-            AgentMessage(
-                story_id=self.story_id,
-                task_id=None,
-                work_unit_id=None,
-                action_request_id=self.id,
-                message=message,
-            )
-        ]
+        return [Cell.build_markdown(kind="action_request",
+                                    content=message,
+                                    story_id=self.story_id,
+                                    action_request_id=self.id)]

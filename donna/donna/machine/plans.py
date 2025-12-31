@@ -3,7 +3,7 @@ import pydantic
 from donna.core.entities import BaseEntity
 from donna.domain.types import ActionRequestId, OperationResultId, StoryId, TaskId, WorkUnitId
 from donna.machine.action_requests import ActionRequest
-from donna.machine.cells import Cell, AgentMessage
+from donna.machine.cells import Cell
 from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState
 from donna.machine.events import Event
 from donna.machine.tasks import Task, TaskState, WorkUnit, WorkUnitState
@@ -158,16 +158,14 @@ class Plan(BaseEntity):
 
         return cells
 
-    def complete_message(self) -> AgentMessage:
-        return AgentMessage(
-            story_id=self.story_id,
-            task_id=None,
-            work_unit_id=None,
-            action_request_id=None,
-            message=(
+    def complete_message(self) -> Cell:
+        return Cell.build_markdown(
+            kind="work_is_completed",
+            content=(
                 "The work in this story is COMPLETED. You MUST STOP all your activities immediately. "
                 "ASK THE USER for further instructions."
             ),
+            story_id=self.story_id,
         )
 
     def run(self) -> list[Cell]:  # noqa: CCR001
