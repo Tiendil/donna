@@ -251,6 +251,10 @@ list_primary_goals = StoryCycleStep(
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
     2.2. mark this action request as `next_iteration`.
     3. If you can not identify more goals, mark this action request as `completed`.
+
+    Requirements:
+
+    - Each goal must has clear scope and boundaries.
     """
     ),
 )
@@ -287,7 +291,10 @@ list_objectives = StoryCycleStep(
     2.2. mark this action request as `next_iteration`.
     3. If you can not identify more goals, mark this action request as `completed`.
 
-    EACH GOAL MUST HAVE AT LEAST ONE OBJECTIVE.
+    Requirements:
+
+    - Each goal must have at least one objective.
+    - Each objective must be atomic, verifiable, and achievable within a reasonable timeframe.
     """
     ),
 )
