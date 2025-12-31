@@ -231,8 +231,10 @@ list_primary_goals = StoryCycleStep(
         ),
         EventTemplate(id=list_goals_loop_event_id, operation_id=None),
     ],
-    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:primary_goals_listed")),
-             OperationResult.next_iteration(list_goals_loop_event_id)],
+    results=[
+        OperationResult.completed(EventId("donna:end_to_end_story_cycle:primary_goals_listed")),
+        OperationResult.next_iteration(list_goals_loop_event_id),
+    ],
     requested_kind_spec=GOAL,
     request_template=textwrap.dedent(
         """
