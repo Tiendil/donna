@@ -37,17 +37,17 @@ class Cell(BaseEntity):
 
     @classmethod
     def build_text(cls, kind: str, content: str, **meta: MetaValue) -> "Cell":
-        return cls.build(kind=kind, media_type="text/plain", content=content)
+        return cls.build(kind=kind, media_type="text/plain", content=content, **meta)
 
     @classmethod
     def build_markdown(cls, kind: str, content: str, **meta: MetaValue) -> "Cell":
-        return cls.build(kind=kind, media_type="text/markdown", content=content)
+        return cls.build(kind=kind, media_type="text/markdown", content=content, **meta)
 
     @classmethod
     def build_json(cls, kind: str, content: Any, **meta: MetaValue) -> "Cell":
         # TODO: we may want make indent configurable
         formated_content = pydantic.json.dumps(content, indent=2)
-        return cls.build(kind=kind, media_type="application/json", content=formated_content)
+        return cls.build(kind=kind, media_type="application/json", content=formated_content, **meta)
 
     # TODO: refactor to base62 (without `_` and `-` characters)
     def short_id(self) -> str:
