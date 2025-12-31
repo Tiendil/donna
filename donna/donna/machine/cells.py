@@ -61,10 +61,10 @@ class Cell(BaseEntity):
 
     def render(self) -> str:
 
-        id = ""  # self.short_id()
+        id = self.short_id()
 
         lines = [
-            '##########################',
+            # '##########################',
             f'--DONNA-CELL {id} BEGIN--'
         ]
 
@@ -78,7 +78,7 @@ class Cell(BaseEntity):
             lines.append(self.content)
 
         lines.append(f'--DONNA-CELL {id} END--')
-        lines.append('##########################')
+        # lines.append('##########################')
 
         cell = "\n".join(lines).strip()
 
