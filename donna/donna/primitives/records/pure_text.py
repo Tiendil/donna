@@ -1,4 +1,4 @@
-from donna.domain.types import RecordKindId
+from donna.domain.types import RecordKindId, StoryId
 from donna.machine.cells import Cell
 from donna.machine.records import RecordIndexItem, RecordKindItem
 from donna.primitives.records import base
@@ -11,12 +11,14 @@ class PureText(RecordKindItem):
 
     def cells(self, record: RecordIndexItem) -> list[Cell]:
         return [
-            Cell.build(kind="pure_text_artifact",
-                       media_type=self.media_type,
-                       content=self.content,
-                       record_id=record.id,
-                       record_kind=self.kind,
-                       description=record.description)
+            Cell.build(
+                kind="pure_text_artifact",
+                media_type=self.media_type,
+                content=self.content,
+                record_id=record.id,
+                record_kind=self.kind,
+                description=record.description,
+            )
         ]
 
 

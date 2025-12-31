@@ -31,7 +31,7 @@ class RecordIndexItem(BaseEntity):
 class RecordKindItem(BaseEntity):
     kind: RecordKindId
 
-    def cells(self, story_id: StoryId, record: RecordIndexItem) -> list[Cell]:
+    def cells(self, record: RecordIndexItem) -> list[Cell]:
         raise NotImplementedError("You must implement this method in subclasses")
 
 
