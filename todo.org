@@ -64,3 +64,4 @@
 ** TODO cli commands to add/remove relations
 ** TODO storage of allowed relation types
 ** TODO operations to validate that each list item has required relations
+* TODO Export class rename to Workflow?
