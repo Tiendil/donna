@@ -254,6 +254,7 @@ list_primary_goals = StoryCycleStep(
 
     Requirements:
 
+    - Goal must describe a desired outcome or result.
     - Each goal must has clear scope and boundaries.
     """
     ),
@@ -294,6 +295,7 @@ list_objectives = StoryCycleStep(
     Requirements:
 
     - Each goal must have at least one objective.
+    - An objective must describe one milestone on the path to achieving the goal.
     - Each objective must be atomic, verifiable, and achievable within a reasonable timeframe.
     """
     ),
