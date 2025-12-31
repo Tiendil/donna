@@ -170,7 +170,7 @@ class Plan(BaseEntity):
 
     def run(self) -> list[Cell]:  # noqa: CCR001
         if self.is_completed():
-            return [self.complete_message().render()]
+            return [self.complete_message()]
 
         if not self.has_work():
             return []
@@ -180,7 +180,7 @@ class Plan(BaseEntity):
         while True:
 
             if self.is_completed():
-                cells.append(self.complete_message().render())
+                cells.append(self.complete_message())
                 break
 
             if not self.has_work():
@@ -193,7 +193,7 @@ class Plan(BaseEntity):
 
         for action_request in self.action_requests:
             for cell in action_request.cells():
-                cells.append(cell.render())
+                cells.append(cell)
 
         return cells
 

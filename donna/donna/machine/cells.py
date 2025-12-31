@@ -66,7 +66,7 @@ class Cell(BaseEntity):
 
         id = self.short_id()
 
-        lines = [f'--DONNA-CELL-{id} BEGIN--']
+        lines = [f'--DONNA-CELL {id} BEGIN--']
 
         for meta_key, meta_value in self.meta.items():
             lines.append(f"{meta_key}: {meta_value}")
@@ -77,7 +77,7 @@ class Cell(BaseEntity):
         if self.content:
             lines.append(self.content)
 
-        lines.append(f'--DONNA-CELL-{id} END--')
+        lines.append(f'--DONNA-CELL {id} END--')
 
         cell = "\n".join(lines).strip()
 
