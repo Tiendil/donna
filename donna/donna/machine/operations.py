@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Iterable
 
 from donna.core.entities import BaseEntity
 from donna.domain.types import EventId, OperationId, OperationResultId
-from donna.machine.cells import WorkflowCell
+from donna.machine.cells import Cell
 from donna.machine.events import EventTemplate
 from donna.machine.tasks import Task, WorkUnit
 
@@ -51,13 +51,12 @@ class Operation(BaseEntity):
     def is_workflow(self) -> bool:
         return self.export is not None
 
-    def workflow_cell(self) -> WorkflowCell:
+    def workflow_cell(self) -> Cell:
         assert self.export is not None
-        return WorkflowCell(
-            story_id=None,
-            task_id=None,
-            work_unit_id=None,
+
+        return Cell.build_markdown(
+            kind='workflow',
+            content=self.export.description,
             workflow_id=self.id,
-            name=self.export.name,
-            description=self.export.description,
+            workflow_name=self.export.name,
         )

@@ -10,34 +10,41 @@ from donna.core.entities import BaseEntity
 from donna.domain.types import ActionRequestId, StoryId, TaskId, WorkUnitId
 
 
+MetaValue = str | int | bool | None
+
+
 class Cell(BaseEntity):
     id: uuid.UUID = pydantic.Field(default_factory=uuid.uuid4)
     content: str
-    meta: dict[str, str | int | bool | None] = pydantic.Field(default_factory=dict)
+    meta: dict[str, MetaValue] = pydantic.Field(default_factory=dict)
 
     # TODO: we may want to make queue items frozen later
     model_config = pydantic.ConfigDict(frozen=False)
 
     @classmethod
-    def build(cls, kind: str, media_type: str, content: str) -> "Cell":
+    def build(cls, kind: str, media_type: str, content: str, **meta: MetaValue) -> "Cell":
         cell = cls(content=content)
         cell.set_meta("kind", kind)
         cell.set_meta("media_type", media_type)
+
+        for key, value in meta.items():
+            cell.set_meta(key, value)
+
         return cell
 
     @classmethod
-    def build_text(cls, content: str) -> "Cell":
-        return cls.build(kind="text", media_type="text/plain", content=content)
+    def build_text(cls, kind: str, content: str, **meta: MetaValue) -> "Cell":
+        return cls.build(kind=kind, media_type="text/plain", content=content)
 
     @classmethod
-    def build_markdown(cls, content: str) -> "Cell":
-        return cls.build(kind="text", media_type="text/markdown", content=content)
+    def build_markdown(cls, kind: str, content: str, **meta: MetaValue) -> "Cell":
+        return cls.build(kind=kind, media_type="text/markdown", content=content)
 
     @classmethod
-    def build_json(cls, content: Any) -> "Cell":
+    def build_json(cls, kind: str, content: Any, **meta: MetaValue) -> "Cell":
         # TODO: we may want make indent configurable
         formated_content = pydantic.json.dumps(content, indent=2)
-        return cls.build(kind="data", media_type="application/json", content=formated_content)
+        return cls.build(kind=kind, media_type="application/json", content=formated_content)
 
     # TODO: refactor to base62 (without `_` and `-` characters)
     def short_id(self) -> str:
@@ -112,17 +119,3 @@ class AgentMessage(AgentCell):
 
     def custom_body(self) -> str:
         return self.message
-
-
-class WorkflowCell(AgentCell):
-    workflow_id: str
-    name: str
-    description: str
-
-    def meta(self) -> dict[str, str]:
-        base_meta = super().meta()
-        base_meta["workflow_id"] = self.workflow_id
-        return base_meta
-
-    def custom_body(self) -> str:
-        return f"# Workflow: {self.name}\n\n{self.description}"
