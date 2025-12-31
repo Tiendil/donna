@@ -86,7 +86,7 @@ Examples of record kinds:
 Use the next commands to work with records related to your story:
 
 - `./bin/donna.sh donna records list <story-id>` — list all records related to the story.
-- `./bin/donna.sh donna records create <story-id> <record-kind> <record-id> <description>` — create a new record without any kinds of data attached.
+- `./bin/donna.sh donna records create <story-id> <record-id> <description>` — create a new record without any kinds of data attached.
 - `./bin/donna.sh donna records delete <story-id> <record-id>` — delete the record and all its data.
 - `./bin/donna.sh donna records kind-set <story-id> <record-id> <record-kind> <json-data>` — set data of a particular kind for the record. Data is passed as JSON string.
 - `./bin/donna.sh donna records kind-get <story-id> <record-id> <record-kind>*` — get data of a particular kind(s) for the record.
