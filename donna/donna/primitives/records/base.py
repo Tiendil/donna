@@ -1,3 +1,4 @@
+from typing import Any
 from donna.domain.types import RecordId, StoryId
 from donna.machine.records import RecordKind as BaseRecordKind
 from donna.machine.records import RecordKindItem
@@ -34,3 +35,6 @@ class RecordKind(BaseRecordKind):
 
         if path.exists():
             path.unlink()
+
+    def specification(self) -> Any:
+        return self.item_class.specification()

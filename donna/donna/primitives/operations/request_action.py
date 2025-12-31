@@ -33,8 +33,8 @@ class RequestAction(Operation):
         return context
 
     def reminders(self) -> Iterator[Cell]:
-        for record_kind_spec in dir(self):
-            value = getattr(self, record_kind_spec)
+        for field_name in self.model_fields.keys():
+            value = getattr(self, field_name)
 
             if not isinstance(value, RecordKindSpec):
                 continue

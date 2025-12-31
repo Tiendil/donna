@@ -1,4 +1,5 @@
 import pydantic
+from typing import Any
 
 from donna.core.entities import BaseEntity
 from donna.domain.types import RecordId, RecordKindId, StoryId
@@ -18,6 +19,9 @@ class RecordKind(BaseEntity):
     def remove(self, story_id: StoryId, record_id: RecordId) -> None:
         raise NotImplementedError("You must implement this method in subclasses")
 
+    def specification(self) -> Any:
+        raise NotImplementedError("You must implement this method in subclasses")
+
 
 class RecordIndexItem(BaseEntity):
     id: RecordId
@@ -34,7 +38,7 @@ class RecordKindSpec(BaseEntity):
 
     @property
     def verbose(self) -> str:
-        return f"<record: {self.record_id}, kind:{self.kind}>"
+        return f"<record: {self.record_id}, kind: {self.kind}>"
 
     def cells(self) -> list[Cell]:
         from donna.world.primitives_register import register
@@ -46,7 +50,7 @@ class RecordKindSpec(BaseEntity):
         return [
             Cell.build_json(
                 kind="record_kind_json_schema",
-                content=kind.model_json_schema(),
+                content=kind.specification(),
                 record_id=self.record_id,
                 record_kind=self.kind,
             )
@@ -58,6 +62,10 @@ class RecordKindItem(BaseEntity):
 
     def cells(self, record: RecordIndexItem) -> list[Cell]:
         raise NotImplementedError("You must implement this method in subclasses")
+
+    @classmethod
+    def specification(cls) -> Any:
+        return cls.model_json_schema()
 
 
 class RecordsIndex(BaseEntity):
