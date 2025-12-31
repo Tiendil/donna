@@ -136,6 +136,9 @@ class StoryCycleStep(RequestAction):
             specification.append(content)
             specification.append("")
 
+        # with open("/home/tiendil/tmp/last_spec.md", "w", encoding="utf-8") as f:
+        #     f.write("\n".join(specification))
+
         return "\n".join(specification)
 
     def context_plan(self, task: Task) -> str | None:
