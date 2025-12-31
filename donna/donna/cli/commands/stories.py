@@ -28,7 +28,7 @@ def create(slug: str) -> None:
 
     story = stories.create_story(Slug(slug))
 
-    output_cells([cell.render() for cell in story.cells()])
+    output_cells(story.cells())
 
 
 @stories_cli.command(name="continue")
@@ -54,7 +54,7 @@ def action_request_completed(request_id: ActionRequestIdArgument, result_id: str
 @stories_cli.command()
 def list_workflows() -> None:
     cells = [
-        operation.workflow_cell().render() for operation in register().operations.values() if operation.is_workflow()
+        operation.workflow_cell() for operation in register().operations.values() if operation.is_workflow()
     ]
     output_cells(cells)
 
