@@ -65,3 +65,13 @@
 ** TODO storage of allowed relation types
 ** TODO operations to validate that each list item has required relations
 * TODO Export class rename to Workflow?
+* TODO Objectives loop
+** TODO Full spec on planing activities
+** TODO Objectives grooming loop
+*** choose unprocessed objective
+*** groom objective
+*** maybe via a single action request operation? With customized code for searching next objective to process
+** TODO Goal-objective relations
+** TODO Iterate goals into objectives
+** TODO Full objective set grooming (may be moved into separate TODO list, since it may require planing)
+** TODO Goals grooming (may be moved into separate TODO list, since it may require planing)
