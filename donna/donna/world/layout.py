@@ -36,7 +36,7 @@ class Layout:
         return self.story_records_dir(story_id) / "index.json"
 
     def story_record_kind(self, story_id: StoryId, record_id: RecordId, kind: RecordKindId) -> pathlib.Path:
-        return self.story_records_dir(story_id) / f"{record_id}-{kind}.json"
+        return self.story_records_dir(story_id) / f"{record_id}.{kind}.json"
 
     def next_story_number(self) -> int:
         existing_ids = [
