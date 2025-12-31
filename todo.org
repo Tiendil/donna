@@ -46,6 +46,8 @@
 ** TODO Split the whole worfklow into smaller scenarios/tasks?
 ** TODO prepare a report after the story is finished
 ** TODO custom command to run a specific subflow? Or whould we rest it to the agent? It look like agent can deside better, because otherwise we'll introduce a hard coupling between different flows.
+** TODO replace "here is the beginning of the story specification" with an introspection of the records?
+** TODO refactor records/kinds/items names, place them in order
 * TODO tests
 ** TODO basic / lowest unit tests for primitive operations
 ** TODO domain-level unit tests
