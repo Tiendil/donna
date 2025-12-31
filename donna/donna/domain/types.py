@@ -10,6 +10,7 @@ OperationId = NewType("OperationId", str)
 RecordKindId = NewType("RecordKindId", str)
 TaskId = NewType("TaskId", uuid.UUID)
 OperationResultId = NewType("OperationResultId", str)
+RecordIdTemplate = NewType("RecordIdTemplate", str)
 Slug = NewType("Slug", str)
 
 

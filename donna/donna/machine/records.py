@@ -3,7 +3,7 @@ from typing import Any
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.types import RecordId, RecordKindId, StoryId
+from donna.domain.types import RecordId, RecordKindId, StoryId, RecordIdTemplate
 from donna.machine.cells import Cell
 from donna.world.layout import layout
 
@@ -34,7 +34,8 @@ class RecordIndexItem(BaseEntity):
 
 
 class RecordKindSpec(BaseEntity):
-    record_id: RecordId
+    record_id: RecordIdTemplate
+    record_prefix: str
     kind: RecordKindId
 
     @property
@@ -105,6 +106,15 @@ class RecordsIndex(BaseEntity):
                 return record
 
         return None
+
+    def get_records_for_kind(self, kind: RecordKindId) -> list[RecordIndexItem]:
+        result: list[RecordIndexItem] = []
+
+        for record in self.records:
+            if kind in record.kinds:
+                result.append(record)
+
+        return result
 
     def create_record(
         self,

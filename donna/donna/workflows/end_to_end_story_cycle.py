@@ -1,6 +1,6 @@
 import textwrap
 
-from donna.domain.types import EventId, OperationId, OperationResultId, RecordId, RecordKindId
+from donna.domain.types import EventId, OperationId, OperationResultId, RecordId, RecordKindId, RecordIdTemplate
 from donna.machine.events import EventTemplate
 from donna.machine.operations import OperationExport as Export
 from donna.machine.operations import OperationResult
@@ -9,6 +9,7 @@ from donna.machine.tasks import Task
 from donna.primitives.operations.finish import Finish as FinishTask
 from donna.primitives.operations.request_action import RequestAction
 from donna.primitives.records.pure_text import PureText
+
 
 DEVELOPER_DESCRIPTION = RecordKindSpec(
     record_id=RecordId("story-description-from-developer"),
@@ -22,7 +23,8 @@ BIG_PICTURE_DESCRIPTION = RecordKindSpec(
     record_id=RecordId("story-big-picture"),
     kind=RecordKindId("pure_text"),
 )
-GOALS = RecordKindSpec(record_id=RecordId("story-goals"), kind=RecordKindId("pure_text"))
+GOAL = RecordKindSpec(record_id=RecordIdTemplate("story-goal-{uid}"), kind=RecordKindId("story_goal"))
+
 OBJECTIVES = RecordKindSpec(record_id=RecordId("story-objectives"), kind=RecordKindId("pure_text"))
 DEFINITION_OF_DONE = RecordKindSpec(
     record_id=RecordId("story-definition-of-done"),
@@ -46,15 +48,40 @@ def _get_text_content(records: RecordsIndex, kind_spec: RecordKindSpec) -> str |
     record_kind_item = record_kind_items[0]
 
     if record_kind_item is None or not isinstance(record_kind_item, PureText):
-        return None
+        raise NotImplementedError(
+            f"Record kind item for record '{kind_spec.record_id}' and kind '{kind_spec.kind}' is not PureText"
+        )
 
     return record_kind_item.content
+
+
+def _get_aggregated_text_content(index: RecordsIndex, kind_spec: RecordKindSpec) -> str | None:  # noqa: CCR001
+    records = index.get_records_for_kind(kind_spec.kind)
+
+    if not records:
+        return None
+
+    lines = []
+
+    for record in records:
+        kind_items = index.get_record_kind_items(record.id, [kind_spec.kind])
+
+        for kind in kind_items:
+            if not isinstance(kind, PureText):
+                raise NotImplementedError(
+                    f"Record kind item for record '{kind_spec.record_id}' and kind '{kind_spec.kind}' is not PureText"
+                )
+
+        for kind in kind_items:
+            lines.append(f"[{record.id}] {kind.content}")
+
+    return "\n".join(lines)
 
 
 class StoryCycleStep(RequestAction):
     requested_kind_spec: RecordKindSpec | None
 
-    def context_partial_description(self, task: Task) -> str:
+    def context_partial_description(self, task: Task) -> str:  # noqa: CCR001
         records = RecordsIndex.load(task.story_id)
 
         # TODO: move to parameters?
@@ -63,24 +90,28 @@ class StoryCycleStep(RequestAction):
         #       because it will provide too much information for the operations
         #       that should not have it
         parts = [
-            ("Developer request", DEVELOPER_DESCRIPTION),
-            ("Detailed work description", AGENT_DESCRIPTION),
-            ("Big picture", BIG_PICTURE_DESCRIPTION),
-            ("Primary goals", GOALS),
-            ("Objectives", OBJECTIVES),
-            ("Definition of done", DEFINITION_OF_DONE),
-            ("Risks and challenges", RISKS),
+            ("Developer request", False, DEVELOPER_DESCRIPTION),
+            ("Detailed work description", False, AGENT_DESCRIPTION),
+            ("Big picture", False, BIG_PICTURE_DESCRIPTION),
+            ("Primary goals", True, GOAL),
+            ("Objectives", False, OBJECTIVES),
+            ("Definition of done", False, DEFINITION_OF_DONE),
+            ("Risks and challenges", False, RISKS),
         ]
 
         specification = []
 
-        for title, kind_spec in parts:
+        for title, aggregate, kind_spec in parts:
             if not records.has_record_kind(kind_spec.record_id, kind_spec.kind):
                 break
 
             specification.append(f"# {title}")
             specification.append("")
-            content = _get_text_content(records, kind_spec)
+
+            if not aggregate:
+                content = _get_text_content(records, kind_spec)
+            else:
+                content = _get_aggregated_text_content(records, kind_spec)
 
             if content is None:
                 break
@@ -180,7 +211,7 @@ list_primary_goals = StoryCycleStep(
         )
     ],
     results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:primary_goals_listed"))],
-    requested_kind_spec=GOALS,
+    requested_kind_spec=GOAL,
     request_template=textwrap.dedent(
         """
     Here is the beginning of the story specification.
@@ -191,9 +222,10 @@ list_primary_goals = StoryCycleStep(
 
     You MUST list the primary goals of this story.
 
-    1. List goals that the story is trying to achieve.
-    2. Add the list as `{scheme.requested_kind_spec.verbose}` to the story.
-    3. Mark this action request as completed.
+    1. Review the the story specification above.
+    2. Review already listed goals.
+    3. If you can identify one more goal, add it as a `{scheme.requested_kind_spec.verbose}` to the story. Go to the item 2.
+    4. If you can not identify more goals, mark this action request as completed.
     """
     ),
 )

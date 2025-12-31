@@ -65,10 +65,10 @@
 ** TODO storage of allowed relation types
 ** TODO operations to validate that each list item has required relations
 * TODO Operations on lists (goals as the first candidate)
-** TODO Schema must be built with a list of items in mind
-** TODO Agent request instruction must
+** WORKING Schema must be built with a list of items in mind
+** WORKING Agent request instruction must
 *** either describe the loop to process each item
 *** or create a new task that organizes the loop
-** TODO record name should be allowed to be None in record kind spec
-** TODO goal record kind is registered
-** TODO goal kind/record need ids generation logic
+** WORKING record name should be allowed to be None in record kind spec
+** WORKING goal record kind is registered
+** WORKING goal kind/record need ids generation logic

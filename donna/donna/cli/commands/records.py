@@ -1,9 +1,9 @@
 from typing import List
-
+import uuid
 import typer
 
 from donna.cli.application import app
-from donna.cli.utils import output_cells
+from donna.cli.utils import output_cells, template_is_not_allowed
 from donna.domain.types import RecordId, RecordKindId, StoryId
 from donna.machine import records as r_domain
 from donna.world.primitives_register import register
@@ -18,11 +18,13 @@ def list(story_id: str) -> None:
 
 
 @records_cli.command()
-def create(story_id: str, record_id: str, description: str) -> None:
+def create(story_id: str, record_id_template: str, description: str) -> None:
     index = r_domain.RecordsIndex.load(StoryId(story_id))
 
+    record_id = RecordId(record_id_template.format(uid=uuid.uuid4().hex))
+
     index.create_record(
-        id=RecordId(record_id),
+        id=record_id,
         description=description,
     )
 
@@ -34,6 +36,8 @@ def create(story_id: str, record_id: str, description: str) -> None:
 @records_cli.command()
 def delete(story_id: str, record_id: str) -> None:
     index = r_domain.RecordsIndex.load(StoryId(story_id))
+
+    template_is_not_allowed("record_id", record_id)
 
     record_id_value = RecordId(record_id)
 
@@ -52,6 +56,8 @@ def kind_set(
     item: str,
 ) -> None:
     index = r_domain.RecordsIndex.load(StoryId(story_id))
+
+    template_is_not_allowed("record_id", record_id)
 
     record_kind_id = RecordKindId(record_kind)
     record_id_value = RecordId(record_id)
@@ -79,6 +85,8 @@ def kind_delete(
 ) -> None:
     index = r_domain.RecordsIndex.load(StoryId(story_id))
 
+    template_is_not_allowed("record_id", record_id)
+
     record_id_value = RecordId(record_id)
 
     index.remove_record_kind_items(record_id_value, [RecordKindId(kind) for kind in record_kinds])
@@ -95,6 +103,8 @@ def kind_get(
     record_kinds: List[str],
 ) -> None:
     index = r_domain.RecordsIndex.load(StoryId(story_id))
+
+    template_is_not_allowed("record_id", record_id)
 
     record_id_value = RecordId(record_id)
     record = index.get_record(record_id_value)
