@@ -12,7 +12,7 @@ class PureText(RecordKindItem):
     def cells(self, record: RecordIndexItem) -> list[Cell]:
         return [
             Cell.build(
-                kind="text_record",
+                kind="record_kind",
                 media_type=self.media_type,
                 content=self.content,
                 record_id=record.id,
