@@ -266,9 +266,10 @@ list_objectives = StoryCycleStep(
         ),
         EventTemplate(id=list_objectives_next_iteration_event_id, operation_id=None),
     ],
-    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:objectives_listed")),
-             OperationResult.next_iteration(list_objectives_next_iteration_event_id)
-             ],
+    results=[
+        OperationResult.completed(EventId("donna:end_to_end_story_cycle:objectives_listed")),
+        OperationResult.next_iteration(list_objectives_next_iteration_event_id),
+    ],
     requested_kind_spec=OBJECTIVE,
     request_template=textwrap.dedent(
         """
