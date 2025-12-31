@@ -65,38 +65,40 @@ You create story by specifying `story-slug` — a short ASCII string identifying
 - If the developer asked you to do something and specified a story slug, you MUST call `./bin/donna.sh story continue <story-id>` to get your instructions on what to do next.
 - If the developer asked you to do something and did NOT specified a story ID and story slug, you MUST ask developer if you need to create a story for it first. If developer says YES, you MUST create a story. Then you MUST start working on the created story.
 
-### Working with artifacts
+### Working with records
 
-Artifact is any file or document related and created specifically for a story:
+A record is a named collection of structured data of different kinds.
 
-- Story description is an artifact.
-- List of work risks is an artifact.
-- Files with source code of the project IS NOT an artifact.
-- Compiled binaries of the project IS NOT an artifact.
+- There can be multiple kinds of data attached to a single record.
+- Records are exist only in the context of a story.
+- Kinds of records are preconfigured in the `donna` tool.
+- You generally will get a specification of a scheme for a particular kind of record when you are asked to create or update it.
 
-Use the next commands to work with artifacts related to your story:
+Donna can ask you to create and manage records related to your story.
 
-- `./bin/donna.sh artifacts list <story-id>` — list all artifacts related to the story.
-- `./bin/dinna.sh artifacts create <story-id> <artifact-kind> <artifact-id> <content-type> <description>` — create a new artifact related to the story. The new artifact will be empty.
-- `./bin/donna.sh artifacts text write <story-id> <artifact-id> <content>` — create or update a `text` artifact related to the story.
-- `./bin/donna.sh artifacts text read <story-id> <artifact-id>` — outputs the content of the `text` artifact related to the story.
-- `./bin/donna.sh artifacts has <story-id> <artifact-id>` — checks if the artifact related to the story exists.
-- `./bin/donna.sh artifacts copy-into-sotry <story-id> <artifact-id> <path>` — create or update a BINARY artifact related to the story from the specified file path.
-- `./bin/donna.sh artifacts copy-from-story <story-id> <artifact-id> <path>` — copies the BINARY artifact related to the story into the specified file path.
+Examples of record kinds:
 
-Supported artifact kinds:
+- Plain text record with media type is a kind of record.
+- A fixed set of fields with specific types, like "issue tracker ticket" is a kind of record.
+- Files with source code of the project IS NOT a kind of record.
+- Compiled binaries of the project IS NOT a kind of record.
 
-- `text` — text-based artifact. You can read and write its content as text.
+Use the next commands to work with records related to your story:
+
+- `./bin/donna.sh donna records list <story-id>` — list all records related to the story.
+- `./bin/donna.sh donna records create <story-id> <record-kind> <record-id> <description>` — create a new record without any kinds of data attached.
+- `./bin/donna.sh donna records delete <story-id> <record-id>` — delete the record and all its data.
+- `./bin/donna.sh donna records kind-set <story-id> <record-id> <record-kind> <json-data>` — set data of a particular kind for the record. Data is passed as JSON string.
+- `./bin/donna.sh donna records kind-get <story-id> <record-id> <record-kind>*` — get data of a particular kind(s) for the record.
+- `./bin/donna.sh donna records kind-delete <story-id> <record-id> <record-kind>*` — delete data of a particular kind(s) for the record.
 
 Command parameters:
 
 - `<story-id>` — the story id you got when you created or continued the story.
-- `<artifact-kind>` — the kind of the artifact. Supported kinds are listed above.
-- `<artifact-id>` — a identifier for the artifact within the story. **ALWAYS USE THE EXECT FULL ID WHEN REFERENCING AN ARTIFACT.** Including file extension if any.
-- `<content-type>` — classic MIME type of the artifact content, e.g. `text/markdown`, `text/plain`, `application/json`, etc.
-- `<description>` — a short text describing what the artifact is about / what it contains.
-- `<content>` — the actual TEXT content of the artifact.
-- `<path>` — the file path to read from or write to.
+- `<record-id>` — a short ASCII string identifying the record with dash separators.
+- `<record-kind>` — a short ASCII string identifying the kind of record with dash separators.
+- `<description>` — a short text description of the record.
+- `<json-data>` — a JSON string with data of the particular kind.
 
 ## IMPORTANT ON DONNA TOOL USAGE
 
@@ -108,10 +110,10 @@ Use one of the next approaches to correctly escape text arguments:
 
 ```
 # option 1
-./bin/donna.sh artifacts write <...>  $'# Long text\n\nwith escape sequences...'
+./bin/donna.sh records kind-set <...>  $'# Long text\n\nwith escape sequences...'
 
 # option 2
-./bin/donna.sh artifacts write <...> \
+./bin/donna.sh records kind-set <...> \
   "$(cat <<'EOF'
 # Long text
 
