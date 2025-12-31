@@ -74,11 +74,11 @@ class Plan(BaseEntity):
         raise NotImplementedError(f"Work unit with id '{work_unit_id}' not found in plan")
 
     def save(self) -> None:
-        layout().story_plan(self.story_id).write_text(self.to_toml())
+        layout().story_plan(self.story_id).write_text(self.to_json())
 
     @classmethod
     def load(cls, story_id: StoryId) -> "Plan":
-        return cls.from_toml(layout().story_plan(story_id).read_text())
+        return cls.from_json(layout().story_plan(story_id).read_text())
 
     def apply_events(self) -> None:  # noqa: CCR001
         task_id = self.active_tasks[-1].id
@@ -228,4 +228,4 @@ def get_plan(story_id: StoryId) -> Plan:
     if not plan_path.exists():
         raise NotImplementedError(f"Plan for story '{story_id}' does not exist")
 
-    return Plan.from_toml(plan_path.read_text())
+    return Plan.from_json(plan_path.read_text())

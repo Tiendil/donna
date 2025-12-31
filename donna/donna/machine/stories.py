@@ -12,10 +12,10 @@ class Story(BaseEntity):
 
     @classmethod
     def load(cls, story_id: StoryId) -> "Story":
-        return cls.from_toml(layout().story(story_id).read_text())
+        return cls.from_json(layout().story(story_id).read_text())
 
     def save(self) -> None:
-        layout().story(self.id).write_text(self.to_toml())
+        layout().story(self.id).write_text(self.to_json())
 
     def cells(self) -> list[AgentMessage]:
         return [

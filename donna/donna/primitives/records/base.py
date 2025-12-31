@@ -11,7 +11,7 @@ class RecordKind(BaseRecordKind):
         path = layout().story_record_kind(story_id, record_id, item.kind)
 
         with path.open("w", encoding="utf-8") as f:
-            content = item.to_toml()
+            content = item.to_json()
             f.write(content)
 
     def load(self, story_id: StoryId, record_id: RecordId) -> RecordKindItem:
@@ -25,7 +25,7 @@ class RecordKind(BaseRecordKind):
         with path.open("r", encoding="utf-8") as f:
             content = f.read()
 
-        item = self.item_class.from_toml(content)
+        item = self.item_class.from_json(content)
 
         return item
 

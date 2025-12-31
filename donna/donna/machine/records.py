@@ -43,14 +43,14 @@ class RecordsIndex(BaseEntity):
     model_config = pydantic.ConfigDict(frozen=False)
 
     def cells(self) -> list[AgentCellHistory]:
-        return [AgentCellHistory(work_unit_id=None, body=self.to_toml())]
+        return [AgentCellHistory(work_unit_id=None, body=self.to_json())]
 
     @classmethod
     def load(cls, story_id: StoryId) -> "RecordsIndex":
-        return cls.from_toml(layout().story_records_index(story_id).read_text())
+        return cls.from_json(layout().story_records_index(story_id).read_text())
 
     def save(self) -> None:
-        layout().story_records_index(self.story_id).write_text(self.to_toml())
+        layout().story_records_index(self.story_id).write_text(self.to_json())
 
     def has_record(self, record_id: RecordId) -> bool:
         return any(record.id == record_id for record in self.records)

@@ -12,7 +12,7 @@ class Layout:
     def __init__(self, project: pathlib.Path, donna_dir: str) -> None:
         self.project = project
         self.donna = project / donna_dir
-        self.config = self.donna / "config.toml"
+        self.config = self.donna / "config.json"
 
         self.stories = self.donna / "stories"
         self.workflows = self.donna / "workflows"
@@ -21,22 +21,22 @@ class Layout:
         return self.stories / story_id
 
     def story(self, story_id: StoryId) -> pathlib.Path:
-        return self.story_dir(story_id) / "story.toml"
+        return self.story_dir(story_id) / "story.json"
 
     def story_plan(self, story_id: StoryId) -> pathlib.Path:
-        return self.story_dir(story_id) / "plan.toml"
+        return self.story_dir(story_id) / "plan.json"
 
     def story_log(self, story_id: StoryId) -> pathlib.Path:
-        return self.story_dir(story_id) / "log.toml"
+        return self.story_dir(story_id) / "log.json"
 
     def story_records_dir(self, story_id: StoryId) -> pathlib.Path:
         return self.story_dir(story_id) / "records"
 
     def story_records_index(self, story_id: StoryId) -> pathlib.Path:
-        return self.story_records_dir(story_id) / "index.toml"
+        return self.story_records_dir(story_id) / "index.json"
 
     def story_record_kind(self, story_id: StoryId, record_id: RecordId, kind: RecordKindId) -> pathlib.Path:
-        return self.story_records_dir(story_id) / f"{record_id}-{kind}.toml"
+        return self.story_records_dir(story_id) / f"{record_id}-{kind}.json"
 
     def next_story_number(self) -> int:
         existing_ids = [
