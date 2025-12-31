@@ -64,11 +64,3 @@
 ** TODO cli commands to add/remove relations
 ** TODO storage of allowed relation types
 ** TODO operations to validate that each list item has required relations
-* TODO Operations on lists (goals as the first candidate)
-** DONE Schema must be built with a list of items in mind
-** WORKING Agent request instruction must
-*** either describe the loop to process each item
-*** or create a new task that organizes the loop
-** DONE record name should be allowed to be None in record kind spec
-** DONE goal record kind is registered
-** DONE goal kind/record need ids generation logic
