@@ -2,7 +2,7 @@ import pydantic
 
 from donna.core.entities import BaseEntity
 from donna.domain.types import RecordId, RecordKindId, StoryId
-from donna.machine.cells import AgentCellHistory
+from donna.machine.cells import Cell
 from donna.world.layout import layout
 
 
@@ -31,7 +31,7 @@ class RecordIndexItem(BaseEntity):
 class RecordKindItem(BaseEntity):
     kind: RecordKindId
 
-    def cells(self, story_id: StoryId, record: RecordIndexItem) -> list[AgentCellHistory]:
+    def cells(self, story_id: StoryId, record: RecordIndexItem) -> list[Cell]:
         raise NotImplementedError("You must implement this method in subclasses")
 
 
@@ -42,8 +42,8 @@ class RecordsIndex(BaseEntity):
     # TODO: we may want to make queue items frozen later
     model_config = pydantic.ConfigDict(frozen=False)
 
-    def cells(self) -> list[AgentCellHistory]:
-        return [AgentCellHistory(work_unit_id=None, body=self.to_json())]
+    def cells(self) -> list[Cell]:
+        return [Cell.build_json(kind="records_index", content=self.model_dump(mode="json"))]
 
     @classmethod
     def load(cls, story_id: StoryId) -> "RecordsIndex":

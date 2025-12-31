@@ -2,9 +2,9 @@ from collections.abc import Iterable
 
 import typer
 
-from donna.machine.cells import AgentCellHistory
+from donna.machine.cells import Cell
 
 
-def output_cells(cells: Iterable[AgentCellHistory]) -> None:
+def output_cells(cells: Iterable[Cell]) -> None:
     for cell in cells:
-        typer.echo(cell.body)
+        typer.echo(cell.render())

@@ -82,36 +82,3 @@ class Cell(BaseEntity):
         cell = "\n".join(lines).strip()
 
         return cell
-
-
-class AgentCell(BaseEntity):
-    story_id: StoryId | None
-    task_id: TaskId | None
-    work_unit_id: WorkUnitId | None
-
-    def render(self) -> AgentCellHistory:
-
-        cell = textwrap.dedent(
-            """
-        ##########################
-        {meta}
-        --------------------------
-        {custom_body}
-        """
-        ).format(custom_body=self.custom_body(), meta=self.render_meta())
-
-        return AgentCellHistory(work_unit_id=self.work_unit_id, body=cell.strip())
-
-    def meta(self) -> dict[str, str]:
-        return {
-            "story_id": str(self.story_id),
-            "task_id": str(self.task_id) if self.task_id is not None else "",
-            "work_unit_id": (str(self.work_unit_id) if self.work_unit_id is not None else ""),
-        }
-
-    def render_meta(self) -> str:
-        meta_lines = [f"{key}: {value}" for key, value in self.meta().items()]
-        return "\n".join(meta_lines)
-
-    def custom_body(self) -> str:
-        raise NotImplementedError()
