@@ -92,7 +92,7 @@ def _get_aggregated_text_content(index: RecordsIndex, kind_spec: RecordKindSpec)
 class StoryCycleStep(RequestAction):
     requested_kind_spec: RecordKindSpec | None
 
-n    def context_partial_description(self, task: Task) -> str:  # noqa: CCR001
+    def context_partial_description(self, task: Task) -> str:  # noqa: CCR001
         records = RecordsIndex.load(task.story_id)
 
         # TODO: move to parameters?
