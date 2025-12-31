@@ -3,7 +3,7 @@ import pydantic
 from donna.core.entities import BaseEntity
 from donna.domain.types import ActionRequestId, OperationResultId, StoryId, TaskId, WorkUnitId
 from donna.machine.action_requests import ActionRequest
-from donna.machine.cells import AgentCellHistory, AgentMessage
+from donna.machine.cells import Cell, AgentMessage
 from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState
 from donna.machine.events import Event
 from donna.machine.tasks import Task, TaskState, WorkUnit, WorkUnitState
@@ -18,7 +18,7 @@ class Plan(BaseEntity):
     queue: list[WorkUnit]  # TODO: rename from queue, because it's not a queue anymore
     action_requests: list[ActionRequest]
     events: list[Event]
-    last_cells: list[AgentCellHistory]
+    last_cells: list[Cell]
     started: bool
 
     # TODO: we may want to make queue items frozen later
@@ -136,7 +136,7 @@ class Plan(BaseEntity):
         for change in changes:
             change.apply_to(self, task)
 
-    def step(self) -> list[AgentCellHistory]:
+    def step(self) -> list[Cell]:
         # apply events on the beginning of the step
         # to process events that
         self.apply_events()
@@ -170,7 +170,7 @@ class Plan(BaseEntity):
             ),
         )
 
-    def run(self) -> list[AgentCellHistory]:  # noqa: CCR001
+    def run(self) -> list[Cell]:  # noqa: CCR001
         if self.is_completed():
             return [self.complete_message().render()]
 

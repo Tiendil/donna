@@ -1,12 +1,69 @@
+import uuid
+import base64
 import textwrap
+import pydantic
+from typing import Any
+
+import xml.etree.ElementTree as ET
 
 from donna.core.entities import BaseEntity
 from donna.domain.types import ActionRequestId, StoryId, TaskId, WorkUnitId
 
 
-class AgentCellHistory(BaseEntity):
-    work_unit_id: WorkUnitId | None
-    body: str
+class Cell(BaseEntity):
+    id: uuid.UUID = pydantic.Field(default_factory=uuid.uuid4)
+    content: str
+    meta: dict[str, str | int | bool | None] = pydantic.Field(default_factory=dict)
+
+    # TODO: we may want to make queue items frozen later
+    model_config = pydantic.ConfigDict(frozen=False)
+
+    @classmethod
+    def build(cls, kind: str, media_type: str, content: str) -> "Cell":
+        cell = cls(content=content)
+        cell.set_meta("kind", kind)
+        cell.set_meta("media_type", media_type)
+        return cell
+
+    @classmethod
+    def build_text(cls, content: str) -> "Cell":
+        return cls.build(kind="text", media_type="text/plain", content=content)
+
+    @classmethod
+    def build_markdown(cls, content: str) -> "Cell":
+        return cls.build(kind="text", media_type="text/markdown", content=content)
+
+    @classmethod
+    def build_json(cls, content: Any) -> "Cell":
+        # TODO: we may want make indent configurable
+        formated_content = pydantic.json.dumps(content, indent=2)
+        return cls.build(kind="data", media_type="application/json", content=formated_content)
+
+    # TODO: refactor to base62 (without `_` and `-` characters)
+    def short_id(self) -> str:
+        return base64.urlsafe_b64encode(self.id.bytes).rstrip(b'=').decode()
+
+    def set_meta(self, key: str, value: str | int | bool | None) -> None:
+        if key in self.meta:
+            raise NotImplementedError(f"Meta key '{key}' is already set")
+
+        self.meta[key] = value
+
+    def render(self) -> str:
+
+        meta = "\n".join(f"{key}: {value}" for key, value in self.meta.items())
+
+        cell = textwrap.dedent(
+            """
+        --DONNA-CELL-{id} BEGING--
+        {meta}
+
+        {content}
+        --DONNA-CELL-{id} END--
+        """
+        ).format(content=self.content, meta=meta, id=self.short_id())
+
+        return cell.strip()
 
 
 class AgentCell(BaseEntity):
