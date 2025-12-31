@@ -125,7 +125,7 @@ create_detailed_description = StoryCycleStep(
     requested_kind_spec=AGENT_DESCRIPTION,
     request_template=textwrap.dedent(
         """
-    Here is the beginig of the story specification.
+    Here is the beginning of the story specification.
 
     ```
     {partial_description}
