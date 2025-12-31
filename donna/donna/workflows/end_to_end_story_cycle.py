@@ -92,7 +92,7 @@ def _get_aggregated_text_content(index: RecordsIndex, kind_spec: RecordKindSpec)
 class StoryCycleStep(RequestAction):
     requested_kind_spec: RecordKindSpec | None
 
-    def context_partial_description(self, task: Task) -> str:  # noqa: CCR001
+n    def context_partial_description(self, task: Task) -> str:  # noqa: CCR001
         records = RecordsIndex.load(task.story_id)
 
         # TODO: move to parameters?
@@ -213,7 +213,7 @@ describe_big_picture = StoryCycleStep(
 
     You MUST now produce a big-picture high-level summary of the work to be done:
 
-    1. Explain in a few sentences what workflow you will change in the codebase to achieve the goal.
+    1. Explain in a few sentences what workflow you will change in the codebase to achieve the goals of the story.
     2. Add the description as `{scheme.requested_kind_spec.verbose}` to the story.
     3. Mark this action request as completed.
     """
