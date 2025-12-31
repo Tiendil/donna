@@ -155,7 +155,7 @@ describe_big_picture = StoryCycleStep(
     requested_kind_spec=BIG_PICTURE_DESCRIPTION,
     request_template=textwrap.dedent(
         """
-    Here is the beginig of the story specification.
+    Here is the beginning of the story specification.
 
     ```
     {partial_description}
@@ -183,7 +183,7 @@ list_primary_goals = StoryCycleStep(
     requested_kind_spec=GOALS,
     request_template=textwrap.dedent(
         """
-    Here is the beginig of the story specification.
+    Here is the beginning of the story specification.
 
     ```
     {partial_description}
@@ -211,7 +211,7 @@ list_objectives = StoryCycleStep(
     requested_kind_spec=OBJECTIVES,
     request_template=textwrap.dedent(
         """
-    Here is the beginig of the story specification.
+    Here is the beginning of the story specification.
 
     ```
     {partial_description}
@@ -239,7 +239,7 @@ list_definition_of_done = StoryCycleStep(
     requested_kind_spec=DEFINITION_OF_DONE,
     request_template=textwrap.dedent(
         """
-    Here is the beginig of the story specification.
+    Here is the beginning of the story specification.
 
     ```
     {partial_description}
@@ -266,7 +266,7 @@ list_risks_and_challenges = StoryCycleStep(
     requested_kind_spec=RISKS,
     request_template=textwrap.dedent(
         """
-    Here is the beginig of the story specification.
+    Here is the beginning of the story specification.
 
     ```
     {partial_description}
