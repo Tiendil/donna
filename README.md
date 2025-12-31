@@ -1,4 +1,4 @@
-# Your LLM agent's personal secretary
+# State Machines for your AI Agents
 
 `Donna` is a CLI tool that helps manage the work of AI agents like Codex.
 
