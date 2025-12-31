@@ -104,6 +104,8 @@ Command parameters:
 
 **RUN `./bin/donna.sh` TO ACCESS THE `donna` TOOL**
 
+**STRICTLY FOLLOW DESCRIBED COMMAND SYNTAX**
+
 **PASS TEXT ARGUMENTS TO THE TOOL IN QUOTES WITH RESPECT TO ESCAPING.** The tool MUST receive the exact text you want to pass as an argument.
 
 Use one of the next approaches to correctly escape text arguments:
