@@ -1,11 +1,12 @@
-import uuid
 import base64
-import pydantic
+import json
+import uuid
 from typing import Any
 
+import pydantic
+from pydantic_core import to_jsonable_python
 
 from donna.core.entities import BaseEntity
-
 
 MetaValue = str | int | bool | None
 
@@ -46,12 +47,12 @@ class Cell(BaseEntity):
     @classmethod
     def build_json(cls, kind: str, content: Any, **meta: MetaValue) -> "Cell":
         # TODO: we may want make indent configurable
-        formated_content = pydantic.json.dumps(content, indent=2)
+        formated_content = json.dumps(to_jsonable_python(content), indent=2)
         return cls.build(kind=kind, media_type="application/json", content=formated_content, **meta)
 
     # TODO: refactor to base62 (without `_` and `-` characters)
     def short_id(self) -> str:
-        return base64.urlsafe_b64encode(self.id.bytes).rstrip(b'=').decode()
+        return base64.urlsafe_b64encode(self.id.bytes).rstrip(b"=").decode()
 
     def set_meta(self, key: str, value: str | int | bool | None) -> None:
         if key in self.meta:
@@ -63,10 +64,7 @@ class Cell(BaseEntity):
 
         id = self.short_id()
 
-        lines = [
-            # '##########################',
-            f'--DONNA-CELL {id} BEGIN--'
-        ]
+        lines = [f"--DONNA-CELL {id} BEGIN--"]
 
         for meta_key, meta_value in self.meta.items():
             lines.append(f"{meta_key}: {meta_value}")
@@ -77,8 +75,7 @@ class Cell(BaseEntity):
         if self.content:
             lines.append(self.content)
 
-        lines.append(f'--DONNA-CELL {id} END--')
-        # lines.append('##########################')
+        lines.append(f"--DONNA-CELL {id} END--")
 
         cell = "\n".join(lines).strip()
 
