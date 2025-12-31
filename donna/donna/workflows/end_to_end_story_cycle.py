@@ -24,7 +24,7 @@ BIG_PICTURE_DESCRIPTION = RecordKindSpec(
 )
 GOAL = RecordKindSpec(record_id=RecordIdTemplate("story-goal-{uid}"), kind=RecordKindId("story_goal"))
 
-OBJECTIVES = RecordKindSpec(record_id=RecordIdTemplate("story-objectives"), kind=RecordKindId("pure_text"))
+OBJECTIVE = RecordKindSpec(record_id=RecordIdTemplate("story-objective-{uid}"), kind=RecordKindId("story_objective"))
 DEFINITION_OF_DONE = RecordKindSpec(
     record_id=RecordIdTemplate("story-definition-of-done"),
     kind=RecordKindId("pure_text"),
@@ -105,7 +105,7 @@ class StoryCycleStep(RequestAction):
             ("Detailed work description", False, AGENT_DESCRIPTION),
             ("Big picture", False, BIG_PICTURE_DESCRIPTION),
             ("Primary goals", True, GOAL),
-            ("Objectives", False, OBJECTIVES),
+            ("Objectives", True, OBJECTIVE),
             ("Definition of done", False, DEFINITION_OF_DONE),
             ("Risks and challenges", False, RISKS),
         ]
@@ -220,7 +220,7 @@ describe_big_picture = StoryCycleStep(
     ),
 )
 
-list_goals_loop_event_id = EventId("donna:end_to_end_story_cycle:primary_goals_loop")
+list_goals_next_iteration_event_id = EventId("donna:end_to_end_story_cycle:primary_goals_next_iteration")
 
 list_primary_goals = StoryCycleStep(
     id=OperationId("donna:end_to_end_story_cycle:list_primary_goals"),
@@ -229,11 +229,11 @@ list_primary_goals = StoryCycleStep(
             id=describe_big_picture.result(OperationResultId("completed")).event_id,
             operation_id=None,
         ),
-        EventTemplate(id=list_goals_loop_event_id, operation_id=None),
+        EventTemplate(id=list_goals_next_iteration_event_id, operation_id=None),
     ],
     results=[
         OperationResult.completed(EventId("donna:end_to_end_story_cycle:primary_goals_listed")),
-        OperationResult.next_iteration(list_goals_loop_event_id),
+        OperationResult.next_iteration(list_goals_next_iteration_event_id),
     ],
     requested_kind_spec=GOAL,
     request_template=textwrap.dedent(
@@ -246,7 +246,7 @@ list_primary_goals = StoryCycleStep(
 
     You MUST list the primary goals of this story.
 
-    1. Review the the story specification above.
+    1. Review the story specification above.
     2. If you can identify one more goal:
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
     2.2. mark this action request as `next_iteration`.
@@ -255,6 +255,7 @@ list_primary_goals = StoryCycleStep(
     ),
 )
 
+list_objectives_next_iteration_event_id = EventId("donna:end_to_end_story_cycle:primary_objectives_next_iteration")
 
 list_objectives = StoryCycleStep(
     id=OperationId("donna:end_to_end_story_cycle:list_objectives"),
@@ -262,10 +263,13 @@ list_objectives = StoryCycleStep(
         EventTemplate(
             id=list_primary_goals.result(OperationResultId("completed")).event_id,
             operation_id=None,
-        )
+        ),
+        EventTemplate(id=list_objectives_next_iteration_event_id, operation_id=None),
     ],
-    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:objectives_listed"))],
-    requested_kind_spec=OBJECTIVES,
+    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:objectives_listed")),
+             OperationResult.next_iteration(list_objectives_next_iteration_event_id)
+             ],
+    requested_kind_spec=OBJECTIVE,
     request_template=textwrap.dedent(
         """
     Here is the beginning of the story specification.
@@ -276,9 +280,13 @@ list_objectives = StoryCycleStep(
 
     You MUST list objectives that need to be achieved to complete each goal.
 
-    1. List objectives that need to be achieved to complete each goal.
-    2. Add the list as `{scheme.requested_kind_spec.verbose}` to the story.
-    3. Mark this action request as completed.
+    1. Review the story specification above.
+    2. If you can identify one more objective:
+    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
+    2.2. mark this action request as `next_iteration`.
+    3. If you can not identify more goals, mark this action request as `completed`.
+
+    EACH GOAL MUST HAVE AT LEAST ONE OBJECTIVE.
     """
     ),
 )
