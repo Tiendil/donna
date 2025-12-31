@@ -1,6 +1,6 @@
 import textwrap
 
-from donna.domain.types import EventId, OperationId, OperationResultId, RecordId, RecordKindId, RecordIdTemplate
+from donna.domain.types import EventId, OperationId, OperationResultId, RecordId, RecordIdTemplate, RecordKindId
 from donna.machine.events import EventTemplate
 from donna.machine.operations import OperationExport as Export
 from donna.machine.operations import OperationResult
@@ -10,47 +10,56 @@ from donna.primitives.operations.finish import Finish as FinishTask
 from donna.primitives.operations.request_action import RequestAction
 from donna.primitives.records.pure_text import PureText
 
-
 DEVELOPER_DESCRIPTION = RecordKindSpec(
-    record_id=RecordId("story-description-from-developer"),
+    record_id=RecordIdTemplate("story-description-from-developer"),
     kind=RecordKindId("pure_text"),
 )
 AGENT_DESCRIPTION = RecordKindSpec(
-    record_id=RecordId("story-description-from-agent"),
+    record_id=RecordIdTemplate("story-description-from-agent"),
     kind=RecordKindId("pure_text"),
 )
 BIG_PICTURE_DESCRIPTION = RecordKindSpec(
-    record_id=RecordId("story-big-picture"),
+    record_id=RecordIdTemplate("story-big-picture"),
     kind=RecordKindId("pure_text"),
 )
 GOAL = RecordKindSpec(record_id=RecordIdTemplate("story-goal-{uid}"), kind=RecordKindId("story_goal"))
 
-OBJECTIVES = RecordKindSpec(record_id=RecordId("story-objectives"), kind=RecordKindId("pure_text"))
+OBJECTIVES = RecordKindSpec(record_id=RecordIdTemplate("story-objectives"), kind=RecordKindId("pure_text"))
 DEFINITION_OF_DONE = RecordKindSpec(
-    record_id=RecordId("story-definition-of-done"),
+    record_id=RecordIdTemplate("story-definition-of-done"),
     kind=RecordKindId("pure_text"),
 )
-RISKS = RecordKindSpec(record_id=RecordId("story-risks"), kind=RecordKindId("pure_text"))
-PLAN = RecordKindSpec(record_id=RecordId("story-development-plan"), kind=RecordKindId("pure_text"))
+RISKS = RecordKindSpec(record_id=RecordIdTemplate("story-risks"), kind=RecordKindId("pure_text"))
+PLAN = RecordKindSpec(record_id=RecordIdTemplate("story-development-plan"), kind=RecordKindId("pure_text"))
 
 
-def _get_text_content(records: RecordsIndex, kind_spec: RecordKindSpec) -> str | None:
-    record = records.get_record(kind_spec.record_id)
+def _record_id_from_spec(kind_spec: RecordKindSpec) -> RecordId:
+    record_id = RecordId(kind_spec.record_id)
+
+    if "{uid}" in record_id:
+        raise NotImplementedError(f"Record id template '{record_id}' must be resolved before use")
+
+    return record_id
+
+
+def _get_text_content(records: RecordsIndex, record_id: RecordId, kind: RecordKindId) -> str | None:
+    record = records.get_record(record_id)
 
     if record is None:
         return None
 
-    record_kind_items = records.get_record_kind_items(kind_spec.record_id, [kind_spec.kind])
+    record_kind_items = records.get_record_kind_items(record_id, [kind])
 
     if not record_kind_items:
         return None
 
     record_kind_item = record_kind_items[0]
 
-    if record_kind_item is None or not isinstance(record_kind_item, PureText):
-        raise NotImplementedError(
-            f"Record kind item for record '{kind_spec.record_id}' and kind '{kind_spec.kind}' is not PureText"
-        )
+    if record_kind_item is None:
+        return None
+
+    if not isinstance(record_kind_item, PureText):
+        raise NotImplementedError(f"Record kind item for record '{record_id}' and kind '{kind}' is not PureText")
 
     return record_kind_item.content
 
@@ -67,12 +76,14 @@ def _get_aggregated_text_content(index: RecordsIndex, kind_spec: RecordKindSpec)
         kind_items = index.get_record_kind_items(record.id, [kind_spec.kind])
 
         for kind in kind_items:
+            if kind is None:
+                continue
+
             if not isinstance(kind, PureText):
                 raise NotImplementedError(
                     f"Record kind item for record '{kind_spec.record_id}' and kind '{kind_spec.kind}' is not PureText"
                 )
 
-        for kind in kind_items:
             lines.append(f"[{record.id}] {kind.content}")
 
     return "\n".join(lines)
@@ -102,14 +113,20 @@ class StoryCycleStep(RequestAction):
         specification = []
 
         for title, aggregate, kind_spec in parts:
-            if not records.has_record_kind(kind_spec.record_id, kind_spec.kind):
-                break
+            if aggregate:
+                if not records.get_records_for_kind(kind_spec.kind):
+                    break
+            else:
+                record_id = _record_id_from_spec(kind_spec)
+
+                if not records.has_record_kind(record_id, kind_spec.kind):
+                    break
 
             specification.append(f"# {title}")
             specification.append("")
 
             if not aggregate:
-                content = _get_text_content(records, kind_spec)
+                content = _get_text_content(records, record_id, kind_spec.kind)
             else:
                 content = _get_aggregated_text_content(records, kind_spec)
 
@@ -124,10 +141,12 @@ class StoryCycleStep(RequestAction):
     def context_plan(self, task: Task) -> str | None:
         records = RecordsIndex.load(task.story_id)
 
-        if not records.has_record(PLAN.record_id):
+        plan_record_id = _record_id_from_spec(PLAN)
+
+        if not records.has_record(plan_record_id):
             return None
 
-        return _get_text_content(records, PLAN)
+        return _get_text_content(records, plan_record_id, PLAN.kind)
 
 
 start = StoryCycleStep(
@@ -224,7 +243,8 @@ list_primary_goals = StoryCycleStep(
 
     1. Review the the story specification above.
     2. Review already listed goals.
-    3. If you can identify one more goal, add it as a `{scheme.requested_kind_spec.verbose}` to the story. Go to the item 2.
+    3. If you can identify one more goal, add it as a
+       `{scheme.requested_kind_spec.verbose}` to the story. Go to the item 2.
     4. If you can not identify more goals, mark this action request as completed.
     """
     ),

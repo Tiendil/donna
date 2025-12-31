@@ -3,7 +3,7 @@ from typing import Any
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.types import RecordId, RecordKindId, StoryId, RecordIdTemplate
+from donna.domain.types import RecordId, RecordIdTemplate, RecordKindId, StoryId
 from donna.machine.cells import Cell
 from donna.world.layout import layout
 

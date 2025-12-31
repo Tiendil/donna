@@ -11,5 +11,7 @@ def output_cells(cells: Iterable[Cell]) -> None:
 
 
 def template_is_not_allowed(name: str, text: str) -> None:
-    if '{' in text:
-        raise NotImplementedError(f"This command does not support templates for '{name}', you passed the value '{text}'")
+    if "{" in text:
+        raise NotImplementedError(
+            f"This command does not support templates for '{name}', you passed the value '{text}'"
+        )
