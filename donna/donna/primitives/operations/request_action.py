@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, Iterator
 from donna.machine.action_requests import ActionRequest
 from donna.machine.operations import Operation
 from donna.machine.tasks import Task, WorkUnit
+from donna.machine.records import RecordKindSpec
+from donna.machine.cells import Cell
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -30,6 +32,15 @@ class RequestAction(Operation):
 
         return context
 
+    def reminders(self) -> Iterator[Cell]:
+        for record_kind_spec in dir(self):
+            value = getattr(self, record_kind_spec)
+
+            if not isinstance(value, RecordKindSpec):
+                continue
+
+            yield from value.cells()
+
     def execute(self, task: Task, unit: WorkUnit) -> Iterator["Change"]:
         from donna.machine.changes import ChangeAddActionRequest
 
@@ -37,5 +48,5 @@ class RequestAction(Operation):
 
         request_text = self.request_template.format(**context)
 
-        request = ActionRequest.build(task.story_id, request_text, self.id)
+        request = ActionRequest.build(task.story_id, request_text, self.id, reminders=list(self.reminders()))
         yield ChangeAddActionRequest(request)

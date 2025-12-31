@@ -4,30 +4,29 @@ from donna.domain.types import EventId, OperationId, OperationResultId, RecordId
 from donna.machine.events import EventTemplate
 from donna.machine.operations import OperationExport as Export
 from donna.machine.operations import OperationResult
-from donna.machine.records import RecordsIndex
+from donna.machine.records import RecordsIndex, RecordKindSpec
 from donna.machine.tasks import Task
 from donna.primitives.operations.finish import Finish as FinishTask
 from donna.primitives.operations.request_action import RequestAction
 from donna.primitives.records.pure_text import PureText
 
-DEVELOPER_DESCRIPTION_ID = RecordId("story-description-from-developer.md")
-AGENT_DESCRIPTION_ID = RecordId("story-description-from-agent.md")
-BIG_PICTURE_DESCRIPTION_ID = RecordId("story-big-picture.md")
-GOALS_ID = RecordId("story-goals.md")
-OBJECTIVES_ID = RecordId("story-objectives.md")
-DEFINITION_OF_DONE_ID = RecordId("story-definition-of-done.md")
-RISKS_ID = RecordId("story-risks.md")
-PLAN_ID = RecordId("story-development-plan.md")
-PURE_TEXT_KIND_ID = RecordKindId("pure_text")
+DEVELOPER_DESCRIPTION = RecordKindSpec(record_id="story-description-from-developer", kind=RecordKindId("pure_text"))
+AGENT_DESCRIPTION = RecordKindSpec(record_id="story-description-from-agent", kind=RecordKindId("pure_text"))
+BIG_PICTURE_DESCRIPTION = RecordKindSpec(record_id="story-big-picture", kind=RecordKindId("pure_text"))
+GOALS = RecordKindSpec(record_id="story-goals", kind=RecordKindId("pure_text"))
+OBJECTIVES = RecordKindSpec(record_id="story-objectives", kind=RecordKindId("pure_text"))
+DEFINITION_OF_DONE = RecordKindSpec(record_id="story-definition-of-done", kind=RecordKindId("pure_text"))
+RISKS = RecordKindSpec(record_id="story-risks", kind=RecordKindId("pure_text"))
+PLAN = RecordKindSpec(record_id="story-development-plan", kind=RecordKindId("pure_text"))
 
 
-def _get_text_content(records: RecordsIndex, record_id: RecordId) -> str | None:
-    record = records.get_record(record_id)
+def _get_text_content(records: RecordsIndex, kind_spec: RecordKindSpec) -> str | None:
+    record = records.get_record(kind_spec.record_id)
 
     if record is None:
         return None
 
-    record_kind_items = records.get_record_kind_items(record_id, [PURE_TEXT_KIND_ID])
+    record_kind_items = records.get_record_kind_items(kind_spec.record_id, [kind_spec.kind])
 
     if not record_kind_items:
         return None
@@ -41,7 +40,7 @@ def _get_text_content(records: RecordsIndex, record_id: RecordId) -> str | None:
 
 
 class StoryCycleStep(RequestAction):
-    requested_record_id: RecordId
+    requested_kind_spec: RecordKindSpec
 
     def context_partial_description(self, task: Task) -> str:
         records = RecordsIndex.load(task.story_id)
@@ -52,24 +51,24 @@ class StoryCycleStep(RequestAction):
         #       because it will provide too much information for the operations
         #       that should not have it
         parts = [
-            ("Developer request", DEVELOPER_DESCRIPTION_ID),
-            ("Detailed work description", AGENT_DESCRIPTION_ID),
-            ("Big picture", BIG_PICTURE_DESCRIPTION_ID),
-            ("Primary goals", GOALS_ID),
-            ("Objectives", OBJECTIVES_ID),
-            ("Definition of done", DEFINITION_OF_DONE_ID),
-            ("Risks and challenges", RISKS_ID),
+            ("Developer request", DEVELOPER_DESCRIPTION),
+            ("Detailed work description", AGENT_DESCRIPTION),
+            ("Big picture", BIG_PICTURE_DESCRIPTION),
+            ("Primary goals", GOALS),
+            ("Objectives", OBJECTIVES),
+            ("Definition of done", DEFINITION_OF_DONE),
+            ("Risks and challenges", RISKS),
         ]
 
         specification = []
 
-        for title, record_id in parts:
-            if not records.has_record(record_id):
+        for title, kind_spec in parts:
+            if not records.has_record_kind(kind_spec.record_id, kind_spec.kind):
                 break
 
             specification.append(f"# {title}")
             specification.append("")
-            content = _get_text_content(records, record_id)
+            content = _get_text_content(records, kind_spec)
 
             if content is None:
                 break
@@ -82,10 +81,10 @@ class StoryCycleStep(RequestAction):
     def context_plan(self, task: Task) -> str | None:
         records = RecordsIndex.load(task.story_id)
 
-        if not records.has_record(PLAN_ID):
+        if not records.has_record(PLAN):
             return None
 
-        return _get_text_content(records, PLAN_ID)
+        return _get_text_content(records, PLAN)
 
 
 start = StoryCycleStep(
@@ -96,11 +95,11 @@ start = StoryCycleStep(
     ),
     trigger_on=[],
     results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:developer_description_provided"))],
-    requested_record_id=DEVELOPER_DESCRIPTION_ID,
+    requested_kind_spec=DEVELOPER_DESCRIPTION,
     request_template=textwrap.dedent(
         """
         1. If the developer hasn't provided you a description of the work for this story, ask them to provide it.
-        2. Add the description as an record `{scheme.requested_record_id}` to the story.
+        2. Add the description as `{scheme.requested_kind_spec.verbose}` to the story.
         3. Mark this action request as completed.
         """
     ),
@@ -111,7 +110,7 @@ create_detailed_description = StoryCycleStep(
     id=OperationId("donna:end_to_end_story_cycle:create_detailed_description"),
     trigger_on=[EventTemplate(id=start.result(OperationResultId("completed")).event_id, operation_id=None)],
     results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:agent_description_created"))],
-    requested_record_id=AGENT_DESCRIPTION_ID,
+    requested_kind_spec=AGENT_DESCRIPTION,
     request_template=textwrap.dedent(
         """
     Here is the beginig of the story specification.
@@ -125,7 +124,7 @@ create_detailed_description = StoryCycleStep(
 
     1. Explain in a few sentences what someone gains after these changes and how they can see it working. State the
        user-visible workflow you will enable.
-    2. Add the description as an record `{scheme.requested_record_id}` to the story.
+    2. Add the description as `{scheme.requested_kind_spec.verbose}` to the story.
     3. Mark this action request as completed.
     """
     ),
@@ -141,7 +140,7 @@ describe_big_picture = StoryCycleStep(
         )
     ],
     results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:big_picture_described"))],
-    requested_record_id=BIG_PICTURE_DESCRIPTION_ID,
+    requested_kind_spec=BIG_PICTURE_DESCRIPTION,
     request_template=textwrap.dedent(
         """
     Here is the beginig of the story specification.
@@ -153,7 +152,7 @@ describe_big_picture = StoryCycleStep(
     You MUST now produce a big-picture high-level summary of the work to be done:
 
     1. Explain in a few sentences what workflow you will change in the codebase to achieve the goal.
-    2. Add the description as an record `{scheme.requested_record_id}` to the story.
+    2. Add the description as `{scheme.requested_kind_spec.verbose}` to the story.
     3. Mark this action request as completed.
     """
     ),
@@ -169,7 +168,7 @@ list_primary_goals = StoryCycleStep(
         )
     ],
     results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:primary_goals_listed"))],
-    requested_record_id=GOALS_ID,
+    requested_kind_spec=GOALS,
     request_template=textwrap.dedent(
         """
     Here is the beginig of the story specification.
@@ -181,7 +180,7 @@ list_primary_goals = StoryCycleStep(
     You MUST list the primary goals of this task.
 
     1. List goals that the task is trying to achieve.
-    2. Add the list as an record `{scheme.requested_record_id}` to the story.
+    2. Add the list as `{scheme.requested_kind_spec.verbose}` to the story.
     3. Mark this action request as completed.
     """
     ),
@@ -197,7 +196,7 @@ list_objectives = StoryCycleStep(
         )
     ],
     results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:objectives_listed"))],
-    requested_record_id=OBJECTIVES_ID,
+    requested_kind_spec=OBJECTIVES,
     request_template=textwrap.dedent(
         """
     Here is the beginig of the story specification.
@@ -209,7 +208,7 @@ list_objectives = StoryCycleStep(
     You MUST list objectives that need to be achieved to complete each goal.
 
     1. List objectives that need to be achieved to complete each goal.
-    2. Add the list as an record `{scheme.requested_record_id}` to the story.
+    2. Add the list as `{scheme.requested_kind_spec.verbose}` to the story.
     3. Mark this action request as completed.
     """
     ),
@@ -225,7 +224,7 @@ list_definition_of_done = StoryCycleStep(
         )
     ],
     results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:definition_of_done_listed"))],
-    requested_record_id=DEFINITION_OF_DONE_ID,
+    requested_kind_spec=DEFINITION_OF_DONE,
     request_template=textwrap.dedent(
         """
     Here is the beginig of the story specification.
@@ -237,7 +236,7 @@ list_definition_of_done = StoryCycleStep(
     You MUST list the criteria that must be met for this task to be considered done.
 
     1. List the criteria that must be met for this task to be considered done.
-    2. Add the list as an record `{scheme.requested_record_id}` to the story.
+    2. Add the list as `{scheme.requested_kind_spec.verbose}` to the story.
     3. Mark this action request as completed.
     """
     ),
@@ -252,7 +251,7 @@ list_risks_and_challenges = StoryCycleStep(
         )
     ],
     results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:risks_and_challenges_listed"))],
-    requested_record_id=RISKS_ID,
+    requested_kind_spec=RISKS,
     request_template=textwrap.dedent(
         """
     Here is the beginig of the story specification.
@@ -264,7 +263,7 @@ list_risks_and_challenges = StoryCycleStep(
     You MUST list the potential risks and challenges that may arise during the implementation of this task.
 
     1. List potential risks and challenges that may arise during the implementation of this task.
-    2. Add the list as an record `{scheme.requested_record_id}` to the story.
+    2. Add the list as `{scheme.requested_kind_spec.verbose}` to the story.
     3. Mark this action request as completed.
     """
     ),
@@ -279,7 +278,7 @@ plan_story_execution = StoryCycleStep(
         )
     ],
     results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:story_execution_planned"))],
-    requested_record_id=PLAN_ID,
+    requested_kind_spec=PLAN,
     request_template=textwrap.dedent(
         """
     Here is the  story specification.
@@ -291,7 +290,7 @@ plan_story_execution = StoryCycleStep(
     You MUST create a detailed work plan for this task.
 
     1. Break down the work into manageable steps and outline the approach you will take to implement the task.
-    2. Add the plan as an record `{scheme.requested_record_id}` to the story.
+    2. Add the plan as `{scheme.requested_kind_spec.verbose}` to the story.
     3. Mark this action request as completed.
     """
     ),
@@ -306,7 +305,7 @@ execute_story_plan = StoryCycleStep(
         )
     ],
     results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:story_plan_executed"))],
-    requested_record_id=RecordId("no-record-here"),
+    requested_kind_spec=RecordId("no-record-here"),
     request_template=textwrap.dedent(
         """
     Here is the work plan for the story.
@@ -333,7 +332,7 @@ groom_the_result = StoryCycleStep(
         )
     ],
     results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:result_groomed"))],
-    requested_record_id=RecordId("no-record-here"),
+    requested_kind_spec=RecordId("no-record-here"),
     request_template=textwrap.dedent(
         """
     You have completed the work according to the plan.

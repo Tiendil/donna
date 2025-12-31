@@ -28,6 +28,31 @@ class RecordIndexItem(BaseEntity):
     model_config = pydantic.ConfigDict(frozen=False)
 
 
+class RecordKindSpec(BaseEntity):
+    record_id: RecordId
+    kind: RecordKindId
+
+    @property
+    def verbose(self) -> str:
+        return f"<record: {self.record_id}, kind:{self.kind}>"
+
+    def cells(self) -> list[Cell]:
+        from donna.world.primitives_register import register
+
+        kind = register().records.get(self.kind)
+
+        assert kind is not None, f"Record kind '{self.kind}' is not registered"
+
+        return [
+            Cell.build_json(
+                kind="record_kind_json_schema",
+                content=kind.model_json_schema(),
+                record_id=self.record_id,
+                record_kind=self.kind,
+            )
+        ]
+
+
 class RecordKindItem(BaseEntity):
     kind: RecordKindId
 
@@ -54,6 +79,14 @@ class RecordsIndex(BaseEntity):
 
     def has_record(self, record_id: RecordId) -> bool:
         return any(record.id == record_id for record in self.records)
+
+    def has_record_kind(self, record_id: RecordId, kind: RecordKindId) -> bool:
+        if not self.has_record(record_id):
+            return False
+
+        item = self.get_record(record_id)
+
+        return kind in item.kinds
 
     def get_record(self, record_id: RecordId) -> RecordIndexItem | None:
         for record in self.records:
