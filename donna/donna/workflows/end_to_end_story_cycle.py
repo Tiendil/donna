@@ -220,6 +220,7 @@ describe_big_picture = StoryCycleStep(
     ),
 )
 
+list_goals_loop_event_id = EventId("donna:end_to_end_story_cycle:primary_goals_loop")
 
 list_primary_goals = StoryCycleStep(
     id=OperationId("donna:end_to_end_story_cycle:list_primary_goals"),
@@ -227,9 +228,11 @@ list_primary_goals = StoryCycleStep(
         EventTemplate(
             id=describe_big_picture.result(OperationResultId("completed")).event_id,
             operation_id=None,
-        )
+        ),
+        EventTemplate(id=list_goals_loop_event_id, operation_id=None),
     ],
-    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:primary_goals_listed"))],
+    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:primary_goals_listed")),
+             OperationResult.next_iteration(list_goals_loop_event_id)],
     requested_kind_spec=GOAL,
     request_template=textwrap.dedent(
         """
@@ -242,10 +245,10 @@ list_primary_goals = StoryCycleStep(
     You MUST list the primary goals of this story.
 
     1. Review the the story specification above.
-    2. Review already listed goals.
-    3. If you can identify one more goal, add it as a
-       `{scheme.requested_kind_spec.verbose}` to the story. Go to the item 2.
-    4. If you can not identify more goals, mark this action request as completed.
+    2. If you can identify one more goal:
+    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
+    2.2. mark this action request as `next_iteration`.
+    4. If you can not identify more goals, mark this action request as `completed`.
     """
     ),
 )

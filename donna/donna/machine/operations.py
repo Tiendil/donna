@@ -24,7 +24,15 @@ class OperationResult(BaseEntity):
     def completed(cls, event_id: EventId) -> "OperationResult":
         return cls(
             id=OperationResultId("completed"),
-            description="The action was completed successfully.",
+            description="The operation was completed successfully.",
+            event_id=event_id,
+        )
+
+    @classmethod
+    def next_iteration(cls, event_id: EventId) -> "OperationResult":
+        return cls(
+            id=OperationResultId("next_iteration"),
+            description="The operation needs to be repeated.",
             event_id=event_id,
         )
 
