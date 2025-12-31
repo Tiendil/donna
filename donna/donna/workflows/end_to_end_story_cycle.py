@@ -248,7 +248,7 @@ list_primary_goals = StoryCycleStep(
     2. If you can identify one more goal:
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
     2.2. mark this action request as `next_iteration`.
-    4. If you can not identify more goals, mark this action request as `completed`.
+    3. If you can not identify more goals, mark this action request as `completed`.
     """
     ),
 )
