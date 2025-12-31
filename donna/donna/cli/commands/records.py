@@ -72,7 +72,7 @@ def kind_set(
 
 
 @records_cli.command()
-def kind_remove(
+def kind_delete(
     story_id: str,
     record_id: str,
     record_kinds: List[str],
