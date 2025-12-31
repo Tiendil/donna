@@ -189,9 +189,9 @@ list_primary_goals = StoryCycleStep(
     {partial_description}
     ```
 
-    You MUST list the primary goals of this task.
+    You MUST list the primary goals of this story.
 
-    1. List goals that the task is trying to achieve.
+    1. List goals that the story is trying to achieve.
     2. Add the list as `{scheme.requested_kind_spec.verbose}` to the story.
     3. Mark this action request as completed.
     """
@@ -245,9 +245,9 @@ list_definition_of_done = StoryCycleStep(
     {partial_description}
     ```
 
-    You MUST list the criteria that must be met for this task to be considered done.
+    You MUST list the criteria that must be met for this story to be considered done.
 
-    1. List the criteria that must be met for this task to be considered done.
+    1. List the criteria that must be met for this story to be considered done.
     2. Add the list as `{scheme.requested_kind_spec.verbose}` to the story.
     3. Mark this action request as completed.
     """
@@ -272,9 +272,9 @@ list_risks_and_challenges = StoryCycleStep(
     {partial_description}
     ```
 
-    You MUST list the potential risks and challenges that may arise during the implementation of this task.
+    You MUST list the potential risks and challenges that may arise during the implementation of this story.
 
-    1. List potential risks and challenges that may arise during the implementation of this task.
+    1. List potential risks and challenges that may arise during the implementation of this story.
     2. Add the list as `{scheme.requested_kind_spec.verbose}` to the story.
     3. Mark this action request as completed.
     """
@@ -299,9 +299,9 @@ plan_story_execution = StoryCycleStep(
     {partial_description}
     ```
 
-    You MUST create a detailed work plan for this task.
+    You MUST create a detailed work plan for this story.
 
-    1. Break down the work into manageable steps and outline the approach you will take to implement the task.
+    1. Break down the work into manageable steps and outline the approach you will take to implement the story.
     2. Add the plan as `{scheme.requested_kind_spec.verbose}` to the story.
     3. Mark this action request as completed.
     """
@@ -328,7 +328,7 @@ execute_story_plan = StoryCycleStep(
 
     You MUST thoroughly execute the plan step by step to finish the work.
 
-    1. Follow the plan carefully and implement the necessary changes to complete the task.
+    1. Follow the plan carefully and implement the necessary changes to complete the story.
     2. Mark this action request as completed when the work is done.
     """
     ),
