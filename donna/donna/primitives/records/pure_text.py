@@ -5,14 +5,14 @@ from donna.primitives.records import base
 
 
 class PureText(RecordKindItem):
-    kind: RecordKindId = RecordKindId("pure_text")  # TODO: kind must be defined in workflows?
+    kind: RecordKindId
     media_type: str
     content: str
 
     def cells(self, record: RecordIndexItem) -> list[Cell]:
         return [
             Cell.build(
-                kind="pure_text_record",
+                kind="text_record",
                 media_type=self.media_type,
                 content=self.content,
                 record_id=record.id,
