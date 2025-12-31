@@ -1,4 +1,4 @@
-from donna.domain.types import RecordId, RecordKindId, StoryId
+from donna.domain.types import RecordKindId
 from donna.machine.cells import Cell
 from donna.machine.records import RecordIndexItem, RecordKindItem
 from donna.primitives.records import base

@@ -1,13 +1,10 @@
 import uuid
 import base64
-import textwrap
 import pydantic
 from typing import Any
 
-import xml.etree.ElementTree as ET
 
 from donna.core.entities import BaseEntity
-from donna.domain.types import ActionRequestId, StoryId, TaskId, WorkUnitId
 
 
 MetaValue = str | int | bool | None
@@ -64,7 +61,7 @@ class Cell(BaseEntity):
 
     def render(self) -> str:
 
-        id = self.short_id()
+        id = ""  # self.short_id()
 
         lines = [
             '##########################',
