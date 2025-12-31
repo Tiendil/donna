@@ -1,5 +1,6 @@
-import pydantic
 from typing import Any
+
+import pydantic
 
 from donna.core.entities import BaseEntity
 from donna.domain.types import RecordId, RecordKindId, StoryId
@@ -93,6 +94,8 @@ class RecordsIndex(BaseEntity):
             return False
 
         item = self.get_record(record_id)
+
+        assert item is not None
 
         return kind in item.kinds
 

@@ -18,7 +18,9 @@ class ActionRequest(BaseEntity):
     reminders: list[Cell]
 
     @classmethod
-    def build(cls, story_id: StoryId, request: str, operation_id: OperationId, reminders: list[Cell]) -> "ActionRequest":
+    def build(
+        cls, story_id: StoryId, request: str, operation_id: OperationId, reminders: list[Cell]
+    ) -> "ActionRequest":
         return cls(
             id=new_action_request_id(),
             story_id=story_id,
@@ -55,11 +57,13 @@ class ActionRequest(BaseEntity):
 
         cells.extend(self.reminders)
 
-        cells.append(Cell.build_markdown(
-            kind="action_request",
-            content=message,
-            story_id=self.story_id,
-            action_request_id=str(self.id),
-        ))
+        cells.append(
+            Cell.build_markdown(
+                kind="action_request",
+                content=message,
+                story_id=self.story_id,
+                action_request_id=str(self.id),
+            )
+        )
 
         return cells

@@ -4,20 +4,32 @@ from donna.domain.types import EventId, OperationId, OperationResultId, RecordId
 from donna.machine.events import EventTemplate
 from donna.machine.operations import OperationExport as Export
 from donna.machine.operations import OperationResult
-from donna.machine.records import RecordsIndex, RecordKindSpec
+from donna.machine.records import RecordKindSpec, RecordsIndex
 from donna.machine.tasks import Task
 from donna.primitives.operations.finish import Finish as FinishTask
 from donna.primitives.operations.request_action import RequestAction
 from donna.primitives.records.pure_text import PureText
 
-DEVELOPER_DESCRIPTION = RecordKindSpec(record_id="story-description-from-developer", kind=RecordKindId("pure_text"))
-AGENT_DESCRIPTION = RecordKindSpec(record_id="story-description-from-agent", kind=RecordKindId("pure_text"))
-BIG_PICTURE_DESCRIPTION = RecordKindSpec(record_id="story-big-picture", kind=RecordKindId("pure_text"))
-GOALS = RecordKindSpec(record_id="story-goals", kind=RecordKindId("pure_text"))
-OBJECTIVES = RecordKindSpec(record_id="story-objectives", kind=RecordKindId("pure_text"))
-DEFINITION_OF_DONE = RecordKindSpec(record_id="story-definition-of-done", kind=RecordKindId("pure_text"))
-RISKS = RecordKindSpec(record_id="story-risks", kind=RecordKindId("pure_text"))
-PLAN = RecordKindSpec(record_id="story-development-plan", kind=RecordKindId("pure_text"))
+DEVELOPER_DESCRIPTION = RecordKindSpec(
+    record_id=RecordId("story-description-from-developer"),
+    kind=RecordKindId("pure_text"),
+)
+AGENT_DESCRIPTION = RecordKindSpec(
+    record_id=RecordId("story-description-from-agent"),
+    kind=RecordKindId("pure_text"),
+)
+BIG_PICTURE_DESCRIPTION = RecordKindSpec(
+    record_id=RecordId("story-big-picture"),
+    kind=RecordKindId("pure_text"),
+)
+GOALS = RecordKindSpec(record_id=RecordId("story-goals"), kind=RecordKindId("pure_text"))
+OBJECTIVES = RecordKindSpec(record_id=RecordId("story-objectives"), kind=RecordKindId("pure_text"))
+DEFINITION_OF_DONE = RecordKindSpec(
+    record_id=RecordId("story-definition-of-done"),
+    kind=RecordKindId("pure_text"),
+)
+RISKS = RecordKindSpec(record_id=RecordId("story-risks"), kind=RecordKindId("pure_text"))
+PLAN = RecordKindSpec(record_id=RecordId("story-development-plan"), kind=RecordKindId("pure_text"))
 
 
 def _get_text_content(records: RecordsIndex, kind_spec: RecordKindSpec) -> str | None:
@@ -81,7 +93,7 @@ class StoryCycleStep(RequestAction):
     def context_plan(self, task: Task) -> str | None:
         records = RecordsIndex.load(task.story_id)
 
-        if not records.has_record(PLAN):
+        if not records.has_record(PLAN.record_id):
             return None
 
         return _get_text_content(records, PLAN)
