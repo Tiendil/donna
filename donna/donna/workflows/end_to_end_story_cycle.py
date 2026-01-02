@@ -18,10 +18,7 @@ AGENT_DESCRIPTION = RecordKindSpec(
     record_id=RecordIdTemplate("story-description-from-agent"),
     kind=RecordKindId("pure_text"),
 )
-BIG_PICTURE_DESCRIPTION = RecordKindSpec(
-    record_id=RecordIdTemplate("story-big-picture"),
-    kind=RecordKindId("pure_text"),
-)
+
 GOAL = RecordKindSpec(record_id=RecordIdTemplate("story-goal-{uid}"), kind=RecordKindId("story_goal"))
 
 OBJECTIVE = RecordKindSpec(record_id=RecordIdTemplate("story-objective-{uid}"), kind=RecordKindId("story_objective"))
@@ -103,7 +100,6 @@ class StoryCycleStep(RequestAction):
         parts = [
             ("Developer request", False, DEVELOPER_DESCRIPTION),
             ("Detailed work description", False, AGENT_DESCRIPTION),
-            ("Big picture", False, BIG_PICTURE_DESCRIPTION),
             ("Primary goals", True, GOAL),
             ("Objectives", True, OBJECTIVE),
             ("Definition of done", False, DEFINITION_OF_DONE),
@@ -195,41 +191,13 @@ create_detailed_description = StoryCycleStep(
     ),
 )
 
-
-describe_big_picture = StoryCycleStep(
-    id=OperationId("donna:end_to_end_story_cycle:describe_big_picture"),
-    trigger_on=[
-        EventTemplate(
-            id=create_detailed_description.result(OperationResultId("completed")).event_id,
-            operation_id=None,
-        )
-    ],
-    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:big_picture_described"))],
-    requested_kind_spec=BIG_PICTURE_DESCRIPTION,
-    request_template=textwrap.dedent(
-        """
-    Here is the beginning of the story specification.
-
-    ```
-    {partial_description}
-    ```
-
-    You MUST now produce a big-picture high-level summary of the work to be done:
-
-    1. Explain in a few sentences what workflow you will change in the codebase to achieve the goals of the story.
-    2. Add the description as `{scheme.requested_kind_spec.verbose}` to the story.
-    3. Mark this action request as completed.
-    """
-    ),
-)
-
 list_goals_next_iteration_event_id = EventId("donna:end_to_end_story_cycle:primary_goals_next_iteration")
 
 list_primary_goals = StoryCycleStep(
     id=OperationId("donna:end_to_end_story_cycle:list_primary_goals"),
     trigger_on=[
         EventTemplate(
-            id=describe_big_picture.result(OperationResultId("completed")).event_id,
+            id=create_detailed_description.result(OperationResultId("completed")).event_id,
             operation_id=None,
         ),
         EventTemplate(id=list_goals_next_iteration_event_id, operation_id=None),
@@ -298,15 +266,17 @@ list_objectives = StoryCycleStep(
     2. If you can identify one more objective:
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
     2.2. mark this action request as `next_iteration`.
-    3. If you can not identify more goals, mark this action request as `completed`.
+    3. If you can not identify more objectives, mark this action request as `completed`.
 
     Follow these requirements strictly to the letter:
 
-    - An objective describes both:
-      a) a single clear condition that, when met, moves you closer to achieving a specific goal;
-      b) a top-level unit of work that can be planned, executed, and verified independently.
-    - Each goal must have a set of objectives that, when all achieved, ensure the goal is met.
-    - Each goal must have at least one objective.
+    - An objective MUST describe an achieved state or capability not the act of describing it.
+    - An objective MUST be phrased as "X exists / is implemented / is defined / is executable / is enforced / …"
+    - An objective MUST be atomic: it MUST result in exactly one concrete deliverable: one artifact, one executable, one schema, one test suite, etc.
+    - An objective is a single clear, externally observable condition of the system (not a description, explanation, or analysis) that, when met, moves you closer to achieving a specific goal.
+    - An objective is a top-level unit of work whose completion results in a concrete artifact, behavior, or state change that can be independently verified without reading prose.
+    - Each goal MUST have a set of objectives that, when all achieved, ensure the goal is met.
+    - Each goal MUST have 2–6 objectives, unless the goal is demonstrably trivial (≤1 artifact, no dependencies).
     """
     ),
 )
