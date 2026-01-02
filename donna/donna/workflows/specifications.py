@@ -36,8 +36,9 @@ Sections `Goals`, `Objectives` are multi-record sections — a single record per
 
 ## Detailed Work Description
 
-- This record MUST contain a clear professional high-level description of the work to be done based on the developer's request.
-- The section MUST be limited to a single paragraph with a few sentences.
+- The record MUST contain a clear professional high-level description of the work to be done based on the developer's request.
+- The record MUST be limited to a single paragraph with a few sentences.
+- The record MUST explain what someone gains after these changes and how they can see it working. State the user-visible behavior the task will enable.
 
 ## Goals
 
