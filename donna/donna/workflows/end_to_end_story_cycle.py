@@ -136,8 +136,8 @@ class StoryCycleStep(RequestAction):
             specification.append(content)
             specification.append("")
 
-        # with open("/home/tiendil/tmp/last_spec.md", "w", encoding="utf-8") as f:
-        #     f.write("\n".join(specification))
+        with open("/home/tiendil/tmp/last_spec.md", "w", encoding="utf-8") as f:
+            f.write("\n".join(specification))
 
         return "\n".join(specification)
 
@@ -257,7 +257,12 @@ list_primary_goals = StoryCycleStep(
 
     Requirements:
 
-    - Goal must describe a desired outcome or result.
+    - A goal describes a desired end state, outcome or result.
+    - A goal defines what should ultimately be true, not how to achieve it.
+    - A goal must not be defined via listing cases, states, outcomes, etc. Instead, use one of the next approaches:
+      a) summarize top-layer items into a single goal;
+      b) split the goal into multiple more specific goals;
+      c) reformulate to a list of second-layer items as required properties of the top-level goal.
     - Each goal must has clear scope and boundaries.
     """
     ),
@@ -297,9 +302,11 @@ list_objectives = StoryCycleStep(
 
     Requirements:
 
+    - An objective describes both:
+      a) a single clear condition that, when met, moves you closer to achieving a specific goal;
+      b) a top-level unit of work that can be planned, executed, and verified independently.
+    - Each goal must have a set of objectives that, when all achieved, ensure the goal is met.
     - Each goal must have at least one objective.
-    - An objective must describe one milestone on the path to achieving the goal.
-    - Each objective must be atomic, verifiable, and achievable within a reasonable timeframe.
     """
     ),
 )
