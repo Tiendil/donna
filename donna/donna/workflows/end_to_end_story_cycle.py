@@ -338,9 +338,7 @@ list_acceptance_criteria = StoryCycleStep(
     ),
 )
 
-list_deliverables_next_iteration_event_id = EventId(
-    "donna:end_to_end_story_cycle:deliverables_next_iteration"
-)
+list_deliverables_next_iteration_event_id = EventId("donna:end_to_end_story_cycle:deliverables_next_iteration")
 
 list_deliverables = StoryCycleStep(
     id=OperationId("donna:end_to_end_story_cycle:list_deliverables"),
