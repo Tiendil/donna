@@ -28,6 +28,9 @@ CONSTRAINT = RecordKindSpec(
 ACCEPTANCE_CRITERIA = RecordKindSpec(
     record_id=RecordIdTemplate("story-acceptance-criteria-{uid}"), kind=RecordKindId("story_acceptance_criteria")
 )
+DELIVERABLE = RecordKindSpec(
+    record_id=RecordIdTemplate("story-deliverable-{uid}"), kind=RecordKindId("story_deliverable")
+)
 
 PLAN = RecordKindSpec(record_id=RecordIdTemplate("story-development-plan"), kind=RecordKindId("pure_text"))
 
@@ -106,6 +109,7 @@ class StoryCycleStep(RequestAction):
             ("Objectives", True, OBJECTIVE),
             ("Known Constraints", True, CONSTRAINT),
             ("Acceptance Criteria", True, ACCEPTANCE_CRITERIA),
+            ("Deliverables / Artifacts", True, DELIVERABLE),
         ]
 
         specification = []
@@ -288,10 +292,11 @@ list_constraints = StoryCycleStep(
 
     You MUST list the known constraints for this story.
 
-    1. If you can identify one more constraint:
-    1.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
-    1.2. mark this action request as `next_iteration`.
-    2. If you can not identify more constraints, mark this action request as `completed`.
+    1. Read the specification `donna/workflows/story-planning` if you haven't done it yet.
+    2. If you can identify one more constraint:
+    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
+    2.2. mark this action request as `next_iteration`.
+    3. If you can not identify more constraints, mark this action request as `completed`.
     """
     ),
 )
@@ -324,10 +329,48 @@ list_acceptance_criteria = StoryCycleStep(
 
     You MUST list the acceptance criteria for this story.
 
-    1. If you can identify one more acceptance criterion:
-    1.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
-    1.2. mark this action request as `next_iteration`.
-    2. If you can not identify more acceptance criteria, mark this action request as `completed`.
+    1. Read the specification `donna/workflows/story-planning` if you haven't done it yet.
+    2. If you can identify one more acceptance criterion:
+    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
+    2.2. mark this action request as `next_iteration`.
+    3. If you can not identify more acceptance criteria, mark this action request as `completed`.
+    """
+    ),
+)
+
+list_deliverables_next_iteration_event_id = EventId(
+    "donna:end_to_end_story_cycle:deliverables_next_iteration"
+)
+
+list_deliverables = StoryCycleStep(
+    id=OperationId("donna:end_to_end_story_cycle:list_deliverables"),
+    trigger_on=[
+        EventTemplate(
+            id=list_acceptance_criteria.result(OperationResultId("completed")).event_id,
+            operation_id=None,
+        ),
+        EventTemplate(id=list_deliverables_next_iteration_event_id, operation_id=None),
+    ],
+    results=[
+        OperationResult.completed(EventId("donna:end_to_end_story_cycle:deliverables_listed")),
+        OperationResult.next_iteration(list_deliverables_next_iteration_event_id),
+    ],
+    requested_kind_spec=DELIVERABLE,
+    request_template=textwrap.dedent(
+        """
+    Here is current state of the story specification.
+
+    ```
+    {partial_description}
+    ```
+
+    You MUST list the deliverables / artifacts for this story.
+
+    1. Read the specification `donna/workflows/story-planning` if you haven't done it yet.
+    2. If you can identify one more deliverable:
+    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
+    2.2. mark this action request as `next_iteration`.
+    2. If you can not identify more deliverables, mark this action request as `completed`.
     """
     ),
 )
@@ -337,7 +380,7 @@ plan_story_execution = StoryCycleStep(
     id=OperationId("donna:end_to_end_story_cycle:plan_story_execution"),
     trigger_on=[
         EventTemplate(
-            id=list_acceptance_criteria.result(OperationResultId("completed")).event_id,
+            id=list_deliverables.result(OperationResultId("completed")).event_id,
             operation_id=None,
         )
     ],
