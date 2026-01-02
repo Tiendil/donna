@@ -33,11 +33,12 @@ The final plan contains the next sections, in order:
    based on the developer request.
 3. `Goals` — a list of goals that work strives to achieve.
 4. `Objectives` — a list of specific objectives that need to be completed to achieve the goals.
+5. `Known constraints` — a list of constraints for the story.
 
 Sections `Developer request` and `Detailed work description` are single-record sections.
 Sections `Goals`, `Objectives` are multi-record sections — a single record per a list item.
 
-## Developer Request
+## "Developer Request" section requirements
 
 - This record MUST contain the original request from the developer. It MUST NOT be modified by Donna.
 
@@ -49,7 +50,7 @@ Sections `Goals`, `Objectives` are multi-record sections — a single record per
 - The record MUST explain what someone gains after these changes and how they can see it working.
   State the user-visible behavior the task will enable.
 
-## Goals
+## "Goals" section requirements
 
 - A goal describes a desired end state, outcome or result.
 - A goal defines what should ultimately be true, not how to achieve it.
@@ -60,7 +61,7 @@ Sections `Goals`, `Objectives` are multi-record sections — a single record per
   c) reformulate to a list of second-layer items as required properties of the top-level goal.
 - Each goal must has clear scope and boundaries.
 
-## Objectives
+## "Objectives" section requirements
 
 - An objective MUST describe an achieved state or capability not the act of describing it.
 - An objective MUST be phrased as "X exists / is implemented / is defined / is executable / is enforced / …"
@@ -73,6 +74,28 @@ Sections `Goals`, `Objectives` are multi-record sections — a single record per
 - Each goal MUST have a set of objectives that, when all achieved, ensure the goal is met.
 - Each goal MUST have 2–6 objectives, unless the goal is demonstrably trivial (≤1 artifact, no dependencies).
 
+## "Known Constraints" section requirements
+
+- A known constraint describes a non-negotiable limitation or requirement that the work MUST respect (technical, organizational, legal, temporal, compatibility, security, operational).
+- Each constraint MUST be derived from explicitly available inputs (the developer request, existed specifications, existed code, information provided by workflows). Donna MUST NOT invent constraints.
+- Each constraint MUST be phrased as a verifiable rule using normative language: “MUST / MUST NOT / SHOULD / SHOULD NOT”.
+- Each constraint MUST be atomic: one rule per record (no "and/or" bundles). If multiple rules exist, split into multiple constraint records.
+- Each constraint MUST be externally binding (something the plan must accommodate), not an internal preference.
+- Constraints MUST NOT restate goals/objectives in different words. They are bounds, not outcomes.
+- Constraints MUST NOT contain implementation steps, designs, or proposed solutions.
+- Constraints MUST NOT include risks, unknowns, or speculative issues.
+- Constraints MUST be written so a reviewer can answer true/false for compliance by inspecting artifacts, behavior, or configuration (not by reading explanatory prose).
+- The section MAY be empty only if no constraints are explicitly known.
+
+Examples:
+
+- Good: `MUST remain compatible with Python 3.10`
+- Good: `MUST not change public CLI flags`
+- Good: `MUST avoid network access`
+- Good: `MUST run on Windows + Linux`
+- Bad: `We should do it cleanly`
+- Bad: `Prefer elegant code`
+- Bad: `Try to keep it simple`
 """,
 )
 
