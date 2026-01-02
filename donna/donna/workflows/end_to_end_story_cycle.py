@@ -25,6 +25,9 @@ OBJECTIVE = RecordKindSpec(record_id=RecordIdTemplate("story-objective-{uid}"), 
 CONSTRAINT = RecordKindSpec(
     record_id=RecordIdTemplate("story-constraint-{uid}"), kind=RecordKindId("story_constraint")
 )
+ACCEPTANCE_CRITERIA = RecordKindSpec(
+    record_id=RecordIdTemplate("story-acceptance-criteria-{uid}"), kind=RecordKindId("story_acceptance_criteria")
+)
 
 PLAN = RecordKindSpec(record_id=RecordIdTemplate("story-development-plan"), kind=RecordKindId("pure_text"))
 
@@ -102,6 +105,7 @@ class StoryCycleStep(RequestAction):
             ("Goals", True, GOAL),
             ("Objectives", True, OBJECTIVE),
             ("Known Constraints", True, CONSTRAINT),
+            ("Acceptance Criteria", True, ACCEPTANCE_CRITERIA),
         ]
 
         specification = []
@@ -292,12 +296,48 @@ list_constraints = StoryCycleStep(
     ),
 )
 
+list_acceptance_criteria_next_iteration_event_id = EventId(
+    "donna:end_to_end_story_cycle:acceptance_criteria_next_iteration"
+)
+
+list_acceptance_criteria = StoryCycleStep(
+    id=OperationId("donna:end_to_end_story_cycle:list_acceptance_criteria"),
+    trigger_on=[
+        EventTemplate(
+            id=list_constraints.result(OperationResultId("completed")).event_id,
+            operation_id=None,
+        ),
+        EventTemplate(id=list_acceptance_criteria_next_iteration_event_id, operation_id=None),
+    ],
+    results=[
+        OperationResult.completed(EventId("donna:end_to_end_story_cycle:acceptance_criteria_listed")),
+        OperationResult.next_iteration(list_acceptance_criteria_next_iteration_event_id),
+    ],
+    requested_kind_spec=ACCEPTANCE_CRITERIA,
+    request_template=textwrap.dedent(
+        """
+    Here is current state of the story specification.
+
+    ```
+    {partial_description}
+    ```
+
+    You MUST list the acceptance criteria for this story.
+
+    1. If you can identify one more acceptance criterion:
+    1.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
+    1.2. mark this action request as `next_iteration`.
+    2. If you can not identify more acceptance criteria, mark this action request as `completed`.
+    """
+    ),
+)
+
 
 plan_story_execution = StoryCycleStep(
     id=OperationId("donna:end_to_end_story_cycle:plan_story_execution"),
     trigger_on=[
         EventTemplate(
-            id=list_constraints.result(OperationResultId("completed")).event_id,
+            id=list_acceptance_criteria.result(OperationResultId("completed")).event_id,
             operation_id=None,
         )
     ],

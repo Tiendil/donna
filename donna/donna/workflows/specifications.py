@@ -108,13 +108,20 @@ Examples:
 
 ## "Acceptance criteria" section requirements
 
-- An acceptance criterion describes a pass/fail condition that determines whether the story's results are acceptable to a reviewer, user, or automated gate.
-- Each criterion MUST be derived from explicitly available inputs (developer request, previous sections of the plan). Donna MUST NOT invent new scope, features, constraints, or assumptions.
-- Each criterion MUST be phrased as an externally observable, verifiable rule, using normative language ("MUST / MUST NOT / SHOULD / SHOULD NOT") or an equivalent test form such as Given/When/Then (Gherkin-style).
-- Each criterion MUST be independently checkable by inspecting artifacts, running a command, executing tests, or observing runtime behavior/output — not by reading explanatory prose.
-- Each criterion MUST be atomic: one condition per record (no "and/or" bundles). If multiple conditions exist, split into multiple criteria records.
+- An acceptance criterion describes a pass/fail condition that determines whether the story's
+  results are acceptable to a reviewer, user, or automated gate.
+- Each criterion MUST be derived from explicitly available inputs (developer request, previous
+  sections of the plan). Donna MUST NOT invent new scope, features, constraints, or assumptions.
+- Each criterion MUST be phrased as an externally observable, verifiable rule, using normative
+  language ("MUST / MUST NOT / SHOULD / SHOULD NOT") or an equivalent test form such as
+  Given/When/Then (Gherkin-style).
+- Each criterion MUST be independently checkable by inspecting artifacts, running a command,
+  executing tests, or observing runtime behavior/output — not by reading explanatory prose.
+- Each criterion MUST be atomic: one condition per record (no "and/or" bundles). If multiple
+  conditions exist, split into multiple criteria records.
 - Criteria MUST NOT describe implementation steps, internal design decisions, or "how" to achieve the result.
-- Criteria MUST NOT restate goals/objectives verbatim. Instead, they must state how success is demonstrated (e.g., observable behavior, produced files, enforced rules, test outcomes).
+- Criteria MUST NOT restate goals/objectives verbatim. Instead, they must state how success is
+  demonstrated (e.g., observable behavior, produced files, enforced rules, test outcomes).
 
 Coverage rules:
 
@@ -128,7 +135,8 @@ Coverage rules:
 
 Regression rules:
 
-- If the developer request or known constraints imply preserving existing behavior, acceptance criteria SHOULD include explicit non-regression checks (what must remain unchanged).
+- If the developer request or known constraints imply preserving existing behavior, acceptance
+  criteria SHOULD include explicit non-regression checks (what must remain unchanged).
 - The section MUST NOT be empty.
 
 """,
