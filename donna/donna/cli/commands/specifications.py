@@ -6,7 +6,7 @@ import typer
 
 from donna.cli.application import app
 from donna.cli.utils import output_cells, template_is_not_allowed
-from donna.domain.types import RecordId, RecordKindId, StoryId, SpecificationNamespace, SpecificationId
+from donna.domain.types import RecordId, RecordKindId, StoryId, SpecificationId
 from donna.machine import records as r_domain
 from donna.world.primitives_register import register
 
@@ -23,19 +23,17 @@ def list() -> None:
 
 @specifications_cli.command()
 def get(
-    namespace: str,
     specification_id: str,
 ) -> None:
     for source in register().specifications.values():
         specification = source.get_specification(
-            SpecificationNamespace(namespace),
             SpecificationId(specification_id),
         )
         if specification is not None:
             output_cells(specification.cells())
             return
 
-    typer.echo(f"Specification '{namespace}/{specification_id}' not found.", err=True)
+    typer.echo(f"Specification '{specification_id}' not found.", err=True)
     raise typer.Exit(code=1)
 
 

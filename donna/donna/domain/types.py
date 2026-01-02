@@ -12,7 +12,6 @@ TaskId = NewType("TaskId", uuid.UUID)
 OperationResultId = NewType("OperationResultId", str)
 RecordIdTemplate = NewType("RecordIdTemplate", str)
 Slug = NewType("Slug", str)
-SpecificationNamespace = NewType("SpecificationNamespace", str)
 SpecificationId = NewType("SpecificationId", str)
 SpecificationSourceId = NewType("SpecificationSourceId", str)
 

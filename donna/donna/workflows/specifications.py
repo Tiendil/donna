@@ -5,8 +5,7 @@ from donna.primitives.specifications.static import StaticSpecificationSource
 
 spec_planning = Specification(
     item=SpecificationIndexItem(
-        namespace="donna/workflows",
-        id="story-planning",
+        id="donna/workflows/story-planning",
         name="Story Planning Guidelines",
         description="This document describes how Donna MUST plan work on a story with the help of workflows. The document describes the process of planning, kinds of involved entities and requirements for them."
     ),
@@ -65,7 +64,7 @@ Sections `Goals`, `Objectives` are multi-record sections — a single record per
 
 
 donna_workflows = StaticSpecificationSource(
-    id="donna_workflows",
+    id="donna-workflows",
     specifications=[
         spec_planning
     ])

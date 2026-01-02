@@ -1,7 +1,7 @@
 import importlib.util
 import pathlib
 
-from donna.domain.types import OperationId, RecordKindId, SpecificationNamespace
+from donna.domain.types import OperationId, RecordKindId, SpecificationSourceId
 from donna.machine.operations import Operation
 from donna.machine.specifications import SpecificationSource
 from donna.primitives.records.base import RecordKind
@@ -17,7 +17,7 @@ class PrimitivesRegister:
         self.initialized = False
         self.operations: Storage[OperationId, Operation] = Storage("operation")
         self.records: Storage[RecordKindId, RecordKind] = Storage("record_kind")
-        self.specifications: Storage[SpecificationNamespace, SpecificationSource] = Storage("specification_source")
+        self.specifications: Storage[SpecificationSourceId, SpecificationSource] = Storage("specification_source")
 
     def initialize(self) -> None:
         if self.initialized:

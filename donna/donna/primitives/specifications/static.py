@@ -1,5 +1,5 @@
 
-from donna.domain.types import SpecificationNamespace, SpecificationId
+from donna.domain.types import SpecificationId
 from donna.machine.specifications import SpecificationSource, Specification, SpecificationIndexItem
 
 
@@ -10,10 +10,9 @@ class StaticSpecificationSource(SpecificationSource):
         return [spec.item for spec in self.specifications]
 
     def get_specification(self,
-                          namespace: SpecificationNamespace,
                           specification_id: SpecificationId) -> Specification | None:
         for spec in self.specifications:
-            if spec.item.namespace == namespace and spec.item.id == specification_id:
+            if spec.item.id == specification_id:
                 return spec
 
         return None

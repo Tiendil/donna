@@ -107,12 +107,11 @@ A specification is a document describing requirements, designs, constraints, or 
 Use the next commands to work with specifications:
 
 - `./bin/donna.sh donna specifications list` — list all specifications.
-- `./bin/donna.sh donna specifications get <specification-namespace> <specification-id>` — get the content of the specification.
+- `./bin/donna.sh donna specifications get <specification-id>` — get the content of the specification.
 
 Command parameters:
 
-- `<specification-namespace>` — a short ASCII string identifying the namespace of the specification.
-- `<specification-id>` — a short ASCII string identifying the specification with dash separators.
+- `<specification-id>` — a short ASCII string identifying the specification with `/` separators between sections and dash separators between words, e.g. `name/space/specification-id`.
 
 ## IMPORTANT ON DONNA TOOL USAGE
 
