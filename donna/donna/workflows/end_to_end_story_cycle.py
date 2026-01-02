@@ -255,7 +255,7 @@ list_primary_goals = StoryCycleStep(
     2.2. mark this action request as `next_iteration`.
     3. If you can not identify more goals, mark this action request as `completed`.
 
-    Requirements:
+    Follow these requirements strictly to the letter:
 
     - A goal describes a desired end state, outcome or result.
     - A goal defines what should ultimately be true, not how to achieve it.
@@ -300,7 +300,7 @@ list_objectives = StoryCycleStep(
     2.2. mark this action request as `next_iteration`.
     3. If you can not identify more goals, mark this action request as `completed`.
 
-    Requirements:
+    Follow these requirements strictly to the letter:
 
     - An objective describes both:
       a) a single clear condition that, when met, moves you closer to achieving a specific goal;
