@@ -34,6 +34,7 @@ The final plan contains the next sections, in order:
 3. `Goals` — a list of goals that work strives to achieve.
 4. `Objectives` — a list of specific objectives that need to be completed to achieve the goals.
 5. `Known constraints` — a list of constraints for the story.
+6. `Acceptance criteria` — a list of acceptance criteria for the resulted work.
 
 Sections `Developer request` and `Detailed work description` are single-record sections.
 Sections `Goals`, `Objectives` are multi-record sections — a single record per a list item.
@@ -104,6 +105,32 @@ Examples:
 - Bad: `We should do it cleanly`
 - Bad: `Prefer elegant code`
 - Bad: `Try to keep it simple`
+
+## "Acceptance criteria" section requirements
+
+- An acceptance criterion describes a pass/fail condition that determines whether the story's results are acceptable to a reviewer, user, or automated gate.
+- Each criterion MUST be derived from explicitly available inputs (developer request, previous sections of the plan). Donna MUST NOT invent new scope, features, constraints, or assumptions.
+- Each criterion MUST be phrased as an externally observable, verifiable rule, using normative language ("MUST / MUST NOT / SHOULD / SHOULD NOT") or an equivalent test form such as Given/When/Then (Gherkin-style).
+- Each criterion MUST be independently checkable by inspecting artifacts, running a command, executing tests, or observing runtime behavior/output — not by reading explanatory prose.
+- Each criterion MUST be atomic: one condition per record (no "and/or" bundles). If multiple conditions exist, split into multiple criteria records.
+- Criteria MUST NOT describe implementation steps, internal design decisions, or "how" to achieve the result.
+- Criteria MUST NOT restate goals/objectives verbatim. Instead, they must state how success is demonstrated (e.g., observable behavior, produced files, enforced rules, test outcomes).
+
+Coverage rules:
+
+- Each objective MUST have ≥1 acceptance criterion that validates it.
+- Each acceptance criterion MUST map to at least one objective (directly or via a goal that the objective serves).
+- Where relevant, criteria SHOULD specify concrete evaluation conditions, such as:
+  - exact CLI output/exit codes, produced artifacts and their locations;
+  - supported platforms/versions, configuration prerequisites;
+  - measurable thresholds (latency, memory, size limits), if such requirements are explicitly implied or stated.
+  - etc.
+
+Regression rules:
+
+- If the developer request or known constraints imply preserving existing behavior, acceptance criteria SHOULD include explicit non-regression checks (what must remain unchanged).
+- The section MUST NOT be empty.
+
 """,
 )
 
