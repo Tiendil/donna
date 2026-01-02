@@ -176,29 +176,42 @@ Source files as artifacts:
 
 ## "Work plan" section requirements
 
-- The work plan section MUST be an ordered, step-by-step list of work items that, when executed in sequence, achieves all objectives while respecting all known constraints.
-- Each work plan item MUST be phrased as an imperative action ("Implement …", "Add …", "Refactor …", "Run …", "Publish …"), i.e., it describes what to do (unlike objectives, which describe what exists).
-- Each work plan item MUST be derived from explicitly available inputs (developer request + prior plan sections). It MUST NOT introduce new scope, features, constraints, or deliverables.
+- The work plan section MUST be an ordered, step-by-step list of work items that, when executed in
+  sequence, achieves all objectives while respecting all known constraints.
+- Each work plan item MUST be phrased as an imperative action ("Implement …", "Add …", "Refactor …",
+  "Run …", "Publish …"), i.e., it describes what to do (unlike objectives, which describe what exists).
+- Each work plan item MUST be derived from explicitly available inputs (developer request + prior
+  plan sections). It MUST NOT introduce new scope, features, constraints, or deliverables.
 - Each work plan item MUST map to ≥1 objective.
-- Each objective MUST be covered by ≥1 work plan item that produces the required change/artifact, and where relevant by additional item(s) that validate it (tests, checks, demo run).
-- Work plan items SHOULD be grouped logically (e.g., by goal, then by objective), but ordering MUST reflect dependencies.
-- Each work plan item MUST be atomic: one primary action per item (no "and/or" bundles). If multiple actions are needed, split into multiple items.
-- Each work plan item MUST be actionable and specific enough that a developer can execute it without needing additional prose:
+- Each objective MUST be covered by ≥1 work plan item that produces the required change/artifact,
+  and where relevant by additional item(s) that validate it (tests, checks, demo run).
+- Work plan items SHOULD be grouped logically (e.g., by goal, then by objective), but ordering MUST
+  reflect dependencies.
+- Each work plan item MUST be atomic: one primary action per item (no "and/or" bundles). If
+  multiple actions are needed, split into multiple items.
+- Each work plan item MUST be actionable and specific enough that a developer can execute it
+  without needing additional prose:
   - It SHOULD name the component/module/subsystem affected, if known.
-  - It SHOULD name the concrete artifact(s) it will create/modify when those artifacts are already known from the "Deliverables / Artifacts" section (do not invent file paths).
-  - If a command is required (e.g., a CLI (Command-Line Interface) invocation, test runner command), it SHOULD include the exact command.
+  - It SHOULD name the concrete artifact(s) it will create/modify when those artifacts are already
+    known from the "Deliverables / Artifacts" section (do not invent file paths).
+- If a command is required (e.g., a CLI (Command-Line Interface) invocation, test runner command),
+  it SHOULD include the exact command.
 - Work plan items MUST NOT be vague (e.g., "Improve code quality", "Handle edge cases", "Do the thing").
 - Work plan items MUST respect all "Known constraints".
-- If preserving existing behavior is implied by the developer request or constraints, the work plan SHOULD include explicit non-regression steps (e.g., adding/adjusting tests, running relevant suites, verifying unchanged outputs).
+- If preserving existing behavior is implied by the developer request or constraints, the work plan
+  SHOULD include explicit non-regression steps (e.g., adding/adjusting tests, running relevant
+  suites, verifying unchanged outputs).
 - If plan includes research/design work, there results MUST be represented as concrete artifacts.
 
 Verification steps:
 
-- The work plan SHOULD include explicit verification activities that demonstrate acceptance criteria, such as:
+- The work plan SHOULD include explicit verification activities that demonstrate acceptance
+  criteria, such as:
   - adding or updating automated tests;
   - running tests/lint/static checks (if such gates exist in the project inputs);
   - running a minimal end-to-end command or scenario that shows the user-visible behavior.
-- Verification MUST be phrased as executable checks (commands, test suites, observable outputs), not as "Review the code" or "Make sure it works".
+- Verification MUST be phrased as executable checks (commands, test suites, observable outputs), not
+  as "Review the code" or "Make sure it works".
 
 Examples:
 
