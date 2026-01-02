@@ -100,7 +100,7 @@ class StoryCycleStep(RequestAction):
         parts = [
             ("Developer request", False, DEVELOPER_DESCRIPTION),
             ("Detailed work description", False, AGENT_DESCRIPTION),
-            ("Primary goals", True, GOAL),
+            ("Goals", True, GOAL),
             ("Objectives", True, OBJECTIVE),
             ("Definition of done", False, DEFINITION_OF_DONE),
             ("Risks and challenges", False, RISKS),
