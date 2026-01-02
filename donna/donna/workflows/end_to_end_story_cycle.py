@@ -144,16 +144,6 @@ class StoryCycleStep(RequestAction):
 
         return "\n".join(specification)
 
-    def context_plan(self, task: Task) -> str | None:
-        records = RecordsIndex.load(task.story_id)
-
-        plan_record_id = _record_id_from_spec(PLAN)
-
-        if not records.has_record(plan_record_id):
-            return None
-
-        return _get_text_content(records, plan_record_id, PLAN.kind)
-
 
 start = StoryCycleStep(
     id=OperationId("donna:end_to_end_story_cycle"),
@@ -424,7 +414,7 @@ execute_story_plan = StoryCycleStep(
     Here is the work plan for the story.
 
     ```
-    {plan}
+    {partial_description}
     ```
 
     You MUST thoroughly execute the plan step by step to finish the work.
