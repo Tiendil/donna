@@ -100,6 +100,20 @@ Command parameters:
 - `<description>` — a short text description of the record.
 - `<json-data>` — a JSON string with data of the particular kind.
 
+### Working with specifications
+
+A specification is a document describing requirements, designs, constraints, or other important information related to the project.
+
+Use the next commands to work with specifications:
+
+- `./bin/donna.sh donna specifications list` — list all specifications.
+- `./bin/donna.sh donna specifications get <specification-namespace> <specification-id>` — get the content of the specification.
+
+Command parameters:
+
+- `<specification-namespace>` — a short ASCII string identifying the namespace of the specification.
+- `<specification-id>` — a short ASCII string identifying the specification with dash separators.
+
 ## IMPORTANT ON DONNA TOOL USAGE
 
 **RUN `./bin/donna.sh` TO ACCESS THE `donna` TOOL**
