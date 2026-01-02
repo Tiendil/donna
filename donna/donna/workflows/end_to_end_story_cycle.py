@@ -159,9 +159,10 @@ start = StoryCycleStep(
     requested_kind_spec=DEVELOPER_DESCRIPTION,
     request_template=textwrap.dedent(
         """
-        1. If the developer hasn't provided you a description of the work for this story, ask them to provide it.
-        2. Add the description as `{scheme.requested_kind_spec.verbose}` to the story.
-        3. Mark this action request as completed.
+        1. Read the specification `donna/workflows/story-planning` if you haven't done it yet.
+        2. If the developer hasn't provided you a description of the work for this story, ask them to provide it.
+        3. Add the description as `{scheme.requested_kind_spec.verbose}` to the story.
+        4. Mark this action request as completed.
         """
     ),
 )
@@ -174,17 +175,15 @@ create_detailed_description = StoryCycleStep(
     requested_kind_spec=AGENT_DESCRIPTION,
     request_template=textwrap.dedent(
         """
-    Here is the beginning of the story specification.
+    Here is current state of the story specification.
 
     ```
     {partial_description}
     ```
 
-    You MUST produce a clear professional high-level description of the work to be done based on the developer's
-    description.
+    You MUST produce a high-level description of the work to be done based on the developer's description.
 
-    1. Explain in a few sentences what someone gains after these changes and how they can see it working. State the
-       user-visible workflow you will enable.
+    1. Read the specification `donna/workflows/story-planning` if you haven't done it yet.
     2. Add the description as `{scheme.requested_kind_spec.verbose}` to the story.
     3. Mark this action request as completed.
     """
@@ -209,29 +208,19 @@ list_primary_goals = StoryCycleStep(
     requested_kind_spec=GOAL,
     request_template=textwrap.dedent(
         """
-    Here is the beginning of the story specification.
+    Here is current state of the story specification.
 
     ```
     {partial_description}
     ```
 
-    You MUST list the primary goals of this story.
+    You MUST list the goals of this story.
 
-    1. Review the story specification above.
+    1. Read the specification `donna/workflows/story-planning` if you haven't done it yet.
     2. If you can identify one more goal:
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
     2.2. mark this action request as `next_iteration`.
     3. If you can not identify more goals, mark this action request as `completed`.
-
-    Follow these requirements strictly to the letter:
-
-    - A goal describes a desired end state, outcome or result.
-    - A goal defines what should ultimately be true, not how to achieve it.
-    - A goal must not be defined via listing cases, states, outcomes, etc. Instead, use one of the next approaches:
-      a) summarize top-layer items into a single goal;
-      b) split the goal into multiple more specific goals;
-      c) reformulate to a list of second-layer items as required properties of the top-level goal.
-    - Each goal must has clear scope and boundaries.
     """
     ),
 )
@@ -254,7 +243,7 @@ list_objectives = StoryCycleStep(
     requested_kind_spec=OBJECTIVE,
     request_template=textwrap.dedent(
         """
-    Here is the beginning of the story specification.
+    Here is current state of the story specification.
 
     ```
     {partial_description}
@@ -262,21 +251,11 @@ list_objectives = StoryCycleStep(
 
     You MUST list objectives that need to be achieved to complete each goal.
 
-    1. Review the story specification above.
+    1. Read the specification `donna/workflows/story-planning` if you haven't done it yet.
     2. If you can identify one more objective:
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
     2.2. mark this action request as `next_iteration`.
     3. If you can not identify more objectives, mark this action request as `completed`.
-
-    Follow these requirements strictly to the letter:
-
-    - An objective MUST describe an achieved state or capability not the act of describing it.
-    - An objective MUST be phrased as "X exists / is implemented / is defined / is executable / is enforced / …"
-    - An objective MUST be atomic: it MUST result in exactly one concrete deliverable: one artifact, one executable, one schema, one test suite, etc.
-    - An objective is a single clear, externally observable condition of the system (not a description, explanation, or analysis) that, when met, moves you closer to achieving a specific goal.
-    - An objective is a top-level unit of work whose completion results in a concrete artifact, behavior, or state change that can be independently verified without reading prose.
-    - Each goal MUST have a set of objectives that, when all achieved, ensure the goal is met.
-    - Each goal MUST have 2–6 objectives, unless the goal is demonstrably trivial (≤1 artifact, no dependencies).
     """
     ),
 )
@@ -294,7 +273,7 @@ list_definition_of_done = StoryCycleStep(
     requested_kind_spec=DEFINITION_OF_DONE,
     request_template=textwrap.dedent(
         """
-    Here is the beginning of the story specification.
+    Here is current state of the story specification.
 
     ```
     {partial_description}
@@ -321,7 +300,7 @@ list_risks_and_challenges = StoryCycleStep(
     requested_kind_spec=RISKS,
     request_template=textwrap.dedent(
         """
-    Here is the beginning of the story specification.
+    Here is current state of the story specification.
 
     ```
     {partial_description}

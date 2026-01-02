@@ -1,13 +1,8 @@
-
-import uuid
-from typing import List
-
 import typer
 
 from donna.cli.application import app
-from donna.cli.utils import output_cells, template_is_not_allowed
-from donna.domain.types import RecordId, RecordKindId, StoryId, SpecificationId
-from donna.machine import records as r_domain
+from donna.cli.utils import output_cells
+from donna.domain.types import SpecificationId
 from donna.world.primitives_register import register
 
 specifications_cli = typer.Typer()
