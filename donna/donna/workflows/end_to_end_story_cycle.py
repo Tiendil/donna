@@ -22,11 +22,10 @@ AGENT_DESCRIPTION = RecordKindSpec(
 GOAL = RecordKindSpec(record_id=RecordIdTemplate("story-goal-{uid}"), kind=RecordKindId("story_goal"))
 
 OBJECTIVE = RecordKindSpec(record_id=RecordIdTemplate("story-objective-{uid}"), kind=RecordKindId("story_objective"))
-DEFINITION_OF_DONE = RecordKindSpec(
-    record_id=RecordIdTemplate("story-definition-of-done"),
-    kind=RecordKindId("pure_text"),
+CONSTRAINT = RecordKindSpec(
+    record_id=RecordIdTemplate("story-constraint-{uid}"), kind=RecordKindId("story_constraint")
 )
-RISKS = RecordKindSpec(record_id=RecordIdTemplate("story-risks"), kind=RecordKindId("pure_text"))
+
 PLAN = RecordKindSpec(record_id=RecordIdTemplate("story-development-plan"), kind=RecordKindId("pure_text"))
 
 
@@ -102,8 +101,7 @@ class StoryCycleStep(RequestAction):
             ("Detailed work description", False, AGENT_DESCRIPTION),
             ("Goals", True, GOAL),
             ("Objectives", True, OBJECTIVE),
-            ("Definition of done", False, DEFINITION_OF_DONE),
-            ("Risks and challenges", False, RISKS),
+            ("Known Constraints", True, CONSTRAINT),
         ]
 
         specification = []
@@ -260,17 +258,22 @@ list_objectives = StoryCycleStep(
     ),
 )
 
+list_contstraints_next_iteration_event_id = EventId("donna:end_to_end_story_cycle:definition_of_done_next_iteration")
 
-list_definition_of_done = StoryCycleStep(
-    id=OperationId("donna:end_to_end_story_cycle:list_definition_of_done"),
+list_constraints = StoryCycleStep(
+    id=OperationId("donna:end_to_end_story_cycle:list_constraints"),
     trigger_on=[
         EventTemplate(
             id=list_objectives.result(OperationResultId("completed")).event_id,
             operation_id=None,
-        )
+        ),
+        EventTemplate(id=list_contstraints_next_iteration_event_id, operation_id=None),
     ],
-    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:definition_of_done_listed"))],
-    requested_kind_spec=DEFINITION_OF_DONE,
+    results=[
+        OperationResult.completed(EventId("donna:end_to_end_story_cycle:constraints_listed")),
+        OperationResult.next_iteration(list_contstraints_next_iteration_event_id),
+    ],
+    requested_kind_spec=CONSTRAINT,
     request_template=textwrap.dedent(
         """
     Here is current state of the story specification.
@@ -279,47 +282,22 @@ list_definition_of_done = StoryCycleStep(
     {partial_description}
     ```
 
-    You MUST list the criteria that must be met for this story to be considered done.
+    You MUST list the known constraints for this story.
 
-    1. List the criteria that must be met for this story to be considered done.
-    2. Add the list as `{scheme.requested_kind_spec.verbose}` to the story.
-    3. Mark this action request as completed.
+    1. If you can identify one more constraint:
+    1.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
+    1.2. mark this action request as `next_iteration`.
+    2. If you can not identify more constraints, mark this action request as `completed`.
     """
     ),
 )
 
-list_risks_and_challenges = StoryCycleStep(
-    id=OperationId("donna:end_to_end_story_cycle:list_risks_and_challenges"),
-    trigger_on=[
-        EventTemplate(
-            id=list_definition_of_done.result(OperationResultId("completed")).event_id,
-            operation_id=None,
-        )
-    ],
-    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:risks_and_challenges_listed"))],
-    requested_kind_spec=RISKS,
-    request_template=textwrap.dedent(
-        """
-    Here is current state of the story specification.
-
-    ```
-    {partial_description}
-    ```
-
-    You MUST list the potential risks and challenges that may arise during the implementation of this story.
-
-    1. List potential risks and challenges that may arise during the implementation of this story.
-    2. Add the list as `{scheme.requested_kind_spec.verbose}` to the story.
-    3. Mark this action request as completed.
-    """
-    ),
-)
 
 plan_story_execution = StoryCycleStep(
     id=OperationId("donna:end_to_end_story_cycle:plan_story_execution"),
     trigger_on=[
         EventTemplate(
-            id=list_risks_and_challenges.result(OperationResultId("completed")).event_id,
+            id=list_constraints.result(OperationResultId("completed")).event_id,
             operation_id=None,
         )
     ],

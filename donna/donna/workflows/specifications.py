@@ -64,7 +64,8 @@ Sections `Goals`, `Objectives` are multi-record sections — a single record per
 ## "Objectives" section requirements
 
 - An objective MUST describe an achieved state or capability not the act of describing it.
-- An objective MUST be phrased as "X exists / is implemented / is defined / is executable / is enforced / …"
+- An objective MUST be phrased as "X exists / is implemented / is defined / is executable /
+  is enforced / …"
 - An objective MUST be atomic: it MUST result in exactly one concrete deliverable: one artifact,
   one executable, one schema, one test suite, etc.
 - An objective is a single clear, externally observable condition of the system (not a description,
@@ -76,15 +77,22 @@ Sections `Goals`, `Objectives` are multi-record sections — a single record per
 
 ## "Known Constraints" section requirements
 
-- A known constraint describes a non-negotiable limitation or requirement that the work MUST respect (technical, organizational, legal, temporal, compatibility, security, operational).
-- Each constraint MUST be derived from explicitly available inputs (the developer request, existed specifications, existed code, information provided by workflows). Donna MUST NOT invent constraints.
-- Each constraint MUST be phrased as a verifiable rule using normative language: “MUST / MUST NOT / SHOULD / SHOULD NOT”.
-- Each constraint MUST be atomic: one rule per record (no "and/or" bundles). If multiple rules exist, split into multiple constraint records.
-- Each constraint MUST be externally binding (something the plan must accommodate), not an internal preference.
+- A known constraint describes a non-negotiable limitation or requirement that the work MUST
+  respect (technical, organizational, legal, temporal, compatibility, security, operational).
+- Each constraint MUST be derived from explicitly available inputs (the developer request, existed
+  specifications, existed code, information provided by workflows). Donna MUST NOT invent
+  constraints.
+- Each constraint MUST be phrased as a verifiable rule using normative language: “MUST / MUST NOT /
+  SHOULD / SHOULD NOT”.
+- Each constraint MUST be atomic: one rule per record (no "and/or" bundles). If multiple rules
+  exist, split into multiple constraint records.
+- Each constraint MUST be externally binding (something the plan must accommodate), not an
+  internal preference.
 - Constraints MUST NOT restate goals/objectives in different words. They are bounds, not outcomes.
 - Constraints MUST NOT contain implementation steps, designs, or proposed solutions.
 - Constraints MUST NOT include risks, unknowns, or speculative issues.
-- Constraints MUST be written so a reviewer can answer true/false for compliance by inspecting artifacts, behavior, or configuration (not by reading explanatory prose).
+- Constraints MUST be written so a reviewer can answer true/false for compliance by inspecting
+  artifacts, behavior, or configuration (not by reading explanatory prose).
 - The section MAY be empty only if no constraints are explicitly known.
 
 Examples:
