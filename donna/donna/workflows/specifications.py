@@ -36,6 +36,7 @@ The final plan contains the next sections, in order:
 5. `Known constraints` — a list of constraints for the story.
 6. `Acceptance criteria` — a list of acceptance criteria for the resulted work.
 7. `Deliverables / Artifacts` — a list of concrete deliverables / artifacts that MUST be produced.
+8. `Work plan` — a step-by-step plan of work to be done to achieve the objectives.
 
 Sections `Developer request` and `Detailed work description` are single-record sections.
 Sections `Goals`, `Objectives` are multi-record sections — a single record per a list item.
@@ -84,8 +85,8 @@ Sections `Goals`, `Objectives` are multi-record sections — a single record per
 - Each constraint MUST be derived from explicitly available inputs (the developer request, existed
   specifications, existed code, information provided by workflows). Donna MUST NOT invent
   constraints.
-- Each constraint MUST be phrased as a verifiable rule using normative language: “MUST / MUST NOT /
-  SHOULD / SHOULD NOT”.
+- Each constraint MUST be phrased as a verifiable rule using normative language: "MUST / MUST NOT /
+  SHOULD / SHOULD NOT".
 - Each constraint MUST be atomic: one rule per record (no "and/or" bundles). If multiple rules
   exist, split into multiple constraint records.
 - Each constraint MUST be externally binding (something the plan must accommodate), not an
@@ -172,6 +173,41 @@ Source files as artifacts:
 - Do not add source files as deliverables/artifacts if they are unknown at planning time (i.e. we
   do not know which files will be changed/added). In such cases, focus on higher-level deliverables
   (e.g., "MUST add CLI documentation" instead of listing specific files).
+
+## "Work plan" section requirements
+
+- The work plan section MUST be an ordered, step-by-step list of work items that, when executed in sequence, achieves all objectives while respecting all known constraints.
+- Each work plan item MUST be phrased as an imperative action ("Implement …", "Add …", "Refactor …", "Run …", "Publish …"), i.e., it describes what to do (unlike objectives, which describe what exists).
+- Each work plan item MUST be derived from explicitly available inputs (developer request + prior plan sections). It MUST NOT introduce new scope, features, constraints, or deliverables.
+- Each work plan item MUST map to ≥1 objective.
+- Each objective MUST be covered by ≥1 work plan item that produces the required change/artifact, and where relevant by additional item(s) that validate it (tests, checks, demo run).
+- Work plan items SHOULD be grouped logically (e.g., by goal, then by objective), but ordering MUST reflect dependencies.
+- Each work plan item MUST be atomic: one primary action per item (no "and/or" bundles). If multiple actions are needed, split into multiple items.
+- Each work plan item MUST be actionable and specific enough that a developer can execute it without needing additional prose:
+  - It SHOULD name the component/module/subsystem affected, if known.
+  - It SHOULD name the concrete artifact(s) it will create/modify when those artifacts are already known from the "Deliverables / Artifacts" section (do not invent file paths).
+  - If a command is required (e.g., a CLI (Command-Line Interface) invocation, test runner command), it SHOULD include the exact command.
+- Work plan items MUST NOT be vague (e.g., "Improve code quality", "Handle edge cases", "Do the thing").
+- Work plan items MUST respect all "Known constraints".
+- If preserving existing behavior is implied by the developer request or constraints, the work plan SHOULD include explicit non-regression steps (e.g., adding/adjusting tests, running relevant suites, verifying unchanged outputs).
+- If plan includes research/design work, there results MUST be represented as concrete artifacts.
+
+Verification steps:
+
+- The work plan SHOULD include explicit verification activities that demonstrate acceptance criteria, such as:
+  - adding or updating automated tests;
+  - running tests/lint/static checks (if such gates exist in the project inputs);
+  - running a minimal end-to-end command or scenario that shows the user-visible behavior.
+- Verification MUST be phrased as executable checks (commands, test suites, observable outputs), not as "Review the code" or "Make sure it works".
+
+Examples:
+
+- Good: "Implement the `foo` subcommand behavior to emit the required summary line for each generation."
+- Good: "Add automated tests that assert the `foo` subcommand exit code and exact stdout lines for the sample fixture."
+- Good: "Run `pytest -q` and confirm the new tests pass."
+- Bad: "Implement feature and update tests and docs."
+- Bad: "Consider performance implications."
+- Bad: "Document the approach in detail."
 
 """,
 )

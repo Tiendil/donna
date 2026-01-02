@@ -32,7 +32,7 @@ DELIVERABLE = RecordKindSpec(
     record_id=RecordIdTemplate("story-deliverable-{uid}"), kind=RecordKindId("story_deliverable")
 )
 
-PLAN = RecordKindSpec(record_id=RecordIdTemplate("story-development-plan"), kind=RecordKindId("pure_text"))
+PLAN_ITEM = RecordKindSpec(record_id=RecordIdTemplate("story-plan-item-{uid}"), kind=RecordKindId("story_plan_item"))
 
 
 def _record_id_from_spec(kind_spec: RecordKindSpec) -> RecordId:
@@ -110,6 +110,7 @@ class StoryCycleStep(RequestAction):
             ("Known Constraints", True, CONSTRAINT),
             ("Acceptance Criteria", True, ACCEPTANCE_CRITERIA),
             ("Deliverables / Artifacts", True, DELIVERABLE),
+            ("Work Plan", True, PLAN_ITEM),
         ]
 
         specification = []
@@ -373,30 +374,37 @@ list_deliverables = StoryCycleStep(
     ),
 )
 
+prepare_story_plan_next_iteration_event_id = EventId("donna:end_to_end_story_cycle:prepare_story_plan_next_iteration")
 
-plan_story_execution = StoryCycleStep(
-    id=OperationId("donna:end_to_end_story_cycle:plan_story_execution"),
+prepare_story_plan = StoryCycleStep(
+    id=OperationId("donna:end_to_end_story_cycle:prepare_story_plan"),
     trigger_on=[
         EventTemplate(
             id=list_deliverables.result(OperationResultId("completed")).event_id,
             operation_id=None,
-        )
+        ),
+        EventTemplate(id=prepare_story_plan_next_iteration_event_id, operation_id=None),
     ],
-    results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:story_execution_planned"))],
-    requested_kind_spec=PLAN,
+    results=[
+        OperationResult.completed(EventId("donna:end_to_end_story_cycle:story_plan_prepared")),
+        OperationResult.next_iteration(prepare_story_plan_next_iteration_event_id),
+    ],
+    requested_kind_spec=PLAN_ITEM,
     request_template=textwrap.dedent(
         """
-    Here is the  story specification.
+    Here is current state of the story specification.
 
     ```
     {partial_description}
     ```
 
-    You MUST create a detailed work plan for this story.
+    You MUST prepare a detailed work plan for this story.
 
-    1. Break down the work into manageable steps and outline the approach you will take to implement the story.
-    2. Add the plan as `{scheme.requested_kind_spec.verbose}` to the story.
-    3. Mark this action request as completed.
+    1. Read the specification `donna/workflows/story-planning` if you haven't done it yet.
+    2. If you can identify one more plan item:
+    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
+    2.2. mark this action request as `next_iteration`.
+    3. If you can not identify more plan items, mark this action request as `completed`.
     """
     ),
 )
@@ -405,7 +413,7 @@ execute_story_plan = StoryCycleStep(
     id=OperationId("donna:end_to_end_story_cycle:execute_story_plan"),
     trigger_on=[
         EventTemplate(
-            id=plan_story_execution.result(OperationResultId("completed")).event_id,
+            id=prepare_story_plan.result(OperationResultId("completed")).event_id,
             operation_id=None,
         )
     ],
