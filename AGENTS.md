@@ -85,12 +85,12 @@ Examples of record kinds:
 
 Use the next commands to work with records related to your story:
 
-- `./bin/donna.sh donna records list <story-id>` — list all records related to the story.
-- `./bin/donna.sh donna records create <story-id> <record-id> <description>` — create a new record without any kinds of data attached.
-- `./bin/donna.sh donna records delete <story-id> <record-id>` — delete the record and all its data.
-- `./bin/donna.sh donna records kind-set <story-id> <record-id> <record-kind> <json-data>` — set data of a particular kind for the record. Data is passed as JSON string.
-- `./bin/donna.sh donna records kind-get <story-id> <record-id> <record-kind>*` — get data of a particular kind(s) for the record.
-- `./bin/donna.sh donna records kind-delete <story-id> <record-id> <record-kind>*` — delete data of a particular kind(s) for the record.
+- `./bin/donna.sh records list <story-id>` — list all records related to the story.
+- `./bin/donna.sh records create <story-id> <record-id> <description>` — create a new record without any kinds of data attached.
+- `./bin/donna.sh records delete <story-id> <record-id>` — delete the record and all its data.
+- `./bin/donna.sh records kind-set <story-id> <record-id> <record-kind> <json-data>` — set data of a particular kind for the record. Data is passed as JSON string.
+- `./bin/donna.sh records kind-get <story-id> <record-id> <record-kind>*` — get data of a particular kind(s) for the record.
+- `./bin/donna.sh records kind-delete <story-id> <record-id> <record-kind>*` — delete data of a particular kind(s) for the record.
 
 Command parameters:
 
@@ -106,8 +106,8 @@ A specification is a document describing requirements, designs, constraints, or 
 
 Use the next commands to work with specifications:
 
-- `./bin/donna.sh donna specifications list` — list all specifications.
-- `./bin/donna.sh donna specifications get <specification-id>` — get the content of the specification.
+- `./bin/donna.sh specifications list` — list all specifications.
+- `./bin/donna.sh specifications get <specification-id>` — get the content of the specification.
 
 Command parameters:
 
