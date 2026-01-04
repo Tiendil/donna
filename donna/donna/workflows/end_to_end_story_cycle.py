@@ -53,7 +53,10 @@ def _get_aggregated_text_content(  # noqa: CCR001
                 lines.append(f"[{record.id}] {kind.content}")
                 continue
 
-            lines.extend(["\n", kind.content, "\n"])
+            lines.extend([kind.content, ""])
+
+    if lines[-1] == "":
+        lines.pop()
 
     return "\n".join(lines)
 
