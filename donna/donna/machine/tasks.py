@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.types import OperationId, StoryId, TaskId, WorkUnitId, new_task_id
+from donna.domain.types import OperationId, StoryId, TaskId, WorkUnitId
 from donna.machine.counters import next_id
 
 if TYPE_CHECKING:
@@ -37,7 +37,7 @@ class Task(BaseEntity):
     @classmethod
     def build(cls, story_id: StoryId) -> "Task":
         return Task(
-            id=next_id(story_id, new_task_id),
+            id=next_id(story_id, TaskId),
             state=TaskState.TODO,
             story_id=story_id,
             context={},

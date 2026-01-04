@@ -1,6 +1,6 @@
 import textwrap
 
-from donna.domain.types import EventId, OperationId, OperationResultId, RecordId, RecordIdTemplate, RecordKindId
+from donna.domain.types import EventId, OperationId, OperationResultId, RecordId, RecordKindId
 from donna.machine.events import EventTemplate
 from donna.machine.operations import OperationExport as Export
 from donna.machine.operations import OperationResult
