@@ -6,9 +6,9 @@ from donna.core.entities import BaseEntity
 from donna.domain import types
 from donna.world.layout import layout
 
-_INTERNAL_COUNTERS: dict[Callable[[types.InternalId], types.WorkUnitId], types.CounterId] = {
+_INTERNAL_COUNTERS: dict[Callable[[types.InternalId], types.InternalId], types.CounterId] = {
     types.WorkUnitId: types.CounterId("WU"),
-    types.ActionRequestId: "AR",
+    types.ActionRequestId: types.CounterId("AR"),
 }
 
 
@@ -70,10 +70,10 @@ class Counters(BaseEntity):
         return Id(id=counter_id, value=next_value)
 
 
-def next_id[T](
+def next_id[InternalIdType: types.InternalId](
     story_id: types.StoryId,
-    type_id: Callable[[types.InternalId], T],
-) -> T:
+    type_id: Callable[[types.InternalId], InternalIdType],
+) -> InternalIdType:
     counters = Counters.load(story_id)
 
     if type_id not in _INTERNAL_COUNTERS:
@@ -88,9 +88,11 @@ def next_id[T](
     return type_id(next_id.to_full())
 
 
-def create_id_parser[T](type_id: Callable[[types.InternalId], T]) -> Callable[[str], T]:
-    def parser(text: str) -> T:
-        parts = text.split('-')
+def create_id_parser[InternalIdType: types.InternalId](
+    type_id: Callable[[types.InternalId], InternalIdType],
+) -> Callable[[str], InternalIdType]:
+    def parser(text: str) -> InternalIdType:
+        parts = text.split("-")
 
         if len(parts) != 3:
             raise ValueError(f"Invalid id format: '{text}'")

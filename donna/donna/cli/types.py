@@ -1,10 +1,9 @@
 from typing import Annotated
 
-from donna.machine.counters import create_id_parser
-from donna.domain.types import ActionRequestId
-
 import typer
 
+from donna.domain.types import ActionRequestId
+from donna.machine.counters import create_id_parser
 
 ActionRequestIdArgument = Annotated[
     ActionRequestId,
