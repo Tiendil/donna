@@ -1,6 +1,6 @@
-from donna.domain import types
 from typing import Callable
 
+from donna.domain import types
 
 _STORY_COUNTERS: dict[Callable[[types.InternalId], types.InternalId], types.CounterId] = {
     types.WorkUnitId: types.CounterId("WU"),

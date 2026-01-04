@@ -1,13 +1,13 @@
 import textwrap
 
 from donna.core.entities import BaseEntity
+from donna.domain.ids import next_id
 from donna.domain.types import (
     ActionRequestId,
     OperationId,
     StoryId,
 )
 from donna.machine.cells import Cell
-from donna.domain.ids import next_id
 
 
 class ActionRequest(BaseEntity):
