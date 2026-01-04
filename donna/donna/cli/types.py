@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from donna.machine.counter import create_id_parser
+from donna.machine.counters import create_id_parser
 from donna.domain.types import ActionRequestId
 
 import typer
