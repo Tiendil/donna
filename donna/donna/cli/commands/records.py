@@ -1,4 +1,3 @@
-import uuid
 from typing import List
 
 import typer
@@ -8,8 +7,8 @@ from donna.cli.types import RecordIdArgument
 from donna.cli.utils import output_cells
 from donna.domain.types import RecordId, RecordKindId, StoryId
 from donna.machine import records as r_domain
-from donna.world.primitives_register import register
 from donna.machine.counters import next_id
+from donna.world.primitives_register import register
 
 records_cli = typer.Typer()
 
@@ -24,7 +23,7 @@ def list(story_id: str) -> None:
 def create(story_id: str, description: str) -> None:
     index = r_domain.RecordsIndex.load(StoryId(story_id))
 
-    record_id = next_id(story_id, RecordId)
+    record_id = next_id(StoryId(story_id), RecordId)
 
     index.create_record(
         id=record_id,

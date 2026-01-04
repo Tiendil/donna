@@ -1,4 +1,3 @@
-import uuid
 from typing import NewType
 
 # Internal base types

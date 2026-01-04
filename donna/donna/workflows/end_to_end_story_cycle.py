@@ -1,6 +1,6 @@
 import textwrap
 
-from donna.domain.types import EventId, OperationId, OperationResultId, RecordId, RecordKindId
+from donna.domain.types import EventId, OperationId, OperationResultId, RecordKindId
 from donna.machine.events import EventTemplate
 from donna.machine.operations import OperationExport as Export
 from donna.machine.operations import OperationResult
@@ -20,20 +20,16 @@ WORK_DESSCRIPTION = RecordKindSpec(
 GOAL = RecordKindSpec(kind=RecordKindId("story_goal"))
 
 OBJECTIVE = RecordKindSpec(kind=RecordKindId("story_objective"))
-CONSTRAINT = RecordKindSpec(
-    kind=RecordKindId("story_constraint")
-)
-ACCEPTANCE_CRITERIA = RecordKindSpec(
-    kind=RecordKindId("story_acceptance_criteria")
-)
-DELIVERABLE = RecordKindSpec(
-    kind=RecordKindId("story_deliverable")
-)
+CONSTRAINT = RecordKindSpec(kind=RecordKindId("story_constraint"))
+ACCEPTANCE_CRITERIA = RecordKindSpec(kind=RecordKindId("story_acceptance_criteria"))
+DELIVERABLE = RecordKindSpec(kind=RecordKindId("story_deliverable"))
 
 PLAN_ITEM = RecordKindSpec(kind=RecordKindId("story_plan_item"))
 
 
-def _get_aggregated_text_content(index: RecordsIndex, kind_spec: RecordKindSpec, as_list: bool) -> str | None:  # noqa: CCR001
+def _get_aggregated_text_content(  # noqa: CCR001
+    index: RecordsIndex, kind_spec: RecordKindSpec, as_list: bool
+) -> str | None:
     records = index.get_records_for_kind(kind_spec.kind)
 
     if not records:
@@ -50,7 +46,7 @@ def _get_aggregated_text_content(index: RecordsIndex, kind_spec: RecordKindSpec,
 
             if not isinstance(kind, PureText):
                 raise NotImplementedError(
-                    f"Record kind item for record '{kind_spec.record_id}' and kind '{kind_spec.kind}' is not PureText"
+                    f"Record kind item for record '{record.id}' and kind '{kind_spec.kind}' is not PureText"
                 )
 
             if as_list:
@@ -58,7 +54,6 @@ def _get_aggregated_text_content(index: RecordsIndex, kind_spec: RecordKindSpec,
                 continue
 
             lines.extend(["\n", kind.content, "\n"])
-
 
     return "\n".join(lines)
 
