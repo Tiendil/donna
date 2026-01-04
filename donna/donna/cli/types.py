@@ -3,7 +3,7 @@ from typing import Annotated
 import typer
 
 from donna.domain.types import ActionRequestId, RecordId
-from donna.machine.counters import create_id_parser
+from donna.domain.ids import create_id_parser
 
 ActionRequestIdArgument = Annotated[
     ActionRequestId,

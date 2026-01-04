@@ -6,7 +6,7 @@ import pydantic
 
 from donna.core.entities import BaseEntity
 from donna.domain.types import OperationId, StoryId, TaskId, WorkUnitId
-from donna.machine.counters import next_id
+from donna.domain.ids import next_id
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change

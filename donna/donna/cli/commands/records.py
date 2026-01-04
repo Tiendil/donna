@@ -7,7 +7,7 @@ from donna.cli.types import RecordIdArgument
 from donna.cli.utils import output_cells
 from donna.domain.types import RecordId, RecordKindId, StoryId
 from donna.machine import records as r_domain
-from donna.machine.counters import next_id
+from donna.domain.ids import next_id
 from donna.world.primitives_register import register
 
 records_cli = typer.Typer()

@@ -7,7 +7,7 @@ from donna.domain.types import (
     StoryId,
 )
 from donna.machine.cells import Cell
-from donna.machine.counters import next_id
+from donna.domain.ids import next_id
 
 
 class ActionRequest(BaseEntity):
