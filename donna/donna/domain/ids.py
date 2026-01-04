@@ -23,7 +23,7 @@ class RichInternalId:
     def to_int(self) -> int:
         return self.value
 
-    def to_full(self) -> types.InternalId:
+    def to_internal(self) -> types.InternalId:
         return types.InternalId(f"{self.id}-{self.value}-{self.crc()}")
 
     def crc(self) -> str:
@@ -42,6 +42,24 @@ class RichInternalId:
 
         chars.reverse()
         return "".join(chars)
+
+
+class RichNestedId(tuple[str, ...]):
+    __slots__ = ()
+
+    def __new__(cls, value: str | tuple[str, ...]):
+        if isinstance(value, str):
+            parts = tuple(value.split(":"))
+        else:
+            parts = tuple(value)
+
+        if not parts:
+            raise ValueError("NestedId cannot be empty")
+
+        return super().__new__(cls, parts)
+
+    def to_nested(self) -> types.NestedId:
+        return types.NestedId(":".join(self))
 
 
 def next_id[InternalIdType: types.InternalId](
@@ -65,7 +83,7 @@ def next_id[InternalIdType: types.InternalId](
 
     id = RichInternalId(id=counter_id, value=next_id)
 
-    return type_id(id.to_full())
+    return type_id(id.to_internal())
 
 
 def create_id_parser[InternalIdType: types.InternalId](
@@ -87,6 +105,6 @@ def create_id_parser[InternalIdType: types.InternalId](
         if id.crc() != crc:
             raise NotImplementedError(f"Invalid crc for id: '{text}'")
 
-        return type_id(id.to_full())
+        return type_id(id.to_internal())
 
     return parser
