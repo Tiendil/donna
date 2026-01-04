@@ -11,62 +11,29 @@ from donna.primitives.operations.request_action import RequestAction
 from donna.primitives.records.pure_text import PureText
 
 DEVELOPER_DESCRIPTION = RecordKindSpec(
-    record_id=RecordIdTemplate("story-description-from-developer"),
-    kind=RecordKindId("pure_text"),
+    kind=RecordKindId("story_developer_description"),
 )
-AGENT_DESCRIPTION = RecordKindSpec(
-    record_id=RecordIdTemplate("story-description-from-agent"),
-    kind=RecordKindId("pure_text"),
+WORK_DESSCRIPTION = RecordKindSpec(
+    kind=RecordKindId("story_work_description"),
 )
 
-GOAL = RecordKindSpec(record_id=RecordIdTemplate("story-goal-{uid}"), kind=RecordKindId("story_goal"))
+GOAL = RecordKindSpec(kind=RecordKindId("story_goal"))
 
-OBJECTIVE = RecordKindSpec(record_id=RecordIdTemplate("story-objective-{uid}"), kind=RecordKindId("story_objective"))
+OBJECTIVE = RecordKindSpec(kind=RecordKindId("story_objective"))
 CONSTRAINT = RecordKindSpec(
-    record_id=RecordIdTemplate("story-constraint-{uid}"), kind=RecordKindId("story_constraint")
+    kind=RecordKindId("story_constraint")
 )
 ACCEPTANCE_CRITERIA = RecordKindSpec(
-    record_id=RecordIdTemplate("story-acceptance-criteria-{uid}"), kind=RecordKindId("story_acceptance_criteria")
+    kind=RecordKindId("story_acceptance_criteria")
 )
 DELIVERABLE = RecordKindSpec(
-    record_id=RecordIdTemplate("story-deliverable-{uid}"), kind=RecordKindId("story_deliverable")
+    kind=RecordKindId("story_deliverable")
 )
 
-PLAN_ITEM = RecordKindSpec(record_id=RecordIdTemplate("story-plan-item-{uid}"), kind=RecordKindId("story_plan_item"))
+PLAN_ITEM = RecordKindSpec(kind=RecordKindId("story_plan_item"))
 
 
-def _record_id_from_spec(kind_spec: RecordKindSpec) -> RecordId:
-    record_id = RecordId(kind_spec.record_id)
-
-    if "{uid}" in record_id:
-        raise NotImplementedError(f"Record id template '{record_id}' must be resolved before use")
-
-    return record_id
-
-
-def _get_text_content(records: RecordsIndex, record_id: RecordId, kind: RecordKindId) -> str | None:
-    record = records.get_record(record_id)
-
-    if record is None:
-        return None
-
-    record_kind_items = records.get_record_kind_items(record_id, [kind])
-
-    if not record_kind_items:
-        return None
-
-    record_kind_item = record_kind_items[0]
-
-    if record_kind_item is None:
-        return None
-
-    if not isinstance(record_kind_item, PureText):
-        raise NotImplementedError(f"Record kind item for record '{record_id}' and kind '{kind}' is not PureText")
-
-    return record_kind_item.content
-
-
-def _get_aggregated_text_content(index: RecordsIndex, kind_spec: RecordKindSpec) -> str | None:  # noqa: CCR001
+def _get_aggregated_text_content(index: RecordsIndex, kind_spec: RecordKindSpec, as_list: bool) -> str | None:  # noqa: CCR001
     records = index.get_records_for_kind(kind_spec.kind)
 
     if not records:
@@ -86,7 +53,12 @@ def _get_aggregated_text_content(index: RecordsIndex, kind_spec: RecordKindSpec)
                     f"Record kind item for record '{kind_spec.record_id}' and kind '{kind_spec.kind}' is not PureText"
                 )
 
-            lines.append(f"[{record.id}] {kind.content}")
+            if as_list:
+                lines.append(f"[{record.id}] {kind.content}")
+                continue
+
+            lines.extend(["\n", kind.content, "\n"])
+
 
     return "\n".join(lines)
 
@@ -104,7 +76,7 @@ class StoryCycleStep(RequestAction):
         #       that should not have it
         parts = [
             ("Developer request", False, DEVELOPER_DESCRIPTION),
-            ("Detailed work description", False, AGENT_DESCRIPTION),
+            ("Detailed work description", False, WORK_DESSCRIPTION),
             ("Goals", True, GOAL),
             ("Objectives", True, OBJECTIVE),
             ("Known Constraints", True, CONSTRAINT),
@@ -115,23 +87,14 @@ class StoryCycleStep(RequestAction):
 
         specification = []
 
-        for title, aggregate, kind_spec in parts:
-            if aggregate:
-                if not records.get_records_for_kind(kind_spec.kind):
-                    break
-            else:
-                record_id = _record_id_from_spec(kind_spec)
-
-                if not records.has_record_kind(record_id, kind_spec.kind):
-                    break
+        for title, as_list, kind_spec in parts:
+            if not records.get_records_for_kind(kind_spec.kind):
+                break
 
             specification.append(f"# {title}")
             specification.append("")
 
-            if not aggregate:
-                content = _get_text_content(records, record_id, kind_spec.kind)
-            else:
-                content = _get_aggregated_text_content(records, kind_spec)
+            content = _get_aggregated_text_content(records, kind_spec, as_list)
 
             if content is None:
                 break
@@ -169,7 +132,7 @@ create_detailed_description = StoryCycleStep(
     id=OperationId("donna:end_to_end_story_cycle:create_detailed_description"),
     trigger_on=[EventTemplate(id=start.result(OperationResultId("completed")).event_id, operation_id=None)],
     results=[OperationResult.completed(EventId("donna:end_to_end_story_cycle:agent_description_created"))],
-    requested_kind_spec=AGENT_DESCRIPTION,
+    requested_kind_spec=WORK_DESSCRIPTION,
     request_template=textwrap.dedent(
         """
     Here is current state of the story specification.

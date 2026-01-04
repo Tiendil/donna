@@ -34,12 +34,11 @@ class RecordIndexItem(BaseEntity):
 
 
 class RecordKindSpec(BaseEntity):
-    record_id: RecordIdTemplate
     kind: RecordKindId
 
     @property
     def verbose(self) -> str:
-        return f"<record: {self.record_id}, kind: {self.kind}>"
+        return f"<kind: {self.kind}>"
 
     def cells(self) -> list[Cell]:
         from donna.world.primitives_register import register
@@ -52,7 +51,6 @@ class RecordKindSpec(BaseEntity):
             Cell.build_json(
                 kind="record_kind_json_schema",
                 content=kind.specification(),
-                record_id=self.record_id,
                 record_kind=self.kind,
             )
         ]

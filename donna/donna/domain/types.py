@@ -12,6 +12,7 @@ InternalId = NewType("InternalId", str)
 WorkUnitId = NewType("WorkUnitId", InternalId)
 ActionRequestId = NewType("ActionRequestId", InternalId)
 TaskId = NewType("TaskId", InternalId)
+RecordId = NewType("RecordId", InternalId)
 
 # Ids that a pure slug type
 # TODO: do we need Slug type?
@@ -31,10 +32,3 @@ OperationId = NewType("OperationId", str)
 # TODO: we may want to refactor this into dynamic id with optional slug
 # TODO: at lease we may want to replace `/` with `:`
 SpecificationId = NewType("SpecificationId", str)
-
-
-# Ids to refactor
-
-RecordId = NewType("RecordId", str)
-
-RecordIdTemplate = NewType("RecordIdTemplate", str)

@@ -10,6 +10,7 @@ _INTERNAL_COUNTERS: dict[Callable[[types.InternalId], types.InternalId], types.C
     types.WorkUnitId: types.CounterId("WU"),
     types.ActionRequestId: types.CounterId("AR"),
     types.TaskId: types.CounterId("T"),
+    types.RecordId: types.CounterId("R"),
 }
 
 
