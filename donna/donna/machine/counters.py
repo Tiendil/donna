@@ -1,12 +1,13 @@
-import pydantic
 from typing import Callable
+
+import pydantic
+
 from donna.core.entities import BaseEntity
 from donna.domain import types
 from donna.world.layout import layout
 
-
-_INTERNAL_COUNTERS = {
-    types.WorkUnitId: "WU",
+_INTERNAL_COUNTERS: dict[Callable[[types.InternalId], types.WorkUnitId], types.CounterId] = {
+    types.WorkUnitId: types.CounterId("WU"),
 }
 
 
@@ -18,11 +19,10 @@ class Id(BaseEntity):
         return self.value
 
     def to_full(self) -> types.InternalId:
-        return f"{self.id}-{self.value:04d}-{self.crc()}"
+        return types.InternalId(f"{self.id}-{self.value:04d}-{self.crc()}")
 
     def crc(self) -> str:
         """Translates int into a compact string representation with a-zA-Z0-9 characters."""
-
         charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
         base = len(charset)
 
@@ -36,7 +36,7 @@ class Id(BaseEntity):
             chars.append(charset[rem])
 
         chars.reverse()
-        return ''.join(chars)
+        return "".join(chars)
 
 
 class Counters(BaseEntity):
@@ -69,7 +69,10 @@ class Counters(BaseEntity):
         return Id(id=counter_id, value=next_value)
 
 
-def next_id[T](story_id: types.StoryId, type_id: Callable[[types.InternalId], T]) -> T:
+def next_id(
+    story_id: types.StoryId,
+    type_id: Callable[[types.InternalId], types.WorkUnitId],
+) -> types.WorkUnitId:
     counters = Counters.load(story_id)
 
     if type_id not in _INTERNAL_COUNTERS:
