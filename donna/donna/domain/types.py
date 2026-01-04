@@ -5,7 +5,8 @@ StoryId = NewType("StoryId", str)
 CounterId = NewType("CounterId", str)
 InternalId = NewType("InternalId", str)
 
-WorkUnitId = NewType("WorkUnitId", uuid.UUID)
+WorkUnitId = NewType("WorkUnitId", InternalId)
+
 RecordId = NewType("RecordId", str)
 ActionRequestId = NewType("ActionRequestId", uuid.UUID)
 EventId = NewType("EventId", str)
