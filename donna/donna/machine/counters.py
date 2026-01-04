@@ -20,7 +20,7 @@ class Id(BaseEntity):
         return self.value
 
     def to_full(self) -> types.InternalId:
-        return types.InternalId(f"{self.id}-{self.value:04d}-{self.crc()}")
+        return types.InternalId(f"{self.id}-{self.value}-{self.crc()}")
 
     def crc(self) -> str:
         """Translates int into a compact string representation with a-zA-Z0-9 characters."""
@@ -70,10 +70,10 @@ class Counters(BaseEntity):
         return Id(id=counter_id, value=next_value)
 
 
-def next_id(
+def next_id[T](
     story_id: types.StoryId,
-    type_id: Callable[[types.InternalId], types.WorkUnitId],
-) -> types.WorkUnitId:
+    type_id: Callable[[types.InternalId], T],
+) -> T:
     counters = Counters.load(story_id)
 
     if type_id not in _INTERNAL_COUNTERS:
@@ -86,3 +86,25 @@ def next_id(
     counters.save()
 
     return type_id(next_id.to_full())
+
+
+def create_id_parser[T](type_id: Callable[[types.InternalId], T]) -> Callable[[str], T]:
+    def parser(text: str) -> T:
+        parts = text.split('-')
+
+        if len(parts) != 3:
+            raise ValueError(f"Invalid id format: '{text}'")
+
+        counter_id, number, crc = parts
+
+        if counter_id not in _INTERNAL_COUNTERS.values():
+            raise NotImplementedError(f"Unknown counter id: '{counter_id}'")
+
+        id = Id(counter_id=types.CounterId(counter_id), value=int(number))
+
+        if id.crc() != crc:
+            raise NotImplementedError(f"Invalid crc for id: '{text}'")
+
+        return type_id(id.to_full())
+
+    return parser

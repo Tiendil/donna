@@ -22,7 +22,3 @@ SpecificationSourceId = NewType("SpecificationSourceId", str)
 
 def new_task_id() -> TaskId:
     return TaskId(uuid.uuid4())
-
-
-def str_to_action_request_id(text: str) -> ActionRequestId:
-    return ActionRequestId(uuid.UUID(text))
