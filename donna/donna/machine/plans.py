@@ -88,7 +88,9 @@ class Plan(BaseEntity):
                 for event_template in operation.trigger_on:
                     if event_template.match(event):
                         # TODO: we may want store an event in the work unit
-                        new_work_unit = WorkUnit.build(task_id=task_id, operation=operation.id)
+                        new_work_unit = WorkUnit.build(story_id=self.story_id,
+                                                       task_id=task_id,
+                                                       operation=operation.id)
                         self.queue.append(new_work_unit)
 
         self.events.clear()

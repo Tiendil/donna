@@ -2,6 +2,9 @@ import uuid
 from typing import NewType
 
 StoryId = NewType("StoryId", str)
+CounterId = NewType("CounterId", str)
+InternalId = NewType("InternalId", str)
+
 WorkUnitId = NewType("WorkUnitId", uuid.UUID)
 RecordId = NewType("RecordId", str)
 ActionRequestId = NewType("ActionRequestId", uuid.UUID)

@@ -2,6 +2,7 @@ from donna.core.entities import BaseEntity
 from donna.domain.types import ActionRequestId, OperationId, Slug, StoryId
 from donna.machine.cells import Cell
 from donna.machine.plans import Plan, get_plan
+from donna.machine.counters import Counters
 from donna.machine.records import RecordsIndex
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.layout import layout
@@ -33,6 +34,8 @@ def create_story(slug: Slug) -> Story:
 
     plan = Plan.build(story_id)
 
+    counters = Counters.build(story_id)
+
     records_index = RecordsIndex(story_id=story_id, records=[])
 
     layout().story_dir(story_id).mkdir(parents=True, exist_ok=True)
@@ -41,6 +44,8 @@ def create_story(slug: Slug) -> Story:
     story.save()
 
     plan.save()
+
+    counters.save()
 
     records_index.save()
 

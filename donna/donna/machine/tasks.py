@@ -6,6 +6,7 @@ import pydantic
 
 from donna.core.entities import BaseEntity
 from donna.domain.types import OperationId, StoryId, TaskId, WorkUnitId, new_task_id, new_work_unit_id
+from donna.machine.counters import next_id
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -62,12 +63,13 @@ class WorkUnit(BaseEntity):
     @classmethod
     def build(
         cls,
+        story_id: StoryId,
         task_id: TaskId,
         operation: OperationId,
         context: dict[str, Any] | None = None,
     ) -> "WorkUnit":
 
-        id = new_work_unit_id()
+        id = next_id(story_id, WorkUnitId)
 
         if context is None:
             context = {}
