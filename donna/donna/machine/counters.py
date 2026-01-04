@@ -100,7 +100,7 @@ def create_id_parser[T](type_id: Callable[[types.InternalId], T]) -> Callable[[s
         if counter_id not in _INTERNAL_COUNTERS.values():
             raise NotImplementedError(f"Unknown counter id: '{counter_id}'")
 
-        id = Id(counter_id=types.CounterId(counter_id), value=int(number))
+        id = Id(id=types.CounterId(counter_id), value=int(number))
 
         if id.crc() != crc:
             raise NotImplementedError(f"Invalid crc for id: '{text}'")
