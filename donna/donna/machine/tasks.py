@@ -37,7 +37,7 @@ class Task(BaseEntity):
     @classmethod
     def build(cls, story_id: StoryId) -> "Task":
         return Task(
-            id=new_task_id(),
+            id=next_id(story_id, new_task_id),
             state=TaskState.TODO,
             story_id=story_id,
             context={},
