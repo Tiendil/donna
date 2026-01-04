@@ -16,6 +16,10 @@ class RichInternalId:
     id: types.CounterId
     value: int
 
+    def __init__(self, id: types.CounterId, value: int) -> None:
+        self.id = id
+        self.value = value
+
     def to_int(self) -> int:
         return self.value
 
