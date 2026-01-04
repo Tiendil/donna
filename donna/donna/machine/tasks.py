@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.types import OperationId, StoryId, TaskId, WorkUnitId, new_task_id, new_work_unit_id
+from donna.domain.types import OperationId, StoryId, TaskId, WorkUnitId, new_task_id
 from donna.machine.counters import next_id
 
 if TYPE_CHECKING:
