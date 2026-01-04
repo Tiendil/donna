@@ -8,7 +8,7 @@ from donna.core.entities import BaseEntity
 from donna.domain.types import OperationId, StoryId, TaskId, WorkUnitId, new_task_id, new_work_unit_id
 
 if TYPE_CHECKING:
-    from donna.workflows.changes import Change
+    from donna.machine.changes import Change
 
 
 class TaskState(enum.StrEnum):
@@ -83,12 +83,12 @@ class WorkUnit(BaseEntity):
         return unit
 
     def run(self, task: Task) -> list["Change"]:
-        from donna.workflows.operations import storage
+        from donna.world.primitives_register import register
 
         if self.state != WorkUnitState.TODO:
             raise NotImplementedError("Can only run a work unit in TODO state")
 
-        operation = storage().get(self.operation)
+        operation = register().operations.get(self.operation)
 
         if not operation:
             raise NotImplementedError(f"Operation with kind '{self.operation}' not found")

@@ -1,13 +1,14 @@
 import pydantic
 
-from donna.agents.domain import ActionRequest, AgentCellHistory, AgentMessage
 from donna.core.entities import BaseEntity
-from donna.domain.layout import layout
 from donna.domain.types import ActionRequestId, OperationResultId, StoryId, TaskId, WorkUnitId
-from donna.stories.events import Event
-from donna.workflows.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState
-from donna.workflows.operations import storage
-from donna.workflows.tasks import Task, TaskState, WorkUnit, WorkUnitState
+from donna.machine.action_requests import ActionRequest
+from donna.machine.cells import Cell
+from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState
+from donna.machine.events import Event
+from donna.machine.tasks import Task, TaskState, WorkUnit, WorkUnitState
+from donna.world.layout import layout
+from donna.world.primitives_register import register
 
 
 # TODO: somehow separate methods that save plan and those that do not
@@ -17,7 +18,7 @@ class Plan(BaseEntity):
     queue: list[WorkUnit]  # TODO: rename from queue, because it's not a queue anymore
     action_requests: list[ActionRequest]
     events: list[Event]
-    last_cells: list[AgentCellHistory]
+    last_cells: list[Cell]
     started: bool
 
     # TODO: we may want to make queue items frozen later
@@ -73,21 +74,21 @@ class Plan(BaseEntity):
         raise NotImplementedError(f"Work unit with id '{work_unit_id}' not found in plan")
 
     def save(self) -> None:
-        layout().story_plan(self.story_id).write_text(self.to_toml())
+        layout().story_plan(self.story_id).write_text(self.to_json())
 
     @classmethod
     def load(cls, story_id: StoryId) -> "Plan":
-        return cls.from_toml(layout().story_plan(story_id).read_text())
+        return cls.from_json(layout().story_plan(story_id).read_text())
 
     def apply_events(self) -> None:  # noqa: CCR001
         task_id = self.active_tasks[-1].id
 
         for event in self.events:
-            for opeation in storage().all():
-                for event_template in opeation.trigger_on:
+            for operation in register().operations.values():
+                for event_template in operation.trigger_on:
                     if event_template.match(event):
                         # TODO: we may want store an event in the work unit
-                        new_work_unit = WorkUnit.build(task_id=task_id, operation=opeation.id)
+                        new_work_unit = WorkUnit.build(task_id=task_id, operation=operation.id)
                         self.queue.append(new_work_unit)
 
         self.events.clear()
@@ -135,7 +136,7 @@ class Plan(BaseEntity):
         for change in changes:
             change.apply_to(self, task)
 
-    def step(self) -> list[AgentCellHistory]:
+    def step(self) -> list[Cell]:
         # apply events on the beginning of the step
         # to process events that
         self.apply_events()
@@ -157,21 +158,19 @@ class Plan(BaseEntity):
 
         return cells
 
-    def complete_message(self) -> AgentMessage:
-        return AgentMessage(
-            story_id=self.story_id,
-            task_id=None,
-            work_unit_id=None,
-            action_request_id=None,
-            message=(
+    def complete_message(self) -> Cell:
+        return Cell.build_markdown(
+            kind="work_is_completed",
+            content=(
                 "The work in this story is COMPLETED. You MUST STOP all your activities immediately. "
                 "ASK THE USER for further instructions."
             ),
+            story_id=self.story_id,
         )
 
-    def run(self) -> list[AgentCellHistory]:  # noqa: CCR001
+    def run(self) -> list[Cell]:  # noqa: CCR001
         if self.is_completed():
-            return [self.complete_message().render()]
+            return [self.complete_message()]
 
         if not self.has_work():
             return []
@@ -181,7 +180,7 @@ class Plan(BaseEntity):
         while True:
 
             if self.is_completed():
-                cells.append(self.complete_message().render())
+                cells.append(self.complete_message())
                 break
 
             if not self.has_work():
@@ -194,7 +193,7 @@ class Plan(BaseEntity):
 
         for action_request in self.action_requests:
             for cell in action_request.cells():
-                cells.append(cell.render())
+                cells.append(cell)
 
         return cells
 
@@ -207,7 +206,7 @@ class Plan(BaseEntity):
 
         operation_id = self.get_action_request(request_id).operation_id
 
-        operation = storage().get(operation_id)
+        operation = register().operations.get(operation_id)
 
         result = operation.result(result_id)
 
@@ -227,4 +226,4 @@ def get_plan(story_id: StoryId) -> Plan:
     if not plan_path.exists():
         raise NotImplementedError(f"Plan for story '{story_id}' does not exist")
 
-    return Plan.from_toml(plan_path.read_text())
+    return Plan.from_json(plan_path.read_text())

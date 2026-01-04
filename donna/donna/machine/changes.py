@@ -1,13 +1,14 @@
 import copy
 from typing import TYPE_CHECKING, Any
 
-from donna.agents.domain import ActionRequest, AgentCell
 from donna.domain.types import WorkUnitId
-from donna.stories.events import Event
-from donna.workflows.tasks import Task, TaskState, WorkUnit
+from donna.machine.action_requests import ActionRequest
+from donna.machine.cells import Cell
+from donna.machine.events import Event
+from donna.machine.tasks import Task, TaskState, WorkUnit
 
 if TYPE_CHECKING:
-    from donna.workflows.plans import Plan
+    from donna.machine.plans import Plan
 
 
 class Change:
@@ -39,12 +40,12 @@ class ChangeAddToQueue(Change):
         plan.queue.append(self.unit)
 
 
-class ChangeAddAgentCell(Change):
-    def __init__(self, agent_cell: AgentCell) -> None:
-        self.agent_cell = agent_cell
+class ChangeAddCell(Change):
+    def __init__(self, cell: Cell) -> None:
+        self.cell = cell
 
     def apply_to(self, plan: "Plan", task: Task) -> None:
-        plan.last_cells.append(self.agent_cell.render())
+        plan.last_cells.append(self.cell)
 
 
 class ChangeAddActionRequest(Change):

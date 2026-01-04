@@ -1,31 +1,53 @@
 
-* TODO partialy automate tools registration
-
-** TODO generate text to insert into codex configs?
-* TODO TOML doesn't support None, which is very inconvinient for storing contexts since they can contain any data.
-* TODO since every scenario & unit of work in story is treckable, we may want to use integers instead UUIDs as ids for them.
-* TODO each cli command should have detailed description
-* TODO protect each of cli commands with is_story_exists check
-* TODO some cli commands take long text inputs, allow reading them from files
-* TODO some cli commands take long text inputs, allow redirecting them from stdin
-* TODO do we need to return short "operation is successful" messages from cli commands?
 * TODO automatic action request finish on artifact creation
-* TODO when we want to get an artifact from the story we do not load the whole index — artifact id should be enough.
+* TODO when we want to get a record/record-kind from the story we do not load the whole index — artifact id should be enough.
 * TODO need some task/command to output the whole story spec
 * TODO freeze pydantic models which are possible
 * TODO codex should explain what it is doing, while executing requests from donna
-* TODO currently operation graphs look like overcomplicated state machines, we may want to do one of:
-** simplify them by refactoring into more classical state machines
-** refactor into smth more powerful than state machines
-* TODO rename scenarios into skills?
-* TODO install donna as a skill
-** easy mode — one of possible skills to use
-** hard mode — forse agent to work via donna
-* TODO default donna operation that navigates user to others
-** check if uncompleted stories exists, list them if so
-** ask the user if the new story should be started
-* TODO move workflow cli commands into a separate module (from the stories module)
-* TODO Make all ids in the format <int>:<ascii-checksum> where ascii-checksum is just a representation of the integer in ascii symbols [a-zA-Z0-9], this will help to control mistakes from the agents and humans
-* TODO consolidate all action request logic in a single module
 * TODO replace all NotImplementedError exceptions with custom exceptions and smart error handling
 * TODO review the dictionary of primary terms
+* TODO complex story workflow
+** DONE choose the name for the story
+** DONE simplest linear workflow: agent description -> goals -> objectives -> risks -> plan -> exectution -> grooming
+** TODO list based artifacts
+*** TODO LIST artifacts with operations add, remove, replace
+*** TODO iterate and groom over goals & objectives
+*** TODO iterate over risks
+*** TODO build plan from objectives and risks
+*** TODO execute the plan by taking actions from the plan
+** TODO graph-bases execution of the plan:
+*** TODO buiild things-to-do by iterating over it in the contexts of objectives and risjs
+*** TODO GRAPH(-LIST) artifacts with additiona operations to describe dependencies between list items
+*** TODO build plan on top of things-to-do list
+** TODO verify all risks are closed and rollback to planing if not
+** TODO verify all objectives are met and rollback to planing if not
+** TODO Split the whole worfklow into smaller scenarios/tasks?
+** TODO prepare a report after the story is finished
+** TODO custom command to run a specific subflow? Or whould we rest it to the agent? It look like agent can deside better, because otherwise we'll introduce a hard coupling between different flows.
+** TODO replace "here is the beginning of the story specification" with an introspection of the records?
+** TODO refactor records/kinds/items names, place them in order
+* TODO tests
+** TODO basic / lowest unit tests for primitive operations
+** TODO domain-level unit tests
+** TODO intergration tests for workflows/stories/scenarios
+* TODO split operations into code and configs, since most of them are configs
+* TODO end_to_end_story_cycle — maybe we should move the whole task flows into a separate package? or organize them better?
+* TODO codex struggle with artifact names (skips file extensions, until explicitly told to use the full name). Maybe we should simplify artifact names?
+* TODO optimize imports by moving most used ones to \__init__.py files
+* TODO `behavior` can be something on top of workflows. Maybe it be a constructor of workflows. I.e. user define own workflow by parametrizing them via `behavior`.
+* TODO Relations / dependencies between records
+** TODO Store relations in the records index
+** TODO cli commands to add/remove relations
+** TODO storage of allowed relation types
+** TODO operations to validate that each list item has required relations
+* TODO Export class rename to Workflow? Maybe even make them a separate entities?
+* TODO Objectives loop
+** TODO Full spec on planing activities
+** TODO Objectives grooming loop
+*** choose unprocessed objective
+*** groom objective
+*** maybe via a single action request operation? With customized code for searching next objective to process
+** TODO Goal-objective relations
+** TODO Iterate goals into objectives
+** TODO Full objective set grooming (may be moved into separate TODO list, since it may require planing)
+** TODO Goals grooming (may be moved into separate TODO list, since it may require planing)

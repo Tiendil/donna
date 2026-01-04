@@ -1,28 +1,24 @@
-from donna.agents.domain import AgentMessage
-from donna.artifacts.domain import ArtifactsIndex
 from donna.core.entities import BaseEntity
-from donna.domain.layout import layout
 from donna.domain.types import ActionRequestId, OperationId, Slug, StoryId
-from donna.workflows.plans import Plan, get_plan
-from donna.workflows.tasks import Task, WorkUnit
+from donna.machine.cells import Cell
+from donna.machine.plans import Plan, get_plan
+from donna.machine.records import RecordsIndex
+from donna.machine.tasks import Task, WorkUnit
+from donna.world.layout import layout
 
 
 class Story(BaseEntity):
     id: StoryId
 
-    def save(self) -> None:
-        layout().story(self.id).write_text(self.to_toml())
+    @classmethod
+    def load(cls, story_id: StoryId) -> "Story":
+        return cls.from_json(layout().story(story_id).read_text())
 
-    def cells(self) -> list[AgentMessage]:
-        return [
-            AgentMessage(
-                story_id=self.id,
-                task_id=None,
-                work_unit_id=None,
-                message=f"Story ID: {self.id}",
-                action_request_id=None,
-            )
-        ]
+    def save(self) -> None:
+        layout().story(self.id).write_text(self.to_json())
+
+    def cells(self) -> list[Cell]:
+        return [Cell.build_meta(kind="story_info", story_id=self.id)]
 
 
 def create_story(slug: Slug) -> Story:
@@ -37,16 +33,16 @@ def create_story(slug: Slug) -> Story:
 
     plan = Plan.build(story_id)
 
-    artifacts_index = ArtifactsIndex(story_id=story_id, artifacts=[])
+    records_index = RecordsIndex(story_id=story_id, records=[])
 
     layout().story_dir(story_id).mkdir(parents=True, exist_ok=True)
-    layout().story_artifacts_dir(story_id).mkdir(parents=True, exist_ok=True)
+    layout().story_records_dir(story_id).mkdir(parents=True, exist_ok=True)
 
     story.save()
 
     plan.save()
 
-    artifacts_index.save()
+    records_index.save()
 
     return story
 
@@ -60,15 +56,6 @@ def start_workflow(story_id: StoryId, operation_id: OperationId) -> None:
     plan.add_task(task, start)
 
     plan.save()
-
-
-def get_story(story_id: StoryId) -> Story:
-    story_path = layout().story(story_id)
-
-    if not story_path.exists():
-        raise NotImplementedError(f"Story with '{story_id}' does not exist")
-
-    return Story.from_toml(story_path.read_text())
 
 
 # TODO: very unoptimal, improve later

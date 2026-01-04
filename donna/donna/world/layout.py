@@ -1,7 +1,7 @@
 import pathlib
 
 from donna.core import utils
-from donna.domain.types import ArtifactId, StoryId
+from donna.domain.types import RecordId, RecordKindId, StoryId
 
 # TODO: Make configurable
 DONNA_DIR_NAME = ".donna"
@@ -12,31 +12,31 @@ class Layout:
     def __init__(self, project: pathlib.Path, donna_dir: str) -> None:
         self.project = project
         self.donna = project / donna_dir
-        self.config = self.donna / "config.toml"
+        self.config = self.donna / "config.json"
 
         self.stories = self.donna / "stories"
-        self.scenarios = self.donna / "scenarios"
+        self.workflows = self.donna / "workflows"
 
     def story_dir(self, story_id: StoryId) -> pathlib.Path:
         return self.stories / story_id
 
     def story(self, story_id: StoryId) -> pathlib.Path:
-        return self.story_dir(story_id) / "story.toml"
+        return self.story_dir(story_id) / "story.json"
 
     def story_plan(self, story_id: StoryId) -> pathlib.Path:
-        return self.story_dir(story_id) / "plan.toml"
+        return self.story_dir(story_id) / "plan.json"
 
     def story_log(self, story_id: StoryId) -> pathlib.Path:
-        return self.story_dir(story_id) / "log.toml"
+        return self.story_dir(story_id) / "log.json"
 
-    def story_artifacts_dir(self, story_id: StoryId) -> pathlib.Path:
-        return self.story_dir(story_id) / "artifacts"
+    def story_records_dir(self, story_id: StoryId) -> pathlib.Path:
+        return self.story_dir(story_id) / "records"
 
-    def story_artifacts_index(self, story_id: StoryId) -> pathlib.Path:
-        return self.story_artifacts_dir(story_id) / "index.toml"
+    def story_records_index(self, story_id: StoryId) -> pathlib.Path:
+        return self.story_records_dir(story_id) / "index.json"
 
-    def story_artifact(self, story_id: StoryId, artifact_id: ArtifactId) -> pathlib.Path:
-        return self.story_artifacts_dir(story_id) / artifact_id
+    def story_record_kind(self, story_id: StoryId, record_id: RecordId, kind: RecordKindId) -> pathlib.Path:
+        return self.story_records_dir(story_id) / f"{record_id}.{kind}.json"
 
     def next_story_number(self) -> int:
         existing_ids = [
@@ -49,7 +49,7 @@ class Layout:
 
     def sync(self) -> None:
         self.stories.mkdir(exist_ok=True)
-        self.scenarios.mkdir(exist_ok=True)
+        self.workflows.mkdir(exist_ok=True)
 
     def is_story_exists(self, story: StoryId) -> bool:
         return self.story_dir(story).exists()

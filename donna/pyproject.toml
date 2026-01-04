@@ -1,21 +1,40 @@
-[tool.poetry]
-name = "Donna"
-version = "0.1"
-description = "LLM agents tasks helper."
-# readme = "README.md"
-# repository = "https://github.com/Tiendil/brigid"
-authors = ["Aliaksei Yaletski (Tiendil) <a.eletsky@gmail.com>"]
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+name = "donna"
+version = "0.1.0"
+description = "A deterministic workflow and state orchestration engine for LLM agents."
+readme = "README.md"
+requires-python = ">=3.12,<4.0"
 license = "BSD-3-Clause"
-# keywords = []
-# classifiers = []
+authors = [
+  { name = "Aliaksei Yaletski", email = "a.eletsky@gmail.com" },
+]
+keywords = ["ai", "agent", "cli", "llm", "workflow"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Software Development :: Build Tools",
+  "Topic :: Utilities",
+]
+dependencies = [
+  "pydantic>=2.12,<2.13",
+  "typer>=0.20,<0.21",
+]
 
-[tool.poetry.dependencies]
-python = "^3.12"
+[project.urls]
+Homepage = "https://github.com/Tiendil/donna"
+Repository = "https://github.com/Tiendil/donna"
+Issues = "https://github.com/Tiendil/donna/issues"
 
-pydantic = "2.12.*"
-tomli-w = "1.2.*"
-
-typer = "0.20.*"
+[project.scripts]
+donna = "donna.cli.__main__:app"
 
 [tool.poetry.group.dev.dependencies]
 isort = "7.0.*"
@@ -35,13 +54,6 @@ flake8-pyproject = "1.2.*"
 flake8-eradicate = "1.5.*"
 
 mypy = "1.19.*"
-
-[tool.poetry.scripts]
-donna = "donna.cli.__main__:app"
-
-[build-system]
-requires = ["poetry-core>=1.8.0"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.isort]
 profile = "black"
