@@ -8,6 +8,7 @@ from donna.world.layout import layout
 
 _INTERNAL_COUNTERS: dict[Callable[[types.InternalId], types.WorkUnitId], types.CounterId] = {
     types.WorkUnitId: types.CounterId("WU"),
+    types.ActionRequestId: "AR",
 }
 
 

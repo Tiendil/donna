@@ -6,9 +6,9 @@ CounterId = NewType("CounterId", str)
 InternalId = NewType("InternalId", str)
 
 WorkUnitId = NewType("WorkUnitId", InternalId)
+ActionRequestId = NewType("ActionRequestId", InternalId)
 
 RecordId = NewType("RecordId", str)
-ActionRequestId = NewType("ActionRequestId", uuid.UUID)
 EventId = NewType("EventId", str)
 OperationId = NewType("OperationId", str)
 RecordKindId = NewType("RecordKindId", str)
@@ -22,10 +22,6 @@ SpecificationSourceId = NewType("SpecificationSourceId", str)
 
 def new_task_id() -> TaskId:
     return TaskId(uuid.uuid4())
-
-
-def new_action_request_id() -> ActionRequestId:
-    return ActionRequestId(uuid.uuid4())
 
 
 def str_to_action_request_id(text: str) -> ActionRequestId:
