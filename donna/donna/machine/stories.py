@@ -56,7 +56,7 @@ def start_workflow(story_id: StoryId, operation_id: OperationId) -> None:
     plan = get_plan(story_id)
 
     task = Task.build(story_id)
-    start = WorkUnit.build(task.id, operation_id)
+    start = WorkUnit.build(story_id, task.id, operation_id)
 
     plan.add_task(task, start)
 
