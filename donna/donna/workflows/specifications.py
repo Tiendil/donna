@@ -4,7 +4,7 @@ from donna.primitives.specifications.static import StaticSpecificationSource
 
 spec_planning = Specification(
     item=SpecificationIndexItem(
-        id=SpecificationId("donna/workflows/story-planning"),
+        id=SpecificationId("donna:workflows:story-planning"),
         name="Story Planning Guidelines",
         description=(
             "This document describes how Donna MUST plan work on a story with the help of "

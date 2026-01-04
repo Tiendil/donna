@@ -24,11 +24,8 @@ RecordKindId = NewType("RecordKindId", str)
 OperationResultId = NewType("OperationResultId", str)
 SpecificationSourceId = NewType("SpecificationSourceId", str)
 
-# Ids that a more complex string type
-# TODO: also refactor?
+# Nested Ids to organize static entities
 
-EventId = NewType("EventId", str)
-OperationId = NewType("OperationId", str)
-# TODO: we may want to refactor this into dynamic id with optional slug
-# TODO: at lease we may want to replace `/` with `:`
-SpecificationId = NewType("SpecificationId", str)
+EventId = NewType("EventId", NestedId)
+OperationId = NewType("OperationId", NestedId)
+SpecificationId = NewType("SpecificationId", NestedId)

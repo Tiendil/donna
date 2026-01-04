@@ -141,7 +141,7 @@ create_detailed_description = StoryCycleStep(
 
     You MUST produce a high-level description of the work to be done based on the developer's description.
 
-    1. Read the specification `donna/workflows/story-planning` if you haven't done it yet.
+    1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
     2. Add the description as `{scheme.requested_kind_spec.verbose}` to the story.
     3. Mark this action request as completed.
     """
