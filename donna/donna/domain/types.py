@@ -24,10 +24,6 @@ def new_task_id() -> TaskId:
     return TaskId(uuid.uuid4())
 
 
-def new_work_unit_id() -> WorkUnitId:
-    return WorkUnitId(uuid.uuid4())
-
-
 def new_action_request_id() -> ActionRequestId:
     return ActionRequestId(uuid.uuid4())
 
