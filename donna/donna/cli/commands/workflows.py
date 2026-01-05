@@ -29,3 +29,6 @@ def start(story_id: StoryIdArgument, workflow_id: WorkflowIdArgument) -> None:
     plan = stories.Plan.load(story_id)
 
     output_cells(plan.run())
+
+
+app.add_typer(workflows_cli, name="workflows", help="Run workflows")
