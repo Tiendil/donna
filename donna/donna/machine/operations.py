@@ -48,16 +48,3 @@ class Operation(BaseEntity):
                 return result
 
         raise NotImplementedError(f"OperationResult with id '{id}' does not exist")
-
-    def is_workflow(self) -> bool:
-        return self.export is not None
-
-    def workflow_cell(self) -> Cell:
-        assert self.export is not None
-
-        return Cell.build_markdown(
-            kind="workflow",
-            content=self.export.description,
-            workflow_id=self.id,
-            workflow_name=self.export.name,
-        )

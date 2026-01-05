@@ -13,3 +13,11 @@ class Workflow(BaseEntity):
     operation_id: OperationId
     name: str
     description: str
+
+    def cells(self) -> Cell:
+        return [Cell.build_markdown(
+            kind="workflow",
+            content=self.description,
+            workflow_id=self.id,
+            workflow_name=self.name,
+        )]

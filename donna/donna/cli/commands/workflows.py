@@ -18,7 +18,11 @@ workflows_cli = typer.Typer()
 
 @workflows_cli.command()
 def list() -> None:
-    cells = [operation.workflow_cell() for operation in register().operations.values() if operation.is_workflow()]
+    cells = []
+
+    for workflow in register().workflows.values():
+        cells.extend(workflow.cells())
+
     output_cells(cells)
 
 
