@@ -50,9 +50,9 @@ You create story by specifying `story-slug` — a short ASCII string identifying
 - You create stories by calling `./bin/donna.sh stories create <story-slug>`.
 - After you create a story:
   1. The `donna` tool will output a story id, use it to interact with the tool in the future.
-  2. List all possible workflows with command `./bin/donna.sh stories list-workflows`.
+  2. List all possible workflows with command `./bin/donna.sh workflows list`.
   3. Choose the most appropriate workflow for the story you are going to work on or ask the developer if you are not sure which workflow to choose.
-  4. Start working on the story by calling `./bin/donna.sh stories start-workflow <story-id> <workflow-id>`.
+  4. Start working on the story by calling `./bin/donna.sh workflows start <story-id> <workflow-id>`.
   5. The `donna` tool will output descriptions of all operations it performs to complete the story.
   6. The `donna` tool will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
 - When you done doing your part, you call `./bin/donna.sh stories action-request-completed <action-request-id> <action-request-result>` to report that you completed the action request. List of values `<action-request-result>` will be in the **action request** description.
