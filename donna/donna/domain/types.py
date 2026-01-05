@@ -1,4 +1,4 @@
-from typing import NewType
+from typing import NewType, Callable, TypeVar
 
 # Internal base types
 
@@ -41,7 +41,7 @@ def slug_parser(text: str) -> Slug:
     return Slug(text)
 
 
-def child_slug_parser[T](type_id: T) -> callable[[str], T]:
+def child_slug_parser[T](type_id: T) -> Callable[[str], T]:
     def parser(text: str) -> T:
         return type_id(slug_parser(text))
 
