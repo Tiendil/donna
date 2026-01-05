@@ -3,19 +3,25 @@ from typing import Annotated
 import typer
 
 from donna.domain.ids import create_id_parser
-from donna.domain.types import ActionRequestId, RecordId
+from donna.domain import types
 
 ActionRequestIdArgument = Annotated[
-    ActionRequestId,
-    typer.Argument(parser=create_id_parser(ActionRequestId), help="The ID of the action request"),
+    types.ActionRequestId,
+    typer.Argument(parser=create_id_parser(types.ActionRequestId), help="The ID of the action request"),
 ]
 ActionRequestIdOption = Annotated[
-    ActionRequestId,
-    typer.Option(parser=create_id_parser(ActionRequestId), help="The ID of the action request"),
+    types.ActionRequestId,
+    typer.Option(parser=create_id_parser(types.ActionRequestId), help="The ID of the action request"),
 ]
 
 
 RecordIdArgument = Annotated[
-    RecordId,
-    typer.Argument(parser=create_id_parser(RecordId), help="The ID of the record"),
+    types.RecordId,
+    typer.Argument(parser=create_id_parser(types.RecordId), help="The ID of the record"),
+]
+
+
+SlugArgument = Annotated[
+    types.Slug,
+    typer.Argument(help="The slug identifier"),
 ]

@@ -4,9 +4,9 @@ import shutil
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import ActionRequestIdArgument
+from donna.cli.types import ActionRequestIdArgument, SlugArgument
 from donna.cli.utils import output_cells
-from donna.domain.types import OperationId, OperationResultId, Slug, StoryId
+from donna.domain.types import OperationId, OperationResultId, StoryId
 from donna.machine import stories
 from donna.world.layout import layout
 from donna.world.primitives_register import register
@@ -18,7 +18,7 @@ stories_cli = typer.Typer()
 
 
 @stories_cli.command()
-def create(slug: str) -> None:
+def create(slug: SlugArgument) -> None:
     if not SLUG_PATTERN.match(slug):
         typer.echo(
             "Error: Slug must consist of lowercase letters, numbers, and hyphens only.",
@@ -26,7 +26,7 @@ def create(slug: str) -> None:
         )
         raise typer.Exit(code=1)
 
-    story = stories.create_story(Slug(slug))
+    story = stories.create_story(slug)
 
     output_cells(story.cells())
 

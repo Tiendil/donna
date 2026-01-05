@@ -29,3 +29,14 @@ SpecificationSourceId = NewType("SpecificationSourceId", str)
 EventId = NewType("EventId", NestedId)
 OperationId = NewType("OperationId", NestedId)
 SpecificationId = NewType("SpecificationId", NestedId)
+
+
+def slug_parser(text: str) -> Slug:
+    allowed_chars = "abcdefghijklmnopqrstuvwxyz0123456789-_"
+
+    if not all(c in allowed_chars for c in text):
+        raise ValueError(
+            f"Invalid slug '{text}'. Allowed characters are: {allowed_chars}"
+        )
+
+    return Slug(text)
