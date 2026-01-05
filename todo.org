@@ -56,3 +56,4 @@
 ** results can be replaced with "comple_on" list of event ids?
 ** trigger_on can be replaced on the same event list instead of list of event templates?
 ** some operations may trigger on record kind creation/update/deletion?
+** workflow can contain list of triggers that work on the events in the context of the workflow?
