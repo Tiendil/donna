@@ -3,7 +3,6 @@ import textwrap
 from donna.domain import types
 from donna.domain.types import EventId, OperationId, OperationResultId, RecordKindId
 from donna.machine.events import EventTemplate
-from donna.machine.operations import OperationExport as Export
 from donna.machine.operations import OperationResult
 from donna.machine.records import RecordKindSpec, RecordsIndex
 from donna.machine.workflows import Workflow
@@ -110,10 +109,6 @@ class StoryCycleStep(RequestAction):
 
 start = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle")),
-    export=Export(
-        name="Describe the story",
-        description="Create a detailed description of the story based on the developer's request.",
-    ),
     trigger_on=[],
     results=[
         OperationResult.completed(
@@ -138,7 +133,6 @@ workflow_start = Workflow(
     name="End-to-end story processing",
     description="End-to-end story processing: from work description through planning to execution and grooming.",
 )
-
 
 
 create_detailed_description = StoryCycleStep(
