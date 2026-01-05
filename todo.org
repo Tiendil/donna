@@ -62,3 +62,4 @@
 ** TODO Event ids must be technial (from donna), not from operations. Instead, event should go with a list of parameters and maching should be on <standard-id> + <required-parameters>
 *** In such case we may mark action request as completed when raising an event with required parameters
 ** can we finish action requests automatically?
+** TODO move action requests cli out of story cli, but where?
