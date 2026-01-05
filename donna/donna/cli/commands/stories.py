@@ -53,21 +53,6 @@ def action_request_completed(request_id: ActionRequestIdArgument, result_id: str
 
 
 @stories_cli.command()
-def list_workflows() -> None:
-    cells = [operation.workflow_cell() for operation in register().operations.values() if operation.is_workflow()]
-    output_cells(cells)
-
-
-@stories_cli.command()
-def start_workflow(story_id: StoryIdArgument, workflow_id: str) -> None:
-    stories.start_workflow(story_id, OperationId(types.NestedId(workflow_id)))
-
-    plan = stories.Plan.load(story_id)
-
-    output_cells(plan.run())
-
-
-@stories_cli.command()
 def remove_all() -> None:
     shutil.rmtree(layout().stories)
 

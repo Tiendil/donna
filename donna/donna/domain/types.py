@@ -28,6 +28,7 @@ SpecificationSourceId = NewType("SpecificationSourceId", Slug)
 EventId = NewType("EventId", NestedId)
 OperationId = NewType("OperationId", NestedId)
 SpecificationId = NewType("SpecificationId", NestedId)
+WorkflowId = NewType("WorkflowId", NestedId)
 
 
 def slug_parser(text: str) -> Slug:
