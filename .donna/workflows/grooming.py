@@ -11,8 +11,6 @@ from donna.machine.events import EventTemplate as ET
 
 start = Broadcast(
     id="donna:grooming",
-    export=Export(name="Groom the donna's code",
-                  description="Initiate operations to groom and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc."),
     trigger_on=[],
     results=[OR.completed("donna:grooming:started")]
 )
