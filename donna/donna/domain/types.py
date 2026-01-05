@@ -41,7 +41,7 @@ def slug_parser(text: str) -> Slug:
     return Slug(text)
 
 
-def child_slug_parser[T](type_id: T) -> Callable[[str], T]:
+def child_slug_parser[T: Slug](type_id: Callable[[Slug], T]) -> Callable[[str], T]:
     def parser(text: str) -> T:
         return type_id(slug_parser(text))
 
