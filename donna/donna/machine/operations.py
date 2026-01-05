@@ -10,11 +10,6 @@ if TYPE_CHECKING:
     from donna.machine.changes import Change
 
 
-class OperationExport(BaseEntity):
-    name: str
-    description: str
-
-
 class OperationResult(BaseEntity):
     id: OperationResultId
     description: str
@@ -43,8 +38,6 @@ class Operation(BaseEntity):
     trigger_on: list[EventTemplate]
 
     results: list[OperationResult]
-
-    export: OperationExport | None = None
 
     def execute(self, task: Task, unit: WorkUnit) -> Iterable["Change"]:
         raise NotImplementedError("You MUST implement this method.")

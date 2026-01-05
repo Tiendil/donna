@@ -51,3 +51,4 @@
 ** TODO Iterate goals into objectives
 ** TODO Full objective set grooming (may be moved into separate TODO list, since it may require planing)
 ** TODO Goals grooming (may be moved into separate TODO list, since it may require planing)
+* TODO We may want to get counters on every level of workspaces like "a:b:c", where story is one of the levels and donna workspace is the other.

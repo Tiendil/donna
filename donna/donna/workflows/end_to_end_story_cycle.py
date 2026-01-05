@@ -6,6 +6,7 @@ from donna.machine.events import EventTemplate
 from donna.machine.operations import OperationExport as Export
 from donna.machine.operations import OperationResult
 from donna.machine.records import RecordKindSpec, RecordsIndex
+from donna.machine.workflows import Workflow
 from donna.machine.tasks import Task
 from donna.primitives.operations.finish import Finish as FinishTask
 from donna.primitives.operations.request_action import RequestAction
@@ -122,13 +123,22 @@ start = StoryCycleStep(
     requested_kind_spec=DEVELOPER_DESCRIPTION,
     request_template=textwrap.dedent(
         """
-        1. Read the specification `donna/workflows/story-planning` if you haven't done it yet.
+        1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
         2. If the developer hasn't provided you a description of the work for this story, ask them to provide it.
         3. Add the description as `{scheme.requested_kind_spec.verbose}` to the story.
         4. Mark this action request as completed.
         """
     ),
 )
+
+
+workflow_start = Workflow(
+    id="donna:end_to_end_story_cycle:start",
+    operation_id=start.id,
+    name="End-to-end story processing",
+    description="End-to-end story processing: from work description through planning to execution and grooming.",
+)
+
 
 
 create_detailed_description = StoryCycleStep(
@@ -188,7 +198,7 @@ list_primary_goals = StoryCycleStep(
 
     You MUST list the goals of this story.
 
-    1. Read the specification `donna/workflows/story-planning` if you haven't done it yet.
+    1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
     2. If you can identify one more goal:
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
     2.2. mark this action request as `next_iteration`.
@@ -225,7 +235,7 @@ list_objectives = StoryCycleStep(
 
     You MUST list objectives that need to be achieved to complete each goal.
 
-    1. Read the specification `donna/workflows/story-planning` if you haven't done it yet.
+    1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
     2. If you can identify one more objective:
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
     2.2. mark this action request as `next_iteration`.
@@ -262,7 +272,7 @@ list_constraints = StoryCycleStep(
 
     You MUST list the known constraints for this story.
 
-    1. Read the specification `donna/workflows/story-planning` if you haven't done it yet.
+    1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
     2. If you can identify one more constraint:
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
     2.2. mark this action request as `next_iteration`.
@@ -299,7 +309,7 @@ list_acceptance_criteria = StoryCycleStep(
 
     You MUST list the acceptance criteria for this story.
 
-    1. Read the specification `donna/workflows/story-planning` if you haven't done it yet.
+    1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
     2. If you can identify one more acceptance criterion:
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
     2.2. mark this action request as `next_iteration`.
@@ -336,7 +346,7 @@ list_deliverables = StoryCycleStep(
 
     You MUST list the deliverables / artifacts for this story.
 
-    1. Read the specification `donna/workflows/story-planning` if you haven't done it yet.
+    1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
     2. If you can identify one more deliverable:
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
     2.2. mark this action request as `next_iteration`.
@@ -373,7 +383,7 @@ prepare_story_plan = StoryCycleStep(
 
     You MUST prepare a detailed work plan for this story.
 
-    1. Read the specification `donna/workflows/story-planning` if you haven't done it yet.
+    1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
     2. If you can identify one more plan item:
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
     2.2. mark this action request as `next_iteration`.
