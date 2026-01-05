@@ -47,7 +47,7 @@ class RichInternalId:
 class RichNestedId(tuple[str, ...]):
     __slots__ = ()
 
-    def __new__(cls, value: str | tuple[str, ...]):
+    def __new__(cls, value: str | tuple[str, ...]) -> "RichNestedId":
         if isinstance(value, str):
             parts = tuple(value.split(":"))
         else:

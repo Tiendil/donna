@@ -1,10 +1,11 @@
+from donna.domain import types
 from donna.domain.types import SpecificationId, SpecificationSourceId
 from donna.machine.specifications import Specification, SpecificationIndexItem
 from donna.primitives.specifications.static import StaticSpecificationSource
 
 spec_planning = Specification(
     item=SpecificationIndexItem(
-        id=SpecificationId("donna:workflows:story-planning"),
+        id=SpecificationId(types.NestedId("donna:workflows:story-planning")),
         name="Story Planning Guidelines",
         description=(
             "This document describes how Donna MUST plan work on a story with the help of "
@@ -227,6 +228,6 @@ Examples:
 
 
 donna_workflows = StaticSpecificationSource(
-    id=SpecificationSourceId("donna-workflows"),
+    id=SpecificationSourceId(types.Slug("donna-workflows")),
     specifications=[spec_planning],
 )

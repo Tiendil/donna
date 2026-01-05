@@ -2,8 +2,8 @@ from typing import Annotated
 
 import typer
 
-from donna.domain.ids import create_id_parser
 from donna.domain import types
+from donna.domain.ids import create_id_parser
 
 ActionRequestIdArgument = Annotated[
     types.ActionRequestId,

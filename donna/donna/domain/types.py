@@ -1,4 +1,4 @@
-from typing import NewType, Callable, TypeVar
+from typing import Callable, NewType
 
 # Internal base types
 
@@ -34,9 +34,7 @@ def slug_parser(text: str) -> Slug:
     allowed_chars = "abcdefghijklmnopqrstuvwxyz0123456789-_"
 
     if not all(c in allowed_chars for c in text):
-        raise ValueError(
-            f"Invalid slug '{text}'. Allowed characters are: {allowed_chars}"
-        )
+        raise ValueError(f"Invalid slug '{text}'. Allowed characters are: {allowed_chars}")
 
     return Slug(text)
 

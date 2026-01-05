@@ -1,4 +1,5 @@
 from donna.core.entities import BaseEntity
+from donna.domain import types
 from donna.domain.types import ActionRequestId, OperationId, Slug, StoryId
 from donna.machine.cells import Cell
 from donna.machine.counters import Counters
@@ -26,7 +27,7 @@ def create_story(slug: Slug) -> Story:
     story_number = layout().next_story_number()
 
     # TODO: make configurable
-    story_id = StoryId(f"{story_number:04d}-{slug}")
+    story_id = StoryId(types.slug_parser(f"{story_number:04d}-{slug}"))
 
     story = Story(
         id=story_id,
@@ -69,7 +70,7 @@ def find_action_request_story(request_id: ActionRequestId) -> StoryId:  # noqa: 
         if not story_dir.is_dir():
             continue
 
-        story_id = StoryId(story_dir.name)
+        story_id = StoryId(types.slug_parser(story_dir.name))
 
         plan = get_plan(story_id)
 
