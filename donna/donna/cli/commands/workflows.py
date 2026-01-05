@@ -1,24 +1,20 @@
-import re
-import shutil
+from typing import List
 
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import ActionRequestIdArgument, SlugArgument, StoryIdArgument, WorkflowIdArgument
+from donna.cli.types import StoryIdArgument, WorkflowIdArgument
 from donna.cli.utils import output_cells
-from donna.domain import types
-from donna.domain.types import OperationId, OperationResultId
 from donna.machine import stories
-from donna.world.layout import layout
+from donna.machine.cells import Cell
 from donna.world.primitives_register import register
-
 
 workflows_cli = typer.Typer()
 
 
 @workflows_cli.command()
 def list() -> None:
-    cells = []
+    cells: List[Cell] = []
 
     for workflow in register().workflows.values():
         cells.extend(workflow.cells())

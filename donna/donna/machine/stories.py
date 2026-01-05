@@ -1,6 +1,6 @@
 from donna.core.entities import BaseEntity
 from donna.domain import types
-from donna.domain.types import ActionRequestId, OperationId, Slug, StoryId, WorkflowId
+from donna.domain.types import ActionRequestId, Slug, StoryId, WorkflowId
 from donna.machine.cells import Cell
 from donna.machine.counters import Counters
 from donna.machine.plans import Plan, get_plan

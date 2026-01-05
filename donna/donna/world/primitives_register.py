@@ -3,8 +3,8 @@ import pathlib
 
 from donna.domain.types import OperationId, RecordKindId, SpecificationSourceId, WorkflowId
 from donna.machine.operations import Operation
-from donna.machine.workflows import Workflow
 from donna.machine.specifications import SpecificationSource
+from donna.machine.workflows import Workflow
 from donna.primitives.records.base import RecordKind
 from donna.world.layout import layout
 from donna.world.storage import Storage

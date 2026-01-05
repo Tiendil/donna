@@ -7,10 +7,9 @@ from donna.cli.application import app
 from donna.cli.types import ActionRequestIdArgument, SlugArgument, StoryIdArgument
 from donna.cli.utils import output_cells
 from donna.domain import types
-from donna.domain.types import OperationId, OperationResultId
+from donna.domain.types import OperationResultId
 from donna.machine import stories
 from donna.world.layout import layout
-from donna.world.primitives_register import register
 
 SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 

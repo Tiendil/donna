@@ -5,7 +5,6 @@ import typer
 from donna.domain import types
 from donna.domain.ids import create_id_parser, create_nested_id_parser
 
-
 ActionRequestIdArgument = Annotated[
     types.ActionRequestId,
     typer.Argument(parser=create_id_parser(types.ActionRequestId), help="The ID of the action request"),

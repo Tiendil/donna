@@ -5,8 +5,8 @@ from donna.domain.types import EventId, OperationId, OperationResultId, RecordKi
 from donna.machine.events import EventTemplate
 from donna.machine.operations import OperationResult
 from donna.machine.records import RecordKindSpec, RecordsIndex
-from donna.machine.workflows import Workflow
 from donna.machine.tasks import Task
+from donna.machine.workflows import Workflow
 from donna.primitives.operations.finish import Finish as FinishTask
 from donna.primitives.operations.request_action import RequestAction
 from donna.primitives.records.pure_text import PureText
@@ -128,7 +128,7 @@ start = StoryCycleStep(
 
 
 workflow_start = Workflow(
-    id="donna:end_to_end_story_cycle:start",
+    id=types.WorkflowId(types.NestedId("donna:end_to_end_story_cycle:start")),
     operation_id=start.id,
     name="End-to-end story processing",
     description="End-to-end story processing: from work description through planning to execution and grooming.",
