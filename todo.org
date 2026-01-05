@@ -64,3 +64,4 @@
 *** EventId will be refactored from NestedId to Slug?
 ** can we finish action requests automatically?
 ** TODO move action requests cli out of story cli, but where?
+** TODO Every work MUST leave an artifact! => artifact changing may be the best possible event to trigger on
