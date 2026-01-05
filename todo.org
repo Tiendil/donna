@@ -53,7 +53,9 @@
 * TODO We may want to get counters on every level of workspaces like "a:b:c", where story is one of the levels and donna workspace is the other.
 * TODO Refactor operations to a plain events?
 ** requested_kind_spec can be removed in the honor of using jinjaglobal function in the template
+*** however, the hidden functionality ensures displaying the specification of the record kind before the action request is displayed
 ** results can be replaced with "comple_on" list of event ids?
 ** trigger_on can be replaced on the same event list instead of list of event templates?
 ** some operations may trigger on record kind creation/update/deletion?
 ** workflow can contain list of triggers that work on the events in the context of the workflow?
+** Include the exact completion command in the action request body. Right now it assumes the agent remembers or infers the CLI syntax
