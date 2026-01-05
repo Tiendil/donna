@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Iterable
 
 from donna.core.entities import BaseEntity
-from donna.domain.types import EventId, OperationId, OperationResultId
+from donna.domain.types import EventId, OperationId, OperationResultId, Slug
 from donna.machine.cells import Cell
 from donna.machine.events import EventTemplate
 from donna.machine.tasks import Task, WorkUnit
@@ -23,7 +23,7 @@ class OperationResult(BaseEntity):
     @classmethod
     def completed(cls, event_id: EventId) -> "OperationResult":
         return cls(
-            id=OperationResultId("completed"),
+            id=OperationResultId(Slug("completed")),
             description="The operation was completed successfully.",
             event_id=event_id,
         )
@@ -31,7 +31,7 @@ class OperationResult(BaseEntity):
     @classmethod
     def next_iteration(cls, event_id: EventId) -> "OperationResult":
         return cls(
-            id=OperationResultId("next_iteration"),
+            id=OperationResultId(Slug("next_iteration")),
             description="The operation needs to be repeated.",
             event_id=event_id,
         )

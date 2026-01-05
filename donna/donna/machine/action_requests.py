@@ -1,11 +1,11 @@
 import textwrap
 
 from donna.core.entities import BaseEntity
+from donna.domain.ids import next_id
 from donna.domain.types import (
     ActionRequestId,
     OperationId,
     StoryId,
-    new_action_request_id,
 )
 from donna.machine.cells import Cell
 
@@ -22,7 +22,7 @@ class ActionRequest(BaseEntity):
         cls, story_id: StoryId, request: str, operation_id: OperationId, reminders: list[Cell]
     ) -> "ActionRequest":
         return cls(
-            id=new_action_request_id(),
+            id=next_id(story_id, ActionRequestId),
             story_id=story_id,
             request=request,
             operation_id=operation_id,

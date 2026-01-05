@@ -2,6 +2,7 @@ import typer
 
 from donna.cli.application import app
 from donna.cli.utils import output_cells
+from donna.domain import types
 from donna.domain.types import SpecificationId
 from donna.world.primitives_register import register
 
@@ -22,7 +23,7 @@ def get(
 ) -> None:
     for source in register().specifications.values():
         specification = source.get_specification(
-            SpecificationId(specification_id),
+            SpecificationId(types.NestedId(specification_id)),
         )
         if specification is not None:
             output_cells(specification.cells())

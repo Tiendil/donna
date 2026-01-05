@@ -4,9 +4,10 @@ import shutil
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import ActionRequestIdArgument
+from donna.cli.types import ActionRequestIdArgument, SlugArgument, StoryIdArgument
 from donna.cli.utils import output_cells
-from donna.domain.types import OperationId, OperationResultId, Slug, StoryId
+from donna.domain import types
+from donna.domain.types import OperationId, OperationResultId
 from donna.machine import stories
 from donna.world.layout import layout
 from donna.world.primitives_register import register
@@ -18,7 +19,7 @@ stories_cli = typer.Typer()
 
 
 @stories_cli.command()
-def create(slug: str) -> None:
+def create(slug: SlugArgument) -> None:
     if not SLUG_PATTERN.match(slug):
         typer.echo(
             "Error: Slug must consist of lowercase letters, numbers, and hyphens only.",
@@ -26,14 +27,14 @@ def create(slug: str) -> None:
         )
         raise typer.Exit(code=1)
 
-    story = stories.create_story(Slug(slug))
+    story = stories.create_story(slug)
 
     output_cells(story.cells())
 
 
 @stories_cli.command(name="continue")
-def _continue(story_id: str) -> None:
-    story = stories.Story.load(StoryId(story_id))
+def _continue(story_id: StoryIdArgument) -> None:
+    story = stories.Story.load(story_id)
 
     plan = stories.Plan.load(story.id)
 
@@ -46,7 +47,7 @@ def action_request_completed(request_id: ActionRequestIdArgument, result_id: str
 
     plan = stories.Plan.load(story_id)
 
-    plan.complete_action_request(request_id, OperationResultId(result_id))
+    plan.complete_action_request(request_id, OperationResultId(types.slug_parser(result_id)))
 
     output_cells(plan.run())
 
@@ -58,10 +59,10 @@ def list_workflows() -> None:
 
 
 @stories_cli.command()
-def start_workflow(story_id: str, workflow_id: str) -> None:
-    stories.start_workflow(StoryId(story_id), OperationId(workflow_id))
+def start_workflow(story_id: StoryIdArgument, workflow_id: str) -> None:
+    stories.start_workflow(story_id, OperationId(types.NestedId(workflow_id)))
 
-    plan = stories.Plan.load(StoryId(story_id))
+    plan = stories.Plan.load(story_id)
 
     output_cells(plan.run())
 
