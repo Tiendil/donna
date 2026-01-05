@@ -1,12 +1,13 @@
 from donna.core.entities import BaseEntity
 from donna.domain import types
-from donna.domain.types import ActionRequestId, OperationId, Slug, StoryId
+from donna.domain.types import ActionRequestId, Slug, StoryId, WorkflowId
 from donna.machine.cells import Cell
 from donna.machine.counters import Counters
 from donna.machine.plans import Plan, get_plan
 from donna.machine.records import RecordsIndex
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.layout import layout
+from donna.world.primitives_register import register
 
 
 class Story(BaseEntity):
@@ -53,7 +54,9 @@ def create_story(slug: Slug) -> Story:
     return story
 
 
-def start_workflow(story_id: StoryId, operation_id: OperationId) -> None:
+def start_workflow(story_id: StoryId, workflow_id: WorkflowId) -> None:
+    operation_id = register().workflows.get(workflow_id).operation_id
+
     plan = get_plan(story_id)
 
     task = Task.build(story_id)

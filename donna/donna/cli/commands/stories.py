@@ -7,10 +7,9 @@ from donna.cli.application import app
 from donna.cli.types import ActionRequestIdArgument, SlugArgument, StoryIdArgument
 from donna.cli.utils import output_cells
 from donna.domain import types
-from donna.domain.types import OperationId, OperationResultId
+from donna.domain.types import OperationResultId
 from donna.machine import stories
 from donna.world.layout import layout
-from donna.world.primitives_register import register
 
 SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
@@ -48,21 +47,6 @@ def action_request_completed(request_id: ActionRequestIdArgument, result_id: str
     plan = stories.Plan.load(story_id)
 
     plan.complete_action_request(request_id, OperationResultId(types.slug_parser(result_id)))
-
-    output_cells(plan.run())
-
-
-@stories_cli.command()
-def list_workflows() -> None:
-    cells = [operation.workflow_cell() for operation in register().operations.values() if operation.is_workflow()]
-    output_cells(cells)
-
-
-@stories_cli.command()
-def start_workflow(story_id: StoryIdArgument, workflow_id: str) -> None:
-    stories.start_workflow(story_id, OperationId(types.NestedId(workflow_id)))
-
-    plan = stories.Plan.load(story_id)
 
     output_cells(plan.run())
 

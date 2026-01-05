@@ -1,9 +1,10 @@
 import importlib.util
 import pathlib
 
-from donna.domain.types import OperationId, RecordKindId, SpecificationSourceId
+from donna.domain.types import OperationId, RecordKindId, SpecificationSourceId, WorkflowId
 from donna.machine.operations import Operation
 from donna.machine.specifications import SpecificationSource
+from donna.machine.workflows import Workflow
 from donna.primitives.records.base import RecordKind
 from donna.world.layout import layout
 from donna.world.storage import Storage
@@ -18,6 +19,7 @@ class PrimitivesRegister:
         self.operations: Storage[OperationId, Operation] = Storage("operation")
         self.records: Storage[RecordKindId, RecordKind] = Storage("record_kind")
         self.specifications: Storage[SpecificationSourceId, SpecificationSource] = Storage("specification_source")
+        self.workflows: Storage[WorkflowId, Workflow] = Storage("workflow")
 
     def initialize(self) -> None:
         if self.initialized:
@@ -75,4 +77,8 @@ def discover_operations(register: PrimitivesRegister, directory: pathlib.Path) -
 
             if isinstance(attr, SpecificationSource):
                 register.specifications.add(attr)
+                continue
+
+            if isinstance(attr, Workflow):
+                register.workflows.add(attr)
                 continue

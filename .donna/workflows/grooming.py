@@ -4,16 +4,23 @@ from donna.machine.action_requests import ActionRequest
 from donna.machine.records import RecordsIndex
 from donna.domain.types import RecordId
 from donna.primitives.operations import Finish, RequestAction, Broadcast
-from donna.machine.operations import OperationExport as Export, OperationResult as OR
+from donna.machine.operations import OperationResult as OR
+from donna.machine.workflows import Workflow
 from donna.machine.events import EventTemplate as ET
 
 
 start = Broadcast(
     id="donna:grooming",
-    export=Export(name="Groom the donna's code",
-                  description="Initiate operations to groom and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc."),
     trigger_on=[],
     results=[OR.completed("donna:grooming:started")]
+)
+
+
+workflow_start = Workflow(
+    id="donna:grooming",
+    operation_id=start.id,
+    name="Groom the donna's code",
+    description="Initiate operations to groom and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc.",
 )
 
 

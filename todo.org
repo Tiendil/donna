@@ -40,7 +40,6 @@
 ** TODO cli commands to add/remove relations
 ** TODO storage of allowed relation types
 ** TODO operations to validate that each list item has required relations
-* TODO Export class rename to Workflow? Maybe even make them a separate entities?
 * TODO Objectives loop
 ** TODO Full spec on planing activities
 ** TODO Objectives grooming loop
@@ -51,3 +50,4 @@
 ** TODO Iterate goals into objectives
 ** TODO Full objective set grooming (may be moved into separate TODO list, since it may require planing)
 ** TODO Goals grooming (may be moved into separate TODO list, since it may require planing)
+* TODO We may want to get counters on every level of workspaces like "a:b:c", where story is one of the levels and donna workspace is the other.

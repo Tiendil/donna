@@ -2,17 +2,11 @@ from typing import TYPE_CHECKING, Iterable
 
 from donna.core.entities import BaseEntity
 from donna.domain.types import EventId, OperationId, OperationResultId, Slug
-from donna.machine.cells import Cell
 from donna.machine.events import EventTemplate
 from donna.machine.tasks import Task, WorkUnit
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
-
-
-class OperationExport(BaseEntity):
-    name: str
-    description: str
 
 
 class OperationResult(BaseEntity):
@@ -44,8 +38,6 @@ class Operation(BaseEntity):
 
     results: list[OperationResult]
 
-    export: OperationExport | None = None
-
     def execute(self, task: Task, unit: WorkUnit) -> Iterable["Change"]:
         raise NotImplementedError("You MUST implement this method.")
 
@@ -55,16 +47,3 @@ class Operation(BaseEntity):
                 return result
 
         raise NotImplementedError(f"OperationResult with id '{id}' does not exist")
-
-    def is_workflow(self) -> bool:
-        return self.export is not None
-
-    def workflow_cell(self) -> Cell:
-        assert self.export is not None
-
-        return Cell.build_markdown(
-            kind="workflow",
-            content=self.export.description,
-            workflow_id=self.id,
-            workflow_name=self.export.name,
-        )

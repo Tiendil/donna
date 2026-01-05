@@ -108,3 +108,13 @@ def create_id_parser[InternalIdType: types.InternalId](
         return type_id(id.to_internal())
 
     return parser
+
+
+def create_nested_id_parser[InternalIdType: types.NestedId](
+    type_id: Callable[[types.NestedId], InternalIdType],
+) -> Callable[[str], InternalIdType]:
+    def parser(text: str) -> InternalIdType:
+        id = RichNestedId(text)
+        return type_id(id.to_nested())
+
+    return parser
