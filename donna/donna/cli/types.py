@@ -25,3 +25,9 @@ SlugArgument = Annotated[
     types.Slug,
     typer.Argument(help="The slug identifier"),
 ]
+
+
+StoryIdArgument = Annotated[
+    types.StoryId,
+    typer.Argument(parser=types.child_slug_parser(types.StoryId), help="The ID of the story"),
+]

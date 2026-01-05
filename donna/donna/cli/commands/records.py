@@ -3,7 +3,7 @@ from typing import List
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import RecordIdArgument
+from donna.cli.types import RecordIdArgument, StoryIdArgument
 from donna.cli.utils import output_cells
 from donna.domain.ids import next_id
 from donna.domain.types import RecordId, RecordKindId, StoryId
@@ -14,13 +14,13 @@ records_cli = typer.Typer()
 
 
 @records_cli.command()
-def list(story_id: str) -> None:
+def list(story_id: StoryIdArgument) -> None:
     index = r_domain.RecordsIndex.load(StoryId(story_id))
     output_cells(index.cells())
 
 
 @records_cli.command()
-def create(story_id: str, description: str) -> None:
+def create(story_id: StoryIdArgument, description: str) -> None:
     index = r_domain.RecordsIndex.load(StoryId(story_id))
 
     record_id = next_id(StoryId(story_id), RecordId)
@@ -36,7 +36,7 @@ def create(story_id: str, description: str) -> None:
 
 
 @records_cli.command()
-def delete(story_id: str, record_id: RecordIdArgument) -> None:
+def delete(story_id: StoryIdArgument, record_id: RecordIdArgument) -> None:
     index = r_domain.RecordsIndex.load(StoryId(story_id))
 
     index.delete_record(record_id)
@@ -48,7 +48,7 @@ def delete(story_id: str, record_id: RecordIdArgument) -> None:
 
 @records_cli.command()
 def kind_set(
-    story_id: str,
+    story_id: StoryIdArgument,
     record_id: RecordIdArgument,
     record_kind: str,
     item: str,
@@ -74,7 +74,7 @@ def kind_set(
 
 @records_cli.command()
 def kind_delete(
-    story_id: str,
+    story_id: StoryIdArgument,
     record_id: RecordIdArgument,
     record_kinds: List[str],
 ) -> None:
@@ -89,7 +89,7 @@ def kind_delete(
 
 @records_cli.command()
 def kind_get(
-    story_id: str,
+    story_id: StoryIdArgument,
     record_id: RecordIdArgument,
     record_kinds: List[str],
 ) -> None:

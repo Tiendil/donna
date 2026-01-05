@@ -4,7 +4,7 @@ import shutil
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import ActionRequestIdArgument, SlugArgument
+from donna.cli.types import ActionRequestIdArgument, SlugArgument, StoryIdArgument
 from donna.cli.utils import output_cells
 from donna.domain.types import OperationId, OperationResultId, StoryId
 from donna.machine import stories
@@ -32,7 +32,7 @@ def create(slug: SlugArgument) -> None:
 
 
 @stories_cli.command(name="continue")
-def _continue(story_id: str) -> None:
+def _continue(story_id: StoryIdArgument) -> None:
     story = stories.Story.load(StoryId(story_id))
 
     plan = stories.Plan.load(story.id)
@@ -58,7 +58,7 @@ def list_workflows() -> None:
 
 
 @stories_cli.command()
-def start_workflow(story_id: str, workflow_id: str) -> None:
+def start_workflow(story_id: StoryIdArgument, workflow_id: str) -> None:
     stories.start_workflow(StoryId(story_id), OperationId(workflow_id))
 
     plan = stories.Plan.load(StoryId(story_id))
