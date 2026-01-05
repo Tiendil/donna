@@ -23,7 +23,7 @@ RecordIdArgument = Annotated[
 
 SlugArgument = Annotated[
     types.Slug,
-    typer.Argument(help="The slug identifier"),
+    typer.Argument(parser=types.slug_parser, help="The slug identifier"),
 ]
 
 
