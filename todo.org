@@ -59,6 +59,6 @@
 ** some operations may trigger on record kind creation/update/deletion?
 ** workflow can contain list of triggers that work on the events in the context of the workflow?
 ** Include the exact completion command in the action request body. Right now it assumes the agent remembers or infers the CLI syntax
-** Event ids must be technial (from donna), not from operations. Instead, event should go with a list of parameters and maching should be on <standard-id> + <required-parameters>
+** TODO Event ids must be technial (from donna), not from operations. Instead, event should go with a list of parameters and maching should be on <standard-id> + <required-parameters>
 *** In such case we may mark action request as completed when raising an event with required parameters
 ** can we finish action requests automatically?
