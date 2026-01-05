@@ -14,15 +14,14 @@ ActionRequestId = NewType("ActionRequestId", InternalId)
 TaskId = NewType("TaskId", InternalId)
 RecordId = NewType("RecordId", InternalId)
 
-# Ids that a pure slug type
-# TODO: do we need Slug type?
-# TODO: should we made Slug type a base type for the other Ids? with some validation
+# Ids that are lowercase ASCII without spaces
+
 Slug = NewType("Slug", str)
 
-StoryId = NewType("StoryId", str)
-RecordKindId = NewType("RecordKindId", str)
-OperationResultId = NewType("OperationResultId", str)
-SpecificationSourceId = NewType("SpecificationSourceId", str)
+StoryId = NewType("StoryId", Slug)
+RecordKindId = NewType("RecordKindId", Slug)
+OperationResultId = NewType("OperationResultId", Slug)
+SpecificationSourceId = NewType("SpecificationSourceId", Slug)
 
 # Nested Ids to organize static entities
 
