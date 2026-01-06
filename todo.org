@@ -58,8 +58,6 @@
 ** partical_description should be built somehow differently then now (not transparent enough)
 ** Include the exact donna commands in the action request body. Right now it assumes the agent remembers or infers the CLI syntax
 * TODO Records navigation + introspection
-** TODO introspection cli to get cell with info by passed id
-** TODO remove custom requested_* fileds processing in favor of using introspection
 ** TODO donna records ?extract? <kind*> <--property=>*
 *** add <display/renderer> as the global object that defines how to render the output
 *** maybe display may be just jinja template?
