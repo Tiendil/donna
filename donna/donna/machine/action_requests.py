@@ -15,18 +15,16 @@ class ActionRequest(BaseEntity):
     story_id: StoryId
     request: str
     operation_id: OperationId
-    reminders: list[Cell]
 
     @classmethod
     def build(
-        cls, story_id: StoryId, request: str, operation_id: OperationId, reminders: list[Cell]
+        cls, story_id: StoryId, request: str, operation_id: OperationId
     ) -> "ActionRequest":
         return cls(
             id=next_id(story_id, ActionRequestId),
             story_id=story_id,
             request=request,
             operation_id=operation_id,
-            reminders=reminders,
         )
 
     def cells(self) -> list[Cell]:
@@ -54,8 +52,6 @@ class ActionRequest(BaseEntity):
         ).format(request=self.request, operation_results=operation_results)
 
         cells = []
-
-        cells.extend(self.reminders)
 
         cells.append(
             Cell.build_markdown(

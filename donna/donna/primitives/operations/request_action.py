@@ -32,15 +32,6 @@ class RequestAction(Operation):
 
         return context
 
-    def reminders(self) -> Iterator[Cell]:
-        for field_name in self.model_fields.keys():
-            value = getattr(self, field_name)
-
-            if not isinstance(value, RecordKindSpec):
-                continue
-
-            yield from value.cells()
-
     def execute(self, task: Task, unit: WorkUnit) -> Iterator["Change"]:
         from donna.machine.changes import ChangeAddActionRequest
 
@@ -48,5 +39,5 @@ class RequestAction(Operation):
 
         request_text = self.request_template.format(**context)
 
-        request = ActionRequest.build(task.story_id, request_text, self.id, reminders=list(self.reminders()))
+        request = ActionRequest.build(task.story_id, request_text, self.id)
         yield ChangeAddActionRequest(request)
