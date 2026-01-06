@@ -41,7 +41,7 @@ class RecordKindSpec(BaseEntity):
 
     @property
     def verbose(self) -> str:
-        return f"<kind: {self.kind}>"
+        return f"<record kind: `{self.kind}`>"
 
 
 class RecordKindItem(BaseEntity):
