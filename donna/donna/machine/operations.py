@@ -1,8 +1,7 @@
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Iterable, Callable
 
 from donna.core.entities import BaseEntity
-from donna.domain.types import EventId, OperationId, OperationResultId, Slug
-from donna.machine.events import EventTemplate
+from donna.domain.types import OperationId, OperationResultId, Slug
 from donna.machine.tasks import Task, WorkUnit
 
 if TYPE_CHECKING:
@@ -12,29 +11,34 @@ if TYPE_CHECKING:
 class OperationResult(BaseEntity):
     id: OperationResultId
     description: str
-    event_id: EventId
+    operation_id_: OperationId | Callable[[], OperationId]
+
+    @property
+    def operation_id(self) -> OperationId:
+        if isinstance(self.operation_id_, OperationId):
+            return self.operation_id_
+
+        return self.operation_id_()
 
     @classmethod
-    def completed(cls, event_id: EventId) -> "OperationResult":
+    def completed(cls, operation_id: OperationId | Callable[[], OperationId]) -> "OperationResult":
         return cls(
             id=OperationResultId(Slug("completed")),
             description="The operation was completed successfully.",
-            event_id=event_id,
+            operation_id=operation_id,
         )
 
     @classmethod
-    def next_iteration(cls, event_id: EventId) -> "OperationResult":
+    def repeate(cls, operation_id: OperationId | Callable[[], OperationId]) -> "OperationResult":
         return cls(
             id=OperationResultId(Slug("next_iteration")),
             description="The operation needs to be repeated.",
-            event_id=event_id,
+            operation_id=operation_id,
         )
 
 
 class Operation(BaseEntity):
     id: OperationId
-
-    trigger_on: list[EventTemplate]
 
     results: list[OperationResult]
 
