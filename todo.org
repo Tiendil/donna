@@ -61,7 +61,6 @@
 ** Include the exact completion command in the action request body. Right now it assumes the agent remembers or infers the CLI syntax
 ** TODO Event ids must be technial (from donna), not from operations. Instead, event should go with a list of parameters and maching should be on <standard-id> + <required-parameters>
 *** In such case we may mark action request as completed when raising an event with required parameters
-*** EventId will be refactored from NestedId to Slug?
 ** can we finish action requests automatically?
 ** TODO move action requests cli out of story cli, but where?
 ** TODO Every work MUST leave an artifact! => artifact changing may be the best possible event to trigger on
