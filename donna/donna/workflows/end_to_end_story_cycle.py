@@ -106,6 +106,18 @@ class StoryCycleStep(RequestAction):
         return "\n".join(specification)
 
 
+create_detailed_description: "StoryCycleStep"
+list_primary_goals: "StoryCycleStep"
+list_objectives: "StoryCycleStep"
+list_constraints: "StoryCycleStep"
+list_acceptance_criteria: "StoryCycleStep"
+list_deliverables: "StoryCycleStep"
+prepare_story_plan: "StoryCycleStep"
+execute_story_plan: "StoryCycleStep"
+groom_the_result: "StoryCycleStep"
+finish: FinishTask
+
+
 start = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle")),
     results=[OR.completed(lambda: create_detailed_description.id)],
@@ -152,8 +164,7 @@ create_detailed_description = StoryCycleStep(
 
 list_primary_goals = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle:list_primary_goals")),
-    results=[OR.completed(lambda: list_objectives.id),
-             OR.repeat(lambda: list_primary_goals.id)],
+    results=[OR.completed(lambda: list_objectives.id), OR.repeat(lambda: list_primary_goals.id)],
     requested_kind_spec=GOAL,
     request_template=textwrap.dedent(
         """
@@ -176,8 +187,7 @@ list_primary_goals = StoryCycleStep(
 
 list_objectives = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle:list_objectives")),
-    results=[OR.completed(lambda: list_constraints.id),
-             OR.repeat(lambda: list_objectives.id)],
+    results=[OR.completed(lambda: list_constraints.id), OR.repeat(lambda: list_objectives.id)],
     requested_kind_spec=OBJECTIVE,
     request_template=textwrap.dedent(
         """
@@ -200,8 +210,7 @@ list_objectives = StoryCycleStep(
 
 list_constraints = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle:list_constraints")),
-    results=[OR.completed(lambda: list_acceptance_criteria.id),
-             OR.repeat(lambda: list_constraints.id)],
+    results=[OR.completed(lambda: list_acceptance_criteria.id), OR.repeat(lambda: list_constraints.id)],
     requested_kind_spec=CONSTRAINT,
     request_template=textwrap.dedent(
         """
@@ -224,8 +233,7 @@ list_constraints = StoryCycleStep(
 
 list_acceptance_criteria = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle:list_acceptance_criteria")),
-    results=[OR.completed(lambda: list_deliverables.id),
-             OR.repeat(lambda: list_acceptance_criteria.id)],
+    results=[OR.completed(lambda: list_deliverables.id), OR.repeat(lambda: list_acceptance_criteria.id)],
     requested_kind_spec=ACCEPTANCE_CRITERIA,
     request_template=textwrap.dedent(
         """
@@ -248,8 +256,7 @@ list_acceptance_criteria = StoryCycleStep(
 
 list_deliverables = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle:list_deliverables")),
-    results=[OR.completed(lambda: prepare_story_plan.id),
-             OR.repeat(lambda: list_deliverables.id)],
+    results=[OR.completed(lambda: prepare_story_plan.id), OR.repeat(lambda: list_deliverables.id)],
     requested_kind_spec=DELIVERABLE,
     request_template=textwrap.dedent(
         """
@@ -272,8 +279,7 @@ list_deliverables = StoryCycleStep(
 
 prepare_story_plan = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle:prepare_story_plan")),
-    results=[OR.completed(lambda: execute_story_plan.id),
-             OR.repeat(lambda: prepare_story_plan.id)],
+    results=[OR.completed(lambda: execute_story_plan.id), OR.repeat(lambda: prepare_story_plan.id)],
     requested_kind_spec=PLAN_ITEM,
     request_template=textwrap.dedent(
         """

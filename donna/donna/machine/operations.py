@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Iterable, Callable
+from typing import TYPE_CHECKING, Callable, Iterable
 
 from donna.core.entities import BaseEntity
 from donna.domain.types import OperationId, OperationResultId, Slug
