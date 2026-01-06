@@ -44,7 +44,7 @@ class Plan(BaseEntity):
         return not self.active_tasks and self.started and not self.action_requests
 
     def has_work(self) -> bool:
-        return bool(self.active_tasks)
+        return bool(self.queue)
 
     def get_task(self, task_id: TaskId) -> Task:
         for task in self.active_tasks:
