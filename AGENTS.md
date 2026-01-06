@@ -119,11 +119,11 @@ Sometimes you need to get information about the base primitives and structures u
 
 Use the next commands to get introspection data:
 
-- `./bin/donna.sh introspection show <primitive-id>` — show detailed information about the primitive with the given id.
+- `./bin/donna.sh introspection show <primitive-id>` — show detailed information about the primitive with the given id. You will get IDs as the results of other operations (including action requests). Do not invent primitive IDs. Do not guess primitive IDs.
 
 Command parameters:
 
-- `<primitive-id>` — a short ASCII string identifying the type of the primitive. Use the exect id, do not prefix it with a kind of primitive.
+- `<primitive-id>` — a short ASCII string identifying the type of the primitive. Use the exect id, do not prefix it with a kind of primitive. Do not look for primitive IDs in the source code. Use only the IDs you got as the results of other operations.
 
 When to use introspection:
 
