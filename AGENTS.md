@@ -124,7 +124,7 @@ Use the next commands to get introspection data:
 When to use introspection:
 
 - You forget which results the operation produces.
-- You do not know the record kind schema.
+- You do not know the record's kind schema.
 
 ## IMPORTANT ON DONNA TOOL USAGE
 
