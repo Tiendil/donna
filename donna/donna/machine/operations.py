@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Callable, Iterable
 
 from donna.core.entities import BaseEntity
 from donna.domain.types import OperationId, OperationResultId, Slug
+from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
 
 if TYPE_CHECKING:
@@ -51,3 +52,10 @@ class Operation(BaseEntity):
                 return result
 
         raise NotImplementedError(f"OperationResult with id '{id}' does not exist")
+
+    def cells(self) -> list[Cell]:
+        cells = [Cell.build_meta(kind="operation", operation_id=str(self.id))]
+
+        cells.extend(result.cells() for result in self.results)
+
+        return cells

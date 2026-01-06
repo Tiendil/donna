@@ -14,6 +14,9 @@ class SpecificationSource(BaseEntity):
     def get_specification(self, specification_id: SpecificationId) -> Specification | None:
         raise NotImplementedError("You MUST implement this method.")
 
+    def cells(self) -> list[Cell]:
+        return [Cell.build_meta(kind="specification_source", specification_source_id=self.id)]
+
 
 class SpecificationIndexItem(BaseEntity):
     id: SpecificationId

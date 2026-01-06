@@ -1,9 +1,7 @@
 from typing import TYPE_CHECKING, Iterator
 
 from donna.machine.action_requests import ActionRequest
-from donna.machine.cells import Cell
 from donna.machine.operations import Operation
-from donna.machine.records import RecordKindSpec
 from donna.machine.tasks import Task, WorkUnit
 
 if TYPE_CHECKING:

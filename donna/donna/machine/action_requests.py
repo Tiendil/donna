@@ -17,9 +17,7 @@ class ActionRequest(BaseEntity):
     operation_id: OperationId
 
     @classmethod
-    def build(
-        cls, story_id: StoryId, request: str, operation_id: OperationId
-    ) -> "ActionRequest":
+    def build(cls, story_id: StoryId, request: str, operation_id: OperationId) -> "ActionRequest":
         return cls(
             id=next_id(story_id, ActionRequestId),
             story_id=story_id,
@@ -33,6 +31,7 @@ class ActionRequest(BaseEntity):
         results = []
 
         operation = register().operations.get(self.operation_id)
+        assert operation is not None
 
         for result in operation.results:
             results.append(f"- `{result.id}` — {result.description}")

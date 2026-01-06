@@ -178,6 +178,7 @@ class Plan(BaseEntity):
         operation_id = self.get_action_request(request_id).operation_id
 
         operation = register().operations.get(operation_id)
+        assert operation is not None
 
         result = operation.result(result_id)
 
