@@ -57,3 +57,15 @@
 *** however, the hidden functionality ensures displaying the specification of the record kind before the action request is displayed
 ** partical_description should be built somehow differently then now (not transparent enough)
 ** Include the exact donna commands in the action request body. Right now it assumes the agent remembers or infers the CLI syntax
+* TODO Records navigation + introspection
+** TODO introspection cli to get cell with info by passed id
+** TODO remove custom requested_* fileds processing in favor of using introspection
+** TODO donna records ?extract? <kind*> <--property=>*
+*** add <display/renderer> as the global object that defines how to render the output
+*** maybe display may be just jinja template?
+*** dow we really need display? Maybe cells will be ok for technical output?
+*** What we need:
+**** select by kinds (and display kinds in order?)
+**** filter by properties (better to have reach filtering syntax?)
+**** run graph opertions on top of the result set? Or maybe just different <sort> operations?
+** TODO replace partial description with new ?extract? command
