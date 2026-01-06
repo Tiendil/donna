@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Any
 from donna.domain.types import WorkUnitId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
-from donna.machine.events import Event
 from donna.machine.tasks import Task, TaskState, WorkUnit
 
 if TYPE_CHECKING:
@@ -62,11 +61,3 @@ class ChangeRemoveWorkUnitFromQueue(Change):
 
     def apply_to(self, plan: "Plan", task: Task) -> None:
         plan.queue = [item for item in plan.queue if item.id != self.work_unit_id]
-
-
-class ChangeEvent(Change):
-    def __init__(self, event: Event) -> None:
-        self.event = event
-
-    def apply_to(self, plan: "Plan", task: Task) -> None:
-        plan.add_event(self.event)

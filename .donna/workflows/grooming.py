@@ -3,23 +3,9 @@ import textwrap
 from donna.machine.action_requests import ActionRequest
 from donna.machine.records import RecordsIndex
 from donna.domain.types import RecordId
-from donna.primitives.operations import Finish, RequestAction, Broadcast
+from donna.primitives.operations import Finish, RequestAction
 from donna.machine.operations import OperationResult as OR
 from donna.machine.workflows import Workflow
-
-
-start = Broadcast(
-    id="donna:grooming",
-    results=[OR.completed(lambda: run_autoflake.id)],
-)
-
-
-workflow_start = Workflow(
-    id="donna:grooming",
-    operation_id=start.id,
-    name="Groom the donna's code",
-    description="Initiate operations to groom and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc.",
-)
 
 
 run_autoflake = RequestAction(
@@ -31,6 +17,15 @@ run_autoflake = RequestAction(
         2. Mark this action request as completed.
         """
     )
+)
+
+
+
+workflow_start = Workflow(
+    id="donna:grooming",
+    operation_id=run_autoflake.id,
+    name="Groom the donna's code",
+    description="Initiate operations to groom and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc.",
 )
 
 
@@ -63,7 +58,7 @@ run_flake8 = RequestAction(
     results=[OR.completed(lambda: run_mypy.id),
              OR(id="errors_found_and_fixed",
                 description="Agent found style issues and fixed all of them.",
-                operation_id=lambda: run_autoflake.id)],
+                operation_id_=lambda: run_autoflake.id)],
     request_template=textwrap.dedent(
         """
         1. Run `cd ./donna && poetry run flake8 .` to check the codebase for style issues.
@@ -87,7 +82,7 @@ run_mypy = RequestAction(
     results=[OR.completed(lambda: finish.id),
              OR(id="errors_found_and_fixed",
                 description="Agent found type issues and fixed all of them.",
-                operation_id=lambda: run_autoflake.id)],
+                operation_id_=lambda: run_autoflake.id)],
     request_template=textwrap.dedent(
         """
         1. Run `cd ./donna && poetry run mypy ./donna` to check the codebase for type annotation issues.

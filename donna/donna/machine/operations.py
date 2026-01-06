@@ -25,15 +25,15 @@ class OperationResult(BaseEntity):
         return cls(
             id=OperationResultId(Slug("completed")),
             description="The operation was completed successfully.",
-            operation_id=operation_id,
+            operation_id_=operation_id,
         )
 
     @classmethod
-    def repeate(cls, operation_id: OperationId | Callable[[], OperationId]) -> "OperationResult":
+    def repeat(cls, operation_id: OperationId | Callable[[], OperationId]) -> "OperationResult":
         return cls(
             id=OperationResultId(Slug("next_iteration")),
             description="The operation needs to be repeated.",
-            operation_id=operation_id,
+            operation_id_=operation_id,
         )
 
 
