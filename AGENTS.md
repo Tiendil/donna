@@ -113,6 +113,14 @@ Command parameters:
 
 - `<specification-id>` — a short ASCII string identifying the specification with `/` separators between sections and dash separators between words, e.g. `name/space/specification-id`.
 
+### Introspection
+
+Sometimes you need to get information about the base primitives and structures used by the `donna` tool: operations, kinds of records, workflows, etc.
+
+Use the next commands to get introspection data:
+
+- `./bin/donna.sh introspection show <primitive-id>` — show detailed information about the primitive with the given id.
+
 ## IMPORTANT ON DONNA TOOL USAGE
 
 **RUN `./bin/donna.sh` TO ACCESS THE `donna` TOOL**
