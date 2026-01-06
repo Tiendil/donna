@@ -15,7 +15,7 @@ class OperationResult(BaseEntity):
 
     @property
     def operation_id(self) -> OperationId:
-        if isinstance(self.operation_id_, OperationId):
+        if isinstance(self.operation_id_, str):
             return self.operation_id_
 
         return self.operation_id_()
