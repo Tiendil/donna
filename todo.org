@@ -69,4 +69,4 @@
 ** TODO replace partial description with new ?extract? command
 ** TODO Maybe we do not need kinds separate from records?
 * TODO Consider using https://github.com/toon-format/toon for json formatting in cells
-* TODO WE CAN ASK DONNA TO MAKE A FSM FOR DONNA!!!
+* TODO WE CAN ASK DONNA TO MAKE A FSM FOR DONNA!!! WHICH WILL BE OUR PLAN OF WORK!!!
