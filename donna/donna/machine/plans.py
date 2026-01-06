@@ -98,7 +98,7 @@ class Plan(BaseEntity):
             raise NotImplementedError(f"can not make step while in state {task.state}")
 
         if not self.queue:
-            changes.append(ChangeTaskState(TaskState.COMPLETED))
+            # TODO: we need to ensure that FSM will end with finish operation
             return changes
 
         next_work_unit = self.get_next_work_unit()
