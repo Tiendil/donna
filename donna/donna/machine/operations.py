@@ -37,6 +37,16 @@ class OperationResult(BaseEntity):
             operation_id_=operation_id,
         )
 
+    def cells(self) -> list[Cell]:
+        return [
+            Cell.build_meta(
+                kind="operation_result",
+                result_description=self.description,
+                result_id=self.id,
+                operation_id=self.operation_id,
+            )
+        ]
+
 
 class Operation(BaseEntity):
     id: OperationId
@@ -56,6 +66,7 @@ class Operation(BaseEntity):
     def cells(self) -> list[Cell]:
         cells = [Cell.build_meta(kind="operation", operation_id=str(self.id))]
 
-        cells.extend(result.cells() for result in self.results)
+        for result in self.results:
+            cells.extend(result.cells())
 
         return cells

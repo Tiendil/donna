@@ -28,27 +28,16 @@ class ActionRequest(BaseEntity):
     def cells(self) -> list[Cell]:
         from donna.world.primitives_register import register
 
-        results = []
-
         operation = register().operations.get(self.operation_id)
         assert operation is not None
-
-        for result in operation.results:
-            results.append(f"- `{result.id}` — {result.description}")
-
-        operation_results = "\n".join(results)
 
         message = textwrap.dedent(
             """
         **This is an action request for the agent. You MUST follow the instructions below.**
 
         {request}
-
-        Possible results:
-
-        {operation_results}
         """
-        ).format(request=self.request, operation_results=operation_results)
+        ).format(request=self.request)
 
         cells = []
 
@@ -60,5 +49,8 @@ class ActionRequest(BaseEntity):
                 action_request_id=str(self.id),
             )
         )
+
+        for result in operation.results:
+            cells.extend(result.cells())
 
         return cells
