@@ -119,7 +119,7 @@ Sometimes you need to get information about the base primitives and structures u
 
 Use the next commands to get introspection data:
 
-- `./bin/donna.sh introspection show <primitive-id>` — show detailed information about the primitive with the given id.
+- `./bin/donna.sh introspection show <primitive-id>` — show detailed information about the primitive with the given id. **USE IT ONLY WHEN YOU HAVE NO REQUIRED INFO ON THE PRIVITIVE**.
 
 ## IMPORTANT ON DONNA TOOL USAGE
 
