@@ -41,7 +41,7 @@ class Plan(BaseEntity):
     def is_completed(self) -> bool:
         # A plan can not consider itself completed if it was never started
         # it is important to distinguish the stories with unfinished initialization and the stories that are done
-        return not self.active_tasks and self.started
+        return not self.active_tasks and self.started and not self.action_requests
 
     def has_work(self) -> bool:
         return bool(self.active_tasks)
