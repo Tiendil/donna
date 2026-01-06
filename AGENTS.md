@@ -111,7 +111,7 @@ Use the next commands to work with specifications:
 
 Command parameters:
 
-- `<specification-id>` — a short ASCII string identifying the specification with `/` separators between sections and dash separators between words, e.g. `name/space/specification-id`.
+- `<specification-id>` — a short ASCII string identifying the specification with `:` separators between sections and dash separators between words, e.g. `name:space:specification-id`.
 
 ### Introspection
 
@@ -120,6 +120,10 @@ Sometimes you need to get information about the base primitives and structures u
 Use the next commands to get introspection data:
 
 - `./bin/donna.sh introspection show <primitive-id>` — show detailed information about the primitive with the given id.
+
+Command parameters:
+
+- `<primitive-id>` — a short ASCII string identifying the type of the primitive. Use the exect id, do not prefix it with a kind of primitive.
 
 When to use introspection:
 
