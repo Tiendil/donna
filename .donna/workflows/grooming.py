@@ -3,33 +3,14 @@ import textwrap
 from donna.machine.action_requests import ActionRequest
 from donna.machine.records import RecordsIndex
 from donna.domain.types import RecordId
-from donna.primitives.operations import Finish, RequestAction, Broadcast
+from donna.primitives.operations import Finish, RequestAction
 from donna.machine.operations import OperationResult as OR
 from donna.machine.workflows import Workflow
-from donna.machine.events import EventTemplate as ET
-
-
-start = Broadcast(
-    id="donna:grooming",
-    trigger_on=[],
-    results=[OR.completed("donna:grooming:started")]
-)
-
-
-workflow_start = Workflow(
-    id="donna:grooming",
-    operation_id=start.id,
-    name="Groom the donna's code",
-    description="Initiate operations to groom and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc.",
-)
 
 
 run_autoflake = RequestAction(
     id="donna:grooming:run_autoflake",
-    trigger_on=[start.result("completed").event_id,
-                "donna:grooming:flake8:errors_found_and_fixed",
-                "donna:grooming:mypy:errors_found_and_fixed"],
-    results=[OR.completed("donna:grooming:autoflake_applied")],
+    results=[OR.completed(lambda: run_isort.id)],
     request_template=textwrap.dedent(
         """
         1. Run `cd ./donna && poetry run autoflake .` to remove unused imports and variables in the codebase.
@@ -39,10 +20,18 @@ run_autoflake = RequestAction(
 )
 
 
+
+workflow_start = Workflow(
+    id="donna:grooming",
+    operation_id=run_autoflake.id,
+    name="Groom the donna's code",
+    description="Initiate operations to groom and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc.",
+)
+
+
 run_isort = RequestAction(
     id="donna:grooming:run_isort",
-    trigger_on=[run_autoflake.result("completed").event_id],
-    results=[OR.completed("donna:grooming:isort_applied")],
+    results=[OR.completed(lambda: run_black.id)],
     request_template=textwrap.dedent(
         """
         1. Run `cd ./donna && poetry run isort .` to sort the imports in the codebase.
@@ -54,8 +43,7 @@ run_isort = RequestAction(
 
 run_black = RequestAction(
     id="donna:grooming:run_black",
-    trigger_on=[run_isort.result("completed").event_id],
-    results=[OR.completed("donna:grooming:black_applied")],
+    results=[OR.completed(lambda: run_flake8.id)],
     request_template=textwrap.dedent(
         """
         1. Run `cd ./donna && poetry run black .` to format the codebase.
@@ -67,11 +55,10 @@ run_black = RequestAction(
 
 run_flake8 = RequestAction(
     id="donna:grooming:run_flake8",
-    trigger_on=[run_black.result("completed").event_id],
-    results=[OR.completed("donna:grooming:flake8:no_errors_found"),
+    results=[OR.completed(lambda: run_mypy.id),
              OR(id="errors_found_and_fixed",
                 description="Agent found style issues and fixed all of them.",
-                event_id="donna:grooming:flake8:errors_found_and_fixed")],
+                operation_id_=lambda: run_autoflake.id)],
     request_template=textwrap.dedent(
         """
         1. Run `cd ./donna && poetry run flake8 .` to check the codebase for style issues.
@@ -92,11 +79,10 @@ run_flake8 = RequestAction(
 
 run_mypy = RequestAction(
     id="donna:grooming:run_mypy",
-    trigger_on=[run_flake8.result("completed").event_id],
-    results=[OR.completed("donna:grooming:mypy:no_errors_found"),
+    results=[OR.completed(lambda: finish.id),
              OR(id="errors_found_and_fixed",
                 description="Agent found type issues and fixed all of them.",
-                event_id="donna:grooming:mypy:errors_found_and_fixed")],
+                operation_id_=lambda: run_autoflake.id)],
     request_template=textwrap.dedent(
         """
         1. Run `cd ./donna && poetry run mypy ./donna` to check the codebase for type annotation issues.
@@ -127,5 +113,4 @@ run_mypy = RequestAction(
 finish = Finish(
     id="donna:grooming:finish",
     results=[],
-    trigger_on=[run_mypy.result("completed").event_id]
 )

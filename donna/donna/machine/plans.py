@@ -5,7 +5,6 @@ from donna.domain.types import ActionRequestId, OperationResultId, StoryId, Task
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
 from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState
-from donna.machine.events import Event
 from donna.machine.tasks import Task, TaskState, WorkUnit, WorkUnitState
 from donna.world.layout import layout
 from donna.world.primitives_register import register
@@ -17,7 +16,6 @@ class Plan(BaseEntity):
     active_tasks: list[Task]
     queue: list[WorkUnit]  # TODO: rename from queue, because it's not a queue anymore
     action_requests: list[ActionRequest]
-    events: list[Event]
     last_cells: list[Cell]
     started: bool
 
@@ -30,7 +28,6 @@ class Plan(BaseEntity):
             story_id=story_id,
             active_tasks=[],
             action_requests=[],
-            events=[],
             queue=[],
             last_cells=[],
             started=False,
@@ -44,13 +41,10 @@ class Plan(BaseEntity):
     def is_completed(self) -> bool:
         # A plan can not consider itself completed if it was never started
         # it is important to distinguish the stories with unfinished initialization and the stories that are done
-        return not self.active_tasks and self.started
+        return not self.active_tasks and self.started and not self.action_requests
 
     def has_work(self) -> bool:
-        return bool(self.active_tasks)
-
-    def add_event(self, event: Event) -> None:
-        self.events.append(event)
+        return bool(self.queue)
 
     def get_task(self, task_id: TaskId) -> Task:
         for task in self.active_tasks:
@@ -80,19 +74,6 @@ class Plan(BaseEntity):
     def load(cls, story_id: StoryId) -> "Plan":
         return cls.from_json(layout().story_plan(story_id).read_text())
 
-    def apply_events(self) -> None:  # noqa: CCR001
-        task_id = self.active_tasks[-1].id
-
-        for event in self.events:
-            for operation in register().operations.values():
-                for event_template in operation.trigger_on:
-                    if event_template.match(event):
-                        # TODO: we may want store an event in the work unit
-                        new_work_unit = WorkUnit.build(story_id=self.story_id, task_id=task_id, operation=operation.id)
-                        self.queue.append(new_work_unit)
-
-        self.events.clear()
-
     def get_next_work_unit(self) -> WorkUnit | None:
         task_id = self.active_tasks[-1].id
 
@@ -117,7 +98,7 @@ class Plan(BaseEntity):
             raise NotImplementedError(f"can not make step while in state {task.state}")
 
         if not self.queue:
-            changes.append(ChangeTaskState(TaskState.COMPLETED))
+            # TODO: we need to ensure that FSM will end with finish operation
             return changes
 
         next_work_unit = self.get_next_work_unit()
@@ -137,10 +118,6 @@ class Plan(BaseEntity):
             change.apply_to(self, task)
 
     def step(self) -> list[Cell]:
-        # apply events on the beginning of the step
-        # to process events that
-        self.apply_events()
-
         task = self.active_tasks[-1]
 
         changes = self.try_step(task)
@@ -186,9 +163,6 @@ class Plan(BaseEntity):
             if not self.has_work():
                 break
 
-            if not self.events:
-                break
-
             cells.extend(self.step())
 
         for action_request in self.action_requests:
@@ -201,9 +175,6 @@ class Plan(BaseEntity):
         self.action_requests = [request for request in self.action_requests if request.id != request_id]
 
     def complete_action_request(self, request_id: ActionRequestId, result_id: OperationResultId) -> None:
-        if self.is_completed():
-            raise NotImplementedError("Plan is already completed")
-
         operation_id = self.get_action_request(request_id).operation_id
 
         operation = register().operations.get(operation_id)
@@ -212,9 +183,9 @@ class Plan(BaseEntity):
 
         current_task = self.active_tasks[-1]
 
-        event = Event.build(id=result.event_id, operation_id=operation_id, task_id=current_task.id)
+        new_work_unit = WorkUnit.build(story_id=self.story_id, task_id=current_task.id, operation=result.operation_id)
+        self.queue.append(new_work_unit)
 
-        self.add_event(event)
         self.remove_action_request(request_id)
 
         self.save()

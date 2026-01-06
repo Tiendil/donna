@@ -1,9 +1,8 @@
 import textwrap
 
 from donna.domain import types
-from donna.domain.types import EventId, OperationId, OperationResultId, RecordKindId
-from donna.machine.events import EventTemplate
-from donna.machine.operations import OperationResult
+from donna.domain.types import OperationId, RecordKindId
+from donna.machine.operations import OperationResult as OR
 from donna.machine.records import RecordKindSpec, RecordsIndex
 from donna.machine.tasks import Task
 from donna.machine.workflows import Workflow
@@ -107,14 +106,21 @@ class StoryCycleStep(RequestAction):
         return "\n".join(specification)
 
 
+create_detailed_description: "StoryCycleStep"
+list_primary_goals: "StoryCycleStep"
+list_objectives: "StoryCycleStep"
+list_constraints: "StoryCycleStep"
+list_acceptance_criteria: "StoryCycleStep"
+list_deliverables: "StoryCycleStep"
+prepare_story_plan: "StoryCycleStep"
+execute_story_plan: "StoryCycleStep"
+groom_the_result: "StoryCycleStep"
+finish: FinishTask
+
+
 start = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle")),
-    trigger_on=[],
-    results=[
-        OperationResult.completed(
-            EventId(types.NestedId("donna:end_to_end_story_cycle:developer_description_provided"))
-        )
-    ],
+    results=[OR.completed(lambda: create_detailed_description.id)],
     requested_kind_spec=DEVELOPER_DESCRIPTION,
     request_template=textwrap.dedent(
         """
@@ -137,15 +143,7 @@ workflow_start = Workflow(
 
 create_detailed_description = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle:create_detailed_description")),
-    trigger_on=[
-        EventTemplate(
-            id=start.result(OperationResultId(types.Slug("completed"))).event_id,
-            operation_id=None,
-        )
-    ],
-    results=[
-        OperationResult.completed(EventId(types.NestedId("donna:end_to_end_story_cycle:agent_description_created")))
-    ],
+    results=[OR.completed(lambda: list_primary_goals.id)],
     requested_kind_spec=WORK_DESSCRIPTION,
     request_template=textwrap.dedent(
         """
@@ -164,23 +162,9 @@ create_detailed_description = StoryCycleStep(
     ),
 )
 
-list_goals_next_iteration_event_id = EventId(
-    types.NestedId("donna:end_to_end_story_cycle:primary_goals_next_iteration")
-)
-
 list_primary_goals = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle:list_primary_goals")),
-    trigger_on=[
-        EventTemplate(
-            id=create_detailed_description.result(OperationResultId(types.Slug("completed"))).event_id,
-            operation_id=None,
-        ),
-        EventTemplate(id=list_goals_next_iteration_event_id, operation_id=None),
-    ],
-    results=[
-        OperationResult.completed(EventId(types.NestedId("donna:end_to_end_story_cycle:primary_goals_listed"))),
-        OperationResult.next_iteration(list_goals_next_iteration_event_id),
-    ],
+    results=[OR.completed(lambda: list_objectives.id), OR.repeat(lambda: list_primary_goals.id)],
     requested_kind_spec=GOAL,
     request_template=textwrap.dedent(
         """
@@ -201,23 +185,9 @@ list_primary_goals = StoryCycleStep(
     ),
 )
 
-list_objectives_next_iteration_event_id = EventId(
-    types.NestedId("donna:end_to_end_story_cycle:primary_objectives_next_iteration")
-)
-
 list_objectives = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle:list_objectives")),
-    trigger_on=[
-        EventTemplate(
-            id=list_primary_goals.result(OperationResultId(types.Slug("completed"))).event_id,
-            operation_id=None,
-        ),
-        EventTemplate(id=list_objectives_next_iteration_event_id, operation_id=None),
-    ],
-    results=[
-        OperationResult.completed(EventId(types.NestedId("donna:end_to_end_story_cycle:objectives_listed"))),
-        OperationResult.next_iteration(list_objectives_next_iteration_event_id),
-    ],
+    results=[OR.completed(lambda: list_constraints.id), OR.repeat(lambda: list_objectives.id)],
     requested_kind_spec=OBJECTIVE,
     request_template=textwrap.dedent(
         """
@@ -238,23 +208,9 @@ list_objectives = StoryCycleStep(
     ),
 )
 
-list_contstraints_next_iteration_event_id = EventId(
-    types.NestedId("donna:end_to_end_story_cycle:definition_of_done_next_iteration")
-)
-
 list_constraints = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle:list_constraints")),
-    trigger_on=[
-        EventTemplate(
-            id=list_objectives.result(OperationResultId(types.Slug("completed"))).event_id,
-            operation_id=None,
-        ),
-        EventTemplate(id=list_contstraints_next_iteration_event_id, operation_id=None),
-    ],
-    results=[
-        OperationResult.completed(EventId(types.NestedId("donna:end_to_end_story_cycle:constraints_listed"))),
-        OperationResult.next_iteration(list_contstraints_next_iteration_event_id),
-    ],
+    results=[OR.completed(lambda: list_acceptance_criteria.id), OR.repeat(lambda: list_constraints.id)],
     requested_kind_spec=CONSTRAINT,
     request_template=textwrap.dedent(
         """
@@ -275,23 +231,9 @@ list_constraints = StoryCycleStep(
     ),
 )
 
-list_acceptance_criteria_next_iteration_event_id = EventId(
-    types.NestedId("donna:end_to_end_story_cycle:acceptance_criteria_next_iteration")
-)
-
 list_acceptance_criteria = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle:list_acceptance_criteria")),
-    trigger_on=[
-        EventTemplate(
-            id=list_constraints.result(OperationResultId(types.Slug("completed"))).event_id,
-            operation_id=None,
-        ),
-        EventTemplate(id=list_acceptance_criteria_next_iteration_event_id, operation_id=None),
-    ],
-    results=[
-        OperationResult.completed(EventId(types.NestedId("donna:end_to_end_story_cycle:acceptance_criteria_listed"))),
-        OperationResult.next_iteration(list_acceptance_criteria_next_iteration_event_id),
-    ],
+    results=[OR.completed(lambda: list_deliverables.id), OR.repeat(lambda: list_acceptance_criteria.id)],
     requested_kind_spec=ACCEPTANCE_CRITERIA,
     request_template=textwrap.dedent(
         """
@@ -312,23 +254,9 @@ list_acceptance_criteria = StoryCycleStep(
     ),
 )
 
-list_deliverables_next_iteration_event_id = EventId(
-    types.NestedId("donna:end_to_end_story_cycle:deliverables_next_iteration")
-)
-
 list_deliverables = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle:list_deliverables")),
-    trigger_on=[
-        EventTemplate(
-            id=list_acceptance_criteria.result(OperationResultId(types.Slug("completed"))).event_id,
-            operation_id=None,
-        ),
-        EventTemplate(id=list_deliverables_next_iteration_event_id, operation_id=None),
-    ],
-    results=[
-        OperationResult.completed(EventId(types.NestedId("donna:end_to_end_story_cycle:deliverables_listed"))),
-        OperationResult.next_iteration(list_deliverables_next_iteration_event_id),
-    ],
+    results=[OR.completed(lambda: prepare_story_plan.id), OR.repeat(lambda: list_deliverables.id)],
     requested_kind_spec=DELIVERABLE,
     request_template=textwrap.dedent(
         """
@@ -349,23 +277,9 @@ list_deliverables = StoryCycleStep(
     ),
 )
 
-prepare_story_plan_next_iteration_event_id = EventId(
-    types.NestedId("donna:end_to_end_story_cycle:prepare_story_plan_next_iteration")
-)
-
 prepare_story_plan = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle:prepare_story_plan")),
-    trigger_on=[
-        EventTemplate(
-            id=list_deliverables.result(OperationResultId(types.Slug("completed"))).event_id,
-            operation_id=None,
-        ),
-        EventTemplate(id=prepare_story_plan_next_iteration_event_id, operation_id=None),
-    ],
-    results=[
-        OperationResult.completed(EventId(types.NestedId("donna:end_to_end_story_cycle:story_plan_prepared"))),
-        OperationResult.next_iteration(prepare_story_plan_next_iteration_event_id),
-    ],
+    results=[OR.completed(lambda: execute_story_plan.id), OR.repeat(lambda: prepare_story_plan.id)],
     requested_kind_spec=PLAN_ITEM,
     request_template=textwrap.dedent(
         """
@@ -388,13 +302,7 @@ prepare_story_plan = StoryCycleStep(
 
 execute_story_plan = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle:execute_story_plan")),
-    trigger_on=[
-        EventTemplate(
-            id=prepare_story_plan.result(OperationResultId(types.Slug("completed"))).event_id,
-            operation_id=None,
-        )
-    ],
-    results=[OperationResult.completed(EventId(types.NestedId("donna:end_to_end_story_cycle:story_plan_executed")))],
+    results=[OR.completed(lambda: groom_the_result.id)],
     requested_kind_spec=None,
     request_template=textwrap.dedent(
         """
@@ -415,13 +323,7 @@ execute_story_plan = StoryCycleStep(
 
 groom_the_result = StoryCycleStep(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle:groom_the_result")),
-    trigger_on=[
-        EventTemplate(
-            id=execute_story_plan.result(OperationResultId(types.Slug("completed"))).event_id,
-            operation_id=None,
-        )
-    ],
-    results=[OperationResult.completed(EventId(types.NestedId("donna:end_to_end_story_cycle:result_groomed")))],
+    results=[OR.completed(lambda: finish.id)],
     requested_kind_spec=None,
     request_template=textwrap.dedent(
         """
@@ -436,10 +338,4 @@ groom_the_result = StoryCycleStep(
 finish = FinishTask(
     id=OperationId(types.NestedId("donna:end_to_end_story_cycle:finish_story_loop")),
     results=[],
-    trigger_on=[
-        EventTemplate(
-            id=groom_the_result.result(OperationResultId(types.Slug("completed"))).event_id,
-            operation_id=None,
-        )
-    ],
 )
