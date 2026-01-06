@@ -175,8 +175,8 @@ class Plan(BaseEntity):
         self.action_requests = [request for request in self.action_requests if request.id != request_id]
 
     def complete_action_request(self, request_id: ActionRequestId, result_id: OperationResultId) -> None:
-        if self.is_completed():
-            raise NotImplementedError("Plan is already completed")
+        # if self.is_completed():
+        #     raise NotImplementedError("Plan is already completed")
 
         operation_id = self.get_action_request(request_id).operation_id
 

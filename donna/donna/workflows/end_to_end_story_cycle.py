@@ -1,7 +1,7 @@
 import textwrap
 
 from donna.domain import types
-from donna.domain.types import OperationId, OperationResultId, RecordKindId
+from donna.domain.types import OperationId, RecordKindId
 from donna.machine.operations import OperationResult as OR
 from donna.machine.records import RecordKindSpec, RecordsIndex
 from donna.machine.tasks import Task
