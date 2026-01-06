@@ -22,9 +22,9 @@ class Storage(Generic[ID, ITEM]):
 
         self._items[storage_item.id] = item
 
-    def get(self, id: ID) -> ITEM:
+    def get(self, id: ID) -> ITEM | None:
         if id not in self._items:
-            raise NotImplementedError(f"{self.item_name} with id '{id}' does not exist")
+            return None
 
         return self._items[id]
 

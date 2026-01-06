@@ -23,6 +23,17 @@ class RecordKind(BaseEntity):
     def specification(self) -> Any:
         raise NotImplementedError("You must implement this method in subclasses")
 
+    def cells(self) -> list[Cell]:
+        from donna.world.primitives_register import register
+
+        return [
+            Cell.build_json(
+                kind="record_kind_json_schema",
+                content=self.specification(),
+                record_kind=self.id
+            )
+        ]
+
 
 class RecordIndexItem(BaseEntity):
     id: RecordId
@@ -39,21 +50,6 @@ class RecordKindSpec(BaseEntity):
     @property
     def verbose(self) -> str:
         return f"<kind: {self.kind}>"
-
-    def cells(self) -> list[Cell]:
-        from donna.world.primitives_register import register
-
-        kind = register().records.get(self.kind)
-
-        assert kind is not None, f"Record kind '{self.kind}' is not registered"
-
-        return [
-            Cell.build_json(
-                kind="record_kind_json_schema",
-                content=kind.specification(),
-                record_kind=self.kind,
-            )
-        ]
 
 
 class RecordKindItem(BaseEntity):
