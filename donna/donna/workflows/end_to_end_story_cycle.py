@@ -179,7 +179,7 @@ list_primary_goals = StoryCycleStep(
     1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
     2. If you can identify one more goal:
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
-    2.2. mark this action request as `next_iteration`.
+    2.2. mark this action request as `repeat`.
     3. If you can not identify more goals, mark this action request as `completed`.
     """
     ),
@@ -202,7 +202,7 @@ list_objectives = StoryCycleStep(
     1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
     2. If you can identify one more objective:
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
-    2.2. mark this action request as `next_iteration`.
+    2.2. mark this action request as `repeat`.
     3. If you can not identify more objectives, mark this action request as `completed`.
     """
     ),
@@ -225,7 +225,7 @@ list_constraints = StoryCycleStep(
     1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
     2. If you can identify one more constraint:
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
-    2.2. mark this action request as `next_iteration`.
+    2.2. mark this action request as `repeat`.
     3. If you can not identify more constraints, mark this action request as `completed`.
     """
     ),
@@ -248,7 +248,7 @@ list_acceptance_criteria = StoryCycleStep(
     1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
     2. If you can identify one more acceptance criterion:
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
-    2.2. mark this action request as `next_iteration`.
+    2.2. mark this action request as `repeat`.
     3. If you can not identify more acceptance criteria, mark this action request as `completed`.
     """
     ),
@@ -271,7 +271,7 @@ list_deliverables = StoryCycleStep(
     1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
     2. If you can identify one more deliverable:
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
-    2.2. mark this action request as `next_iteration`.
+    2.2. mark this action request as `repeat`.
     2. If you can not identify more deliverables, mark this action request as `completed`.
     """
     ),
@@ -294,7 +294,7 @@ prepare_story_plan = StoryCycleStep(
     1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
     2. If you can identify one more plan item:
     2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
-    2.2. mark this action request as `next_iteration`.
+    2.2. mark this action request as `repeat`.
     3. If you can not identify more plan items, mark this action request as `completed`.
     """
     ),

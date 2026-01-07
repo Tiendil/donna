@@ -32,7 +32,7 @@ class OperationResult(BaseEntity):
     @classmethod
     def repeat(cls, operation_id: OperationId | Callable[[], OperationId]) -> "OperationResult":
         return cls(
-            id=OperationResultId(Slug("next_iteration")),
+            id=OperationResultId(Slug("repeat")),
             description="The operation needs to be repeated.",
             operation_id_=operation_id,
         )
