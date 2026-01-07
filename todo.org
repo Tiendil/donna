@@ -70,5 +70,4 @@
 ** TODO Maybe we do not need kinds separate from records?
 * TODO Consider using https://github.com/toon-format/toon for json formatting in cells
 * TODO WE CAN ASK DONNA TO MAKE A FSM FOR DONNA!!! WHICH WILL BE OUR PLAN OF WORK!!!
-* TODO tree-based storage for everythging, including records and record kinds
 * TODO rename plan.py/plan.json, because it conflates with the planing records
