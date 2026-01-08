@@ -34,6 +34,7 @@ All worlds have a strict layout that Donna MUST follow in order to discover and 
 ├── specifications/ — a folder containing specification files that define various aspects of the current project.
 ├── workflows/ — a folder containing workflow definitions that Donna can use to perform complex tasks.
 ├── session/ — a folder containing the current state of work being performed by Donna. Exists only in the project world.
+```
 
 By default, worlds are read-only. Besides the next exceptions:
 

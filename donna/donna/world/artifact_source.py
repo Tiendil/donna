@@ -42,7 +42,10 @@ def parse_markdown(text: str) -> list[SectionSource]:
 
     tokens = md.parse(text)
 
-    node = SyntaxTreeNode(tokens, create_root=False)
+    try:
+        node = SyntaxTreeNode(tokens, create_root=False)
+    except Exception as e:
+        raise NotImplementedError("Failed to parse markdown") from e
 
     sections: list[SectionSource] = [
         SectionSource(
