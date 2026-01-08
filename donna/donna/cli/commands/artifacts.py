@@ -15,16 +15,17 @@ from donna.world import navigator
 artifacts_cli = typer.Typer()
 
 
-# TODO: implement
-# @artifacts_cli.command()
-# def list(story_id: StoryIdArgument) -> None:
-#     index = r_domain.RecordsIndex.load(StoryId(story_id))
-#     output_cells(index.cells())
+@artifacts_cli.command()
+def list(kind: str) -> None:
+    artifacts = navigator.list_artifacts(kind)
+
+    for artifact in artifacts:
+        output_cells(artifact.info.cells())
 
 
 @artifacts_cli.command()
 def get(id: str) -> None:
-    artifact = navigator.get(id)
+    artifact = navigator.get_artifact(id)
     output_cells(artifact.cells())
 
 

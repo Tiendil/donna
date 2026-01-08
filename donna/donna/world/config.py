@@ -22,6 +22,9 @@ class World(BaseEntity):
     def extract(self, id: str) -> str:
         raise NotImplementedError("You must implement this method in subclasses")
 
+    def list_artifacts(self, kind: str) -> list[str]:
+        raise NotImplementedError("You must implement this method in subclasses")
+
     def get_module_sources(self) -> list[str]:
         raise NotImplementedError("You must implement this method in subclasses")
 
@@ -40,6 +43,20 @@ class WorldFilesystem(World):
             raise NotImplementedError(f"Artifact `{id}` does not exist in world `{self.id}`")
 
         return artifact_path.read_text()
+
+    def list_artifacts(self, kind: str) -> list[str]:
+        kind_path = self.path / kind
+
+        if not kind_path.exists() or not kind_path.is_dir():
+            return []
+
+        artifacts = []
+
+        for artifact_file in kind_path.iterdir():
+            if artifact_file.is_file():
+                artifacts.append(f"{kind}/{artifact_file.name}")
+
+        return artifacts
 
     def get_modules(self) -> list[importlib.machinery.ModuleSpec]:
         # load only top-level .py files
