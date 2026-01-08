@@ -85,5 +85,6 @@
 ** artifact_source.py -> artifacts.py?
 ** we have a kind of conflict between world/namespace and world/session/namespace, do we?
 ** artifact kind currently has id and namespace, which are equal. We should do something about it.
+** IMPORTANT: return helpfull errors when we fail to parse markdown
 * TODO Remove stories, keep only "current work" space
 * TODO refactor workflows + operations into configs
