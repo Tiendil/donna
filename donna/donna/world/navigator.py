@@ -10,7 +10,7 @@ def get(id: str) -> ArtifactSource:
         if not world.has(id):
             continue
 
-        content = world.get(id)
+        content = world.extract(id)
 
         raw_artifact = parse_artifact(world.id, id, content)
 
