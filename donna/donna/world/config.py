@@ -53,8 +53,13 @@ class WorldFilesystem(World):
         artifacts = []
 
         for artifact_file in kind_path.iterdir():
-            if artifact_file.is_file():
-                artifacts.append(f"{kind}/{artifact_file.name}")
+            if not artifact_file.is_file():
+                continue
+
+            if not artifact_file.suffix == ".md":
+                continue
+
+            artifacts.append(f"{kind}/{artifact_file.name}")
 
         return artifacts
 

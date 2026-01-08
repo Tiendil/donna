@@ -86,5 +86,6 @@
 ** we have a kind of conflict between world/namespace and world/session/namespace, do we?
 ** artifact kind currently has id and namespace, which are equal. We should do something about it.
 ** IMPORTANT: return helpfull errors when we fail to parse markdown
+** artifact ids: specifications/xxx.md -> specification.xxx?
 * TODO Remove stories, keep only "current work" space
 * TODO refactor workflows + operations into configs
