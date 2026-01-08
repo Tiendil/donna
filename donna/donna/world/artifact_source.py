@@ -1,7 +1,8 @@
 import enum
 import pathlib
 import pydantic
-from markdown_it import MarkdownIt, Token
+from markdown_it import MarkdownIt
+from markdown_it.token import Token
 from markdown_it.tree import SyntaxTreeNode
 
 
