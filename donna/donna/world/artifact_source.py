@@ -165,6 +165,7 @@ def parse_markdown(text: str) -> list[SectionSource]:  # noqa CCR001 # pylint: d
                 continue
 
             section.tokens.extend(node.to_tokens())
+            node = node.next_sibling
             continue
 
         if node.type == "fence":
