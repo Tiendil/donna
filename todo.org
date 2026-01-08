@@ -87,5 +87,6 @@
 ** artifact kind currently has id and namespace, which are equal. We should do something about it.
 ** IMPORTANT: return helpfull errors when we fail to parse markdown
 ** artifact ids: specifications/xxx.md -> specification.xxx? To make artifacts format agnostic (for the future)
+** refactor markdown parsing code into smaller pieces
 * TODO Remove stories, keep only "current work" space
 * TODO refactor workflows + operations into configs
