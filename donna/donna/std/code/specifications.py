@@ -7,7 +7,11 @@ class Specification(Artifact):
     content: str
 
     def cells(self) -> list['Cell']:
-        raise NotImplementedError("You must implement this method in subclasses")
+        return [Cell.build_markdown(
+            kind="specification",
+            content=self.content,
+            id=self.info.id,
+            world_id=self.info.world_id)]
 
 
 class SpecificationKind(ArtifactKind):
