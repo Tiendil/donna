@@ -27,6 +27,7 @@ dependencies = [
   "pydantic>=2.12,<2.13",
   "typer>=0.20,<0.21",
   "markdown-it-py>=4.0,<4.1",
+  "mdformat>=1.0.0,<1.1.0",
 ]
 
 [project.urls]

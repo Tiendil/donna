@@ -4,6 +4,7 @@ import pydantic
 from markdown_it import MarkdownIt
 from markdown_it.token import Token
 from markdown_it.tree import SyntaxTreeNode
+from mdformat.renderer import MDRenderer
 
 
 from donna.core.entities import BaseEntity
@@ -35,6 +36,16 @@ class ArtifactSource(BaseEntity):
 
     head: SectionSource
     tail: list[SectionSource]
+
+    def debug_print(self) -> None:
+        print('--- Debug Artifact Source ---')
+        print("world:", self.world_id)
+        print("id:", self.id)
+        print("head level:", self.head.level)
+        print("head title:", self.head.title)
+        print('---head body---')
+        print(MDRenderer().render(self.head.tokens))
+
 
 
 def parse_markdown(text: str) -> list[SectionSource]:  # noqa CCR001 # pylint: disable=R0912, R0915
