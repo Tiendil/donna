@@ -26,6 +26,7 @@ class PrimitivesRegister:
         yield self.operations
         yield self.records
         yield self.workflows
+        yield self.artifacts
 
     def initialize(self) -> None:
         if self.initialized:

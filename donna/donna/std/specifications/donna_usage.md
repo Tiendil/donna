@@ -8,6 +8,8 @@ This document describes how agents MUST use Donna to manage and perform their wo
 
 This document describes how agents MUST use Donna to manage and perform their workflows.
 
+**Agents MUST follow the instructions and guidelines outlined in this document precisely.**
+
 ## Overview
 
 `donna` is a CLI tool that helps manage the work of AI agents like Codex.
@@ -26,9 +28,10 @@ We may need coding agents on the each step of the process, but there no reason f
 
 ## Development
 
-- You always work on the specific story assigned to you, that is managed by the `donna` tool.
+- You MUST always work on the specific story assigned to you, that is managed by the `donna` tool.
 - If developer asked you to do something and you have no story, you create a story with the `donna` tool.
 - If you have a story, you MUST keep all the information about it in your memory. Ask `donna` tool for the story details when you forget something.
+- Donna may work from different environments. You MUST substitute correct `donna` command from the `AGENTS.md` for `<DONNA_CMD>` placeholder in this document when you work with the tool.
 
 ## Stories
 
@@ -40,22 +43,22 @@ You create story by specifying `story-slug` — a short ASCII string identifying
 
 ### Story workflow
 
-- You create stories by calling `./bin/donna.sh stories create <story-slug>`.
+- You create stories by calling `<DONNA_CMD> stories create <story-slug>`.
 - After you create a story:
   1. The `donna` tool will output a story id, use it to interact with the tool in the future.
-  2. List all possible workflows with command `./bin/donna.sh workflows list`.
+  2. List all possible workflows with command `<DONNA_CMD> workflows list`.
   3. Choose the most appropriate workflow for the story you are going to work on or ask the developer if you are not sure which workflow to choose.
-  4. Start working on the story by calling `./bin/donna.sh workflows start <story-id> <workflow-id>`.
+  4. Start working on the story by calling `<DONNA_CMD> workflows start <story-id> <workflow-id>`.
   5. The `donna` tool will output descriptions of all operations it performs to complete the story.
   6. The `donna` tool will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
-- When you done doing your part, you call `./bin/donna.sh stories action-request-completed <action-request-id> <action-request-result>` to report that you completed the action request. List of values `<action-request-result>` will be in the **action request** description.
+- When you done doing your part, you call `<DONNA_CMD> stories action-request-completed <action-request-id> <action-request-result>` to report that you completed the action request. List of values `<action-request-result>` will be in the **action request** description.
 - After you report the result:
   1. The `donna` tool will output what you need to do next.
   2. You repeat the process until the story is completed.
 
 ### Starting work on a story
 
-- If the developer asked you to do something and specified a story slug, you MUST call `./bin/donna.sh story continue <story-id>` to get your instructions on what to do next.
+- If the developer asked you to do something and specified a story slug, you MUST call `<DONNA_CMD> story continue <story-id>` to get your instructions on what to do next.
 - If the developer asked you to do something and did NOT specified a story ID and story slug, you MUST ask developer if you need to create a story for it first. If developer says YES, you MUST create a story. Then you MUST start working on the created story.
 
 ### Working with records
@@ -78,12 +81,12 @@ Examples of record kinds:
 
 Use the next commands to work with records related to your story:
 
-- `./bin/donna.sh records list <story-id>` — list all records related to the story.
-- `./bin/donna.sh records create <story-id> <description>` — create a new record without any kinds of data attached.
-- `./bin/donna.sh records delete <story-id> <record-id>` — delete the record and all its data.
-- `./bin/donna.sh records kind-set <story-id> <record-id> <record-kind> <json-data>` — set data of a particular kind for the record. Data is passed as JSON string.
-- `./bin/donna.sh records kind-get <story-id> <record-id> <record-kind>*` — get data of a particular kind(s) for the record.
-- `./bin/donna.sh records kind-delete <story-id> <record-id> <record-kind>*` — delete data of a particular kind(s) for the record.
+- `<DONNA_CMD> records list <story-id>` — list all records related to the story.
+- `<DONNA_CMD> records create <story-id> <description>` — create a new record without any kinds of data attached.
+- `<DONNA_CMD> records delete <story-id> <record-id>` — delete the record and all its data.
+- `<DONNA_CMD> records kind-set <story-id> <record-id> <record-kind> <json-data>` — set data of a particular kind for the record. Data is passed as JSON string.
+- `<DONNA_CMD> records kind-get <story-id> <record-id> <record-kind>*` — get data of a particular kind(s) for the record.
+- `<DONNA_CMD> records kind-delete <story-id> <record-id> <record-kind>*` — delete data of a particular kind(s) for the record.
 
 Command parameters:
 
@@ -99,12 +102,8 @@ A specification is a document describing requirements, designs, constraints, or 
 
 Use the next commands to work with specifications:
 
-- `./bin/donna.sh specifications list` — list all specifications.
-- `./bin/donna.sh specifications get <specification-id>` — get the content of the specification.
-
-Command parameters:
-
-- `<specification-id>` — a short ASCII string identifying the specification with `:` separators between sections and dash separators between words, e.g. `name:space:specification-id`.
+- `<DONNA_CMD> artifacts list specifications` — list all specifications.
+- `<DONNA_CMD> artifacts get specifications/<specification-id>.md` — get the content of the specification.
 
 ### Introspection
 
@@ -112,7 +111,7 @@ Sometimes you need to get information about the base primitives and structures u
 
 Use the next commands to get introspection data:
 
-- `./bin/donna.sh introspection show <primitive-id>` — show detailed information about the primitive with the given id. You will get IDs as the results of other operations (including action requests). Do not invent primitive IDs. Do not guess primitive IDs.
+- `<DONNA_CMD> introspection show <primitive-id>` — show detailed information about the primitive with the given id. You will get IDs as the results of other operations (including action requests). Do not invent primitive IDs. Do not guess primitive IDs.
 
 Command parameters:
 
@@ -126,9 +125,13 @@ When to use introspection:
 
 ## IMPORTANT ON DONNA TOOL USAGE
 
-**RUN `./bin/donna.sh` TO ACCESS THE `donna` TOOL**
+**Substitute correct `donna` command from the `AGENTS.md` for `<DONNA_CMD>` placeholder in this document when you work with the tool.**
 
-Example: `./bin/donna.sh artifacts list`
+Examples:
+
+- `<DONNA_CMD>  artifacts list specifications` -> `./bin/donna.sh artifacts list specifications` when `<DONNA_CMD>` is `./bin/donna.sh`
+- `<DONNA_CMD>  artifacts list specifications` -> `poetry run donna artifacts list specifications` when `<DONNA_CMD>` is `poetry run donna`
+- `<DONNA_CMD>  artifacts list specifications` -> `donna artifacts list specifications` when `<DONNA_CMD>` is `donna`.
 
 **STRICTLY FOLLOW DESCRIBED COMMAND SYNTAX**
 
@@ -138,10 +141,10 @@ Use one of the next approaches to correctly escape text arguments:
 
 ```
 # option 1
-./bin/donna.sh records kind-set <...>  $'# Long text\n\nwith escape sequences...'
+<DONNA_CMD> records kind-set <...>  $'# Long text\n\nwith escape sequences...'
 
 # option 2
-./bin/donna.sh records kind-set <...> \
+<DONNA_CMD> records kind-set <...> \
   "$(cat <<'EOF'
 # Long text
 

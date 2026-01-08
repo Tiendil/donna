@@ -4,9 +4,17 @@ This document provides instructions and guidelines for the AI agents working on 
 
 Every agent MUST follow the rules and guidelines outlined in this document when performing their work.
 
+## First actions
+
+**ALWAYS** perform the next steps when you start working.
+
+1. Read specification of how to use Donna: `./bin/donna.sh artifacts get specifications/donna_usage.md`.
+2. Remember that for the needs of Donna, value if the `<DONNA_CMD>` placeholder is is `./bin/donna.sh`.
+
 ## Points of interests
 
 - `./donna/` — a directory containing source code of project — `donna` CLI tool.
+- `./.donna/` — a directory containing project-specific donna artifacts that is used to manage the work of AI agents on this project.
 
 ## Project Overview
 
@@ -27,30 +35,3 @@ We may need coding agents on the each step of the process, but there no reason f
 ## Implementation details
 
 - Donna is implemented in Python.
-
-## IMPORTANT ON DONNA TOOL USAGE
-
-**RUN `./bin/donna.sh` TO ACCESS THE `donna` TOOL**
-
-Example: `./bin/donna.sh artifacts list`
-
-**STRICTLY FOLLOW DESCRIBED COMMAND SYNTAX**
-
-**PASS TEXT ARGUMENTS TO THE TOOL IN QUOTES WITH RESPECT TO ESCAPING.** The tool MUST receive the exact text you want to pass as an argument.
-
-Use one of the next approaches to correctly escape text arguments:
-
-```
-# option 1
-./bin/donna.sh records kind-set <...>  $'# Long text\n\nwith escape sequences...'
-
-# option 2
-./bin/donna.sh records kind-set <...> \
-  "$(cat <<'EOF'
-# Long text
-
-with escape sequences...
-EOF
-)"
-
-```
