@@ -18,7 +18,12 @@ class World(BaseEntity):
 
 
 class WorldFilesystem(World):
-    root: pathlib.Path
+    path: pathlib.Path
+
+
+# TODO: refactor donna to use importlib.resources and enable this class
+# class WorldPackage(World):
+#     name: str
 
 
 def _default_worlds():
