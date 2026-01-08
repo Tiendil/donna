@@ -32,7 +32,7 @@ def _default_worlds():
     return [
         WorldFilesystem(
             id=WorldId("donna"),
-            root=pathlib.Path(__file__).parent.parent / _donna,
+            root=pathlib.Path(__file__).parent.parent / "std",
             readonly=True,
             store_session=False,
         ),
