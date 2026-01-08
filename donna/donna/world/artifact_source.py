@@ -37,7 +37,7 @@ class ArtifactSource(BaseEntity):
     tail: list[SectionSource]
 
 
-def parse_markdown(text: str) -> list[SectionSource]:
+def parse_markdown(text: str) -> list[SectionSource]:  # noqa CCR001 # pylint: disable=R0912, R0915
     md = MarkdownIt("commonmark")  # TODO: later we may want to customize it with plugins
 
     tokens = md.parse(text)
@@ -127,7 +127,7 @@ def parse_markdown(text: str) -> list[SectionSource]:
 
         section.tokens.extend(node.to_tokens())
 
-        while node is not None and node.next_sibling is None:
+        while node.parent is not None and node.next_sibling is None:
             node = node.parent
             section.tokens.append(node.nester_tokens.closing)
 
