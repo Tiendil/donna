@@ -28,6 +28,7 @@ class WorldFilesystem(World):
 
     def has(self, id: str) -> bool:
         artifact_path = self.path / id
+        print(artifact_path)
         return artifact_path.exists()
 
     def extract(self, id: str) -> str:
@@ -50,19 +51,19 @@ def _default_worlds():
     return [
         WorldFilesystem(
             id=WorldId("donna"),
-            root=pathlib.Path(__file__).parent.parent / "std",
+            path=pathlib.Path(__file__).parent.parent / "std",
             readonly=True,
             store_session=False,
         ),
         WorldFilesystem(
             id=WorldId("home"),
-            root=pathlib.Path.home() / _donna,
+            path=pathlib.Path.home() / _donna,
             readonly=True,
             store_session=False,
         ),
         WorldFilesystem(
             id=WorldId("project"),
-            root=utils.project_dir(_donna) / _donna,
+            path=utils.project_dir(_donna) / _donna,
             readonly=False,
             store_session=True,
         ),
