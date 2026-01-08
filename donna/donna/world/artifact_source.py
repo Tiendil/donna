@@ -44,8 +44,16 @@ class ArtifactSource(BaseEntity):
         print("head level:", self.head.level)
         print("head title:", self.head.title)
         print('---head body---')
-        print(MDRenderer().render(self.head.tokens, {}, {}))
+        print(render_back(self.head.tokens))
 
+
+def render_back(tokens: list[Token]) -> str:
+    renderer = MDRenderer()
+    return renderer.render(tokens, {}, {})
+
+
+def clear_heading(text: str) -> str:
+    return text.lstrip("#").strip()
 
 
 def parse_markdown(text: str) -> list[SectionSource]:  # noqa CCR001 # pylint: disable=R0912, R0915
@@ -54,7 +62,8 @@ def parse_markdown(text: str) -> list[SectionSource]:  # noqa CCR001 # pylint: d
     tokens = md.parse(text)
 
     try:
-        node = SyntaxTreeNode(tokens)
+        # we do not need root node
+        node = SyntaxTreeNode(tokens).children[0]
     except Exception as e:
         raise NotImplementedError("Failed to parse markdown") from e
 
@@ -78,7 +87,7 @@ def parse_markdown(text: str) -> list[SectionSource]:  # noqa CCR001 # pylint: d
                 if section.title is not None:
                     raise NotImplementedError("Multiple H1 titles are not supported")
 
-                section.title = node.children[1].content
+                section.title = clear_heading(render_back(node.to_tokens()).strip())
 
                 node = node.next_sibling
                 continue
@@ -89,7 +98,7 @@ def parse_markdown(text: str) -> list[SectionSource]:  # noqa CCR001 # pylint: d
 
                 new_section = SectionSource(
                     level=SectionLevel.h2,
-                    title=node.children[1].content,
+                    title=clear_heading(render_back(node.to_tokens()).strip()),
                     tokens=[],
                     configs=[],
                 )
@@ -138,9 +147,11 @@ def parse_markdown(text: str) -> list[SectionSource]:  # noqa CCR001 # pylint: d
 
         section.tokens.extend(node.to_tokens())
 
-        while node.parent is not None and node.next_sibling is None:
+        while node.type != 'root' and node.next_sibling is None:
             node = node.parent
-            section.tokens.append(node.nester_tokens.closing)
+
+            if node.type != 'root':
+                section.tokens.append(node.nester_tokens.closing)
 
         if node is None:
             break
