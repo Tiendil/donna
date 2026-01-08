@@ -20,6 +20,13 @@ class CodeSource(BaseEntity):
     properties: dict[str, str | bool]
     content: str
 
+    def debug_print(self) -> None:
+        print('--- Debug Code Source ---')
+        print(f"format: {self.format}")
+        print(f"properties: {self.properties}")
+        print(self.content)
+        print('--- End of code ---')
+
 
 class SectionSource(BaseEntity):
     level: SectionLevel
@@ -28,6 +35,16 @@ class SectionSource(BaseEntity):
     configs: list[CodeSource]
 
     model_config = pydantic.ConfigDict(frozen=False)
+
+    def debug_print(self) -> None:
+        print('--- Debug Section Source ---')
+        print("level:", self.level)
+        print("title:", self.title)
+        print('---body---')
+        print(render_back(self.tokens))
+        for block in self.configs:
+            block.debug_print()
+        print('--- End of section ---')
 
 
 class ArtifactSource(BaseEntity):
@@ -41,10 +58,9 @@ class ArtifactSource(BaseEntity):
         print('--- Debug Artifact Source ---')
         print("world:", self.world_id)
         print("id:", self.id)
-        print("head level:", self.head.level)
-        print("head title:", self.head.title)
-        print('---head body---')
-        print(render_back(self.head.tokens))
+        self.head.debug_print()
+        for section in self.tail:
+            section.debug_print()
 
 
 def render_back(tokens: list[Token]) -> str:
