@@ -1,4 +1,4 @@
-from donna.world.artifact.source import ArtifactSource
+from donna.world.artifact_source import ArtifactSource
 from donna.machine.artifacts import ArtifactKind, Artifact, ArtifactInfo
 from donna.machine.cells import Cell
 
@@ -24,7 +24,7 @@ class SpecificationKind(ArtifactKind):
                 kind=self.id,
                 id=source.id,
                 world_id=source.world_id,
-                title=source.header.title,
+                title=source.head.title,
                 description=description
             ),
             content=source.as_markdown()

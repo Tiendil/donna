@@ -31,7 +31,6 @@ def get(id: str) -> ArtifactSource:
 
 
 def load_code() -> None:
-
     cfg = config()
 
     # IMPORTANT:

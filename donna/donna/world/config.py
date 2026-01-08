@@ -31,7 +31,6 @@ class WorldFilesystem(World):
 
     def has(self, id: str) -> bool:
         artifact_path = self.path / id
-        print(artifact_path)
         return artifact_path.exists()
 
     def extract(self, id: str) -> str:
@@ -49,7 +48,9 @@ class WorldFilesystem(World):
 
         modules = []
 
-        for module_file in self.path.glob("*.py"):
+        code_path = self.path / "code"
+
+        for module_file in code_path.glob("*.py"):
             relative_path = module_file.relative_to(self.path)
             module_name = f"donna._world_code.{self.id}.{relative_path.stem}"
             module_spec = importlib.util.spec_from_file_location(module_name, module_file)
