@@ -73,3 +73,10 @@
 * TODO rename plan.py/plan.json, because it conflates with the planing records
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO do we really need multiple stories? It looks like we always work on a single story every time.
+* TODO New data layout + specs as text
+** new layout
+** spec on a new layout
+** move old donna spec into layout
+** move donna spec from AGENTS.md to layout
+* TODO Remove stories, keep only "current work" space
+* TODO refactor workflows + operations into configs
