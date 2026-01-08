@@ -1,6 +1,7 @@
 import enum
 import pathlib
 import pydantic
+from typing import Any
 from markdown_it import MarkdownIt
 from markdown_it.token import Token
 from markdown_it.tree import SyntaxTreeNode
@@ -19,6 +20,21 @@ class CodeSource(BaseEntity):
     format: str
     properties: dict[str, str | bool]
     content: str
+
+    def structured_data(self) -> Any:
+        if self.format == "json":
+            import json
+            return json.loads(self.content)
+
+        if self.format == "yaml" or self.format == "yml":
+            import yaml
+            return yaml.safe_load(self.content)
+
+        if self.format == "toml":
+            import tomllib
+            return tomllib.loads(self.content)
+
+        raise NotImplementedError(f"Unsupported code format: {self.format}")
 
     def debug_print(self) -> None:
         print('--- Debug Code Source ---')
@@ -46,6 +62,22 @@ class SectionSource(BaseEntity):
             block.debug_print()
         print('--- End of section ---')
 
+    def as_markdown(self) -> str:
+        parts = []
+
+        if self.title is not None:
+            match self.level:
+                case SectionLevel.h1:
+                    prefix = "#"
+                case SectionLevel.h2:
+                    prefix = "##"
+
+            parts.append(f"{prefix} {self.title}")
+
+        parts.append(render_back(self.tokens))
+
+        return "\n".join(parts)
+
 
 class ArtifactSource(BaseEntity):
     world_id: str
@@ -53,6 +85,14 @@ class ArtifactSource(BaseEntity):
 
     head: SectionSource
     tail: list[SectionSource]
+
+    def as_markdown(self) -> str:
+        parts = [self.head.as_markdown()]
+
+        for section in self.tail:
+            parts.append(section.as_markdown())
+
+        return "\n".join(parts)
 
     def debug_print(self) -> None:
         print('--- Debug Artifact Source ---')

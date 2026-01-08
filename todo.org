@@ -81,5 +81,7 @@
 ** move old donna spec into layout
 ** move donna spec from AGENTS.md to layout
 ** should donna allow first-found replacement of artifacts in the paths?
+** introduce new id types
+** artifact_source.py -> artifacts.py?
 * TODO Remove stories, keep only "current work" space
 * TODO refactor workflows + operations into configs

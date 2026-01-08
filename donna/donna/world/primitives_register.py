@@ -5,6 +5,7 @@ from typing import Any, Iterator, cast
 from donna.domain.types import OperationId, RecordKindId, WorkflowId
 from donna.machine.operations import Operation
 from donna.machine.workflows import Workflow
+from donna.machine.artifacts import ArtifactKind
 from donna.primitives.records.base import RecordKind
 from donna.world.layout import layout
 from donna.world.storage import Storage
@@ -19,6 +20,7 @@ class PrimitivesRegister:
         self.operations: Storage[OperationId, Operation] = Storage("operation")
         self.records: Storage[RecordKindId, RecordKind] = Storage("record_kind")
         self.workflows: Storage[WorkflowId, Workflow] = Storage("workflow")
+        self.artifacts: Storage[str, ArtifactKind] = Storage("artifacts")
 
     def _storages(self) -> Iterator[Storage[Any, Any]]:
         yield self.operations
@@ -44,6 +46,14 @@ class PrimitivesRegister:
                 return cast(Operation | RecordKind | Workflow, primitive)
 
         return None
+
+    def register_module(self, module: importlib.machinery.ModuleSpec) -> None:
+        for attr_name in dir(module):
+            primitive = getattr(module, attr_name)
+
+            if isinstance(primitive, ArtifactKind):
+                self.artifacts.add(primitive)
+                continue
 
 
 _REGISTER: PrimitivesRegister | None = None

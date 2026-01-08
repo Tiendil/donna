@@ -26,7 +26,7 @@ artifacts_cli = typer.Typer()
 def get(id: str) -> None:
     artifact = navigator.get(id)
 
-    artifact.debug_print()
+    print(artifact)
 
 
 app.add_typer(artifacts_cli, name="artifacts", help="Manage artifacts")
