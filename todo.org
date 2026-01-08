@@ -72,3 +72,4 @@
 * TODO WE CAN ASK DONNA TO MAKE A FSM FOR DONNA!!! WHICH WILL BE OUR PLAN OF WORK!!!
 * TODO rename plan.py/plan.json, because it conflates with the planing records
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
+* TODO do we really need multiple stories? It looks like we always work on a single story every time.
