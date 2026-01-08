@@ -22,7 +22,7 @@ Donna discovers these artifacts by scanning the "worlds" specified in `<project-
 as `worlds` list. Most of worlds are filesystem folders, however other world types can be implemented such as:
 s3 buckets, git repositories, databases, etc.
 
-Default worlds are filesystem folders: `<donna-package-code>/.donna`, `~/.donna`, `<project-root>/.donna`
+Default worlds are filesystem folders: `<donna-package-code>/std`, `~/.donna`, `<project-root>/.donna`
 
 All worlds have a strict layout that Donna MUST follow in order to discover and manage its artifacts properly.
 
