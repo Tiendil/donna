@@ -16,9 +16,27 @@ class World(BaseEntity):
     readonly: bool = True
     store_session: bool = False
 
+    def has(self, id: str) -> bool:
+        raise NotImplementedError("You must implement this method in subclasses")
+
+    def extract(self, id: str) -> str:
+        raise NotImplementedError("You must implement this method in subclasses")
+
 
 class WorldFilesystem(World):
     path: pathlib.Path
+
+    def has(self, id: str) -> bool:
+        artifact_path = self.path / id
+        return artifact_path.exists()
+
+    def extract(self, id: str) -> str:
+        artifact_path = self.path / id
+
+        if not artifact_path.exists():
+            raise NotImplementedError(f"Artifact `{id}` does not exist in world `{self.id}`")
+
+        return artifact_path.read_text()
 
 
 # TODO: refactor donna to use importlib.resources and enable this class

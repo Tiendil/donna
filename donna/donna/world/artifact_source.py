@@ -30,7 +30,7 @@ class SectionSource(BaseEntity):
 
 class ArtifactSource(BaseEntity):
     world_id: str
-    path: pathlib.Path
+    id: str
 
     head: SectionSource
     tail: list[SectionSource]
@@ -135,7 +135,7 @@ def parse_markdown(text: str) -> list[SectionSource]:
     return sections
 
 
-def parse_artifact(world_id: str, path: pathlib.Path, text: str) -> ArtifactSource:
+def parse_artifact(world_id: str, id: str, text: str) -> ArtifactSource:
     sections = parse_markdown(text)
 
     if not sections:
@@ -146,7 +146,7 @@ def parse_artifact(world_id: str, path: pathlib.Path, text: str) -> ArtifactSour
 
     artifact = ArtifactSource(
         world_id=world_id,
-        path=path,
+        id=id,
         head=head,
         tail=tail,
     )
