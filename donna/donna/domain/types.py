@@ -22,13 +22,11 @@ WorldId = NewType("WorldId", Slug)
 StoryId = NewType("StoryId", Slug)
 RecordKindId = NewType("RecordKindId", Slug)
 OperationResultId = NewType("OperationResultId", Slug)
-SpecificationSourceId = NewType("SpecificationSourceId", Slug)
 
 # Nested Ids to organize static entities
 
 EventId = NewType("EventId", NestedId)
 OperationId = NewType("OperationId", NestedId)
-SpecificationId = NewType("SpecificationId", NestedId)
 WorkflowId = NewType("WorkflowId", NestedId)
 
 
