@@ -44,7 +44,7 @@ class ArtifactSource(BaseEntity):
         print("head level:", self.head.level)
         print("head title:", self.head.title)
         print('---head body---')
-        print(MDRenderer().render(self.head.tokens))
+        print(MDRenderer().render(self.head.tokens, {}, {}))
 
 
 
