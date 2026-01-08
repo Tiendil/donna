@@ -23,6 +23,9 @@ class RecordKind(BaseEntity):
     def specification(self) -> Any:
         raise NotImplementedError("You must implement this method in subclasses")
 
+    def cells(self) -> list[Cell]:
+        return [Cell.build_json(kind="record_kind_json_schema", content=self.specification(), record_kind=self.id)]
+
 
 class RecordIndexItem(BaseEntity):
     id: RecordId
@@ -38,22 +41,7 @@ class RecordKindSpec(BaseEntity):
 
     @property
     def verbose(self) -> str:
-        return f"<kind: {self.kind}>"
-
-    def cells(self) -> list[Cell]:
-        from donna.world.primitives_register import register
-
-        kind = register().records.get(self.kind)
-
-        assert kind is not None, f"Record kind '{self.kind}' is not registered"
-
-        return [
-            Cell.build_json(
-                kind="record_kind_json_schema",
-                content=kind.specification(),
-                record_kind=self.kind,
-            )
-        ]
+        return f"<record kind: `{self.kind}`>"
 
 
 class RecordKindItem(BaseEntity):
@@ -134,7 +122,9 @@ class RecordsIndex(BaseEntity):
             raise NotImplementedError(f"Record with id '{record_id}' does not exist in story '{self.story_id}'")
 
         for kind in item.kinds:
-            register().records.get(kind).remove(self.story_id, record_id)
+            record_kind = register().records.get(kind)
+            assert record_kind is not None
+            record_kind.remove(self.story_id, record_id)
 
         self.records = [record for record in self.records if record.id != record_id]
 
@@ -149,7 +139,9 @@ class RecordsIndex(BaseEntity):
         if record_item.kind not in item.kinds:
             item.kinds.append(record_item.kind)
 
-        register().records.get(record_item.kind).save(self.story_id, record_id, record_item)
+        record_kind = register().records.get(record_item.kind)
+        assert record_kind is not None
+        record_kind.save(self.story_id, record_id, record_item)
 
         return record_item
 
@@ -162,7 +154,9 @@ class RecordsIndex(BaseEntity):
             raise NotImplementedError(f"Record with id '{record_id}' does not exist in story '{self.story_id}'")
 
         for kind in kinds:
-            register().records.get(kind).remove(self.story_id, record_id)
+            record_kind = register().records.get(kind)
+            assert record_kind is not None
+            record_kind.remove(self.story_id, record_id)
 
         item.kinds = [k for k in item.kinds if k not in kinds]
 
@@ -182,6 +176,7 @@ class RecordsIndex(BaseEntity):
                 continue
 
             record_kind = register().records.get(kind)
+            assert record_kind is not None
 
             record_kind_item = record_kind.load(self.story_id, record_id)
 

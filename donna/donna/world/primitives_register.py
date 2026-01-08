@@ -1,5 +1,6 @@
 import importlib.util
 import pathlib
+from typing import Any, Iterator, cast
 
 from donna.domain.types import OperationId, RecordKindId, SpecificationSourceId, WorkflowId
 from donna.machine.operations import Operation
@@ -21,6 +22,12 @@ class PrimitivesRegister:
         self.specifications: Storage[SpecificationSourceId, SpecificationSource] = Storage("specification_source")
         self.workflows: Storage[WorkflowId, Workflow] = Storage("workflow")
 
+    def _storages(self) -> Iterator[Storage[Any, Any]]:
+        yield self.operations
+        yield self.records
+        yield self.specifications
+        yield self.workflows
+
     def initialize(self) -> None:
         if self.initialized:
             return
@@ -31,6 +38,15 @@ class PrimitivesRegister:
         discover_operations(self, layout().workflows)
 
         self.initialized = True
+
+    def find_primitive(self, primitive_id: str) -> Operation | RecordKind | SpecificationSource | Workflow | None:
+        for storage in self._storages():
+            primitive = storage.get(primitive_id)
+
+            if primitive:
+                return cast(Operation | RecordKind | SpecificationSource | Workflow, primitive)
+
+        return None
 
 
 _REGISTER: PrimitivesRegister | None = None

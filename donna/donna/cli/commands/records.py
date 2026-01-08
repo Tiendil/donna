@@ -62,6 +62,8 @@ def kind_set(
         raise NotImplementedError(f"Record '{record_id}' does not exist in story '{story_id}'")
 
     kind = register().records.get(record_kind_id)
+    if kind is None:
+        raise NotImplementedError(f"Record kind '{record_kind}' is not registered")
 
     index.set_record_kind_item(
         record_id=record_id,

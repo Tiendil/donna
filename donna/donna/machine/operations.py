@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Callable, Iterable
 
 from donna.core.entities import BaseEntity
 from donna.domain.types import OperationId, OperationResultId, Slug
+from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
 
 if TYPE_CHECKING:
@@ -31,10 +32,20 @@ class OperationResult(BaseEntity):
     @classmethod
     def repeat(cls, operation_id: OperationId | Callable[[], OperationId]) -> "OperationResult":
         return cls(
-            id=OperationResultId(Slug("next_iteration")),
+            id=OperationResultId(Slug("repeat")),
             description="The operation needs to be repeated.",
             operation_id_=operation_id,
         )
+
+    def cells(self) -> list[Cell]:
+        return [
+            Cell.build_meta(
+                kind="operation_result",
+                result_description=self.description,
+                result_id=self.id,
+                operation_id=self.operation_id,
+            )
+        ]
 
 
 class Operation(BaseEntity):
@@ -51,3 +62,11 @@ class Operation(BaseEntity):
                 return result
 
         raise NotImplementedError(f"OperationResult with id '{id}' does not exist")
+
+    def cells(self) -> list[Cell]:
+        cells = [Cell.build_meta(kind="operation", operation_id=str(self.id))]
+
+        for result in self.results:
+            cells.extend(result.cells())
+
+        return cells

@@ -55,7 +55,9 @@ def create_story(slug: Slug) -> Story:
 
 
 def start_workflow(story_id: StoryId, workflow_id: WorkflowId) -> None:
-    operation_id = register().workflows.get(workflow_id).operation_id
+    workflow = register().workflows.get(workflow_id)
+    assert workflow is not None
+    operation_id = workflow.operation_id
 
     plan = get_plan(story_id)
 

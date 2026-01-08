@@ -57,3 +57,26 @@
 *** however, the hidden functionality ensures displaying the specification of the record kind before the action request is displayed
 ** partical_description should be built somehow differently then now (not transparent enough)
 ** Include the exact donna commands in the action request body. Right now it assumes the agent remembers or infers the CLI syntax
+* TODO Records navigation + introspection
+** TODO donna records ?extract? <kind*> <--property=>*
+*** add <display/renderer> as the global object that defines how to render the output
+*** maybe display may be just jinja template?
+*** dow we really need display? Maybe cells will be ok for technical output?
+*** What we need:
+**** select by kinds (and display kinds in order?)
+**** filter by properties (better to have reach filtering syntax?)
+**** run graph opertions on top of the result set? Or maybe just different <sort> operations?
+** TODO replace partial description with new ?extract? command
+** TODO Maybe we do not need kinds separate from records?
+* TODO Consider using https://github.com/toon-format/toon for json formatting in cells
+* TODO WE CAN ASK DONNA TO MAKE A FSM FOR DONNA!!! WHICH WILL BE OUR PLAN OF WORK!!!
+* TODO rename plan.py/plan.json, because it conflates with the planing records
+* TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
+* TODO do we really need multiple stories? It looks like we always work on a single story every time.
+* TODO New data layout + specs as text
+** new layout
+** spec on a new layout
+** move old donna spec into layout
+** move donna spec from AGENTS.md to layout
+* TODO Remove stories, keep only "current work" space
+* TODO refactor workflows + operations into configs

@@ -15,47 +15,31 @@ class ActionRequest(BaseEntity):
     story_id: StoryId
     request: str
     operation_id: OperationId
-    reminders: list[Cell]
 
     @classmethod
-    def build(
-        cls, story_id: StoryId, request: str, operation_id: OperationId, reminders: list[Cell]
-    ) -> "ActionRequest":
+    def build(cls, story_id: StoryId, request: str, operation_id: OperationId) -> "ActionRequest":
         return cls(
             id=next_id(story_id, ActionRequestId),
             story_id=story_id,
             request=request,
             operation_id=operation_id,
-            reminders=reminders,
         )
 
     def cells(self) -> list[Cell]:
         from donna.world.primitives_register import register
 
-        results = []
-
         operation = register().operations.get(self.operation_id)
-
-        for result in operation.results:
-            results.append(f"- `{result.id}` — {result.description}")
-
-        operation_results = "\n".join(results)
+        assert operation is not None
 
         message = textwrap.dedent(
             """
         **This is an action request for the agent. You MUST follow the instructions below.**
 
         {request}
-
-        Possible results:
-
-        {operation_results}
         """
-        ).format(request=self.request, operation_results=operation_results)
+        ).format(request=self.request)
 
         cells = []
-
-        cells.extend(self.reminders)
 
         cells.append(
             Cell.build_markdown(
@@ -65,5 +49,8 @@ class ActionRequest(BaseEntity):
                 action_request_id=str(self.id),
             )
         )
+
+        for result in operation.results:
+            cells.extend(result.cells())
 
         return cells
