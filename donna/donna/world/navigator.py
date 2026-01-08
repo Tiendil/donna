@@ -16,12 +16,12 @@ def get(id: str) -> ArtifactSource:
 
         raw_artifact = parse_artifact(world.id, id, content)
 
-        kind = id.split("/")[0]
+        namespace = id.split("/")[0]
 
-        kind = register().artifacts.get(kind)
+        kind = register().artifacts.get(namespace)
 
         if kind is None:
-            raise NotImplementedError(f"Artifact kind `{kind}` is not registered")
+            raise NotImplementedError(f"Artifact kind for namespace `{namespace}` is not registered")
 
         artifact = kind.construct(raw_artifact)
 

@@ -2,7 +2,7 @@ from typing import Any
 
 import pydantic
 
-from donna.world.artifact.source import ArtifactSource
+from donna.world.artifact_source import ArtifactSource
 from donna.core.entities import BaseEntity
 from donna.domain.types import RecordId, RecordKindId, StoryId
 from donna.machine.cells import Cell
