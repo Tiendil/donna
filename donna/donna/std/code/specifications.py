@@ -36,7 +36,7 @@ class SpecificationKind(ArtifactKind):
 
 
 specification_kind = SpecificationKind(
-    id="specifications",
+    id="specification",
     namespace_id="specifications",
     description="A specification that define various aspects of the current project.",
 )
