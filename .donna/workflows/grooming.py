@@ -105,6 +105,7 @@ run_mypy = RequestAction(
 
         - Introducing new types.
         - Introducing new protocols.
+        - Adding `type: ignore[import-untyped]`
         """
     )
 )

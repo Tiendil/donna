@@ -1,14 +1,16 @@
 import enum
-import pathlib
-import pydantic
+import logging
 from typing import Any
+
+import pydantic
 from markdown_it import MarkdownIt
 from markdown_it.token import Token
 from markdown_it.tree import SyntaxTreeNode
 from mdformat.renderer import MDRenderer
 
-
 from donna.core.entities import BaseEntity
+
+LOGGER = logging.getLogger(__name__)
 
 
 class SectionLevel(str, enum.Enum):
@@ -24,24 +26,27 @@ class CodeSource(BaseEntity):
     def structured_data(self) -> Any:
         if self.format == "json":
             import json
+
             return json.loads(self.content)
 
         if self.format == "yaml" or self.format == "yml":
             import yaml
+
             return yaml.safe_load(self.content)
 
         if self.format == "toml":
             import tomllib
+
             return tomllib.loads(self.content)
 
         raise NotImplementedError(f"Unsupported code format: {self.format}")
 
     def debug_print(self) -> None:
-        print('--- Debug Code Source ---')
-        print(f"format: {self.format}")
-        print(f"properties: {self.properties}")
-        print(self.content)
-        print('--- End of code ---')
+        LOGGER.debug("--- Debug Code Source ---")
+        LOGGER.debug("format: %s", self.format)
+        LOGGER.debug("properties: %s", self.properties)
+        LOGGER.debug(self.content)
+        LOGGER.debug("--- End of code ---")
 
 
 class SectionSource(BaseEntity):
@@ -53,14 +58,14 @@ class SectionSource(BaseEntity):
     model_config = pydantic.ConfigDict(frozen=False)
 
     def debug_print(self) -> None:
-        print('--- Debug Section Source ---')
-        print("level:", self.level)
-        print("title:", self.title)
-        print('---body---')
-        print(render_back(self.tokens))
+        LOGGER.debug("--- Debug Section Source ---")
+        LOGGER.debug("level: %s", self.level)
+        LOGGER.debug("title: %s", self.title)
+        LOGGER.debug("---body---")
+        LOGGER.debug(render_back(self.tokens))
         for block in self.configs:
             block.debug_print()
-        print('--- End of section ---')
+        LOGGER.debug("--- End of section ---")
 
     def as_markdown(self) -> str:
         parts = []
@@ -95,9 +100,9 @@ class ArtifactSource(BaseEntity):
         return "\n".join(parts)
 
     def debug_print(self) -> None:
-        print('--- Debug Artifact Source ---')
-        print("world:", self.world_id)
-        print("id:", self.id)
+        LOGGER.debug("--- Debug Artifact Source ---")
+        LOGGER.debug("world: %s", self.world_id)
+        LOGGER.debug("id: %s", self.id)
         self.head.debug_print()
         for section in self.tail:
             section.debug_print()
@@ -112,14 +117,14 @@ def clear_heading(text: str) -> str:
     return text.lstrip("#").strip()
 
 
-def parse_markdown(text: str) -> list[SectionSource]:  # noqa CCR001 # pylint: disable=R0912, R0915
+def parse_markdown(text: str) -> list[SectionSource]:  # noqa: CCR001 # pylint: disable=R0912, R0915
     md = MarkdownIt("commonmark")  # TODO: later we may want to customize it with plugins
 
     tokens = md.parse(text)
 
     try:
         # we do not need root node
-        node = SyntaxTreeNode(tokens).children[0]
+        node: SyntaxTreeNode | None = SyntaxTreeNode(tokens).children[0]
     except Exception as e:
         raise NotImplementedError("Failed to parse markdown") from e
 
@@ -173,7 +178,7 @@ def parse_markdown(text: str) -> list[SectionSource]:  # noqa CCR001 # pylint: d
 
             format = info_parts[0] if info_parts else ""
 
-            properties: dict[str, str] = {}
+            properties: dict[str, str | bool] = {}
 
             for part in info_parts[1:]:
                 if "=" in part:
@@ -198,16 +203,21 @@ def parse_markdown(text: str) -> list[SectionSource]:  # noqa CCR001 # pylint: d
             continue
 
         if node.is_nested:
+            assert node.nester_tokens is not None
             section.tokens.append(node.nester_tokens.opening)
             node = node.children[0]
             continue
 
         section.tokens.extend(node.to_tokens())
 
-        while node.type != 'root' and node.next_sibling is None:
+        while node is not None and node.type != "root" and node.next_sibling is None:
             node = node.parent
 
-            if node.type != 'root':
+            if node is None:
+                break
+
+            if node.type != "root":
+                assert node.nester_tokens is not None
                 section.tokens.append(node.nester_tokens.closing)
 
         if node is None:
