@@ -27,7 +27,7 @@ class SpecificationKind(ArtifactKind):
 
         spec = Specification(
             info=ArtifactInfo(
-                kind=self.id, id=source.id, world_id=source.world_id, title=title, description=description
+                kind=self.id, id=source.id, title=title, description=description
             ),
             content=source.as_markdown(),
         )
@@ -37,6 +37,6 @@ class SpecificationKind(ArtifactKind):
 
 specification_kind = SpecificationKind(
     id="specifications",
-    namespace="specifications",
+    namespace_id="specifications",
     description="A specification that define various aspects of the current project.",
 )

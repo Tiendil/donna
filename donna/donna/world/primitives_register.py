@@ -10,6 +10,7 @@ from donna.machine.workflows import Workflow
 from donna.primitives.records.base import RecordKind
 from donna.world.layout import layout
 from donna.world.storage import Storage
+from donna.domain.ids import NamespaceId
 
 BASE_WORKFLOWS_DIR = pathlib.Path(__file__).parent.parent / "workflows"
 
@@ -46,6 +47,13 @@ class PrimitivesRegister:
 
             if primitive:
                 return cast(Operation | RecordKind | Workflow, primitive)
+
+        return None
+
+    def get_artifact_kind_by_namespace(self, namespace_id: NamespaceId) -> ArtifactKind | None:
+        for kind in self.artifacts.values():
+            if kind.namespace_id == namespace_id:
+                return kind
 
         return None
 

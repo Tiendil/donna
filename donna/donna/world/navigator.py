@@ -14,14 +14,12 @@ def get_artifact(full_id: FullArtifactId) -> Artifact:
 
     content = world.extract(full_id.namespace_id, full_id.artifact_id)
 
-    raw_artifact = parse_artifact(world.id, id, content)
+    raw_artifact = parse_artifact(full_id, content)
 
-    namespace = id.split("/")[0]
-
-    kind = register().artifacts.get(namespace)
+    kind = register().get_artifact_kind_by_namespace(full_id.namespace_id)
 
     if kind is None:
-        raise NotImplementedError(f"Artifact kind for namespace `{namespace}` is not registered")
+        raise NotImplementedError(f"Artifact kind for artifact `{full_id}` is not registered")
 
     return kind.construct(raw_artifact)
 

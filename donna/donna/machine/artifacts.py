@@ -1,16 +1,17 @@
 from donna.core.entities import BaseEntity
 from donna.machine.cells import Cell
 from donna.world.artifacts import ArtifactSource
+from donna.domain.ids import FullArtifactId, NamespaceId
 
 
 class ArtifactKind(BaseEntity):
     id: str
     description: str
-    namespace: str
+    namespace_id: NamespaceId
 
     def cells(self) -> list[Cell]:
         return [
-            Cell.build_meta(kind="artifact_kind", id=self.id, namespace=self.namespace, description=self.description)
+            Cell.build_meta(kind="artifact_kind", id=self.id, namespace_id=self.namespace_id, description=self.description)
         ]
 
     def construct(self, source: ArtifactSource) -> "Artifact":  # type: ignore[override]
@@ -19,8 +20,7 @@ class ArtifactKind(BaseEntity):
 
 class ArtifactInfo(BaseEntity):
     kind: str
-    world_id: str
-    id: str
+    id: FullArtifactId
     title: str
     description: str
 
@@ -29,7 +29,6 @@ class ArtifactInfo(BaseEntity):
             Cell.build_meta(
                 kind="artifact_info",
                 id=self.id,
-                world_id=self.world_id,
                 title=self.title,
                 description=self.description,
             )
