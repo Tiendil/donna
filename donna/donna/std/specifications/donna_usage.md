@@ -61,7 +61,7 @@ All work in the context of session/story is managed by the `donna` tool.
 ### Starting work on a story
 
 - If the developer asked you to do something:
-  - run `<DONNA_CMD> stories status` to get the status of the current session.
+  - run `<DONNA_CMD> sessions status` to get the status of the current session.
   - if the work in completed, run `<DONNA_CMD> sessions start` to start a new session.
   - if there are still a work to do, ask developer if you need to resume the current session or start a new one.
 - If the developer asked you to continue your work, you MUST call `<DONNA_CMD> session continue` to get your instructions on what to do next.
