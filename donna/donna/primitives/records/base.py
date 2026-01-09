@@ -20,9 +20,7 @@ class RecordKind(BaseRecordKind):
         path = layout().session_record_kind(record_id, self.id)
 
         if not path.exists():
-            raise NotImplementedError(
-                f"Record kind '{self.id}' for record '{record_id}' does not exist in session"
-            )
+            raise NotImplementedError(f"Record kind '{self.id}' for record '{record_id}' does not exist in session")
 
         with path.open("r", encoding="utf-8") as f:
             content = f.read()

@@ -1,8 +1,9 @@
 import pathlib
 
 from donna.core import utils
+from donna.domain.ids import WorldId
 from donna.domain.types import RecordId, RecordKindId
-from donna.world.config import config
+from donna.world.config import WorldFilesystem, config
 
 # TODO: Make configurable
 DONNA_DIR_NAME = ".donna"
@@ -17,7 +18,9 @@ class Layout:
         self.workflows = self.donna / "workflows"
 
         # TODO: this is incorrect code, we should use worlds from configs
-        self.session = config().get_world("session").path
+        world = config().get_world(WorldId("session"))
+        assert isinstance(world, WorldFilesystem)
+        self.session = world.path
 
     def session_plan(self) -> pathlib.Path:
         return self.session / "plan.json"

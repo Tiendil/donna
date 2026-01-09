@@ -8,9 +8,8 @@ from donna.cli.utils import output_cells
 from donna.domain import types
 from donna.domain.types import OperationResultId
 from donna.machine import sessions
-from donna.world.layout import layout
 from donna.machine.plans import Plan
-
+from donna.world.layout import layout
 
 sessions_cli = typer.Typer()
 
