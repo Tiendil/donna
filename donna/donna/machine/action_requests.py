@@ -1,10 +1,9 @@
 import textwrap
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import next_id
+from donna.domain.ids import next_id,     OperationId
 from donna.domain.types import (
     ActionRequestId,
-    OperationId,
 )
 from donna.machine.cells import Cell
 

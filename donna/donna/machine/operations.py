@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING, Callable, Iterable
 
 from donna.core.entities import BaseEntity
-from donna.domain.types import OperationId, OperationResultId, Slug
+from donna.domain.types import OperationResultId, Slug
+from donna.domain.ids import OperationId
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
 

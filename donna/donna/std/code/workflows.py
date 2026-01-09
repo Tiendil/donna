@@ -2,7 +2,6 @@ from donna.domain.ids import NamespaceId, OperationId
 from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
 from donna.world.markdown import ArtifactSource, SectionSource
-from donna.machine import workflows
 from donna.machine import operations
 
 
