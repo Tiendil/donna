@@ -1,7 +1,9 @@
 import pathlib
 
 from donna.core import utils
-from donna.domain.types import RecordId, RecordKindId, StoryId
+from donna.domain.ids import WorldId
+from donna.domain.types import RecordId, RecordKindId
+from donna.world.config import WorldFilesystem, config
 
 # TODO: Make configurable
 DONNA_DIR_NAME = ".donna"
@@ -12,52 +14,35 @@ class Layout:
     def __init__(self, project: pathlib.Path, donna_dir: str) -> None:
         self.project = project
         self.donna = project / donna_dir
-        self.config = self.donna / "config.json"
 
-        self.stories = self.donna / "stories"
         self.workflows = self.donna / "workflows"
 
-    def story_dir(self, story_id: StoryId) -> pathlib.Path:
-        return self.stories / story_id
+        # TODO: this is incorrect code, we should use worlds from configs
+        world = config().get_world(WorldId("session"))
+        assert isinstance(world, WorldFilesystem)
+        self.session = world.path
 
-    def story(self, story_id: StoryId) -> pathlib.Path:
-        return self.story_dir(story_id) / "story.json"
+    def session_plan(self) -> pathlib.Path:
+        return self.session / "plan.json"
 
-    def story_plan(self, story_id: StoryId) -> pathlib.Path:
-        return self.story_dir(story_id) / "plan.json"
+    def session_records_dir(self) -> pathlib.Path:
+        return self.session / "records"
 
-    def story_log(self, story_id: StoryId) -> pathlib.Path:
-        return self.story_dir(story_id) / "log.json"
+    def session_records_index(self) -> pathlib.Path:
+        return self.session / "index.json"
 
-    def story_records_dir(self, story_id: StoryId) -> pathlib.Path:
-        return self.story_dir(story_id) / "records"
+    def session_record_kind(self, record_id: RecordId, kind: RecordKindId) -> pathlib.Path:
+        return self.session / f"{record_id}.{kind}.json"
 
-    def story_records_index(self, story_id: StoryId) -> pathlib.Path:
-        return self.story_records_dir(story_id) / "index.json"
-
-    def story_record_kind(self, story_id: StoryId, record_id: RecordId, kind: RecordKindId) -> pathlib.Path:
-        return self.story_records_dir(story_id) / f"{record_id}.{kind}.json"
-
-    def story_counters(self, story_id: StoryId) -> pathlib.Path:
-        return self.story_dir(story_id) / "counters.json"
-
-    def next_story_number(self) -> int:
-        existing_ids = [
-            int(path.name.split("-")[0])
-            for path in self.stories.iterdir()
-            if path.is_dir() and path.name.split("-")[0].isdigit()
-        ]
-        next_id = max(existing_ids, default=0) + 1
-        return next_id
+    def session_counters(self) -> pathlib.Path:
+        return self.session / "counters.json"
 
     def sync(self) -> None:
-        self.stories.mkdir(exist_ok=True)
+        self.session.mkdir(exist_ok=True)
         self.workflows.mkdir(exist_ok=True)
 
-    def is_story_exists(self, story: StoryId) -> bool:
-        return self.story_dir(story).exists()
-
     def create_donna_dir(self) -> None:
+        # TODO: this is incorrect code, we should use worlds from configs
         self.donna.mkdir(exist_ok=True)
         self.sync()
 

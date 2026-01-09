@@ -27,12 +27,6 @@ SlugArgument = Annotated[
 ]
 
 
-StoryIdArgument = Annotated[
-    types.StoryId,
-    typer.Argument(parser=types.child_slug_parser(types.StoryId), help="The ID of the story"),
-]
-
-
 WorkflowIdArgument = Annotated[
     types.WorkflowId,
     typer.Argument(parser=create_nested_id_parser(types.WorkflowId), help="The ID of the workflow"),

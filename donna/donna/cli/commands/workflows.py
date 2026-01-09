@@ -3,10 +3,11 @@ from typing import List
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import StoryIdArgument, WorkflowIdArgument
+from donna.cli.types import WorkflowIdArgument
 from donna.cli.utils import output_cells
-from donna.machine import stories
+from donna.machine import sessions
 from donna.machine.cells import Cell
+from donna.machine.plans import Plan
 from donna.world.primitives_register import register
 
 workflows_cli = typer.Typer()
@@ -23,10 +24,10 @@ def list() -> None:
 
 
 @workflows_cli.command()
-def start(story_id: StoryIdArgument, workflow_id: WorkflowIdArgument) -> None:
-    stories.start_workflow(story_id, workflow_id)
+def start(workflow_id: WorkflowIdArgument) -> None:
+    sessions.start_workflow(workflow_id)
 
-    plan = stories.Plan.load(story_id)
+    plan = Plan.load()
 
     output_cells(plan.run())
 

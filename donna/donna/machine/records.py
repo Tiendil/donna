@@ -3,7 +3,7 @@ from typing import Any
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.types import RecordId, RecordKindId, StoryId
+from donna.domain.types import RecordId, RecordKindId
 from donna.machine.cells import Cell
 from donna.world.layout import layout
 
@@ -11,13 +11,13 @@ from donna.world.layout import layout
 class RecordKind(BaseEntity):
     id: RecordKindId
 
-    def save(self, story_id: StoryId, record_id: RecordId, item: "RecordKindItem") -> None:
+    def save(self, record_id: RecordId, item: "RecordKindItem") -> None:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def load(self, story_id: StoryId, record_id: RecordId) -> "RecordKindItem":
+    def load(self, record_id: RecordId) -> "RecordKindItem":
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def remove(self, story_id: StoryId, record_id: RecordId) -> None:
+    def remove(self, record_id: RecordId) -> None:
         raise NotImplementedError("You must implement this method in subclasses")
 
     def specification(self) -> Any:
@@ -56,7 +56,6 @@ class RecordKindItem(BaseEntity):
 
 
 class RecordsIndex(BaseEntity):
-    story_id: StoryId
     records: list[RecordIndexItem]
 
     # TODO: we may want to make queue items frozen later
@@ -66,11 +65,11 @@ class RecordsIndex(BaseEntity):
         return [Cell.build_json(kind="records_index", content=self.model_dump(mode="json"))]
 
     @classmethod
-    def load(cls, story_id: StoryId) -> "RecordsIndex":
-        return cls.from_json(layout().story_records_index(story_id).read_text())
+    def load(cls) -> "RecordsIndex":
+        return cls.from_json(layout().session_records_index().read_text())
 
     def save(self) -> None:
-        layout().story_records_index(self.story_id).write_text(self.to_json())
+        layout().session_records_index().write_text(self.to_json())
 
     def has_record(self, record_id: RecordId) -> bool:
         return any(record.id == record_id for record in self.records)
@@ -107,7 +106,7 @@ class RecordsIndex(BaseEntity):
         description: str,
     ) -> None:
         if self.has_record(id):
-            raise NotImplementedError(f"Record with id '{id}' already exists in story '{self.story_id}'")
+            raise NotImplementedError(f"Record with id '{id}' already exists in session")
 
         item = RecordIndexItem(id=id, kinds=[], description=description)
 
@@ -119,12 +118,12 @@ class RecordsIndex(BaseEntity):
         item = self.get_record(record_id)
 
         if item is None:
-            raise NotImplementedError(f"Record with id '{record_id}' does not exist in story '{self.story_id}'")
+            raise NotImplementedError(f"Record with id '{record_id}' does not exist in session ")
 
         for kind in item.kinds:
             record_kind = register().records.get(kind)
             assert record_kind is not None
-            record_kind.remove(self.story_id, record_id)
+            record_kind.remove(record_id)
 
         self.records = [record for record in self.records if record.id != record_id]
 
@@ -134,14 +133,14 @@ class RecordsIndex(BaseEntity):
         item = self.get_record(record_id)
 
         if item is None:
-            raise NotImplementedError(f"Record with id '{record_id}' does not exist in story '{self.story_id}'")
+            raise NotImplementedError(f"Record with id '{record_id}' does not exist in session")
 
         if record_item.kind not in item.kinds:
             item.kinds.append(record_item.kind)
 
         record_kind = register().records.get(record_item.kind)
         assert record_kind is not None
-        record_kind.save(self.story_id, record_id, record_item)
+        record_kind.save(record_id, record_item)
 
         return record_item
 
@@ -151,12 +150,12 @@ class RecordsIndex(BaseEntity):
         item = self.get_record(record_id)
 
         if item is None:
-            raise NotImplementedError(f"Record with id '{record_id}' does not exist in story '{self.story_id}'")
+            raise NotImplementedError(f"Record with id '{record_id}' does not exist in session")
 
         for kind in kinds:
             record_kind = register().records.get(kind)
             assert record_kind is not None
-            record_kind.remove(self.story_id, record_id)
+            record_kind.remove(record_id)
 
         item.kinds = [k for k in item.kinds if k not in kinds]
 
@@ -166,7 +165,7 @@ class RecordsIndex(BaseEntity):
         record = self.get_record(record_id)
 
         if record is None:
-            raise NotImplementedError(f"Record with id '{record_id}' does not exist in story '{self.story_id}'")
+            raise NotImplementedError(f"Record with id '{record_id}' does not exist in session")
 
         result: list[RecordKindItem | None] = []
 
@@ -178,7 +177,7 @@ class RecordsIndex(BaseEntity):
             record_kind = register().records.get(kind)
             assert record_kind is not None
 
-            record_kind_item = record_kind.load(self.story_id, record_id)
+            record_kind_item = record_kind.load(record_id)
 
             result.append(record_kind_item)
 

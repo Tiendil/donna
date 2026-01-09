@@ -5,22 +5,19 @@ from donna.domain.ids import next_id
 from donna.domain.types import (
     ActionRequestId,
     OperationId,
-    StoryId,
 )
 from donna.machine.cells import Cell
 
 
 class ActionRequest(BaseEntity):
     id: ActionRequestId
-    story_id: StoryId
     request: str
     operation_id: OperationId
 
     @classmethod
-    def build(cls, story_id: StoryId, request: str, operation_id: OperationId) -> "ActionRequest":
+    def build(cls, request: str, operation_id: OperationId) -> "ActionRequest":
         return cls(
-            id=next_id(story_id, ActionRequestId),
-            story_id=story_id,
+            id=next_id(ActionRequestId),
             request=request,
             operation_id=operation_id,
         )
@@ -45,7 +42,6 @@ class ActionRequest(BaseEntity):
             Cell.build_markdown(
                 kind="action_request",
                 content=message,
-                story_id=self.story_id,
                 action_request_id=str(self.id),
             )
         )

@@ -1,7 +1,7 @@
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.types import ActionRequestId, OperationResultId, StoryId, TaskId, WorkUnitId
+from donna.domain.types import ActionRequestId, OperationResultId, TaskId, WorkUnitId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
 from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState
@@ -12,7 +12,6 @@ from donna.world.primitives_register import register
 
 # TODO: somehow separate methods that save plan and those that do not
 class Plan(BaseEntity):
-    story_id: StoryId
     active_tasks: list[Task]
     queue: list[WorkUnit]  # TODO: rename from queue, because it's not a queue anymore
     action_requests: list[ActionRequest]
@@ -23,9 +22,8 @@ class Plan(BaseEntity):
     model_config = pydantic.ConfigDict(frozen=False)
 
     @classmethod
-    def build(cls, story_id: StoryId) -> "Plan":
+    def build(cls) -> "Plan":
         return cls(
-            story_id=story_id,
             active_tasks=[],
             action_requests=[],
             queue=[],
@@ -40,7 +38,7 @@ class Plan(BaseEntity):
 
     def is_completed(self) -> bool:
         # A plan can not consider itself completed if it was never started
-        # it is important to distinguish the stories with unfinished initialization and the stories that are done
+        # it is important to distinguish sessions with unfinished initialization and sessions that are done
         return not self.active_tasks and self.started and not self.action_requests
 
     def has_work(self) -> bool:
@@ -68,11 +66,11 @@ class Plan(BaseEntity):
         raise NotImplementedError(f"Work unit with id '{work_unit_id}' not found in plan")
 
     def save(self) -> None:
-        layout().story_plan(self.story_id).write_text(self.to_json())
+        layout().session_plan().write_text(self.to_json())
 
     @classmethod
-    def load(cls, story_id: StoryId) -> "Plan":
-        return cls.from_json(layout().story_plan(story_id).read_text())
+    def load(cls) -> "Plan":
+        return cls.from_json(layout().session_plan().read_text())
 
     def get_next_work_unit(self) -> WorkUnit | None:
         task_id = self.active_tasks[-1].id
@@ -139,10 +137,9 @@ class Plan(BaseEntity):
         return Cell.build_markdown(
             kind="work_is_completed",
             content=(
-                "The work in this story is COMPLETED. You MUST STOP all your activities immediately. "
+                "The work in this session is COMPLETED. You MUST STOP all your activities immediately. "
                 "ASK THE USER for further instructions."
             ),
-            story_id=self.story_id,
         )
 
     def run(self) -> list[Cell]:  # noqa: CCR001
@@ -171,6 +168,17 @@ class Plan(BaseEntity):
 
         return cells
 
+    def status_cells(self) -> list[Cell]:
+        return [
+            Cell.build_meta(
+                kind="plan_status",
+                active_tasks=len(self.active_tasks),
+                queued_work_units=len(self.queue),
+                pending_action_requests=len(self.action_requests),
+                is_completed=self.is_completed(),
+            )
+        ]
+
     def remove_action_request(self, request_id: ActionRequestId) -> None:
         self.action_requests = [request for request in self.action_requests if request.id != request_id]
 
@@ -184,18 +192,9 @@ class Plan(BaseEntity):
 
         current_task = self.active_tasks[-1]
 
-        new_work_unit = WorkUnit.build(story_id=self.story_id, task_id=current_task.id, operation=result.operation_id)
+        new_work_unit = WorkUnit.build(task_id=current_task.id, operation=result.operation_id)
         self.queue.append(new_work_unit)
 
         self.remove_action_request(request_id)
 
         self.save()
-
-
-def get_plan(story_id: StoryId) -> Plan:
-    plan_path = layout().story_plan(story_id)
-
-    if not plan_path.exists():
-        raise NotImplementedError(f"Plan for story '{story_id}' does not exist")
-
-    return Plan.from_json(plan_path.read_text())

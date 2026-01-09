@@ -73,7 +73,8 @@
 * TODO rename plan.py/plan.json, because it conflates with the planing records
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO do we really need multiple stories? It looks like we always work on a single story every time.
-* TODO Remove stories, keep only "current work" space
 * TODO refactor workflows + operations into configs
 ** ":" to access a part of the artifact? world.kind.artifact_path_with_extension:operation?
+** remove layout.py?
 * TODO error messages should provide helpful hints for agents
+* TODO "Story" term still in some specs for convienience, we should think of a better naming

@@ -37,5 +37,5 @@ class RequestAction(Operation):
 
         request_text = self.request_template.format(**context)
 
-        request = ActionRequest.build(task.story_id, request_text, self.id)
+        request = ActionRequest.build(request_text, self.id)
         yield ChangeAddActionRequest(request)

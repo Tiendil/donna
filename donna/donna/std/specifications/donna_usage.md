@@ -28,49 +28,54 @@ We may need coding agents on the each step of the process, but there no reason f
 
 ## Development
 
+- All work is always done in the context of a session. There is only one active session at a time.
 - You MUST always work on the specific story assigned to you, that is managed by the `donna` tool.
-- If developer asked you to do something and you have no story, you create a story with the `donna` tool.
-- If you have a story, you MUST keep all the information about it in your memory. Ask `donna` tool for the story details when you forget something.
+- If developer asked you to do something and you have no session, you create one with the `donna` tool.
+- If you have a session, you MUST keep all the information about it in your memory. Ask `donna` tool for the session details when you forget something.
 - Donna may work from different environments. You MUST substitute correct `donna` command from the `AGENTS.md` for `<DONNA_CMD>` placeholder in this document when you work with the tool.
 
 ## Stories
 
 Story is a semantically consistent unit of work assigned to you by the developer.
 
-All work in the context of story is managed by the `donna` tool.
+Story has no direct representation in donna tool, it it just a convenient way to refer to a particular scope of work.
 
-You create story by specifying `story-slug` — a short ASCII string identifying the story with dash separators.
+The session always has exactly one active story at a time.
+
+All work in the context of session/story is managed by the `donna` tool.
 
 ### Story workflow
 
-- You create stories by calling `<DONNA_CMD> stories create <story-slug>`.
-- After you create a story:
-  1. The `donna` tool will output a story id, use it to interact with the tool in the future.
+- Yoy start session by calling `<DONNA_CMD> sessions start`.
+- After you started a session:
   2. List all possible workflows with command `<DONNA_CMD> workflows list`.
   3. Choose the most appropriate workflow for the story you are going to work on or ask the developer if you are not sure which workflow to choose.
-  4. Start working on the story by calling `<DONNA_CMD> workflows start <story-id> <workflow-id>`.
+  4. Start working by calling `<DONNA_CMD> workflows start <workflow-id>`.
   5. The `donna` tool will output descriptions of all operations it performs to complete the story.
   6. The `donna` tool will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
-- When you done doing your part, you call `<DONNA_CMD> stories action-request-completed <action-request-id> <action-request-result>` to report that you completed the action request. List of values `<action-request-result>` will be in the **action request** description.
+- When you done doing your part, you call `<DONNA_CMD> sessions action-request-completed <action-request-id> <action-request-result>` to report that you completed the action request. List of values `<action-request-result>` will be in the **action request** description.
 - After you report the result:
   1. The `donna` tool will output what you need to do next.
   2. You repeat the process until the story is completed.
 
 ### Starting work on a story
 
-- If the developer asked you to do something and specified a story slug, you MUST call `<DONNA_CMD> story continue <story-id>` to get your instructions on what to do next.
-- If the developer asked you to do something and did NOT specified a story ID and story slug, you MUST ask developer if you need to create a story for it first. If developer says YES, you MUST create a story. Then you MUST start working on the created story.
+- If the developer asked you to do something:
+  - run `<DONNA_CMD> sessions status` to get the status of the current session.
+  - if the work in completed, run `<DONNA_CMD> sessions start` to start a new session.
+  - if there are still a work to do, ask developer if you need to resume the current session or start a new one.
+- If the developer asked you to continue your work, you MUST call `<DONNA_CMD> session continue` to get your instructions on what to do next.
 
 ### Working with records
 
 A record is a named collection of structured data of different kinds.
 
 - There can be multiple kinds of data attached to a single record.
-- Records are exist only in the context of a story.
+- Records are exist only in the context of a session.
 - Kinds of records are preconfigured in the `donna` tool.
 - You generally will get a specification of a scheme for a particular kind of record when you are asked to create or update it.
 
-Donna can ask you to create and manage records related to your story.
+Donna can ask you to create and manage records related to your session.
 
 Examples of record kinds:
 
@@ -79,19 +84,18 @@ Examples of record kinds:
 - Files with source code of the project IS NOT a kind of record.
 - Compiled binaries of the project IS NOT a kind of record.
 
-Use the next commands to work with records related to your story:
+Use the next commands to work with records related to your session:
 
-- `<DONNA_CMD> records list <story-id>` — list all records related to the story.
-- `<DONNA_CMD> records create <story-id> <description>` — create a new record without any kinds of data attached.
-- `<DONNA_CMD> records delete <story-id> <record-id>` — delete the record and all its data.
-- `<DONNA_CMD> records kind-set <story-id> <record-id> <record-kind> <json-data>` — set data of a particular kind for the record. Data is passed as JSON string.
-- `<DONNA_CMD> records kind-get <story-id> <record-id> <record-kind>*` — get data of a particular kind(s) for the record.
-- `<DONNA_CMD> records kind-delete <story-id> <record-id> <record-kind>*` — delete data of a particular kind(s) for the record.
+- `<DONNA_CMD> records list` — list all records related to the session.
+- `<DONNA_CMD> records create <description>` — create a new record without any kinds of data attached.
+- `<DONNA_CMD> records delete <record-id>` — delete the record and all its data.
+- `<DONNA_CMD> records kind-set <record-id> <record-kind> <json-data>` — set data of a particular kind for the record. Data is passed as JSON string.
+- `<DONNA_CMD> records kind-get <record-id> <record-kind>*` — get data of a particular kind(s) for the record.
+- `<DONNA_CMD> records kind-delete <record-id> <record-kind>*` — delete data of a particular kind(s) for the record.
 
 Command parameters:
 
-- `<story-id>` — the story id you got when you created or continued the story.
-- `<record-id>` — a short ASCII string identifying the record with dash separators. May be a unique slug like `story-description-from-developer` or a parameterized string like `issue-{uid}` where `{uid}` will be replaced with a unique identifier generated by the `donna` tool. Parametrized strings are allowed only when you create a new record.
+- `<record-id>` — a short ASCII string identifying the record with dash separators. May be a unique slug like `work-description-from-developer` or a parameterized string like `issue-{uid}` where `{uid}` will be replaced with a unique identifier generated by the `donna` tool. Parametrized strings are allowed only when you create a new record.
 - `<record-kind>` — a short ASCII string identifying the kind of record with dash separators.
 - `<description>` — a short text description of the record.
 - `<json-data>` — a JSON string with data of the particular kind. Record kinds have strict JSON schemas that you MUST follow exactly. You can get the schema of the record kind by using the introspection commands described below.
