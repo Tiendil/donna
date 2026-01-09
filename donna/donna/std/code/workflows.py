@@ -22,8 +22,7 @@ def construct_operation(section: SectionSource) -> list[operations.Operation]:
 
     operation_kind = register().operations.get(kind)
 
-    operation = operation_kind.operation(kind=kind,
-                                         title=section.title or "Untitled Operation",
+    operation = operation_kind.operation(title=section.title or "Untitled Operation",
                                          **data)
 
     return operation

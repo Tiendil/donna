@@ -79,6 +79,7 @@
 ** update specs:
 *** remove workflows list
 *** mention that you can list workflows as artifacts
+** remove operation results
 ** refactor end_to_end_story_cycle without refactoring records
 ** refactor end_to_end_story_cycle into generating artifacts
 ** remove records functionality

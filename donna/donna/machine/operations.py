@@ -13,14 +13,14 @@ if TYPE_CHECKING:
 class OperationResult(BaseEntity):
     id: OperationResultId
     description: str
-    operation_id: OperationId
+    next_operation_id: OperationId
 
     @classmethod
     def completed(cls, operation_id: OperationId | Callable[[], OperationId]) -> "OperationResult":
         return cls(
             id=OperationResultId(Slug("completed")),
             description="The operation was completed successfully.",
-            operation_id_=operation_id,
+            next_operation_id_=operation_id,
         )
 
     @classmethod
@@ -28,7 +28,7 @@ class OperationResult(BaseEntity):
         return cls(
             id=OperationResultId(Slug("repeat")),
             description="The operation needs to be repeated.",
-            operation_id_=operation_id,
+            next_operation_id_=operation_id,
         )
 
     def cells(self) -> list[Cell]:
@@ -37,7 +37,7 @@ class OperationResult(BaseEntity):
                 kind="operation_result",
                 result_description=self.description,
                 result_id=self.id,
-                operation_id=self.operation_id,
+                next_operation_id=self.next_operation_id,
             )
         ]
 
