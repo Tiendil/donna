@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Callable, Iterable
 
 from donna.core.entities import BaseEntity
 from donna.domain.types import OperationResultId, Slug
-from donna.domain.ids import OperationId
+from donna.domain.ids import OperationId, FullArtifactId
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.markdown import ArtifactSource, SectionSource
@@ -52,7 +52,7 @@ class OperationKind(BaseEntity):
     def execute(self, task: Task, unit: WorkUnit, operation: 'Operation') -> Iterable["Change"]:
         raise NotImplementedError("You MUST implement this method.")
 
-    def construct(self, section: SectionSource) -> 'Operation':
+    def construct(self, artifact_id: FullArtifactId, section: SectionSource) -> 'Operation':
         raise NotImplementedError("You MUST implement this method.")
 
     def cells(self) -> list[Cell]:

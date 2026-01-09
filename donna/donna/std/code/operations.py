@@ -1,4 +1,4 @@
-from donna.domain.ids import NamespaceId, OperationId
+from donna.domain.ids import NamespaceId, OperationId, FullArtifactId
 from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
 from donna.world.markdown import ArtifactSource, SectionSource
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 class RequestActionKind(OperationKind):
 
-    def construct(self, section: SectionSource) -> 'RequestAction':
+    def construct(self, artifact_id: FullArtifactId, section: SectionSource) -> 'RequestAction':
         data = section.merged_configs()
 
         if 'title' not in data:
@@ -31,6 +31,11 @@ class RequestActionKind(OperationKind):
 
         if 'request_template' not in data:
             data['request_template'] = section.as_markdown()
+
+        if 'artifact_id' in data:
+            raise NotImplementedError("artifact_id should not be set in RequestActionKind.construct")
+
+        data['artifact_id'] = artifact_id
 
         return self.operation(**data)
 
@@ -87,11 +92,16 @@ class FinishWorkflowKind(OperationKind):
 
         yield ChangeTaskState(TaskState.COMPLETED)
 
-    def construct(self, section: SectionSource) -> 'Operation':
+    def construct(self, artifact_id: FullArtifactId, section: SectionSource) -> 'Operation':
         data = section.merged_configs()
 
         if 'title' not in data:
             data['title'] = section.title or "Untitled Finish Workflow"
+
+        if 'artifact_id' in data:
+            raise NotImplementedError("artifact_id should not be set in FinishWorkflowKind.construct")
+
+        data['artifact_id'] = artifact_id
 
         return self.operation(**data)
 
