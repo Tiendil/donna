@@ -1,9 +1,6 @@
-from donna.domain.ids import NamespaceId, OperationId, FullArtifactId
-from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
-from donna.machine.cells import Cell
-from donna.world.markdown import ArtifactSource, SectionSource
+from donna.domain.ids import FullArtifactId
+from donna.world.markdown import SectionSource
 from donna.machine.operations import OperationKind, Operation
-from donna.machine import operations
 from donna.machine.tasks import Task, TaskState, WorkUnit
 
 from typing import TYPE_CHECKING, Iterator

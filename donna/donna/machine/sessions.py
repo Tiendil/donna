@@ -6,7 +6,6 @@ from donna.machine.records import RecordsIndex
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.layout import layout
 from donna.domain.ids import FullArtifactId
-from donna.world.primitives_register import register
 from donna.world import navigator
 
 

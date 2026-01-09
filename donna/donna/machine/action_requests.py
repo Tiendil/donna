@@ -1,7 +1,7 @@
 import textwrap
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import next_id, OperationId, FullArtifactLocalId
+from donna.domain.ids import next_id, FullArtifactLocalId
 from donna.domain.types import (
     ActionRequestId,
 )
@@ -23,7 +23,7 @@ class ActionRequest(BaseEntity):
         )
 
     def cells(self) -> list[Cell]:
-        from donna.world.primitives_register import register
+        pass
 
         workflow = navigator.get_artifact(self.operation_id.full_artifact_id)
 

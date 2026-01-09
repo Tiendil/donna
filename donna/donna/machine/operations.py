@@ -5,7 +5,7 @@ from donna.domain.types import OperationResultId, Slug
 from donna.domain.ids import OperationId, FullArtifactId
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
-from donna.world.markdown import ArtifactSource, SectionSource
+from donna.world.markdown import SectionSource
 
 
 if TYPE_CHECKING:

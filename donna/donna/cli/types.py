@@ -3,7 +3,7 @@ from typing import Annotated
 import typer
 
 from donna.domain import types
-from donna.domain.ids import FullArtifactId, NamespaceId, create_internal_id_parser, create_nested_id_parser
+from donna.domain.ids import FullArtifactId, NamespaceId, create_internal_id_parser
 
 ActionRequestIdArgument = Annotated[
     types.ActionRequestId,

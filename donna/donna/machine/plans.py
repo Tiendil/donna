@@ -7,7 +7,6 @@ from donna.machine.cells import Cell
 from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState
 from donna.machine.tasks import Task, TaskState, WorkUnit, WorkUnitState
 from donna.world.layout import layout
-from donna.world.primitives_register import register
 from donna.world import navigator
 
 
@@ -188,15 +187,17 @@ class Plan(BaseEntity):
 
         workflow = navigator.get_artifact(operation_id.full_artifact_id)
 
-        operation = workflow.get_operation(operation_id)
+        operation = workflow.get_operation(operation_id.local_id)
 
         assert operation is not None
 
         result = operation.result(result_id)
 
+        next_operation_id = workflow.info.id.to_full_local(result.next_operation_id)
+
         current_task = self.active_tasks[-1]
 
-        new_work_unit = WorkUnit.build(task_id=current_task.id, operation=result.next_operation_id)
+        new_work_unit = WorkUnit.build(task_id=current_task.id, operation_id=next_operation_id)
         self.queue.append(new_work_unit)
 
         self.remove_action_request(request_id)
