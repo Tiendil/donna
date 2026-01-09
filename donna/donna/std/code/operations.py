@@ -61,6 +61,7 @@ class RequestAction(Operation):
 request_action_kind = RequestActionKind(
     id="request_action",
     title="Request Action",
+    operation=RequestAction
 )
 
 
@@ -79,4 +80,5 @@ class FinishWorkflowKind(OperationKind):
 finish_workflow_kind = FinishWorkflowKind(
     id="finish_workflow",
     title="Finish Workflow",
+    operation=Operation
 )

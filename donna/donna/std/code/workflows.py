@@ -3,6 +3,7 @@ from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
 from donna.world.markdown import ArtifactSource, SectionSource
 from donna.machine import operations
+from donna.world.primitives_register import register
 
 
 class Workflow(Artifact):
@@ -14,14 +15,18 @@ class Workflow(Artifact):
 
 
 def construct_operation(section: SectionSource) -> list[operations.Operation]:
+
     data = section.merged_configs()
 
-    return operations.Operation(
-        id=data["id"],
-        kind=data["kind"],
-        title=section.title or "Untitled Operation",
-        results=data["results"],
-    )
+    kind = data["kind"]
+
+    operation_kind = register().operations.get(kind)
+
+    operation = operation_kind.operation(kind=kind,
+                                         title=section.title or "Untitled Operation",
+                                         **data)
+
+    return operation
 
 
 class WorkflowKind(ArtifactKind):

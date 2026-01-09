@@ -13,14 +13,7 @@ if TYPE_CHECKING:
 class OperationResult(BaseEntity):
     id: OperationResultId
     description: str
-    operation_id_: OperationId | Callable[[], OperationId]
-
-    @property
-    def operation_id(self) -> OperationId:
-        if isinstance(self.operation_id_, str):
-            return self.operation_id_
-
-        return self.operation_id_()
+    operation_id: OperationId
 
     @classmethod
     def completed(cls, operation_id: OperationId | Callable[[], OperationId]) -> "OperationResult":
@@ -52,6 +45,7 @@ class OperationResult(BaseEntity):
 class OperationKind(BaseEntity):
     id: str
     title: str
+    operation: type['Operation']
 
     def execute(self, task: Task, unit: WorkUnit, operation: 'Operation') -> Iterable["Change"]:
         raise NotImplementedError("You MUST implement this method.")
