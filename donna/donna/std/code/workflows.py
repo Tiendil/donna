@@ -14,7 +14,7 @@ class Workflow(Artifact):
 
 
 def construct_operation(section: SectionSource) -> list[operations.Operation]:
-    data = section.structured_data()
+    data = section.merged_configs()
 
     return operations.Operation(
         id=data["id"],
@@ -28,12 +28,9 @@ class WorkflowKind(ArtifactKind):
     def construct(self, source: ArtifactSource) -> "Artifact":
         description = None
 
-        for config in source.head.configs:
-            data = config.structured_data()
-            description = data.get("description", description)
+        description = source.head.merged_configs().get("description", description)
 
         title = source.head.title or str(source.id)
-        description = description or ""
 
         operation_list = [construct_operation(section) for section in source.tail]
 
