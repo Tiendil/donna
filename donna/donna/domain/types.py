@@ -18,7 +18,6 @@ RecordId = NewType("RecordId", InternalId)
 
 Slug = NewType("Slug", str)
 
-WorldId = NewType("WorldId", Slug)
 StoryId = NewType("StoryId", Slug)
 RecordKindId = NewType("RecordKindId", Slug)
 OperationResultId = NewType("OperationResultId", Slug)

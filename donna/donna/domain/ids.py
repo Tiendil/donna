@@ -62,6 +62,32 @@ class RichNestedId(tuple[str, ...]):
         return types.NestedId(":".join(self))
 
 
+class Identifier(str):
+    __slots__ = ()
+
+    def __new__(cls, value: str) -> "Identifier":
+        if not value.isidentifier():
+            raise NotImplementedError(f"Invalid identifier: '{value}'")
+
+        return super().__new__(cls, value)
+
+
+class WorldId(Identifier):
+    __slots__ = ()
+
+
+class NamespaceId(Identifier):
+    __slots__ = ()
+
+
+class ArtifactId(Identifier):
+    __slots__ = ()
+
+
+class FullArtifactId(tuple[WorldId, NamespaceId, ArtifactId]):
+    __slots__ = ()
+
+
 def next_id[InternalIdType: types.InternalId](
     story_id: types.StoryId,
     type_id: Callable[[types.InternalId], InternalIdType],
