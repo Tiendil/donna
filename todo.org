@@ -89,6 +89,7 @@
 ** remove introspections functionality? because it is fully covered by artifacts?
 ** move all ids from types.py into ids.py
 ** cleanum ids.py
+** search for all left str ids and replace them with proper id types
 ** merged section configs MUST be parsed directly by pydantic models, no magic
 ** remove `primitives` submodule?
 * TODO error messages should provide helpful hints for agents
