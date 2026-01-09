@@ -78,6 +78,6 @@
 ** remove grooming.py
 ** refactor end_to_end_story_cycle
 ** ":" to access a part of the artifact? world.kind.artifact_path_with_extension:operation?
-** remove layout.py?
+** remove layout.py? It's functionality should be moved to worlds
 * TODO error messages should provide helpful hints for agents
 * TODO "Story" term still in some specs for convienience, we should think of a better naming
