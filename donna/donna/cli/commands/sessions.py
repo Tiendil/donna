@@ -1,10 +1,9 @@
-import re
 import shutil
 
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import ActionRequestIdArgument, SlugArgument
+from donna.cli.types import ActionRequestIdArgument
 from donna.cli.utils import output_cells
 from donna.domain import types
 from donna.domain.types import OperationResultId
