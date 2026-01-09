@@ -95,11 +95,8 @@ def parse(text: str) -> list[SectionSource]:  # noqa: CCR001, CFQ001 # pylint: d
 
     tokens = md.parse(text)
 
-    try:
-        # we do not need root node
-        node: SyntaxTreeNode | None = SyntaxTreeNode(tokens).children[0]
-    except Exception as e:
-        raise NotImplementedError("Failed to parse markdown") from e
+    # we do not need root node
+    node: SyntaxTreeNode | None = SyntaxTreeNode(tokens).children[0]
 
     sections: list[SectionSource] = [
         SectionSource(

@@ -75,7 +75,6 @@
 * TODO do we really need multiple stories? It looks like we always work on a single story every time.
 * TODO New data layout + specs as text
 ** introduce new id types
-** IMPORTANT: return helpfull errors when we fail to parse markdown
 ** refactor markdown parsing code into smaller pieces
 * TODO Remove stories, keep only "current work" space
 * TODO refactor workflows + operations into configs
