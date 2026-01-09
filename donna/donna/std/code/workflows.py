@@ -19,6 +19,7 @@ def construct_operation(section: SectionSource) -> list[operations.Operation]:
 
     return operations.Operation(
         id=data["id"],
+        kind=data["kind"],
         title=section.title or "Untitled Operation",
         results=data["results"],
     )
