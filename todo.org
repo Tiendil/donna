@@ -74,6 +74,9 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO do we really need multiple stories? It looks like we always work on a single story every time.
 * TODO refactor workflows + operations into configs
+** add grooming.md
+** remove grooming.py
+** refactor end_to_end_story_cycle
 ** ":" to access a part of the artifact? world.kind.artifact_path_with_extension:operation?
 ** remove layout.py?
 * TODO error messages should provide helpful hints for agents
