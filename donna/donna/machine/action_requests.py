@@ -1,20 +1,21 @@
 import textwrap
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import next_id,     OperationId
+from donna.domain.ids import next_id, OperationId, FullArtifactLocalId
 from donna.domain.types import (
     ActionRequestId,
 )
 from donna.machine.cells import Cell
+from donna.world import navigator
 
 
 class ActionRequest(BaseEntity):
     id: ActionRequestId
     request: str
-    operation_id: OperationId
+    operation_id: FullArtifactLocalId
 
     @classmethod
-    def build(cls, request: str, operation_id: OperationId) -> "ActionRequest":
+    def build(cls, request: str, operation_id: FullArtifactLocalId) -> "ActionRequest":
         return cls(
             id=next_id(ActionRequestId),
             request=request,
@@ -24,7 +25,10 @@ class ActionRequest(BaseEntity):
     def cells(self) -> list[Cell]:
         from donna.world.primitives_register import register
 
-        operation = register().operations.get(self.operation_id)
+        workflow = navigator.get_artifact(self.operation_id.full_artifact_id)
+
+        operation = workflow.get_operation(self.operation_id.local_id)
+
         assert operation is not None
 
         message = textwrap.dedent(

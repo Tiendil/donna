@@ -10,6 +10,12 @@ class Workflow(Artifact):
     start_operation_id: OperationId
     operations: list[operations.Operation]
 
+    def get_operation(self, operation_id: OperationId) -> operations.Operation | None:
+        for operation in self.operations:
+            if operation.info.id == operation_id:
+                return operation
+        return None
+
     def cells(self) -> list["Cell"]:
         return [Cell.build_markdown(kind=self.info.kind, content=self.info.description, id=str(self.info.id))]
 

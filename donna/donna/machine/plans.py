@@ -8,6 +8,7 @@ from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeT
 from donna.machine.tasks import Task, TaskState, WorkUnit, WorkUnitState
 from donna.world.layout import layout
 from donna.world.primitives_register import register
+from donna.world import navigator
 
 
 # TODO: somehow separate methods that save plan and those that do not
@@ -185,14 +186,17 @@ class Plan(BaseEntity):
     def complete_action_request(self, request_id: ActionRequestId, result_id: OperationResultId) -> None:
         operation_id = self.get_action_request(request_id).operation_id
 
-        operation = register().operations.get(operation_id)
+        workflow = navigator.get_artifact(operation_id.full_artifact_id)
+
+        operation = workflow.get_operation(operation_id)
+
         assert operation is not None
 
         result = operation.result(result_id)
 
         current_task = self.active_tasks[-1]
 
-        new_work_unit = WorkUnit.build(task_id=current_task.id, operation=result.operation_id)
+        new_work_unit = WorkUnit.build(task_id=current_task.id, operation=result.next_operation_id)
         self.queue.append(new_work_unit)
 
         self.remove_action_request(request_id)
