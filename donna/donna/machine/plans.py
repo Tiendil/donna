@@ -168,6 +168,17 @@ class Plan(BaseEntity):
 
         return cells
 
+    def status_cells(self) -> list[Cell]:
+        return [
+            Cell.build_meta(
+                kind="plan_status",
+                active_tasks=len(self.active_tasks),
+                queued_work_units=len(self.queue),
+                pending_action_requests=len(self.action_requests),
+                is_completed=self.is_completed(),
+            )
+        ]
+
     def remove_action_request(self, request_id: ActionRequestId) -> None:
         self.action_requests = [request for request in self.action_requests if request.id != request_id]
 

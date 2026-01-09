@@ -29,6 +29,12 @@ def _continue() -> None:
 
 
 @sessions_cli.command()
+def status() -> None:
+    plan = Plan.load()
+    output_cells(plan.status_cells())
+
+
+@sessions_cli.command()
 def action_request_completed(request_id: ActionRequestIdArgument, result_id: str) -> None:
     plan = Plan.load()
 
