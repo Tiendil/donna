@@ -98,4 +98,7 @@
 * TODO error messages should provide helpful hints for agents
 * TODO "Story" term still in some specs for convienience, we should think of a better naming
 * TODO artifacts descripion vs intro — they replicate each other, maybe we could keep only one of them? Intro whould work better.
-* TODO mark specification sections with tags to allow flexible information extraction
+* TODO artifacts improvements
+** mark specification sections with tags to allow flexible information extraction
+** currently we do not output the whole workflow body on the request of the artifact, only description. Maybe we should output the whole body?
+** currently we have different approaches to read/write artifacts: we read them via donna, but write via direct file operations. Maybe we should unify it?
