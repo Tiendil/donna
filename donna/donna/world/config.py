@@ -35,17 +35,19 @@ class World(BaseEntity):
 class WorldFilesystem(World):
     path: pathlib.Path
 
+    def _artifact_path(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> pathlib.Path:
+        return self.path / namespace_id / artifact_id.replace('.', '/') + ".md"
+
     def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
-        artifact_path = self.path / namespace_id / artifact_id + ".md"
-        return artifact_path.exists()
+        return self._artifact_path(namespace_id, artifact_id).exists()
 
     def extract(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> str:
-        artifact_path = self.path / namespace_id / artifact_id + ".md"
+        path = self._artifact_path(namespace_id, artifact_id)
 
-        if not artifact_path.exists():
+        if not path.exists():
             raise NotImplementedError(f"Artifact `{id}` does not exist in world `{self.id}`")
 
-        return artifact_path.read_text()
+        return path.read_text()
 
     def list_artifacts(self, namespace_id: NamespaceId) -> list[str]:
         path = self.path / namespace_id

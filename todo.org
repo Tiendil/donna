@@ -78,8 +78,7 @@
 *** DONE normal id classes/types
 *** DONE 3-level ids: world/namespace/artifact_path
 *** DONE no shadowing of artifacts in namespaces
-*** ids as world.kind.artifact_path_with_extension
-*** ":" to access a part of the artifact? world.kind.artifact_path_with_extension:operation?
+*** DONE ids as world.kind.artifact_path_with_extension
 *** an additional map of namespaces in primitives_register, to separate artifact kind id from artifact kind namespace
 *** session as one more world
 ** introduce new id types
@@ -87,4 +86,5 @@
 ** refactor markdown parsing code into smaller pieces
 * TODO Remove stories, keep only "current work" space
 * TODO refactor workflows + operations into configs
+** ":" to access a part of the artifact? world.kind.artifact_path_with_extension:operation?
 * TODO error messages should provide helpful hints for agents
