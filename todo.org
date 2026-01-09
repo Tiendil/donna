@@ -100,3 +100,4 @@
 ** mark specification sections with tags to allow flexible information extraction
 ** currently we do not output the whole workflow body on the request of the artifact, only description. Maybe we should output the whole body?
 ** currently we have different approaches to read/write artifacts: we read them via donna, but write via direct file operations. Maybe we should unify it?
+** scripts as artefacts
