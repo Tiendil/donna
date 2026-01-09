@@ -1,5 +1,4 @@
 import enum
-import logging
 from typing import Any
 
 import pydantic
@@ -130,7 +129,7 @@ def _parse_heading(sections: list[SectionSource], node: SyntaxTreeNode) -> Synta
         return _parse_h1(sections, node)
 
     if node.tag == "h2":
-        return  _parse_h2(sections, node)
+        return _parse_h2(sections, node)
 
     section.tokens.extend(node.to_tokens())
     return node.next_sibling
@@ -182,17 +181,19 @@ def _parse_others(sections: list[SectionSource], node: SyntaxTreeNode) -> Syntax
 
     section.tokens.extend(node.to_tokens())
 
-    while node is not None and node.type != "root" and node.next_sibling is None:
-        node = node.parent
+    current: SyntaxTreeNode | None = node
 
-        if node is None:
+    while current is not None and current.type != "root" and current.next_sibling is None:
+        current = current.parent
+
+        if current is None:
             break
 
-        if node.type != "root":
-            assert node.nester_tokens is not None
-            section.tokens.append(node.nester_tokens.closing)
+        if current.type != "root":
+            assert current.nester_tokens is not None
+            section.tokens.append(current.nester_tokens.closing)
 
-    return node
+    return current
 
 
 def parse(text: str) -> list[SectionSource]:  # noqa: CCR001, CFQ001 # pylint: disable=R0912, R0915
