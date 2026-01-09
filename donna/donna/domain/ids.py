@@ -194,6 +194,7 @@ class FullArtifactLocalId(tuple[WorldId, NamespaceId, ArtifactId, ArtifactLocalI
     def local_id(self) -> ArtifactLocalId:
         return self[3]
 
+    @classmethod
     def parse(cls, text: str) -> "FullArtifactLocalId":
         artifact_part, local_part = text.rsplit(":", maxsplit=1)
         parts = artifact_part.split(".", maxsplit=2)

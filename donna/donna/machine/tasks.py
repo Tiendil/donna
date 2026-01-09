@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import next_id
+from donna.domain.ids import next_id, FullArtifactLocalId
 from donna.domain.types import TaskId, WorkUnitId
 from donna.domain.ids import OperationId
 
@@ -53,7 +53,7 @@ class WorkUnit(BaseEntity):
     state: WorkUnitState
     id: WorkUnitId
     task_id: TaskId
-    operation: OperationId
+    operation_id: FullArtifactLocalId
     context: dict[str, Any]
 
     # TODO: we may want to make queue items frozen later
@@ -63,7 +63,7 @@ class WorkUnit(BaseEntity):
     def build(
         cls,
         task_id: TaskId,
-        operation: OperationId,
+        operation_id: FullArtifactLocalId,
         context: dict[str, Any] | None = None,
     ) -> "WorkUnit":
 
@@ -76,19 +76,21 @@ class WorkUnit(BaseEntity):
             state=WorkUnitState.TODO,
             task_id=task_id,
             id=id,
-            operation=operation,
+            operation_id=operation_id,
             context=copy.deepcopy(context),
         )
 
         return unit
 
     def run(self, task: Task) -> list["Change"]:
-        from donna.world.primitives_register import register
+        from donna.world import navigator
 
         if self.state != WorkUnitState.TODO:
             raise NotImplementedError("Can only run a work unit in TODO state")
 
-        operation = register().operations.get(self.operation)
+        workflow = navigator.get_artifact(self.operation_id.full_artifact_id)
+
+        operation = workflow.get_operation(self.operation_id.local_id)
 
         if not operation:
             raise NotImplementedError(f"Operation with kind '{self.operation}' not found")
