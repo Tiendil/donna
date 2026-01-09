@@ -76,6 +76,9 @@
 * TODO refactor workflows + operations into configs
 ** add grooming.md
 ** remove grooming.py
+** update specs:
+*** remove workflows list
+*** mention that you can list workflows as artifacts
 ** refactor end_to_end_story_cycle without refactoring records
 ** refactor end_to_end_story_cycle into generating artifacts
 ** remove records functionality

@@ -27,12 +27,6 @@ SlugArgument = Annotated[
 ]
 
 
-WorkflowIdArgument = Annotated[
-    types.WorkflowId,
-    typer.Argument(parser=create_nested_id_parser(types.WorkflowId), help="The ID of the workflow"),
-]
-
-
 FullArtifactIdArgument = Annotated[
     FullArtifactId,
     typer.Argument(parser=FullArtifactId.parse, help="The full ID of the artifact"),

@@ -1,12 +1,13 @@
 import shutil
 
-from donna.domain.types import WorkflowId
 from donna.machine.counters import Counters
 from donna.machine.plans import Plan
 from donna.machine.records import RecordsIndex
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.layout import layout
+from donna.domain.ids import FullArtifactId
 from donna.world.primitives_register import register
+from donna.world import navigator
 
 
 def start() -> None:
@@ -33,9 +34,9 @@ def exists() -> bool:
     return layout().session_plan().exists()
 
 
-def start_workflow(workflow_id: WorkflowId) -> None:
-    workflow = register().workflows.get(workflow_id)
-    assert workflow is not None
+def start_workflow(artifact_id: FullArtifactId) -> None:
+    workflow = navigator.get_artifact(artifact_id)
+
     operation_id = workflow.operation_id
 
     plan = Plan.load()
