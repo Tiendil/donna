@@ -82,9 +82,9 @@ class WorkUnit(BaseEntity):
         return unit
 
     def run(self, task: Task) -> list["Change"]:
+        from donna.std.code.workflows import Workflow
         from donna.world import navigator
         from donna.world.primitives_register import register
-        from donna.std.code.workflows import Workflow
 
         if self.state != WorkUnitState.TODO:
             raise NotImplementedError("Can only run a work unit in TODO state")

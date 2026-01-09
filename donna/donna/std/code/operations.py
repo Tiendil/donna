@@ -17,7 +17,11 @@ if TYPE_CHECKING:
 
 class RequestActionKind(OperationKind):
 
-    def construct(self, artifact_id: FullArtifactId, section: SectionSource) -> "RequestAction":  # type: ignore[override]
+    def construct(  # type: ignore[override]
+        self,
+        artifact_id: FullArtifactId,
+        section: SectionSource,
+    ) -> "RequestAction":
         data = section.merged_configs()
 
         if "title" not in data:
@@ -69,7 +73,11 @@ class RequestAction(Operation):
     request_template: str
 
 
-request_action_kind = RequestActionKind(id="request_action", title="Request Action", operation=RequestAction)
+request_action_kind = RequestActionKind(
+    id="request_action",
+    title="Request Action",
+    operation=RequestAction,
+)
 
 
 ##################

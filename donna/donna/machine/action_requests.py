@@ -7,8 +7,8 @@ from donna.domain.types import (
     ActionRequestId,
 )
 from donna.machine.cells import Cell
-from donna.world import navigator
 from donna.std.code.workflows import Workflow
+from donna.world import navigator
 
 
 class ActionRequest(BaseEntity):
