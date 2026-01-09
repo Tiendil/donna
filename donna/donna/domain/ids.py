@@ -1,4 +1,6 @@
-from typing import Callable
+from typing import Any, Callable
+
+from pydantic_core import core_schema
 
 from donna.domain import types
 
@@ -62,6 +64,99 @@ class RichNestedId(tuple[str, ...]):
         return types.NestedId(":".join(self))
 
 
+class Identifier(str):
+    __slots__ = ()
+
+    def __new__(cls, value: str) -> "Identifier":
+        if not value.isidentifier():
+            raise NotImplementedError(f"Invalid identifier: '{value}'")
+
+        return super().__new__(cls, value)
+
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
+
+        def validate(v: Any) -> "Identifier":
+            if isinstance(v, cls):
+                return v
+
+            if not isinstance(v, str):
+                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
+
+            if not v.isidentifier():
+                raise ValueError(f"Invalid {cls.__name__}: {v!r}")
+
+            return cls(v)
+
+        return core_schema.json_or_python_schema(
+            json_schema=core_schema.str_schema(),
+            python_schema=core_schema.no_info_plain_validator_function(validate),
+            serialization=core_schema.to_string_ser_schema(),
+        )
+
+
+class WorldId(Identifier):
+    __slots__ = ()
+
+
+class NamespaceId(Identifier):
+    __slots__ = ()
+
+
+class ArtifactId(Identifier):
+    __slots__ = ()
+
+
+class FullArtifactId(tuple[WorldId, NamespaceId, ArtifactId]):
+    __slots__ = ()
+
+    def __str__(self) -> str:
+        return f"{self.world_id}.{self.namespace_id}.{self.artifact_id}"
+
+    @property
+    def world_id(self) -> WorldId:
+        return self[0]
+
+    @property
+    def namespace_id(self) -> NamespaceId:
+        return self[1]
+
+    @property
+    def artifact_id(self) -> ArtifactId:
+        return self[2]
+
+    @classmethod
+    def parse(cls, text: str) -> "FullArtifactId":
+        parts = text.split(".", maxsplit=2)
+
+        if len(parts) != 3:
+            raise NotImplementedError(f"Invalid FullArtifactId format: '{text}'")
+
+        world_id = WorldId(parts[0])
+        namespace_id = NamespaceId(parts[1])
+        artifact_id = ArtifactId(parts[2])
+
+        return FullArtifactId((world_id, namespace_id, artifact_id))
+
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
+
+        def validate(v: Any) -> "FullArtifactId":
+            if isinstance(v, cls):
+                return v
+
+            if not isinstance(v, str):
+                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
+
+            return cls.parse(v)
+
+        return core_schema.json_or_python_schema(
+            json_schema=core_schema.str_schema(),
+            python_schema=core_schema.no_info_plain_validator_function(validate),
+            serialization=core_schema.to_string_ser_schema(),
+        )
+
+
 def next_id[InternalIdType: types.InternalId](
     story_id: types.StoryId,
     type_id: Callable[[types.InternalId], InternalIdType],
@@ -86,7 +181,7 @@ def next_id[InternalIdType: types.InternalId](
     return type_id(id.to_internal())
 
 
-def create_id_parser[InternalIdType: types.InternalId](
+def create_internal_id_parser[InternalIdType: types.InternalId](
     type_id: Callable[[types.InternalId], InternalIdType],
 ) -> Callable[[str], InternalIdType]:
     def parser(text: str) -> InternalIdType:

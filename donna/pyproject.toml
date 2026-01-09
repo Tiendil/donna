@@ -26,6 +26,8 @@ classifiers = [
 dependencies = [
   "pydantic>=2.12,<2.13",
   "typer>=0.20,<0.21",
+  "markdown-it-py>=4.0,<4.1",
+  "mdformat>=1.0.0,<1.1.0",
 ]
 
 [project.urls]
@@ -54,6 +56,8 @@ flake8-pyproject = "1.2.*"
 flake8-eradicate = "1.5.*"
 
 mypy = "1.19.*"
+
+types-PyYAML = "6.0.*"
 
 [tool.isort]
 profile = "black"

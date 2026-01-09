@@ -1,20 +1,12 @@
-from donna.domain import types
-from donna.domain.types import SpecificationId, SpecificationSourceId
-from donna.machine.specifications import Specification, SpecificationIndexItem
-from donna.primitives.specifications.static import StaticSpecificationSource
-
-spec_planning = Specification(
-    item=SpecificationIndexItem(
-        id=SpecificationId(types.NestedId("donna:workflows:story-planning")),
-        name="Story Planning Guidelines",
-        description=(
-            "This document describes how Donna MUST plan work on a story with the help of "
-            "workflows. The document describes the process of planning, kinds of involved "
-            "entities and requirements for them."
-        ),
-    ),
-    content="""
 # Story Planning Guidelines
+
+```toml donna
+description = """
+This document describes how Donna MUST plan work on a story with the help of
+workflows. The document describes the process of planning, kinds of involved
+entities and requirements for them.
+"""
+```
 
 This document describes how Donna MUST plan work on a story with the help of workflows. The
 document describes the process of planning, kinds of involved entities and requirements for them.
@@ -222,12 +214,3 @@ Examples:
 - Bad: "Implement feature and update tests and docs."
 - Bad: "Consider performance implications."
 - Bad: "Document the approach in detail."
-
-""",
-)
-
-
-donna_workflows = StaticSpecificationSource(
-    id=SpecificationSourceId(types.Slug("donna-workflows")),
-    specifications=[spec_planning],
-)

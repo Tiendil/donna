@@ -105,6 +105,7 @@ run_mypy = RequestAction(
 
         - Introducing new types.
         - Introducing new protocols.
+        - Adding `type: ignore[import-untyped]`. If you need to use it, ask the developer to install the missing types first or to fix the issue manually.
         """
     )
 )

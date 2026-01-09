@@ -1,10 +1,12 @@
 import importlib.util
 import pathlib
+import types
 from typing import Any, Iterator, cast
 
-from donna.domain.types import OperationId, RecordKindId, SpecificationSourceId, WorkflowId
+from donna.domain.ids import NamespaceId
+from donna.domain.types import OperationId, RecordKindId, WorkflowId
+from donna.machine.artifacts import ArtifactKind
 from donna.machine.operations import Operation
-from donna.machine.specifications import SpecificationSource
 from donna.machine.workflows import Workflow
 from donna.primitives.records.base import RecordKind
 from donna.world.layout import layout
@@ -19,14 +21,14 @@ class PrimitivesRegister:
         self.initialized = False
         self.operations: Storage[OperationId, Operation] = Storage("operation")
         self.records: Storage[RecordKindId, RecordKind] = Storage("record_kind")
-        self.specifications: Storage[SpecificationSourceId, SpecificationSource] = Storage("specification_source")
         self.workflows: Storage[WorkflowId, Workflow] = Storage("workflow")
+        self.artifacts: Storage[str, ArtifactKind] = Storage("artifacts")
 
     def _storages(self) -> Iterator[Storage[Any, Any]]:
         yield self.operations
         yield self.records
-        yield self.specifications
         yield self.workflows
+        yield self.artifacts
 
     def initialize(self) -> None:
         if self.initialized:
@@ -39,14 +41,29 @@ class PrimitivesRegister:
 
         self.initialized = True
 
-    def find_primitive(self, primitive_id: str) -> Operation | RecordKind | SpecificationSource | Workflow | None:
+    def find_primitive(self, primitive_id: str) -> Operation | RecordKind | Workflow | None:
         for storage in self._storages():
             primitive = storage.get(primitive_id)
 
             if primitive:
-                return cast(Operation | RecordKind | SpecificationSource | Workflow, primitive)
+                return cast(Operation | RecordKind | Workflow, primitive)
 
         return None
+
+    def get_artifact_kind_by_namespace(self, namespace_id: NamespaceId) -> ArtifactKind | None:
+        for kind in self.artifacts.values():
+            if kind.namespace_id == namespace_id:
+                return kind
+
+        return None
+
+    def register_module(self, module: types.ModuleType) -> None:
+        for attr_name in dir(module):
+            primitive = getattr(module, attr_name)
+
+            if isinstance(primitive, ArtifactKind):
+                self.artifacts.add(primitive)
+                continue
 
 
 _REGISTER: PrimitivesRegister | None = None
@@ -89,10 +106,6 @@ def discover_operations(register: PrimitivesRegister, directory: pathlib.Path) -
 
             if isinstance(attr, RecordKind):
                 register.records.add(attr)
-                continue
-
-            if isinstance(attr, SpecificationSource):
-                register.specifications.add(attr)
                 continue
 
             if isinstance(attr, Workflow):
