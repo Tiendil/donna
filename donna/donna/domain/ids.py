@@ -111,8 +111,8 @@ class ArtifactId(Identifier):
 class FullArtifactId(tuple[WorldId, NamespaceId, ArtifactId]):
     __slots__ = ()
 
-    def __init__(self, world_id: WorldId, namespace_id: NamespaceId, artifact_id: ArtifactId) -> None:
-        super().__init__((world_id, namespace_id, artifact_id))
+    # def __init__(self, world_id: WorldId, namespace_id: NamespaceId, artifact_id: ArtifactId) -> None:
+    #     super().__init__((world_id, namespace_id, artifact_id))
 
     @property
     def world_id(self) -> WorldId:

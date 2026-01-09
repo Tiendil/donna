@@ -8,7 +8,7 @@ Every agent MUST follow the rules and guidelines outlined in this document when 
 
 **ALWAYS** perform the next steps when you start working.
 
-1. Read specification of how to use Donna: `./bin/donna.sh artifacts get specifications/donna_usage.md`.
+1. Read specification of how to use Donna: `./bin/donna.sh artifacts get donna.specifications.donna_usage`.
 2. Remember that for the needs of Donna, value if the `<DONNA_CMD>` placeholder is is `./bin/donna.sh`.
 
 ## Points of interests

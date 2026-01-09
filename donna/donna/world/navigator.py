@@ -7,7 +7,7 @@ from donna.world.primitives_register import register
 
 def get_artifact(full_id: FullArtifactId) -> Artifact:
 
-    world = config().get_world(id.world_id)
+    world = config().get_world(full_id.world_id)
 
     if not world.has(full_id.namespace_id, full_id.artifact_id):
         raise NotImplementedError(f"Artifact `{full_id}` does not exist in world `{world.id}`")

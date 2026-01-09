@@ -24,7 +24,7 @@ s3 buckets, git repositories, databases, etc.
 
 Default worlds are filesystem folders:
 
-- `std` — `<donna-package-code>/std` — the standard donna-provided artifacts.
+- `donna` — `<donna-package-code>/std` — the standard donna-provided artifacts.
 - `home` — `~/.donna` — the user-level donna artifacts, i.e. those that should be visible to all projects on this machine.
 - `project` — `<project-root>/.donna` — the project-level donna artifacts, i.e. those that are specific to this project.
 - `session` — `<project-root>/.donna/session` — the session world that contains the current state of work performed by Donna.

@@ -37,7 +37,7 @@ class WorldFilesystem(World):
     path: pathlib.Path
 
     def _artifact_path(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> pathlib.Path:
-        return self.path / namespace_id / artifact_id.replace('.', '/') + ".md"
+        return self.path / namespace_id / f"{artifact_id.replace('.', '/')}.md"
 
     def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
         return self._artifact_path(namespace_id, artifact_id).exists()

@@ -9,7 +9,7 @@ class Specification(Artifact):
     def cells(self) -> list["Cell"]:
         return [
             Cell.build_markdown(
-                kind="specification", content=self.content, id=self.info.id, world_id=self.info.world_id
+                kind="specification", content=self.content, id=self.info.id
             )
         ]
 
