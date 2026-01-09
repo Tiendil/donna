@@ -74,12 +74,6 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO do we really need multiple stories? It looks like we always work on a single story every time.
 * TODO New data layout + specs as text
-** .donna/donna.toml
-*** paths
-** new layout
-** spec on a new layout
-** move old donna spec into layout
-** move donna spec from AGENTS.md to layout
 ** should donna allow first-found replacement of artifacts in the paths?
 ** introduce new id types
 ** artifact_source.py -> artifacts.py?
