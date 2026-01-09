@@ -48,14 +48,28 @@ class OperationResult(BaseEntity):
         ]
 
 
+class OperationKind(BaseEntity):
+    id: str
+    title: str
+
+    def execute(self, task: Task, unit: WorkUnit, operation: 'Operation') -> Iterable["Change"]:
+        raise NotImplementedError("You MUST implement this method.")
+
+    def cells(self) -> list[Cell]:
+        return [
+            Cell.build_meta(
+                kind="operation_kind",
+                id=self.id,
+                title=self.title
+            )
+        ]
+
+
 class Operation(BaseEntity):
     id: OperationId
     title: str
 
     results: list[OperationResult]
-
-    def execute(self, task: Task, unit: WorkUnit) -> Iterable["Change"]:
-        raise NotImplementedError("You MUST implement this method.")
 
     def result(self, id: OperationResultId) -> OperationResult:
         for result in self.results:

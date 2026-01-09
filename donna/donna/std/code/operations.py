@@ -1,0 +1,83 @@
+from donna.domain.ids import NamespaceId, OperationId
+from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
+from donna.machine.cells import Cell
+from donna.world.markdown import ArtifactSource, SectionSource
+from donna.machine.operations import OperationKind, Operation
+from donna.machine import workflows
+from donna.machine import operations
+from donna.machine.tasks import Task, TaskState, WorkUnit
+
+from typing import TYPE_CHECKING, Iterator
+
+from donna.machine.action_requests import ActionRequest
+from donna.machine.operations import Operation
+from donna.machine.tasks import Task, WorkUnit
+
+if TYPE_CHECKING:
+    from donna.machine.changes import Change
+
+
+##########################
+# Request Action Operation
+##########################
+
+
+class RequestActionKind(OperationKind):
+
+    def construct_context(self, task: Task, operation: 'RequestAction') -> dict[str, object]:
+        context: dict[str, object] = {}
+
+        for method_name in dir(operation):
+            if not method_name.startswith("context_"):
+                continue
+
+            name = method_name[len("context_") :]
+            value = getattr(operation, method_name)(task)
+
+            if value is None:
+                continue
+
+            context[name] = value
+
+        context["scheme"] = operation
+
+        return context
+
+    def execute(self, task: Task, unit: WorkUnit, operation: 'RequestAction') -> Iterator["Change"]:
+        from donna.machine.changes import ChangeAddActionRequest
+
+        context = self.construct_context(task, operation)
+
+        request_text = operation.request_template.format(**context)
+
+        request = ActionRequest.build(request_text, operation.id)
+
+        yield ChangeAddActionRequest(request)
+
+
+class RequestAction(Operation):
+    request_template: str
+
+
+request_action_kind = RequestActionKind(
+    id="request_action",
+    title="Request Action",
+)
+
+
+##################
+# Finish Operation
+##################
+
+
+class FinishWorkflowKind(OperationKind):
+    def execute(self, task: Task, unit: WorkUnit, operation: Operation) -> Iterator["Change"]:
+        from donna.machine.changes import ChangeTaskState
+
+        yield ChangeTaskState(TaskState.COMPLETED)
+
+
+finish_workflow_kind = FinishWorkflowKind(
+    id="finish_workflow",
+    title="Finish Workflow",
+)

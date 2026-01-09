@@ -13,6 +13,7 @@ Initiate operations to groom and refine the donna codebase: running & fixing tes
 
 ```toml donna
 id = "run_autoflake"
+kind = "action_request"
 
 [[results]]
 id = "completed"
@@ -27,6 +28,7 @@ next_operation_id = "run_isort"
 
 ```toml donna
 id = "run_isort"
+kind = "action_request"
 
 [[results]]
 id = "completed"
@@ -41,6 +43,7 @@ next_operation_id = "run_black"
 
 ```toml donna
 id = "run_black"
+kind = "action_request"
 
 [[results]]
 id = "completed"
@@ -55,6 +58,7 @@ next_operation_id = "run_flake8"
 
 ```toml donna
 id = "run_flake8"
+kind = "action_request"
 
 [[results]]
 id = "completed"
@@ -83,6 +87,7 @@ Instructions on fixing special cases:
 
 ```toml donna
 id = "run_mypy"
+kind = "action_request"
 
 [[results]]
 id = "completed"
@@ -121,6 +126,7 @@ Changes you are not allowed to make:
 
 ```toml donna
 id = "finish"
+kind = "finish_workflow"
 
 [[results]]
 id = "completed"

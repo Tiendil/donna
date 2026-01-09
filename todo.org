@@ -92,6 +92,7 @@
 ** search for all left str ids and replace them with proper id types
 ** merged section configs MUST be parsed directly by pydantic models, no magic
 ** remove `primitives` submodule?
+** do we need WorkflowKind that allow specify different workflow behaviors?
 * TODO error messages should provide helpful hints for agents
 * TODO "Story" term still in some specs for convienience, we should think of a better naming
 * TODO artifacts descripion vs intro — they replicate each other, maybe we could keep only one of them? Intro whould work better.
