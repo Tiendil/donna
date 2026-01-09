@@ -79,5 +79,7 @@
 ** refactor end_to_end_story_cycle
 ** ":" to access a part of the artifact? world.kind.artifact_path_with_extension:operation?
 ** remove layout.py? It's functionality should be moved to worlds
+** global ids vs local ids (for operations)
 * TODO error messages should provide helpful hints for agents
 * TODO "Story" term still in some specs for convienience, we should think of a better naming
+* TODO artifacts descripion vs intro — they replicate each other, maybe we could keep only one of them? Intro whould work better.
