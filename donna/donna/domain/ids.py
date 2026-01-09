@@ -1,5 +1,4 @@
-from typing import Callable
-from typing import Any
+from typing import Any, Callable
 
 from pydantic_core import core_schema
 
@@ -111,8 +110,8 @@ class ArtifactId(Identifier):
 class FullArtifactId(tuple[WorldId, NamespaceId, ArtifactId]):
     __slots__ = ()
 
-    # def __init__(self, world_id: WorldId, namespace_id: NamespaceId, artifact_id: ArtifactId) -> None:
-    #     super().__init__((world_id, namespace_id, artifact_id))
+    def __str__(self) -> str:
+        return f"{self.world_id}.{self.namespace_id}.{self.artifact_id}"
 
     @property
     def world_id(self) -> WorldId:

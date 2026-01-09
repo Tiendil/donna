@@ -3,6 +3,7 @@ import pathlib
 import types
 from typing import Any, Iterator, cast
 
+from donna.domain.ids import NamespaceId
 from donna.domain.types import OperationId, RecordKindId, WorkflowId
 from donna.machine.artifacts import ArtifactKind
 from donna.machine.operations import Operation
@@ -10,7 +11,6 @@ from donna.machine.workflows import Workflow
 from donna.primitives.records.base import RecordKind
 from donna.world.layout import layout
 from donna.world.storage import Storage
-from donna.domain.ids import NamespaceId
 
 BASE_WORKFLOWS_DIR = pathlib.Path(__file__).parent.parent / "workflows"
 

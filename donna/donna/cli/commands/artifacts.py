@@ -1,8 +1,8 @@
 import typer
 
 from donna.cli.application import app
-from donna.cli.utils import output_cells
 from donna.cli.types import FullArtifactIdArgument, NamespaceIdArgument
+from donna.cli.utils import output_cells
 from donna.world import navigator
 
 artifacts_cli = typer.Typer()

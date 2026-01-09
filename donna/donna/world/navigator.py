@@ -1,5 +1,5 @@
+from donna.domain.ids import FullArtifactId, NamespaceId
 from donna.machine.artifacts import Artifact
-from donna.domain.ids import FullArtifactId
 from donna.world.artifacts import parse_artifact
 from donna.world.config import config
 from donna.world.primitives_register import register
@@ -24,16 +24,17 @@ def get_artifact(full_id: FullArtifactId) -> Artifact:
     return kind.construct(raw_artifact)
 
 
-def list_artifacts(kind: str) -> list[Artifact]:
+def list_artifacts(namespace_id: NamespaceId) -> list[Artifact]:
     # TODO: optimize
-    artifact_ids: set[str] = set()
+    artifact_ids: set[FullArtifactId] = set()
     artifacts: list[Artifact] = []
 
     for world in reversed(config().worlds):
-        artifact_ids.update(world.list_artifacts(kind))
+        for artifact_id in world.list_artifacts(namespace_id):
+            artifact_ids.add(FullArtifactId((world.id, namespace_id, artifact_id)))
 
-    for artifact_id in artifact_ids:
-        artifact = get_artifact(artifact_id)
+    for full_id in artifact_ids:
+        artifact = get_artifact(full_id)
         artifacts.append(artifact)
 
     return artifacts

@@ -7,8 +7,8 @@ import pydantic
 
 from donna.core import utils
 from donna.core.entities import BaseEntity
+from donna.domain.ids import ArtifactId, NamespaceId, WorldId
 from donna.domain.types import slug_parser
-from donna.domain.ids import WorldId, NamespaceId, ArtifactId
 
 DONNA_DIR_NAME = ".donna"
 DONNA_CONFIG_NAME = "donna.toml"
@@ -26,7 +26,7 @@ class World(BaseEntity):
     def extract(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> str:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def list_artifacts(self, namespace_id: NamespaceId) -> list[str]:
+    def list_artifacts(self, namespace_id: NamespaceId) -> list[ArtifactId]:
         raise NotImplementedError("You must implement this method in subclasses")
 
     def get_modules(self) -> list[types.ModuleType]:
@@ -50,13 +50,13 @@ class WorldFilesystem(World):
 
         return path.read_text()
 
-    def list_artifacts(self, namespace_id: NamespaceId) -> list[str]:
+    def list_artifacts(self, namespace_id: NamespaceId) -> list[ArtifactId]:
         path = self.path / namespace_id
 
         if not path.exists() or not path.is_dir():
             return []
 
-        artifacts = []
+        artifacts: list[ArtifactId] = []
 
         for artifact_file in path.iterdir():
             if not artifact_file.is_file():
@@ -65,7 +65,7 @@ class WorldFilesystem(World):
             if not artifact_file.suffix == ".md":
                 continue
 
-            artifacts.append(f"{namespace_id}/{artifact_file.name}")
+            artifacts.append(ArtifactId(artifact_file.stem))
 
         return artifacts
 

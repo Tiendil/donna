@@ -8,10 +8,12 @@ from markdown_it.token import Token
 from markdown_it.tree import SyntaxTreeNode
 from mdformat.renderer import MDRenderer
 
-from donna.domain.ids import FullArtifactId
 from donna.core.entities import BaseEntity
+from donna.domain.ids import FullArtifactId
 
-LOGGER = logging.getLogger(__name__)
+
+# TODO: remove this trivial implementation, we should implement a proper logging later
+log = logging.getLogger(__name__)
 
 
 class SectionLevel(str, enum.Enum):
@@ -43,11 +45,11 @@ class CodeSource(BaseEntity):
         raise NotImplementedError(f"Unsupported code format: {self.format}")
 
     def debug_print(self) -> None:
-        LOGGER.debug("--- Debug Code Source ---")
-        LOGGER.debug("format: %s", self.format)
-        LOGGER.debug("properties: %s", self.properties)
-        LOGGER.debug(self.content)
-        LOGGER.debug("--- End of code ---")
+        log.debug("--- Debug Code Source ---")
+        log.debug("format: %s", self.format)
+        log.debug("properties: %s", self.properties)
+        log.debug(self.content)
+        log.debug("--- End of code ---")
 
 
 class SectionSource(BaseEntity):
@@ -59,14 +61,14 @@ class SectionSource(BaseEntity):
     model_config = pydantic.ConfigDict(frozen=False)
 
     def debug_print(self) -> None:
-        LOGGER.debug("--- Debug Section Source ---")
-        LOGGER.debug("level: %s", self.level)
-        LOGGER.debug("title: %s", self.title)
-        LOGGER.debug("---body---")
-        LOGGER.debug(render_back(self.tokens))
+        log.debug("--- Debug Section Source ---")
+        log.debug("level: %s", self.level)
+        log.debug("title: %s", self.title)
+        log.debug("---body---")
+        log.debug(render_back(self.tokens))
         for block in self.configs:
             block.debug_print()
-        LOGGER.debug("--- End of section ---")
+        log.debug("--- End of section ---")
 
     def as_markdown(self) -> str:
         parts = []
@@ -100,9 +102,9 @@ class ArtifactSource(BaseEntity):
         return "\n".join(parts)
 
     def debug_print(self) -> None:
-        LOGGER.debug("--- Debug Artifact Source ---")
-        LOGGER.debug("world: %s", self.world_id)
-        LOGGER.debug("id: %s", self.id)
+        log.debug("--- Debug Artifact Source ---")
+        log.debug("world: %s", self.id.world_id)
+        log.debug("id: %s", self.id)
         self.head.debug_print()
         for section in self.tail:
             section.debug_print()
