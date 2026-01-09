@@ -22,7 +22,12 @@ Donna discovers these artifacts by scanning the "worlds" specified in `<project-
 as `worlds` list. Most of worlds are filesystem folders, however other world types can be implemented such as:
 s3 buckets, git repositories, databases, etc.
 
-Default worlds are filesystem folders: `<donna-package-code>/std`, `~/.donna`, `<project-root>/.donna`
+Default worlds are filesystem folders:
+
+- `std` — `<donna-package-code>/std` — the standard donna-provided artifacts.
+- `home` — `~/.donna` — the user-level donna artifacts, i.e. those that should be visible to all projects on this machine.
+- `project` — `<project-root>/.donna` — the project-level donna artifacts, i.e. those that are specific to this project.
+- `session` — `<project-root>/.donna/session` — the session world that contains the current state of work performed by Donna.
 
 All worlds have a strict layout that Donna MUST follow in order to discover and manage its artifacts properly.
 
@@ -33,7 +38,6 @@ All worlds have a strict layout that Donna MUST follow in order to discover and 
 ├── code/ — a folder containing additional Python code that Donna can load and use during its operation.
 ├── specifications/ — a folder containing specification files that define various aspects of the current project.
 ├── workflows/ — a folder containing workflow definitions that Donna can use to perform complex tasks.
-├── session/ — a folder containing the current state of work being performed by Donna. Exists only in the project world.
 ```
 
 By default, worlds are read-only. Besides the next exceptions:

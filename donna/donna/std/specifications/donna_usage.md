@@ -103,7 +103,7 @@ A specification is a document describing requirements, designs, constraints, or 
 Use the next commands to work with specifications:
 
 - `<DONNA_CMD> artifacts list specifications` — list all specifications.
-- `<DONNA_CMD> artifacts get specifications/<specification-id>.md` — get the content of the specification.
+- `<DONNA_CMD> artifacts get <world>/specifications/<specification-id>` — get the content of the specification.
 
 ### Introspection
 
