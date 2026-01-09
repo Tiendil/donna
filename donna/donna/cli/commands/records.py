@@ -24,7 +24,7 @@ def list() -> None:
 def create(description: str) -> None:
     index = r_domain.RecordsIndex.load()
 
-    record_id = next_id(, RecordId)
+    record_id = next_id(RecordId)
 
     index.create_record(
         id=record_id,
