@@ -57,6 +57,8 @@ flake8-eradicate = "1.5.*"
 
 mypy = "1.19.*"
 
+types-PyYAML = "6.0.*"
+
 [tool.isort]
 profile = "black"
 line_length = 119
