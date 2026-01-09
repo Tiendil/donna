@@ -24,12 +24,18 @@ def start() -> None:
 
 @sessions_cli.command(name="continue")
 def _continue() -> None:
+    if not sessions.exists():
+        sessions.start()
+
     plan = Plan.load()
     output_cells(plan.run())
 
 
 @sessions_cli.command()
 def status() -> None:
+    if not sessions.exists():
+        sessions.start()
+
     plan = Plan.load()
     output_cells(plan.status_cells())
 

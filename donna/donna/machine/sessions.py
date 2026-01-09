@@ -11,7 +11,7 @@ from donna.world.layout import layout
 from donna.world.primitives_register import register
 
 
-def start(slug: Slug) -> None:
+def start() -> None:
 
     plan = Plan.build()
 
@@ -29,6 +29,10 @@ def start(slug: Slug) -> None:
     counters.save()
 
     records_index.save()
+
+
+def exists() -> bool:
+    return layout().session_plan().exists()
 
 
 def start_workflow(workflow_id: WorkflowId) -> None:

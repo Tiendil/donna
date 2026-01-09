@@ -32,7 +32,7 @@ class Layout:
         return self.session / f"{record_id}.{kind}.json"
 
     def session_counters(self) -> pathlib.Path:
-        return self.session_counters / "counters.json"
+        return self.session / "counters.json"
 
     def sync(self) -> None:
         self.session.mkdir(exist_ok=True)
