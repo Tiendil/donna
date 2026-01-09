@@ -93,3 +93,4 @@
 ** refactor markdown parsing code into smaller pieces
 * TODO Remove stories, keep only "current work" space
 * TODO refactor workflows + operations into configs
+* TODO error messages should provide helpful hints for agents
