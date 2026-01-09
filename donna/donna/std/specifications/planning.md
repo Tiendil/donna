@@ -1,20 +1,20 @@
-# Story Planning Guidelines
+# Session Planning Guidelines
 
 ```toml donna
 description = """
-This document describes how Donna MUST plan work on a story with the help of
+This document describes how Donna MUST plan work on a session with the help of
 workflows. The document describes the process of planning, kinds of involved
 entities and requirements for them.
 """
 ```
 
-This document describes how Donna MUST plan work on a story with the help of workflows. The
+This document describes how Donna MUST plan work on a session with the help of workflows. The
 document describes the process of planning, kinds of involved entities and requirements for them.
 
 ## Overview
 
-Donna's workflows create a plan of work on a story by iteratively polishing the set of records
-associated with the story.
+Donna's workflows create a plan of work on a session by iteratively polishing the set of records
+associated with the session.
 
 The kinds of records involved are outside the scope of this document, the agent will get full
 details on the required workflow steps.
@@ -26,7 +26,7 @@ The final plan contains the next sections, in order:
    based on the developer request.
 3. `Goals` — a list of goals that work strives to achieve.
 4. `Objectives` — a list of specific objectives that need to be completed to achieve the goals.
-5. `Known constraints` — a list of constraints for the story.
+5. `Known constraints` — a list of constraints for the session.
 6. `Acceptance criteria` — a list of acceptance criteria for the resulted work.
 7. `Deliverables / Artifacts` — a list of concrete deliverables / artifacts that MUST be produced.
 8. `Work plan` — a step-by-step plan of work to be done to achieve the objectives.
@@ -103,7 +103,7 @@ Examples:
 
 ## "Acceptance criteria" section requirements
 
-- An acceptance criterion describes a pass/fail condition that determines whether the story's
+- An acceptance criterion describes a pass/fail condition that determines whether the session's
   results are acceptable to a reviewer, user, or automated gate.
 - Each criterion MUST be derived from explicitly available inputs (developer request, previous
   sections of the plan). Donna MUST NOT invent new scope, features, constraints, or assumptions.
