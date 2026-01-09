@@ -74,13 +74,6 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO do we really need multiple stories? It looks like we always work on a single story every time.
 * TODO New data layout + specs as text
-** Id questions
-*** DONE normal id classes/types
-*** DONE 3-level ids: world/namespace/artifact_path
-*** DONE no shadowing of artifacts in namespaces
-*** DONE ids as world.kind.artifact_path_with_extension
-*** DONE an additional map of namespaces in primitives_register, to separate artifact kind id from artifact kind namespace
-*** DONE session as one more world
 ** introduce new id types
 ** IMPORTANT: return helpfull errors when we fail to parse markdown
 ** refactor markdown parsing code into smaller pieces
