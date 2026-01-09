@@ -75,13 +75,12 @@
 * TODO do we really need multiple stories? It looks like we always work on a single story every time.
 * TODO New data layout + specs as text
 ** Id questions
-*** should donna allow first-found replacement of artifacts in the paths? Or make 3 level ids: world/namespace/artifact_id?
-*** artifact ids: specifications/xxx.md -> specification.xxx or specification:xxx? To make artifacts format agnostic (for the future)
-*** artifact kind currently has id and namespace, which are equal. We should do something about it.
-*** we have a kind of conflict between world/namespace and world/session/namespace, do we?
-**** git worktrees instead of world/session?
-***** https://github.com/max-sixty/worktrunk
-***** https://github.com/raine/workmux
+*** 3-level ids: world/namespace/artifact_path
+*** no shadowing of artifacts in namespaces
+*** ids as world.kind.artifact_path_with_extension
+*** ":" to access a part of the artifact? world.kind.artifact_path_with_extension:operation?
+*** an additional map of namespaces in primitives_register, to separate artifact kind id from artifact kind namespace
+*** session as one more world
 ** introduce new id types
 ** IMPORTANT: return helpfull errors when we fail to parse markdown
 ** refactor markdown parsing code into smaller pieces
