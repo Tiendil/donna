@@ -28,9 +28,10 @@ We may need coding agents on the each step of the process, but there no reason f
 
 ## Development
 
-- You MUST always work on the specific story assigned to you, that is managed by the `donna` tool.
-- If developer asked you to do something and you have no story, you create a story with the `donna` tool.
-- If you have a story, you MUST keep all the information about it in your memory. Ask `donna` tool for the story details when you forget something.
+- All work is always done in the context of a session. There is only one active session at a time.
+- You MUST always work on the specific work assigned to you, that is managed by the `donna` tool.
+- If developer asked you to do something and you have no session, you create a session with the `donna` tool.
+- If you have a session, you MUST keep all the information about it in your memory. Ask `donna` tool for the session details when you forget something.
 - Donna may work from different environments. You MUST substitute correct `donna` command from the `AGENTS.md` for `<DONNA_CMD>` placeholder in this document when you work with the tool.
 
 ## Stories
