@@ -74,15 +74,16 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO do we really need multiple stories? It looks like we always work on a single story every time.
 * TODO New data layout + specs as text
-** should donna allow first-found replacement of artifacts in the paths?
+** Id questions
+*** should donna allow first-found replacement of artifacts in the paths? Or make 3 level ids: world/namespace/artifact_id?
+*** artifact ids: specifications/xxx.md -> specification.xxx or specification:xxx? To make artifacts format agnostic (for the future)
+*** artifact kind currently has id and namespace, which are equal. We should do something about it.
+*** we have a kind of conflict between world/namespace and world/session/namespace, do we?
+**** git worktrees instead of world/session?
+***** https://github.com/max-sixty/worktrunk
+***** https://github.com/raine/workmux
 ** introduce new id types
-** we have a kind of conflict between world/namespace and world/session/namespace, do we?
-*** git worktrees instead of world/session?
-**** https://github.com/max-sixty/worktrunk
-**** https://github.com/raine/workmux
-** artifact kind currently has id and namespace, which are equal. We should do something about it.
 ** IMPORTANT: return helpfull errors when we fail to parse markdown
-** artifact ids: specifications/xxx.md -> specification.xxx? To make artifacts format agnostic (for the future)
 ** refactor markdown parsing code into smaller pieces
 * TODO Remove stories, keep only "current work" space
 * TODO refactor workflows + operations into configs
