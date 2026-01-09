@@ -17,7 +17,7 @@ class ActionRequest(BaseEntity):
     @classmethod
     def build(cls, request: str, operation_id: OperationId) -> "ActionRequest":
         return cls(
-            id=next_id(story_id, ActionRequestId),
+            id=next_id(ActionRequestId),
             request=request,
             operation_id=operation_id,
         )

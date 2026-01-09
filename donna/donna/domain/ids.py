@@ -4,7 +4,7 @@ from pydantic_core import core_schema
 
 from donna.domain import types
 
-_STORY_COUNTERS: dict[Callable[[types.InternalId], types.InternalId], types.CounterId] = {
+_SESSION_COUNTERS: dict[Callable[[types.InternalId], types.InternalId], types.CounterId] = {
     types.WorkUnitId: types.CounterId("WU"),
     types.ActionRequestId: types.CounterId("AR"),
     types.TaskId: types.CounterId("T"),
@@ -158,19 +158,18 @@ class FullArtifactId(tuple[WorldId, NamespaceId, ArtifactId]):
 
 
 def next_id[InternalIdType: types.InternalId](
-    story_id: types.StoryId,
     type_id: Callable[[types.InternalId], InternalIdType],
 ) -> InternalIdType:
     # TODO: the direction of this dependency is wrong (`domain` should not depend on `machine`).
     #       It is acceptable on the early stages of development, but should be fixed later.
     from donna.machine.counters import Counters
 
-    counters = Counters.load(story_id)
+    counters = Counters.load()
 
-    if type_id not in _STORY_COUNTERS:
+    if type_id not in _SESSION_COUNTERS:
         raise NotImplementedError(f"No counter defined for type '{type_id}'")
 
-    counter_id = _STORY_COUNTERS[type_id]
+    counter_id = _SESSION_COUNTERS[type_id]
 
     next_id = counters.next(counter_id)
 
@@ -192,7 +191,7 @@ def create_internal_id_parser[InternalIdType: types.InternalId](
 
         counter_id, number, crc = parts
 
-        if counter_id not in _STORY_COUNTERS.values():
+        if counter_id not in _SESSION_COUNTERS.values():
             raise NotImplementedError(f"Unknown counter id: '{counter_id}'")
 
         id = RichInternalId(id=types.CounterId(counter_id), value=int(number))
