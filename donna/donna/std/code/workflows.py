@@ -7,23 +7,20 @@ from donna.world.primitives_register import register
 
 
 class Workflow(Artifact):
-    operation_id: OperationId
+    start_operation_id: OperationId
     operations: list[operations.Operation]
 
     def cells(self) -> list["Cell"]:
-        return [Cell.build_markdown(kind="specification", content=self.content, id=str(self.info.id))]
+        return [Cell.build_markdown(kind=self.info.kind, content=self.info.description, id=str(self.info.id))]
 
 
 def construct_operation(section: SectionSource) -> list[operations.Operation]:
 
     data = section.merged_configs()
 
-    kind = data["kind"]
+    operation_kind = register().operations.get(data["kind"])
 
-    operation_kind = register().operations.get(kind)
-
-    operation = operation_kind.operation(title=section.title or "Untitled Operation",
-                                         **data)
+    operation = operation_kind.construct(section)
 
     return operation
 
@@ -40,7 +37,7 @@ class WorkflowKind(ArtifactKind):
 
         spec = Workflow(
             info=ArtifactInfo(kind=self.id, id=source.id, title=title, description=description),
-            operation_id=source.head.merged_configs()["operation_id"],
+            start_operation_id=source.head.merged_configs()["start_operation_id"],
             operations=operation_list,
         )
 

@@ -23,6 +23,17 @@ if TYPE_CHECKING:
 
 class RequestActionKind(OperationKind):
 
+    def construct(self, section: SectionSource) -> 'RequestAction':
+        data = section.merged_configs()
+
+        if 'title' not in data:
+            data['title'] = section.title or "Untitled Request Action"
+
+        if 'request_template' not in data:
+            data['request_template'] = section.as_markdown()
+
+        return self.operation(**data)
+
     def construct_context(self, task: Task, operation: 'RequestAction') -> dict[str, object]:
         context: dict[str, object] = {}
 
@@ -75,6 +86,14 @@ class FinishWorkflowKind(OperationKind):
         from donna.machine.changes import ChangeTaskState
 
         yield ChangeTaskState(TaskState.COMPLETED)
+
+    def construct(self, section: SectionSource) -> 'Operation':
+        data = section.merged_configs()
+
+        if 'title' not in data:
+            data['title'] = section.title or "Untitled Finish Workflow"
+
+        return self.operation(**data)
 
 
 finish_workflow_kind = FinishWorkflowKind(

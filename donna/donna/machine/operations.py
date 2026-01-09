@@ -5,6 +5,8 @@ from donna.domain.types import OperationResultId, Slug
 from donna.domain.ids import OperationId
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
+from donna.world.markdown import ArtifactSource, SectionSource
+
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -13,7 +15,7 @@ if TYPE_CHECKING:
 class OperationResult(BaseEntity):
     id: OperationResultId
     description: str
-    next_operation_id: OperationId
+    next_operation_id: OperationId | None = None
 
     @classmethod
     def completed(cls, operation_id: OperationId | Callable[[], OperationId]) -> "OperationResult":
@@ -50,6 +52,9 @@ class OperationKind(BaseEntity):
     def execute(self, task: Task, unit: WorkUnit, operation: 'Operation') -> Iterable["Change"]:
         raise NotImplementedError("You MUST implement this method.")
 
+    def construct(self, section: SectionSource) -> 'Operation':
+        raise NotImplementedError("You MUST implement this method.")
+
     def cells(self) -> list[Cell]:
         return [
             Cell.build_meta(
@@ -62,6 +67,7 @@ class OperationKind(BaseEntity):
 
 class Operation(BaseEntity):
     id: OperationId
+    kind: str
     title: str
 
     results: list[OperationResult]

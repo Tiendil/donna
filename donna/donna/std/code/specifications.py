@@ -8,7 +8,7 @@ class Specification(Artifact):
     content: str
 
     def cells(self) -> list["Cell"]:
-        return [Cell.build_markdown(kind="specification", content=self.content, id=str(self.info.id))]
+        return [Cell.build_markdown(kind=self.kind, content=self.content, id=str(self.info.id))]
 
 
 class SpecificationKind(ArtifactKind):
