@@ -19,15 +19,15 @@ class PrimitivesRegister:
 
     def __init__(self) -> None:
         self.initialized = False
-        self.operations: Storage[OperationId, Operation] = Storage("operation")
+        # self.operations: Storage[OperationId, Operation] = Storage("operation")
         self.records: Storage[RecordKindId, RecordKind] = Storage("record_kind")
-        self.workflows: Storage[WorkflowId, Workflow] = Storage("workflow")
+        # self.workflows: Storage[WorkflowId, Workflow] = Storage("workflow")
         self.artifacts: Storage[str, ArtifactKind] = Storage("artifacts")
 
     def _storages(self) -> Iterator[Storage[Any, Any]]:
-        yield self.operations
+        # yield self.operations
         yield self.records
-        yield self.workflows
+        # yield self.workflows
         yield self.artifacts
 
     def initialize(self) -> None:
@@ -65,6 +65,10 @@ class PrimitivesRegister:
                 self.artifacts.add(primitive)
                 continue
 
+            # if isinstance(primitive, Workflow):
+            #     self.workflows.add(primitive)
+            #     continue
+
 
 _REGISTER: PrimitivesRegister | None = None
 
@@ -100,14 +104,6 @@ def discover_operations(register: PrimitivesRegister, directory: pathlib.Path) -
         for attr_name in dir(module):
             attr = getattr(module, attr_name)
 
-            if isinstance(attr, Operation):
-                register.operations.add(attr)
-                continue
-
             if isinstance(attr, RecordKind):
                 register.records.add(attr)
-                continue
-
-            if isinstance(attr, Workflow):
-                register.workflows.add(attr)
                 continue
