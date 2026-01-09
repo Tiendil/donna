@@ -1,5 +1,6 @@
-import pydantic
 from typing import cast
+
+import pydantic
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import OperationId
@@ -195,6 +196,8 @@ class Plan(BaseEntity):
         assert operation is not None
 
         result = operation.result(result_id)
+
+        assert result.next_operation_id is not None
 
         next_operation_id = workflow.info.id.to_full_local(result.next_operation_id)
 
