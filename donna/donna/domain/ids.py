@@ -157,6 +157,14 @@ class FullArtifactId(tuple[WorldId, NamespaceId, ArtifactId]):
         )
 
 
+class ArtifactLocalId(Identifier):
+    __slots__ = ()
+
+
+class OperationId(ArtifactLocalId):
+    __slots__ = ()
+
+
 def next_id[InternalIdType: types.InternalId](
     type_id: Callable[[types.InternalId], InternalIdType],
 ) -> InternalIdType:

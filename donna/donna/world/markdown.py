@@ -64,6 +64,14 @@ class SectionSource(BaseEntity):
 
         return "\n".join(parts)
 
+    def merged_configs(self) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+
+        for config in self.configs:
+            result.update(config.structured_data())
+
+        return result
+
 
 # TODO: we may want to move artifact source definition to world.artifacts
 class ArtifactSource(BaseEntity):

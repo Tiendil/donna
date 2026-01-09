@@ -50,6 +50,7 @@ class OperationResult(BaseEntity):
 
 class Operation(BaseEntity):
     id: OperationId
+    title: str
 
     results: list[OperationResult]
 
