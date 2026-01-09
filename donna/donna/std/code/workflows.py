@@ -1,4 +1,4 @@
-from donna.domain.ids import NamespaceId, OperationId, FullArtifactId
+from donna.domain.ids import NamespaceId, OperationId, FullArtifactId, FullArtifactLocalId
 from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
 from donna.world.markdown import ArtifactSource, SectionSource
@@ -10,9 +10,13 @@ class Workflow(Artifact):
     start_operation_id: OperationId
     operations: list[operations.Operation]
 
+    @property
+    def full_start_operation_id(self) -> FullArtifactLocalId:
+        return self.info.id.to_full_local(self.start_operation_id)
+
     def get_operation(self, operation_id: OperationId) -> operations.Operation | None:
         for operation in self.operations:
-            if operation.info.id == operation_id:
+            if operation.id == operation_id:
                 return operation
         return None
 

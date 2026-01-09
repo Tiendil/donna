@@ -84,6 +84,7 @@ class WorkUnit(BaseEntity):
 
     def run(self, task: Task) -> list["Change"]:
         from donna.world import navigator
+        from donna.world.primitives_register import register
 
         if self.state != WorkUnitState.TODO:
             raise NotImplementedError("Can only run a work unit in TODO state")
@@ -95,7 +96,9 @@ class WorkUnit(BaseEntity):
         if not operation:
             raise NotImplementedError(f"Operation with kind '{self.operation}' not found")
 
-        cells = list(operation.execute(task, self))
+        operation_kind = register().operations.get(operation.kind)
+
+        cells = list(operation_kind.execute(task, self, operation))
 
         self.state = WorkUnitState.COMPLETED
 

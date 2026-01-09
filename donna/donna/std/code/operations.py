@@ -65,7 +65,7 @@ class RequestActionKind(OperationKind):
 
         request_text = operation.request_template.format(**context)
 
-        request = ActionRequest.build(request_text, operation.id)
+        request = ActionRequest.build(request_text, operation.full_id)
 
         yield ChangeAddActionRequest(request)
 

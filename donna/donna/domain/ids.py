@@ -153,8 +153,13 @@ class FullArtifactId(tuple[WorldId, NamespaceId, ArtifactId]):
 
             return cls.parse(v)
 
+        str_then_validate = core_schema.no_info_after_validator_function(
+            validate,
+            core_schema.str_schema(),
+        )
+
         return core_schema.json_or_python_schema(
-            json_schema=core_schema.str_schema(),
+            json_schema=str_then_validate,
             python_schema=core_schema.no_info_plain_validator_function(validate),
             serialization=core_schema.to_string_ser_schema(),
         )
@@ -221,8 +226,13 @@ class FullArtifactLocalId(tuple[WorldId, NamespaceId, ArtifactId, ArtifactLocalI
 
             return cls.parse(v)
 
+        str_then_validate = core_schema.no_info_after_validator_function(
+            validate,
+            core_schema.str_schema(),
+        )
+
         return core_schema.json_or_python_schema(
-            json_schema=core_schema.str_schema(),
+            json_schema=str_then_validate,
             python_schema=core_schema.no_info_plain_validator_function(validate),
             serialization=core_schema.to_string_ser_schema(),
         )

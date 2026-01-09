@@ -40,7 +40,7 @@ def start_workflow(artifact_id: FullArtifactId) -> None:
     plan = Plan.load()
 
     task = Task.build()
-    start = WorkUnit.build(task.id, workflow.start_operation_id)
+    start = WorkUnit.build(task.id, workflow.full_start_operation_id)
 
     plan.add_task(task, start)
 

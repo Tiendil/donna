@@ -76,7 +76,7 @@ class Operation(BaseEntity):
 
     @property
     def full_id(self) -> str:
-        return self.artifact_id.to_full_local_id(self.id)
+        return self.artifact_id.to_full_local(self.id)
 
     def result(self, id: OperationResultId) -> OperationResult:
         for result in self.results:
