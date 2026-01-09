@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Callable, Iterable
+from typing import TYPE_CHECKING, Iterable
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationId
@@ -17,7 +17,7 @@ class OperationResult(BaseEntity):
     next_operation_id: OperationId | None = None
 
     @classmethod
-    def completed(cls, operation_id: OperationId | Callable[[], OperationId]) -> "OperationResult":
+    def completed(cls, operation_id: OperationId) -> "OperationResult":
         return cls(
             id=OperationResultId(Slug("completed")),
             description="The operation was completed successfully.",
@@ -25,7 +25,7 @@ class OperationResult(BaseEntity):
         )
 
     @classmethod
-    def repeat(cls, operation_id: OperationId | Callable[[], OperationId]) -> "OperationResult":
+    def repeat(cls, operation_id: OperationId) -> "OperationResult":
         return cls(
             id=OperationResultId(Slug("repeat")),
             description="The operation needs to be repeated.",
