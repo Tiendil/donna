@@ -11,20 +11,20 @@ from donna.primitives.operations.request_action import RequestAction
 from donna.primitives.records.pure_text import PureText
 
 DEVELOPER_DESCRIPTION = RecordKindSpec(
-    kind=RecordKindId(types.Slug("story_developer_description")),
+    kind=RecordKindId(types.Slug("session_developer_description")),
 )
 WORK_DESSCRIPTION = RecordKindSpec(
-    kind=RecordKindId(types.Slug("story_work_description")),
+    kind=RecordKindId(types.Slug("session_work_description")),
 )
 
-GOAL = RecordKindSpec(kind=RecordKindId(types.Slug("story_goal")))
+GOAL = RecordKindSpec(kind=RecordKindId(types.Slug("session_goal")))
 
-OBJECTIVE = RecordKindSpec(kind=RecordKindId(types.Slug("story_objective")))
-CONSTRAINT = RecordKindSpec(kind=RecordKindId(types.Slug("story_constraint")))
-ACCEPTANCE_CRITERIA = RecordKindSpec(kind=RecordKindId(types.Slug("story_acceptance_criteria")))
-DELIVERABLE = RecordKindSpec(kind=RecordKindId(types.Slug("story_deliverable")))
+OBJECTIVE = RecordKindSpec(kind=RecordKindId(types.Slug("session_objective")))
+CONSTRAINT = RecordKindSpec(kind=RecordKindId(types.Slug("session_constraint")))
+ACCEPTANCE_CRITERIA = RecordKindSpec(kind=RecordKindId(types.Slug("session_acceptance_criteria")))
+DELIVERABLE = RecordKindSpec(kind=RecordKindId(types.Slug("session_deliverable")))
 
-PLAN_ITEM = RecordKindSpec(kind=RecordKindId(types.Slug("story_plan_item")))
+PLAN_ITEM = RecordKindSpec(kind=RecordKindId(types.Slug("session_plan_item")))
 
 
 def _get_aggregated_text_content(  # noqa: CCR001
@@ -61,11 +61,11 @@ def _get_aggregated_text_content(  # noqa: CCR001
     return "\n".join(lines)
 
 
-class StoryCycleStep(RequestAction):
+class SessionCycleStep(RequestAction):
     requested_kind_spec: RecordKindSpec | None
 
     def context_partial_description(self, task: Task) -> str:  # noqa: CCR001
-        records = RecordsIndex.load(task.story_id)
+        records = RecordsIndex.load()
 
         # TODO: move to parameters?
         # TODO: this code is usefull only on the first pass
@@ -106,27 +106,27 @@ class StoryCycleStep(RequestAction):
         return "\n".join(specification)
 
 
-create_detailed_description: "StoryCycleStep"
-list_primary_goals: "StoryCycleStep"
-list_objectives: "StoryCycleStep"
-list_constraints: "StoryCycleStep"
-list_acceptance_criteria: "StoryCycleStep"
-list_deliverables: "StoryCycleStep"
-prepare_story_plan: "StoryCycleStep"
-execute_story_plan: "StoryCycleStep"
-groom_the_result: "StoryCycleStep"
+create_detailed_description: "SessionCycleStep"
+list_primary_goals: "SessionCycleStep"
+list_objectives: "SessionCycleStep"
+list_constraints: "SessionCycleStep"
+list_acceptance_criteria: "SessionCycleStep"
+list_deliverables: "SessionCycleStep"
+prepare_plan: "SessionCycleStep"
+execute_plan: "SessionCycleStep"
+groom_the_result: "SessionCycleStep"
 finish: FinishTask
 
 
-start = StoryCycleStep(
-    id=OperationId(types.NestedId("donna:end_to_end_story_cycle")),
+start = SessionCycleStep(
+    id=OperationId(types.NestedId("donna:end_to_end_cycle")),
     results=[OR.completed(lambda: create_detailed_description.id)],
     requested_kind_spec=DEVELOPER_DESCRIPTION,
     request_template=textwrap.dedent(
         """
-        1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
-        2. If the developer hasn't provided you a description of the work for this story, ask them to provide it.
-        3. Add the description as `{scheme.requested_kind_spec.verbose}` to the story.
+        1. Read the specification `donna.specifications.planning` if you haven't done it yet.
+        2. If the developer hasn't provided you a description of the work for this session, ask them to provide it.
+        3. Add the description as `{scheme.requested_kind_spec.verbose}` to the session.
         4. Mark this action request as completed.
         """
     ),
@@ -134,20 +134,20 @@ start = StoryCycleStep(
 
 
 workflow_start = Workflow(
-    id=types.WorkflowId(types.NestedId("donna:end_to_end_story_cycle:start")),
+    id=types.WorkflowId(types.NestedId("donna:end_to_end_cycle:start")),
     operation_id=start.id,
-    name="End-to-end story processing",
-    description="End-to-end story processing: from work description through planning to execution and grooming.",
+    name="End-to-end session processing",
+    description="End-to-end session processing: from work description through planning to execution and grooming.",
 )
 
 
-create_detailed_description = StoryCycleStep(
-    id=OperationId(types.NestedId("donna:end_to_end_story_cycle:create_detailed_description")),
+create_detailed_description = SessionCycleStep(
+    id=OperationId(types.NestedId("donna:end_to_end_cycle:create_detailed_description")),
     results=[OR.completed(lambda: list_primary_goals.id)],
     requested_kind_spec=WORK_DESSCRIPTION,
     request_template=textwrap.dedent(
         """
-    Here is current state of the story specification.
+    Here is current state of the session specification.
 
     ```
     {partial_description}
@@ -155,43 +155,43 @@ create_detailed_description = StoryCycleStep(
 
     You MUST produce a high-level description of the work to be done based on the developer's description.
 
-    1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
-    2. Add the description as `{scheme.requested_kind_spec.verbose}` to the story.
+    1. Read the specification `donna.specifications.planning` if you haven't done it yet.
+    2. Add the description as `{scheme.requested_kind_spec.verbose}` to the session.
     3. Mark this action request as completed.
     """
     ),
 )
 
-list_primary_goals = StoryCycleStep(
-    id=OperationId(types.NestedId("donna:end_to_end_story_cycle:list_primary_goals")),
+list_primary_goals = SessionCycleStep(
+    id=OperationId(types.NestedId("donna:end_to_end_cycle:list_primary_goals")),
     results=[OR.completed(lambda: list_objectives.id), OR.repeat(lambda: list_primary_goals.id)],
     requested_kind_spec=GOAL,
     request_template=textwrap.dedent(
         """
-    Here is current state of the story specification.
+    Here is current state of the session specification.
 
     ```
     {partial_description}
     ```
 
-    You MUST list the goals of this story.
+    You MUST list the goals of this session.
 
-    1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
+    1. Read the specification `donna.specifications.planning` if you haven't done it yet.
     2. If you can identify one more goal:
-    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
+    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the session;
     2.2. mark this action request as `repeat`.
     3. If you can not identify more goals, mark this action request as `completed`.
     """
     ),
 )
 
-list_objectives = StoryCycleStep(
-    id=OperationId(types.NestedId("donna:end_to_end_story_cycle:list_objectives")),
+list_objectives = SessionCycleStep(
+    id=OperationId(types.NestedId("donna:end_to_end_cycle:list_objectives")),
     results=[OR.completed(lambda: list_constraints.id), OR.repeat(lambda: list_objectives.id)],
     requested_kind_spec=OBJECTIVE,
     request_template=textwrap.dedent(
         """
-    Here is current state of the story specification.
+    Here is current state of the session specification.
 
     ```
     {partial_description}
@@ -199,114 +199,114 @@ list_objectives = StoryCycleStep(
 
     You MUST list objectives that need to be achieved to complete each goal.
 
-    1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
+    1. Read the specification `donna.specifications.planning` if you haven't done it yet.
     2. If you can identify one more objective:
-    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
+    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the session;
     2.2. mark this action request as `repeat`.
     3. If you can not identify more objectives, mark this action request as `completed`.
     """
     ),
 )
 
-list_constraints = StoryCycleStep(
-    id=OperationId(types.NestedId("donna:end_to_end_story_cycle:list_constraints")),
+list_constraints = SessionCycleStep(
+    id=OperationId(types.NestedId("donna:end_to_end_cycle:list_constraints")),
     results=[OR.completed(lambda: list_acceptance_criteria.id), OR.repeat(lambda: list_constraints.id)],
     requested_kind_spec=CONSTRAINT,
     request_template=textwrap.dedent(
         """
-    Here is current state of the story specification.
+    Here is current state of the session specification.
 
     ```
     {partial_description}
     ```
 
-    You MUST list the known constraints for this story.
+    You MUST list the known constraints for this session.
 
-    1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
+    1. Read the specification `donna.specifications.planning` if you haven't done it yet.
     2. If you can identify one more constraint:
-    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
+    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the session;
     2.2. mark this action request as `repeat`.
     3. If you can not identify more constraints, mark this action request as `completed`.
     """
     ),
 )
 
-list_acceptance_criteria = StoryCycleStep(
-    id=OperationId(types.NestedId("donna:end_to_end_story_cycle:list_acceptance_criteria")),
+list_acceptance_criteria = SessionCycleStep(
+    id=OperationId(types.NestedId("donna:end_to_end_cycle:list_acceptance_criteria")),
     results=[OR.completed(lambda: list_deliverables.id), OR.repeat(lambda: list_acceptance_criteria.id)],
     requested_kind_spec=ACCEPTANCE_CRITERIA,
     request_template=textwrap.dedent(
         """
-    Here is current state of the story specification.
+    Here is current state of the session specification.
 
     ```
     {partial_description}
     ```
 
-    You MUST list the acceptance criteria for this story.
+    You MUST list the acceptance criteria for this session.
 
-    1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
+    1. Read the specification `donna.specifications.planning` if you haven't done it yet.
     2. If you can identify one more acceptance criterion:
-    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
+    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the session;
     2.2. mark this action request as `repeat`.
     3. If you can not identify more acceptance criteria, mark this action request as `completed`.
     """
     ),
 )
 
-list_deliverables = StoryCycleStep(
-    id=OperationId(types.NestedId("donna:end_to_end_story_cycle:list_deliverables")),
-    results=[OR.completed(lambda: prepare_story_plan.id), OR.repeat(lambda: list_deliverables.id)],
+list_deliverables = SessionCycleStep(
+    id=OperationId(types.NestedId("donna:end_to_end_cycle:list_deliverables")),
+    results=[OR.completed(lambda: prepare_plan.id), OR.repeat(lambda: list_deliverables.id)],
     requested_kind_spec=DELIVERABLE,
     request_template=textwrap.dedent(
         """
-    Here is current state of the story specification.
+    Here is current state of the session specification.
 
     ```
     {partial_description}
     ```
 
-    You MUST list the deliverables / artifacts for this story.
+    You MUST list the deliverables / artifacts for this session.
 
-    1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
+    1. Read the specification `donna.specifications.planning` if you haven't done it yet.
     2. If you can identify one more deliverable:
-    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
+    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the session;
     2.2. mark this action request as `repeat`.
     2. If you can not identify more deliverables, mark this action request as `completed`.
     """
     ),
 )
 
-prepare_story_plan = StoryCycleStep(
-    id=OperationId(types.NestedId("donna:end_to_end_story_cycle:prepare_story_plan")),
-    results=[OR.completed(lambda: execute_story_plan.id), OR.repeat(lambda: prepare_story_plan.id)],
+prepare_plan = SessionCycleStep(
+    id=OperationId(types.NestedId("donna:end_to_end_cycle:prepare_plan")),
+    results=[OR.completed(lambda: execute_plan.id), OR.repeat(lambda: prepare_plan.id)],
     requested_kind_spec=PLAN_ITEM,
     request_template=textwrap.dedent(
         """
-    Here is current state of the story specification.
+    Here is current state of the session specification.
 
     ```
     {partial_description}
     ```
 
-    You MUST prepare a detailed work plan for this story.
+    You MUST prepare a detailed work plan for this session.
 
-    1. Read the specification `donna:workflows:story-planning` if you haven't done it yet.
+    1. Read the specification `donna.specifications.planning` if you haven't done it yet.
     2. If you can identify one more plan item:
-    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the story;
+    2.1. add it as a `{scheme.requested_kind_spec.verbose}` to the session;
     2.2. mark this action request as `repeat`.
     3. If you can not identify more plan items, mark this action request as `completed`.
     """
     ),
 )
 
-execute_story_plan = StoryCycleStep(
-    id=OperationId(types.NestedId("donna:end_to_end_story_cycle:execute_story_plan")),
+execute_plan = SessionCycleStep(
+    id=OperationId(types.NestedId("donna:end_to_end_cycle:execute_plan")),
     results=[OR.completed(lambda: groom_the_result.id)],
     requested_kind_spec=None,
     request_template=textwrap.dedent(
         """
-    Here is the work plan for the story.
+    Here is the work plan for the session.
 
     ```
     {partial_description}
@@ -314,15 +314,15 @@ execute_story_plan = StoryCycleStep(
 
     You MUST thoroughly execute the plan step by step to finish the work.
 
-    1. Follow the plan carefully and implement the necessary changes to complete the story.
+    1. Follow the plan carefully and implement the necessary changes to complete the session.
     2. Mark this action request as completed when the work is done.
     """
     ),
 )
 
 
-groom_the_result = StoryCycleStep(
-    id=OperationId(types.NestedId("donna:end_to_end_story_cycle:groom_the_result")),
+groom_the_result = SessionCycleStep(
+    id=OperationId(types.NestedId("donna:end_to_end_cycle:groom_the_result")),
     results=[OR.completed(lambda: finish.id)],
     requested_kind_spec=None,
     request_template=textwrap.dedent(
@@ -336,6 +336,6 @@ groom_the_result = StoryCycleStep(
 
 
 finish = FinishTask(
-    id=OperationId(types.NestedId("donna:end_to_end_story_cycle:finish_story_loop")),
+    id=OperationId(types.NestedId("donna:end_to_end_cycle:finish_session_loop")),
     results=[],
 )
