@@ -1,13 +1,16 @@
 import pydantic
+from typing import cast
 
 from donna.core.entities import BaseEntity
+from donna.domain.ids import OperationId
 from donna.domain.types import ActionRequestId, OperationResultId, TaskId, WorkUnitId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
 from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState
 from donna.machine.tasks import Task, TaskState, WorkUnit, WorkUnitState
-from donna.world.layout import layout
+from donna.std.code.workflows import Workflow
 from donna.world import navigator
+from donna.world.layout import layout
 
 
 # TODO: somehow separate methods that save plan and those that do not
@@ -185,9 +188,9 @@ class Plan(BaseEntity):
     def complete_action_request(self, request_id: ActionRequestId, result_id: OperationResultId) -> None:
         operation_id = self.get_action_request(request_id).operation_id
 
-        workflow = navigator.get_artifact(operation_id.full_artifact_id)
+        workflow = cast(Workflow, navigator.get_artifact(operation_id.full_artifact_id))
 
-        operation = workflow.get_operation(operation_id.local_id)
+        operation = workflow.get_operation(cast(OperationId, operation_id.local_id))
 
         assert operation is not None
 

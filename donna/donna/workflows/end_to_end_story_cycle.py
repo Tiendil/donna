@@ -1,3 +1,5 @@
+# mypy: ignore-errors
+
 import textwrap
 
 if __name__ == "__main__":
@@ -27,7 +29,6 @@ if __name__ == "__main__":
     DELIVERABLE = RecordKindSpec(kind=RecordKindId(types.Slug("session_deliverable")))
 
     PLAN_ITEM = RecordKindSpec(kind=RecordKindId(types.Slug("session_plan_item")))
-
 
     def _get_aggregated_text_content(  # noqa: CCR001
         index: RecordsIndex, kind_spec: RecordKindSpec, as_list: bool
@@ -61,7 +62,6 @@ if __name__ == "__main__":
             lines.pop()
 
         return "\n".join(lines)
-
 
     class SessionCycleStep(RequestAction):
         requested_kind_spec: RecordKindSpec | None
@@ -107,7 +107,6 @@ if __name__ == "__main__":
 
             return "\n".join(specification)
 
-
     create_detailed_description: "SessionCycleStep"
     list_primary_goals: "SessionCycleStep"
     list_objectives: "SessionCycleStep"
@@ -118,7 +117,6 @@ if __name__ == "__main__":
     execute_plan: "SessionCycleStep"
     groom_the_result: "SessionCycleStep"
     finish: FinishTask
-
 
     start = SessionCycleStep(
         id=OperationId(types.NestedId("donna:end_to_end_cycle")),
@@ -134,14 +132,12 @@ if __name__ == "__main__":
         ),
     )
 
-
     workflow_start = Workflow(
         id=types.WorkflowId(types.NestedId("donna:end_to_end_cycle:start")),
         operation_id=start.id,
         name="End-to-end session processing",
         description="End-to-end session processing: from work description through planning to execution and grooming.",
     )
-
 
     create_detailed_description = SessionCycleStep(
         id=OperationId(types.NestedId("donna:end_to_end_cycle:create_detailed_description")),
@@ -322,7 +318,6 @@ if __name__ == "__main__":
         ),
     )
 
-
     groom_the_result = SessionCycleStep(
         id=OperationId(types.NestedId("donna:end_to_end_cycle:groom_the_result")),
         results=[OR.completed(lambda: finish.id)],
@@ -335,7 +330,6 @@ if __name__ == "__main__":
         """
         ),
     )
-
 
     finish = FinishTask(
         id=OperationId(types.NestedId("donna:end_to_end_cycle:finish_session_loop")),

@@ -1,12 +1,14 @@
 import textwrap
+from typing import cast
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import next_id, FullArtifactLocalId
+from donna.domain.ids import FullArtifactLocalId, OperationId, next_id
 from donna.domain.types import (
     ActionRequestId,
 )
 from donna.machine.cells import Cell
 from donna.world import navigator
+from donna.std.code.workflows import Workflow
 
 
 class ActionRequest(BaseEntity):
@@ -25,9 +27,9 @@ class ActionRequest(BaseEntity):
     def cells(self) -> list[Cell]:
         pass
 
-        workflow = navigator.get_artifact(self.operation_id.full_artifact_id)
+        workflow = cast(Workflow, navigator.get_artifact(self.operation_id.full_artifact_id))
 
-        operation = workflow.get_operation(self.operation_id.local_id)
+        operation = workflow.get_operation(cast(OperationId, self.operation_id.local_id))
 
         assert operation is not None
 

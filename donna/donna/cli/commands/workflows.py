@@ -1,4 +1,3 @@
-
 import typer
 
 from donna.cli.application import app

@@ -125,7 +125,7 @@ class FullArtifactId(tuple[WorldId, NamespaceId, ArtifactId]):
     def artifact_id(self) -> ArtifactId:
         return self[2]
 
-    def to_full_local(self, local_id: 'ArtifactLocalId') -> "FullArtifactLocalId":
+    def to_full_local(self, local_id: "ArtifactLocalId") -> "FullArtifactLocalId":
         return FullArtifactLocalId((self.world_id, self.namespace_id, self.artifact_id, local_id))
 
     @classmethod

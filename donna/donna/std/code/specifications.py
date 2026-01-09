@@ -12,7 +12,7 @@ class Specification(Artifact):
 
 
 class SpecificationKind(ArtifactKind):
-    def construct(self, source: ArtifactSource) -> "Artifact":
+    def construct(self, source: ArtifactSource) -> "Artifact":  # type: ignore[override]
         description = None
 
         for config in source.head.configs:

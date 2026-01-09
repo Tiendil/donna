@@ -1,12 +1,14 @@
 import shutil
+from typing import cast
 
+from donna.domain.ids import FullArtifactId
 from donna.machine.counters import Counters
 from donna.machine.plans import Plan
 from donna.machine.records import RecordsIndex
 from donna.machine.tasks import Task, WorkUnit
-from donna.world.layout import layout
-from donna.domain.ids import FullArtifactId
+from donna.std.code.workflows import Workflow
 from donna.world import navigator
+from donna.world.layout import layout
 
 
 def start() -> None:
@@ -34,7 +36,7 @@ def exists() -> bool:
 
 
 def start_workflow(artifact_id: FullArtifactId) -> None:
-    workflow = navigator.get_artifact(artifact_id)
+    workflow = cast(Workflow, navigator.get_artifact(artifact_id))
 
     plan = Plan.load()
 

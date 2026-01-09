@@ -20,13 +20,10 @@ class PrimitivesRegister:
         self.initialized = False
         self.operations: Storage[str, OperationKind] = Storage("operation")
         self.records: Storage[RecordKindId, RecordKind] = Storage("record_kind")
-        # self.workflows: Storage[WorkflowId, Workflow] = Storage("workflow")
         self.artifacts: Storage[str, ArtifactKind] = Storage("artifacts")
 
     def _storages(self) -> Iterator[Storage[Any, Any]]:
-        # yield self.operations
         yield self.records
-        # yield self.workflows
         yield self.artifacts
 
     def initialize(self) -> None:

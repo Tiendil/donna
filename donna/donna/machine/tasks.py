@@ -1,11 +1,11 @@
 import copy
 import enum
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import next_id, FullArtifactLocalId
+from donna.domain.ids import FullArtifactLocalId, OperationId, next_id
 from donna.domain.types import TaskId, WorkUnitId
 
 if TYPE_CHECKING:
@@ -84,18 +84,20 @@ class WorkUnit(BaseEntity):
     def run(self, task: Task) -> list["Change"]:
         from donna.world import navigator
         from donna.world.primitives_register import register
+        from donna.std.code.workflows import Workflow
 
         if self.state != WorkUnitState.TODO:
             raise NotImplementedError("Can only run a work unit in TODO state")
 
-        workflow = navigator.get_artifact(self.operation_id.full_artifact_id)
+        workflow = cast(Workflow, navigator.get_artifact(self.operation_id.full_artifact_id))
 
-        operation = workflow.get_operation(self.operation_id.local_id)
+        operation = workflow.get_operation(cast(OperationId, self.operation_id.local_id))
 
         if not operation:
-            raise NotImplementedError(f"Operation with kind '{self.operation}' not found")
+            raise NotImplementedError(f"Operation with id '{self.operation_id.local_id}' not found")
 
         operation_kind = register().operations.get(operation.kind)
+        assert operation_kind is not None
 
         cells = list(operation_kind.execute(task, self, operation))
 
