@@ -117,7 +117,7 @@ def clear_heading(text: str) -> str:
     return text.lstrip("#").strip()
 
 
-def parse_markdown(text: str) -> list[SectionSource]:  # noqa: CCR001 # pylint: disable=R0912, R0915
+def parse_markdown(text: str) -> list[SectionSource]:  # noqa: CCR001, CFQ001 # pylint: disable=R0912, R0915
     md = MarkdownIt("commonmark")  # TODO: later we may want to customize it with plugins
 
     tokens = md.parse(text)
