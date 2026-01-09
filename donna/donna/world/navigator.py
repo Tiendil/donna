@@ -1,5 +1,5 @@
 from donna.machine.artifacts import Artifact
-from donna.world.artifact_source import parse_artifact
+from donna.world.artifacts import parse_artifact
 from donna.world.config import config
 from donna.world.primitives_register import register
 

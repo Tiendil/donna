@@ -1,6 +1,6 @@
 from donna.core.entities import BaseEntity
 from donna.machine.cells import Cell
-from donna.world.artifact_source import ArtifactSource
+from donna.world.artifacts import ArtifactSource
 
 
 class ArtifactKind(BaseEntity):

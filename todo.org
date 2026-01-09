@@ -76,7 +76,6 @@
 * TODO New data layout + specs as text
 ** should donna allow first-found replacement of artifacts in the paths?
 ** introduce new id types
-** artifact_source.py -> artifacts.py?
 ** we have a kind of conflict between world/namespace and world/session/namespace, do we?
 *** git worktrees instead of world/session?
 **** https://github.com/max-sixty/worktrunk

@@ -1,6 +1,6 @@
 from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
-from donna.world.artifact_source import ArtifactSource
+from donna.world.artifacts import ArtifactSource
 
 
 class Specification(Artifact):
