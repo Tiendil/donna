@@ -1,11 +1,13 @@
+import importlib.util
 import pathlib
-import importlib
+import tomllib
+import types
+
 import pydantic
 
 from donna.core import utils
-from donna.domain.types import WorldId
 from donna.core.entities import BaseEntity
-
+from donna.domain.types import WorldId, slug_parser
 
 DONNA_DIR_NAME = ".donna"
 DONNA_CONFIG_NAME = "donna.toml"
@@ -63,7 +65,7 @@ class WorldFilesystem(World):
 
         return artifacts
 
-    def get_modules(self) -> list[importlib.machinery.ModuleSpec]:
+    def get_modules(self) -> list[types.ModuleType]:
         # load only top-level .py files
         # it is the responsibility of the developer to import submodules within those files
         # if required
@@ -88,29 +90,27 @@ class WorldFilesystem(World):
         return modules
 
 
-# TODO: refactor donna to use importlib.resources and enable this class
-# class WorldPackage(World):
-#     name: str
+# TODO: refactor donna to use importlib.resources and enable WorldPackage
 
 
-def _default_worlds():
+def _default_worlds() -> list["WorldFilesystem"]:
     _donna = DONNA_DIR_NAME
 
     return [
         WorldFilesystem(
-            id=WorldId("donna"),
+            id=WorldId(slug_parser("donna")),
             path=pathlib.Path(__file__).parent.parent / "std",
             readonly=True,
             store_session=False,
         ),
         WorldFilesystem(
-            id=WorldId("home"),
+            id=WorldId(slug_parser("home")),
             path=pathlib.Path.home() / _donna,
             readonly=True,
             store_session=False,
         ),
         WorldFilesystem(
-            id=WorldId("project"),
+            id=WorldId(slug_parser("project")),
             path=utils.project_dir(_donna) / _donna,
             readonly=False,
             store_session=True,
@@ -134,7 +134,7 @@ def config() -> Config:
     config_path = utils.project_dir(DONNA_DIR_NAME) / DONNA_CONFIG_NAME
 
     if config_path.exists():
-        _CONFIG = Config.from_toml(config_path.read_text())
+        _CONFIG = Config.model_validate(tomllib.loads(config_path.read_text()))
     else:
         _CONFIG = Config()
 

@@ -1,11 +1,12 @@
 import importlib.util
 import pathlib
+import types
 from typing import Any, Iterator, cast
 
 from donna.domain.types import OperationId, RecordKindId, WorkflowId
+from donna.machine.artifacts import ArtifactKind
 from donna.machine.operations import Operation
 from donna.machine.workflows import Workflow
-from donna.machine.artifacts import ArtifactKind
 from donna.primitives.records.base import RecordKind
 from donna.world.layout import layout
 from donna.world.storage import Storage
@@ -48,7 +49,7 @@ class PrimitivesRegister:
 
         return None
 
-    def register_module(self, module: importlib.machinery.ModuleSpec) -> None:
+    def register_module(self, module: types.ModuleType) -> None:
         for attr_name in dir(module):
             primitive = getattr(module, attr_name)
 
