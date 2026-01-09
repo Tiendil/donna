@@ -10,7 +10,7 @@ from donna.domain import types
 from donna.domain.types import OperationResultId
 from donna.machine import sessions
 from donna.world.layout import layout
-from donna.machine.plans import Plan, get_plan
+from donna.machine.plans import Plan
 
 
 sessions_cli = typer.Typer()
@@ -18,8 +18,8 @@ sessions_cli = typer.Typer()
 
 @sessions_cli.command()
 def start() -> None:
-    story = sessions.start()
-    typer.echo(f"Started new story: {story.id}")
+    sessions.start()
+    typer.echo(f"Started new session at '{layout().session}'")
 
 
 @sessions_cli.command(name="continue")

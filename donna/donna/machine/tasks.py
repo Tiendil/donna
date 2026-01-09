@@ -6,7 +6,7 @@ import pydantic
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import next_id
-from donna.domain.types import OperationId, StoryId, TaskId, WorkUnitId
+from donna.domain.types import OperationId, TaskId, WorkUnitId
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -28,18 +28,16 @@ class TaskState(enum.StrEnum):
 class Task(BaseEntity):
     id: TaskId
     state: TaskState
-    story_id: StoryId
     context: dict[str, Any]
 
     # TODO: we may want to make queue items frozen later
     model_config = pydantic.ConfigDict(frozen=False)
 
     @classmethod
-    def build(cls, story_id: StoryId) -> "Task":
+    def build(cls) -> "Task":
         return Task(
-            id=next_id(story_id, TaskId),
+            id=next_id(TaskId),
             state=TaskState.TODO,
-            story_id=story_id,
             context={},
         )
 
@@ -63,13 +61,12 @@ class WorkUnit(BaseEntity):
     @classmethod
     def build(
         cls,
-        story_id: StoryId,
         task_id: TaskId,
         operation: OperationId,
         context: dict[str, Any] | None = None,
     ) -> "WorkUnit":
 
-        id = next_id(story_id, WorkUnitId)
+        id = next_id(WorkUnitId)
 
         if context is None:
             context = {}
