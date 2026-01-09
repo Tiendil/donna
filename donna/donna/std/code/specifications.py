@@ -1,7 +1,7 @@
 from donna.domain.ids import NamespaceId
 from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
-from donna.world.artifacts import ArtifactSource
+from donna.world.markdown import ArtifactSource
 
 
 class Specification(Artifact):

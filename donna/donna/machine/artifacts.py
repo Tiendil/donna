@@ -1,7 +1,7 @@
 from donna.core.entities import BaseEntity
 from donna.domain.ids import FullArtifactId, NamespaceId
 from donna.machine.cells import Cell
-from donna.world.artifacts import ArtifactSource
+from donna.world.markdown import ArtifactSource
 
 
 class ArtifactKind(BaseEntity):

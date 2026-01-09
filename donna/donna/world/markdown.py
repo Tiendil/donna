@@ -66,6 +66,7 @@ class SectionSource(BaseEntity):
         return "\n".join(parts)
 
 
+# TODO: we may want to move artifact source definition to world.artifacts
 class ArtifactSource(BaseEntity):
     id: FullArtifactId
 
@@ -90,6 +91,110 @@ def clear_heading(text: str) -> str:
     return text.lstrip("#").strip()
 
 
+def _parse_h1(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:
+    section = sections[-1]
+
+    if section.level != SectionLevel.h1:
+        raise NotImplementedError("Multiple H1 sections are not supported")
+
+    if section.title is not None:
+        raise NotImplementedError("Multiple H1 titles are not supported")
+
+    section.title = clear_heading(render_back(node.to_tokens()).strip())
+
+    return node.next_sibling
+
+
+def _parse_h2(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:
+    section = sections[-1]
+
+    if section.title is None:
+        raise NotImplementedError("H2 section found before H1 title")
+
+    new_section = SectionSource(
+        level=SectionLevel.h2,
+        title=clear_heading(render_back(node.to_tokens()).strip()),
+        tokens=[],
+        configs=[],
+    )
+
+    sections.append(new_section)
+
+    return node.next_sibling
+
+
+def _parse_heading(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:
+    section = sections[-1]
+
+    if node.tag == "h1":
+        return _parse_h1(sections, node)
+
+    if node.tag == "h2":
+        return  _parse_h2(sections, node)
+
+    section.tokens.extend(node.to_tokens())
+    return node.next_sibling
+
+
+def _parse_fence(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:
+    section = sections[-1]
+
+    info_parts = node.info.split()
+
+    format = info_parts[0] if info_parts else ""
+
+    properties: dict[str, str | bool] = {}
+
+    for part in info_parts[1:]:
+        if "=" in part:
+            key, value = part.split("=", 1)
+            properties[key] = value
+            continue
+
+        properties[part] = True
+
+    if "donna" in properties:
+        code_block = CodeSource(
+            format=format,
+            properties=properties,
+            content=node.content,
+        )
+
+        section.configs.append(code_block)
+    else:
+        section.tokens.extend(node.to_tokens())
+
+    return node.next_sibling
+
+
+def _parse_nested(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:
+    section = sections[-1]
+
+    assert node.nester_tokens is not None
+
+    section.tokens.append(node.nester_tokens.opening)
+
+    return node.children[0]
+
+
+def _parse_others(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:
+    section = sections[-1]
+
+    section.tokens.extend(node.to_tokens())
+
+    while node is not None and node.type != "root" and node.next_sibling is None:
+        node = node.parent
+
+        if node is None:
+            break
+
+        if node.type != "root":
+            assert node.nester_tokens is not None
+            section.tokens.append(node.nester_tokens.closing)
+
+    return node
+
+
 def parse(text: str) -> list[SectionSource]:  # noqa: CCR001, CFQ001 # pylint: disable=R0912, R0915
     md = MarkdownIt("commonmark")  # TODO: later we may want to customize it with plugins
 
@@ -108,87 +213,20 @@ def parse(text: str) -> list[SectionSource]:  # noqa: CCR001, CFQ001 # pylint: d
     ]
 
     while node is not None:
-        section = sections[-1]
 
         if node.type == "heading":
-            if node.tag == "h1":
-                if section.level != SectionLevel.h1:
-                    raise NotImplementedError("Multiple H1 sections are not supported")
-
-                if section.title is not None:
-                    raise NotImplementedError("Multiple H1 titles are not supported")
-
-                section.title = clear_heading(render_back(node.to_tokens()).strip())
-
-                node = node.next_sibling
-                continue
-
-            if node.tag == "h2":
-                if section.title is None:
-                    raise NotImplementedError("H2 section found before H1 title")
-
-                new_section = SectionSource(
-                    level=SectionLevel.h2,
-                    title=clear_heading(render_back(node.to_tokens()).strip()),
-                    tokens=[],
-                    configs=[],
-                )
-
-                sections.append(new_section)
-
-                node = node.next_sibling
-                continue
-
-            section.tokens.extend(node.to_tokens())
-            node = node.next_sibling
+            node = _parse_heading(sections, node)
             continue
 
         if node.type == "fence":
-            info_parts = node.info.split()
-
-            format = info_parts[0] if info_parts else ""
-
-            properties: dict[str, str | bool] = {}
-
-            for part in info_parts[1:]:
-                if "=" in part:
-                    key, value = part.split("=", 1)
-                    properties[key] = value
-                    continue
-
-                properties[part] = True
-
-            if "donna" in properties:
-                code_block = CodeSource(
-                    format=format,
-                    properties=properties,
-                    content=node.content,
-                )
-
-                section.configs.append(code_block)
-            else:
-                section.tokens.extend(node.to_tokens())
-
-            node = node.next_sibling
+            node = _parse_fence(sections, node)
             continue
 
         if node.is_nested:
-            assert node.nester_tokens is not None
-            section.tokens.append(node.nester_tokens.opening)
-            node = node.children[0]
+            node = _parse_nested(sections, node)
             continue
 
-        section.tokens.extend(node.to_tokens())
-
-        while node is not None and node.type != "root" and node.next_sibling is None:
-            node = node.parent
-
-            if node is None:
-                break
-
-            if node.type != "root":
-                assert node.nester_tokens is not None
-                section.tokens.append(node.nester_tokens.closing)
+        node = _parse_others(sections, node)
 
         if node is None:
             break
