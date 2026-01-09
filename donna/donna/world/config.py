@@ -8,6 +8,7 @@ import pydantic
 from donna.core import utils
 from donna.core.entities import BaseEntity
 from donna.domain.types import WorldId, slug_parser
+from donna.domain.ids import WorldId, NamespaceId, ArtifactId
 
 DONNA_DIR_NAME = ".donna"
 DONNA_CONFIG_NAME = "donna.toml"
@@ -18,50 +19,50 @@ class World(BaseEntity):
     readonly: bool = True
     store_session: bool = False
 
-    def has(self, id: str) -> bool:
+    def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def extract(self, id: str) -> str:
+    def extract(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> str:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def list_artifacts(self, kind: str) -> list[str]:
+    def list_artifacts(self, namespace_id: NamespaceId) -> list[str]:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def get_module_sources(self) -> list[str]:
+    def get_modules(self) -> list[types.ModuleType]:
         raise NotImplementedError("You must implement this method in subclasses")
 
 
 class WorldFilesystem(World):
     path: pathlib.Path
 
-    def has(self, id: str) -> bool:
-        artifact_path = self.path / id
+    def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
+        artifact_path = self.path / namespace_id / artifact_id + ".md"
         return artifact_path.exists()
 
-    def extract(self, id: str) -> str:
-        artifact_path = self.path / id
+    def extract(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> str:
+        artifact_path = self.path / namespace_id / artifact_id + ".md"
 
         if not artifact_path.exists():
             raise NotImplementedError(f"Artifact `{id}` does not exist in world `{self.id}`")
 
         return artifact_path.read_text()
 
-    def list_artifacts(self, kind: str) -> list[str]:
-        kind_path = self.path / kind
+    def list_artifacts(self, namespace_id: NamespaceId) -> list[str]:
+        path = self.path / namespace_id
 
-        if not kind_path.exists() or not kind_path.is_dir():
+        if not path.exists() or not path.is_dir():
             return []
 
         artifacts = []
 
-        for artifact_file in kind_path.iterdir():
+        for artifact_file in path.iterdir():
             if not artifact_file.is_file():
                 continue
 
             if not artifact_file.suffix == ".md":
                 continue
 
-            artifacts.append(f"{kind}/{artifact_file.name}")
+            artifacts.append(f"{namespace_id}/{artifact_file.name}")
 
         return artifacts
 
@@ -120,6 +121,13 @@ def _default_worlds() -> list["WorldFilesystem"]:
 
 class Config(BaseEntity):
     worlds: list[WorldFilesystem] = pydantic.Field(default_factory=_default_worlds)
+
+    def get_world(self, world_id: WorldId) -> World:
+        for world in self.worlds:
+            if world.id == world_id:
+                return world
+
+        raise NotImplementedError(f"World with id '{world_id}' is not configured")
 
 
 _CONFIG: Config | None = None

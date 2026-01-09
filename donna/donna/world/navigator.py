@@ -1,29 +1,29 @@
 from donna.machine.artifacts import Artifact
+from donna.domain.ids import FullArtifactId
 from donna.world.artifacts import parse_artifact
 from donna.world.config import config
 from donna.world.primitives_register import register
 
 
-def get_artifact(id: str) -> Artifact:
-    # Search from the outermost world to the innermost
-    for world in reversed(config().worlds):
-        if not world.has(id):
-            continue
+def get_artifact(full_id: FullArtifactId) -> Artifact:
 
-        content = world.extract(id)
+    world = config().get_world(id.world_id)
 
-        raw_artifact = parse_artifact(world.id, id, content)
+    if not world.has(full_id.namespace_id, full_id.artifact_id):
+        raise NotImplementedError(f"Artifact `{full_id}` does not exist in world `{world.id}`")
 
-        namespace = id.split("/")[0]
+    content = world.extract(full_id.namespace_id, full_id.artifact_id)
 
-        kind = register().artifacts.get(namespace)
+    raw_artifact = parse_artifact(world.id, id, content)
 
-        if kind is None:
-            raise NotImplementedError(f"Artifact kind for namespace `{namespace}` is not registered")
+    namespace = id.split("/")[0]
 
-        return kind.construct(raw_artifact)
+    kind = register().artifacts.get(namespace)
 
-    raise NotImplementedError(f"Artifact `{id}` does not exist in any configured world")
+    if kind is None:
+        raise NotImplementedError(f"Artifact kind for namespace `{namespace}` is not registered")
+
+    return kind.construct(raw_artifact)
 
 
 def list_artifacts(kind: str) -> list[Artifact]:

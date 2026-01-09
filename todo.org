@@ -75,9 +75,9 @@
 * TODO do we really need multiple stories? It looks like we always work on a single story every time.
 * TODO New data layout + specs as text
 ** Id questions
-*** normal id classes/types
-*** 3-level ids: world/namespace/artifact_path
-*** no shadowing of artifacts in namespaces
+*** DONE normal id classes/types
+*** DONE 3-level ids: world/namespace/artifact_path
+*** DONE no shadowing of artifacts in namespaces
 *** ids as world.kind.artifact_path_with_extension
 *** ":" to access a part of the artifact? world.kind.artifact_path_with_extension:operation?
 *** an additional map of namespaces in primitives_register, to separate artifact kind id from artifact kind namespace

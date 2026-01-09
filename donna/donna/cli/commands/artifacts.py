@@ -2,21 +2,22 @@ import typer
 
 from donna.cli.application import app
 from donna.cli.utils import output_cells
+from donna.cli.types import FullArtifactIdArgument, NamespaceIdArgument
 from donna.world import navigator
 
 artifacts_cli = typer.Typer()
 
 
 @artifacts_cli.command()
-def list(kind: str) -> None:
-    artifacts = navigator.list_artifacts(kind)
+def list(namespace: NamespaceIdArgument) -> None:
+    artifacts = navigator.list_artifacts(namespace)
 
     for artifact in artifacts:
         output_cells(artifact.info.cells())
 
 
 @artifacts_cli.command()
-def get(id: str) -> None:
+def get(id: FullArtifactIdArgument) -> None:
     artifact = navigator.get_artifact(id)
     output_cells(artifact.cells())
 

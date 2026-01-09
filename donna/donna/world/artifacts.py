@@ -8,6 +8,7 @@ from markdown_it.token import Token
 from markdown_it.tree import SyntaxTreeNode
 from mdformat.renderer import MDRenderer
 
+from donna.domain.ids import FullArtifactId
 from donna.core.entities import BaseEntity
 
 LOGGER = logging.getLogger(__name__)
@@ -85,8 +86,7 @@ class SectionSource(BaseEntity):
 
 
 class ArtifactSource(BaseEntity):
-    world_id: str
-    id: str
+    id: FullArtifactId
 
     head: SectionSource
     tail: list[SectionSource]
@@ -228,7 +228,7 @@ def parse_markdown(text: str) -> list[SectionSource]:  # noqa: CCR001, CFQ001 # 
     return sections
 
 
-def parse_artifact(world_id: str, id: str, text: str) -> ArtifactSource:
+def parse_artifact(full_id: FullArtifactId, text: str) -> ArtifactSource:
     sections = parse_markdown(text)
 
     if not sections:
@@ -238,8 +238,7 @@ def parse_artifact(world_id: str, id: str, text: str) -> ArtifactSource:
     tail = sections[1:]
 
     artifact = ArtifactSource(
-        world_id=world_id,
-        id=id,
+        id=full_id,
         head=head,
         tail=tail,
     )

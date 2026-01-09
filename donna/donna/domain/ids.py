@@ -87,6 +87,34 @@ class ArtifactId(Identifier):
 class FullArtifactId(tuple[WorldId, NamespaceId, ArtifactId]):
     __slots__ = ()
 
+    def __init__(self, world_id: WorldId, namespace_id: NamespaceId, artifact_id: ArtifactId) -> None:
+        super().__init__((world_id, namespace_id, artifact_id))
+
+    @property
+    def world_id(self) -> WorldId:
+        return self[0]
+
+    @property
+    def namespace_id(self) -> NamespaceId:
+        return self[1]
+
+    @property
+    def artifact_id(self) -> ArtifactId:
+        return self[2]
+
+    @classmethod
+    def parse(cls, text: str) -> "FullArtifactId":
+        parts = text.split(".", maxsplit=2)
+
+        if len(parts) != 3:
+            raise NotImplementedError(f"Invalid FullArtifactId format: '{text}'")
+
+        world_id = WorldId(parts[0])
+        namespace_id = NamespaceId(parts[1])
+        artifact_id = ArtifactId(parts[2])
+
+        return FullArtifactId((world_id, namespace_id, artifact_id))
+
 
 def next_id[InternalIdType: types.InternalId](
     story_id: types.StoryId,
@@ -112,7 +140,7 @@ def next_id[InternalIdType: types.InternalId](
     return type_id(id.to_internal())
 
 
-def create_id_parser[InternalIdType: types.InternalId](
+def create_internal_id_parser[InternalIdType: types.InternalId](
     type_id: Callable[[types.InternalId], InternalIdType],
 ) -> Callable[[str], InternalIdType]:
     def parser(text: str) -> InternalIdType:
