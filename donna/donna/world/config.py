@@ -7,7 +7,7 @@ import pydantic
 
 from donna.core import utils
 from donna.core.entities import BaseEntity
-from donna.domain.types import WorldId, slug_parser
+from donna.domain.types import slug_parser
 from donna.domain.ids import WorldId, NamespaceId, ArtifactId
 
 DONNA_DIR_NAME = ".donna"

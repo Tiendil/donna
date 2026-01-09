@@ -1,4 +1,7 @@
 from typing import Callable
+from typing import Any
+
+from pydantic_core import core_schema
 
 from donna.domain import types
 
@@ -71,6 +74,27 @@ class Identifier(str):
 
         return super().__new__(cls, value)
 
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
+
+        def validate(v: Any) -> "Identifier":
+            if isinstance(v, cls):
+                return v
+
+            if not isinstance(v, str):
+                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
+
+            if not v.isidentifier():
+                raise ValueError(f"Invalid {cls.__name__}: {v!r}")
+
+            return cls(v)
+
+        return core_schema.json_or_python_schema(
+            json_schema=core_schema.str_schema(),
+            python_schema=core_schema.no_info_plain_validator_function(validate),
+            serialization=core_schema.to_string_ser_schema(),
+        )
+
 
 class WorldId(Identifier):
     __slots__ = ()
@@ -114,6 +138,24 @@ class FullArtifactId(tuple[WorldId, NamespaceId, ArtifactId]):
         artifact_id = ArtifactId(parts[2])
 
         return FullArtifactId((world_id, namespace_id, artifact_id))
+
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
+
+        def validate(v: Any) -> "FullArtifactId":
+            if isinstance(v, cls):
+                return v
+
+            if not isinstance(v, str):
+                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
+
+            return cls.parse(v)
+
+        return core_schema.json_or_python_schema(
+            json_schema=core_schema.str_schema(),
+            python_schema=core_schema.no_info_plain_validator_function(validate),
+            serialization=core_schema.to_string_ser_schema(),
+        )
 
 
 def next_id[InternalIdType: types.InternalId](
