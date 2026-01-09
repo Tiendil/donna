@@ -90,6 +90,9 @@
 ** remove `primitives` submodule?
 ** do we need WorkflowKind that allow specify different workflow behaviors?
 ** action request also could be an artifact?
+** improve markdown parsing & rendering
+*** donna -> donna config
+*** donna comment
 * TODO error messages should provide helpful hints for agents
 * TODO "Story" term still in some specs for convienience, we should think of a better naming
 * TODO artifacts descripion vs intro — they replicate each other, maybe we could keep only one of them? Intro whould work better.
