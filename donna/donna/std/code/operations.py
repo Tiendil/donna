@@ -35,7 +35,7 @@ class RequestActionKind(OperationKind):
         if 'artifact_id' in data:
             raise NotImplementedError("artifact_id should not be set in RequestActionKind.construct")
 
-        data['artifact_id'] = artifact_id
+        data['artifact_id'] = str(artifact_id)
 
         return self.operation(**data)
 
@@ -101,7 +101,7 @@ class FinishWorkflowKind(OperationKind):
         if 'artifact_id' in data:
             raise NotImplementedError("artifact_id should not be set in FinishWorkflowKind.construct")
 
-        data['artifact_id'] = artifact_id
+        data['artifact_id'] = str(artifact_id)
 
         return self.operation(**data)
 

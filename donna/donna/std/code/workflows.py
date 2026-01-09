@@ -1,4 +1,4 @@
-from donna.domain.ids import NamespaceId, OperationId
+from donna.domain.ids import NamespaceId, OperationId, FullArtifactId
 from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
 from donna.world.markdown import ArtifactSource, SectionSource
@@ -20,13 +20,13 @@ class Workflow(Artifact):
         return [Cell.build_markdown(kind=self.info.kind, content=self.info.description, id=str(self.info.id))]
 
 
-def construct_operation(section: SectionSource) -> list[operations.Operation]:
+def construct_operation(artifact_id: FullArtifactId, section: SectionSource) -> list[operations.Operation]:
 
     data = section.merged_configs()
 
     operation_kind = register().operations.get(data["kind"])
 
-    operation = operation_kind.construct(section)
+    operation = operation_kind.construct(artifact_id, section)
 
     return operation
 
@@ -39,7 +39,8 @@ class WorkflowKind(ArtifactKind):
 
         title = source.head.title or str(source.id)
 
-        operation_list = [construct_operation(section) for section in source.tail]
+        operation_list = [construct_operation(source.id, section)
+                          for section in source.tail]
 
         spec = Workflow(
             info=ArtifactInfo(kind=self.id, id=source.id, title=title, description=description),

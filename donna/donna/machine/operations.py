@@ -67,7 +67,7 @@ class OperationKind(BaseEntity):
 
 class Operation(BaseEntity):
     id: OperationId
-    artifact_id: ArtifactSource
+    artifact_id: FullArtifactId
 
     kind: str
     title: str
