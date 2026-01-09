@@ -37,12 +37,10 @@ def exists() -> bool:
 def start_workflow(artifact_id: FullArtifactId) -> None:
     workflow = navigator.get_artifact(artifact_id)
 
-    operation_id = workflow.operation_id
-
     plan = Plan.load()
 
     task = Task.build()
-    start = WorkUnit.build(task.id, operation_id)
+    start = WorkUnit.build(task.id, workflow.next_operation_id)
 
     plan.add_task(task, start)
 
