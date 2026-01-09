@@ -12,12 +12,13 @@ from donna.domain.ids import WorldId, NamespaceId, ArtifactId
 
 DONNA_DIR_NAME = ".donna"
 DONNA_CONFIG_NAME = "donna.toml"
+DONNA_DESSION_DIR_NAME = "session"
 
 
 class World(BaseEntity):
     id: WorldId
     readonly: bool = True
-    store_session: bool = False
+    session: bool = False
 
     def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
         raise NotImplementedError("You must implement this method in subclasses")
@@ -104,19 +105,25 @@ def _default_worlds() -> list["WorldFilesystem"]:
             id=WorldId(slug_parser("donna")),
             path=pathlib.Path(__file__).parent.parent / "std",
             readonly=True,
-            store_session=False,
+            session=False,
         ),
         WorldFilesystem(
             id=WorldId(slug_parser("home")),
             path=pathlib.Path.home() / _donna,
             readonly=True,
-            store_session=False,
+            session=False,
         ),
         WorldFilesystem(
             id=WorldId(slug_parser("project")),
             path=utils.project_dir(_donna) / _donna,
             readonly=False,
-            store_session=True,
+            session=False,
+        ),
+        WorldFilesystem(
+            id=WorldId(slug_parser("session")),
+            path=utils.project_dir(_donna) / _donna / DONNA_DESSION_DIR_NAME,
+            readonly=False,
+            session=True,
         ),
     ]
 

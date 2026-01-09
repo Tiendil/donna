@@ -80,7 +80,7 @@
 *** DONE no shadowing of artifacts in namespaces
 *** DONE ids as world.kind.artifact_path_with_extension
 *** DONE an additional map of namespaces in primitives_register, to separate artifact kind id from artifact kind namespace
-*** session as one more world
+*** DONE session as one more world
 ** introduce new id types
 ** IMPORTANT: return helpfull errors when we fail to parse markdown
 ** refactor markdown parsing code into smaller pieces
