@@ -99,7 +99,7 @@ class WorkflowKind(ArtifactKind):
         transitions = {}
 
         for operation in artifact.operations:
-            if operation.node_type == OperationMode.final and operation.allowed_transtions:
+            if operation.mode == OperationMode.final and operation.allowed_transtions:
                 return [Cell.build_meta(
                     kind="artifact_kind_validation",
                     id=str(artifact.info.id),

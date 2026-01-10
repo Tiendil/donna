@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Iterator, cast
 
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId
 from donna.machine.action_requests import ActionRequest
-from donna.machine.operations import Operation, OperationKind
+from donna.machine.operations import Operation, OperationKind, OperationMode
 from donna.machine.tasks import Task, TaskState, WorkUnit
 from donna.world.markdown import SectionSource
 
@@ -18,12 +18,12 @@ if TYPE_CHECKING:
 def extract_transitions(text: str) -> set[FullArtifactLocalId]:
     """Extracts all transitions from the text of action request.
 
-    Transition is specified as render of `todo` command in the format:
+    Transition is specified as render of `goto` command in the format:
     ```
     $$donna todo <full_artifact_local_id> donna$$
     ```
     """
-    pattern = r"\$\$donna\s+todo\s+([a-zA-Z0-9_\-.:/]+)\s+donna\$\$"
+    pattern = r"\$\$donna\s+goto\s+([a-zA-Z0-9_\-.:/]+)\s+donna\$\$"
     matches = re.findall(pattern, text)
 
     transitions: set[FullArtifactLocalId] = set()
@@ -126,8 +126,12 @@ class FinishWorkflowKind(OperationKind):
         if "allowed_transtions" in data:
             raise NotImplementedError("allowed_transtions should not be set in FinishWorkflowKind.construct")
 
+        if "mode" in data:
+            raise NotImplementedError("mode should not be set in FinishWorkflowKind.construct")
+
         data["artifact_id"] = str(artifact_id)
         data["allowed_transtions"] = set()
+        data["mode"] = OperationMode.final
 
         return self.operation(**data)
 
