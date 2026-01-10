@@ -118,7 +118,7 @@ class WorkflowKind(ArtifactKind):
             transitions[operation.full_id] = set(operation.allowed_transtions)
 
         not_reachable_operations = find_not_reachable_operations(
-            start_id=artifact.start_operation_id,
+            start_id=artifact.full_start_operation_id,
             transitions=transitions,
         )
 
