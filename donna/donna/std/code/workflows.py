@@ -91,7 +91,7 @@ class GoTo(RenderKind):
                 raise NotImplementedError(f"Render mode {render_mode} not implemented in GoTo renderer.")
 
     def render_cli(self, context, next_operation_id: FullArtifactLocalId) -> str:
-        return f"donna sessions ??? {next_operation_id}"
+        return f"donna sessions action-request-completed <action-request-id> '{next_operation_id}'"
 
     def render_analyze(self, context, next_operation_id: FullArtifactLocalId) -> str:
         return f"$$donna {self.id} {next_operation_id} donna$$"
