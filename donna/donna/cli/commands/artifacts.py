@@ -1,4 +1,5 @@
 import typer
+import pathlib
 
 from donna.cli.application import app
 from donna.cli.types import FullArtifactIdArgument, NamespaceIdArgument
@@ -18,9 +19,21 @@ def list(namespace: NamespaceIdArgument) -> None:
 
 
 @artifacts_cli.command()
-def get(id: FullArtifactIdArgument) -> None:
+def view(id: FullArtifactIdArgument) -> None:
     artifact = navigator.get_artifact(id)
     output_cells(artifact.cells())
+
+
+@artifacts_cli.command()
+def read(id: FullArtifactIdArgument, destination: pathlib.Path) -> None:
+    artifact = navigator.get_artifact(id)
+    output_cells(artifact.extract_cells())
+
+
+@artifacts_cli.command()
+def write(id: FullArtifactIdArgument, source: pathlib.Path) -> None:
+    artifact = navigator.get_artifact(id)
+    output_cells(artifact.upload_cells(source))
 
 
 @artifacts_cli.command()

@@ -44,14 +44,14 @@ specification_kind = SpecificationKind(
 )
 
 
-class Read(RendererKind):
+class View(RendererKind):
 
     @jinja2.pass_context
     def __call__(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
         render_mode: RenderMode = context["render_mode"]
 
         if argv is None or len(argv) != 1:
-            raise ValueError("Read renderer requires exactly one argument: specificatin_id")
+            raise ValueError("View renderer requires exactly one argument: specificatin_id")
 
         artifact_id = FullArtifactId.parse(str(argv[0]))
 
@@ -63,18 +63,18 @@ class Read(RendererKind):
                 return self.render_analyze(context, artifact_id)
 
             case _:
-                raise NotImplementedError(f"Render mode {render_mode} not implemented in Read renderer.")
+                raise NotImplementedError(f"Render mode {render_mode} not implemented in View renderer.")
 
     def render_cli(self, context: Context, specification_id: FullArtifactId) -> str:
-        return f"donna artifacts get '{specification_id}'"
+        return f"donna artifacts view '{specification_id}'"
 
     def render_analyze(self, context: Context, specification_id: FullArtifactId) -> str:
         return f"$$donna {self.id} {specification_id} donna$$"
 
 
-read_renderer = Read(
-    id="read",
+view_renderer = View(
+    id="view",
     name="Specification reference",
-    description="Instructs the agent how to read a specification.",
-    example="{{ read('<specification_id>') }}",
+    description="Instructs the agent how to view a specification.",
+    example="{{ view('<specification_id>') }}",
 )

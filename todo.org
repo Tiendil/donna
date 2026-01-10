@@ -79,6 +79,7 @@
 *** update source command
 *** etag
 *** specification of the artifact format
+*** update donna_usage.md
 ** refactor end_to_end_story_cycle into generating artifacts
 ** remove records functionality
 ** remove workflows submodule

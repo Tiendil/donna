@@ -16,7 +16,7 @@ id = "start"
 kind = "request_action"
 ```
 
-1. Read the specification `{{ read("donna.specifications.planning") }}` if you haven't done it yet.
+1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
 2. If the developer hasn't provided you a description of the work for this session, ask them to provide it.
 3. Add the description as `<record kind: session_developer_description>` to the session.
 4. `{{ goto("create_work_description") }}`
@@ -36,7 +36,7 @@ Here is current state of the session specification.
 
 You MUST produce a high-level description of the work to be done based on the developer's description.
 
-1. Read the specification `{{ read("donna.specifications.planning") }}` if you haven't done it yet.
+1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
 2. Add the description as `<record kind: session_work_description>` to the session.
 3. `{{ goto("list_primary_goals") }}`
 
@@ -55,7 +55,7 @@ Here is current state of the session specification.
 
 You MUST list the goals of this session.
 
-1. Read the specification `{{ read("donna.specifications.planning") }}` if you haven't done it yet.
+1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
 2. If you can identify one more goal:
 2.1. add it as a `<record kind: session_goal>` to the session;
 2.2. `{{ goto("list_primary_goals") }}`;
@@ -76,7 +76,7 @@ Here is current state of the session specification.
 
 You MUST list objectives that need to be achieved to complete each goal.
 
-1. Read the specification `{{ read("donna.specifications.planning") }}` if you haven't done it yet.
+1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
 2. If you can identify one more objective:
 2.1. add it as a `<record kind: session_objective>` to the session;
 2.2. `{{ goto("list_objectives") }}`;
@@ -97,7 +97,7 @@ Here is current state of the session specification.
 
 You MUST list the known constraints for this session.
 
-1. Read the specification `{{ read("donna.specifications.planning") }}` if you haven't done it yet.
+1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
 2. If you can identify one more constraint:
 2.1. add it as a `<record kind: session_constraint>` to the session;
 2.2. `{{ goto("list_constraints") }}`;
@@ -118,7 +118,7 @@ Here is current state of the session specification.
 
 You MUST list the acceptance criteria for this session.
 
-1. Read the specification `{{ read("donna.specifications.planning") }}` if you haven't done it yet.
+1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
 2. If you can identify one more acceptance criterion:
 2.1. add it as a `<record kind: session_acceptance_criterion>` to the session;
 2.2. `{{ goto("list_acceptance_criteria") }}`;
@@ -139,7 +139,7 @@ Here is current state of the session specification.
 
 You MUST list the deliverables / artifacts for this session.
 
-1. Read the specification `{{ read("donna.specifications.planning") }}` if you haven't done it yet.
+1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
 2. If you can identify one more deliverable:
 2.1. add it as a `<record kind: session_deliverable>` to the session;
 2.2. `{{ goto("list_deliverables") }}`;
@@ -160,7 +160,7 @@ Here is current state of the session specification.
 
 You MUST prepare a detailed work plan for this session.
 
-1. Read the specification `{{ read("donna.specifications.planning") }}` if you haven't done it yet.
+1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
 2. If you can identify one more plan item:
 2.1. add it as a `<record kind: session_plan_item>` to the session;
 2.2. `{{ goto("prepare_plan") }}`;
