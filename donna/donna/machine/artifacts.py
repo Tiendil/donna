@@ -19,6 +19,15 @@ class ArtifactKind(BaseEntity):
     def construct(self, source: ArtifactSource) -> "Artifact":  # type: ignore[override]
         raise NotImplementedError("You must implement this method in subclasses")
 
+    def validate_artifact(self, artifact: "Artifact") -> list[Cell]:
+        return [
+            Cell.build_meta(
+                kind="artifact_kind_validation",
+                id=str(artifact.info.id),
+                status="success",
+            )
+        ]
+
 
 class ArtifactInfo(BaseEntity):
     kind: str

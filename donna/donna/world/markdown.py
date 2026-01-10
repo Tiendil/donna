@@ -43,12 +43,14 @@ class CodeSource(BaseEntity):
 class SectionSource(BaseEntity):
     level: SectionLevel
     title: str | None
-    tokens: list[Token]
     configs: list[CodeSource]
+
+    original_tokens: list[Token]
+    analysis_tokens: list[Token]
 
     model_config = pydantic.ConfigDict(frozen=False)
 
-    def as_markdown(self) -> str:
+    def _as_markdown(self, tokens: list[Token]) -> str:
         parts = []
 
         if self.title is not None:
@@ -60,9 +62,23 @@ class SectionSource(BaseEntity):
 
             parts.append(f"{prefix} {self.title}")
 
-        parts.append(render_back(self.tokens))
+        parts.append(render_back(tokens))
 
         return "\n".join(parts)
+
+    def as_original_markdown(self) -> str:
+        return self._as_markdown(self.original_tokens)
+
+    def as_analysis_markdown(self) -> str:
+        return self._as_markdown(self.analysis_tokens)
+
+    def merged_configs(self) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+
+        for config in self.configs:
+            result.update(config.structured_data())
+
+        return result
 
 
 # TODO: we may want to move artifact source definition to world.artifacts
@@ -72,11 +88,19 @@ class ArtifactSource(BaseEntity):
     head: SectionSource
     tail: list[SectionSource]
 
-    def as_markdown(self) -> str:
-        parts = [self.head.as_markdown()]
+    def as_original_markdown(self) -> str:
+        parts = [self.head.as_original_markdown()]
 
         for section in self.tail:
-            parts.append(section.as_markdown())
+            parts.append(section.as_original_markdown())
+
+        return "\n".join(parts)
+
+    def as_analysis_markdown(self) -> str:
+        parts = [self.head.as_analysis_markdown()]
+
+        for section in self.tail:
+            parts.append(section.as_analysis_markdown())
 
         return "\n".join(parts)
 
@@ -113,7 +137,8 @@ def _parse_h2(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTree
     new_section = SectionSource(
         level=SectionLevel.h2,
         title=clear_heading(render_back(node.to_tokens()).strip()),
-        tokens=[],
+        original_tokens=[],
+        analysis_tokens=[],
         configs=[],
     )
 
@@ -131,7 +156,7 @@ def _parse_heading(sections: list[SectionSource], node: SyntaxTreeNode) -> Synta
     if node.tag == "h2":
         return _parse_h2(sections, node)
 
-    section.tokens.extend(node.to_tokens())
+    section.original_tokens.extend(node.to_tokens())
     return node.next_sibling
 
 
@@ -161,7 +186,7 @@ def _parse_fence(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxT
 
         section.configs.append(code_block)
     else:
-        section.tokens.extend(node.to_tokens())
+        section.original_tokens.extend(node.to_tokens())
 
     return node.next_sibling
 
@@ -171,7 +196,7 @@ def _parse_nested(sections: list[SectionSource], node: SyntaxTreeNode) -> Syntax
 
     assert node.nester_tokens is not None
 
-    section.tokens.append(node.nester_tokens.opening)
+    section.original_tokens.append(node.nester_tokens.opening)
 
     return node.children[0]
 
@@ -179,7 +204,7 @@ def _parse_nested(sections: list[SectionSource], node: SyntaxTreeNode) -> Syntax
 def _parse_others(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:
     section = sections[-1]
 
-    section.tokens.extend(node.to_tokens())
+    section.original_tokens.extend(node.to_tokens())
 
     current: SyntaxTreeNode | None = node
 
@@ -191,7 +216,7 @@ def _parse_others(sections: list[SectionSource], node: SyntaxTreeNode) -> Syntax
 
         if current.type != "root":
             assert current.nester_tokens is not None
-            section.tokens.append(current.nester_tokens.closing)
+            section.original_tokens.append(current.nester_tokens.closing)
 
     return current
 
@@ -208,7 +233,8 @@ def parse(text: str) -> list[SectionSource]:  # noqa: CCR001, CFQ001 # pylint: d
         SectionSource(
             level=SectionLevel.h1,
             title=None,
-            tokens=[],
+            original_tokens=[],
+            analysis_tokens=[],
             configs=[],
         )
     ]

@@ -1,12 +1,12 @@
 import copy
 import enum
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import next_id
-from donna.domain.types import OperationId, TaskId, WorkUnitId
+from donna.domain.ids import FullArtifactLocalId, OperationId, next_id
+from donna.domain.types import TaskId, WorkUnitId
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -52,7 +52,7 @@ class WorkUnit(BaseEntity):
     state: WorkUnitState
     id: WorkUnitId
     task_id: TaskId
-    operation: OperationId
+    operation_id: FullArtifactLocalId
     context: dict[str, Any]
 
     # TODO: we may want to make queue items frozen later
@@ -62,7 +62,7 @@ class WorkUnit(BaseEntity):
     def build(
         cls,
         task_id: TaskId,
-        operation: OperationId,
+        operation_id: FullArtifactLocalId,
         context: dict[str, Any] | None = None,
     ) -> "WorkUnit":
 
@@ -75,24 +75,31 @@ class WorkUnit(BaseEntity):
             state=WorkUnitState.TODO,
             task_id=task_id,
             id=id,
-            operation=operation,
+            operation_id=operation_id,
             context=copy.deepcopy(context),
         )
 
         return unit
 
     def run(self, task: Task) -> list["Change"]:
+        from donna.std.code.workflows import Workflow
+        from donna.world import navigator
         from donna.world.primitives_register import register
 
         if self.state != WorkUnitState.TODO:
             raise NotImplementedError("Can only run a work unit in TODO state")
 
-        operation = register().operations.get(self.operation)
+        workflow = cast(Workflow, navigator.get_artifact(self.operation_id.full_artifact_id))
+
+        operation = workflow.get_operation(cast(OperationId, self.operation_id.local_id))
 
         if not operation:
-            raise NotImplementedError(f"Operation with kind '{self.operation}' not found")
+            raise NotImplementedError(f"Operation with id '{self.operation_id.local_id}' not found")
 
-        cells = list(operation.execute(task, self))
+        operation_kind = register().operations.get(operation.kind)
+        assert operation_kind is not None
+
+        cells = list(operation_kind.execute(task, self, operation))
 
         self.state = WorkUnitState.COMPLETED
 

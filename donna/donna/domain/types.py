@@ -21,12 +21,6 @@ Slug = NewType("Slug", str)
 RecordKindId = NewType("RecordKindId", Slug)
 OperationResultId = NewType("OperationResultId", Slug)
 
-# Nested Ids to organize static entities
-
-EventId = NewType("EventId", NestedId)
-OperationId = NewType("OperationId", NestedId)
-WorkflowId = NewType("WorkflowId", NestedId)
-
 
 def slug_parser(text: str) -> Slug:
     allowed_chars = "abcdefghijklmnopqrstuvwxyz0123456789-_"

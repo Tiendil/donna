@@ -74,7 +74,52 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO do we really need multiple stories? It looks like we always work on a single story every time.
 * TODO refactor workflows + operations into configs
-** ":" to access a part of the artifact? world.kind.artifact_path_with_extension:operation?
-** remove layout.py?
+** Artifacts edition via donna
+*** copy source command
+*** update source command
+*** etag
+*** specification of the artifact format
+** refactor end_to_end_story_cycle into generating artifacts
+** remove records functionality
+** remove workflows submodule
+** remove layout.py? It's functionality should be moved to worlds
+** global ids vs local ids (for operations)
+** remove primitives_registry.py? Since there only artifacts will left
+** remove introspections functionality? because it is fully covered by artifacts?
+** move all ids from types.py into ids.py
+** cleanum ids.py
+** search for all left str ids and replace them with proper id types
+** merged section configs MUST be parsed directly by pydantic models, no magic
+** remove `primitives` submodule?
+** do we need WorkflowKind that allow specify different workflow behaviors?
+** action request also could be an artifact?
+** improve markdown parsing & rendering
+*** donna -> donna config  (however, now we have jinja comments {# ... #}
+*** donna comment
+** Can we finish action request without next operation?
+*** Probably not, because the last operation is always `finish`
+*** However, now we have Operation.mode = final.
+** `donna artifacts` — make namespace argument optional or remove it from validate-all?
+** move code.operations into submodules
+** should we call validation on every artifact load?
+** Render scheme of workflow somewhere?
+** break story_loop into multiple workflows?
+** tune workding of workflows (what to write before goto)
+** move workflow start into session command?
+** unify code of different renderers? It is very similar
+*** add validation for specificaiton existence in renderers
+*** Spec rendere can be unified, since its cli command
+** When we start the workflow, should we output the head cells before the first operation?
 * TODO error messages should provide helpful hints for agents
 * TODO "Story" term still in some specs for convienience, we should think of a better naming
+* TODO artifacts descripion vs intro — they replicate each other, maybe we could keep only one of them? Intro whould work better.
+* TODO artifacts improvements
+** mark specification sections with tags to allow flexible information extraction
+** currently we do not output the whole workflow body on the request of the artifact, only description. Maybe we should output the whole body?
+** currently we have different approaches to read/write artifacts: we read them via donna, but write via direct file operations. Maybe we should unify it?
+** scripts as artefacts
+* TODO Jinja2 improvements
+** sandbox mode — do we need it?
+** register jinja2 filters?
+* TODO Organize standard cell kinds into enum (but allow custom kinds as well). Or just provide custom constructors for each use-case.
+* TODO ask codex to straighten the naming/dictionary/terms in the donna project

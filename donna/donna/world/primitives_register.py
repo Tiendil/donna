@@ -4,10 +4,10 @@ import types
 from typing import Any, Iterator, cast
 
 from donna.domain.ids import NamespaceId
-from donna.domain.types import OperationId, RecordKindId, WorkflowId
+from donna.domain.types import RecordKindId
 from donna.machine.artifacts import ArtifactKind
-from donna.machine.operations import Operation
-from donna.machine.workflows import Workflow
+from donna.machine.operations import OperationKind
+from donna.machine.templates import RendererKind
 from donna.primitives.records.base import RecordKind
 from donna.world.layout import layout
 from donna.world.storage import Storage
@@ -19,15 +19,13 @@ class PrimitivesRegister:
 
     def __init__(self) -> None:
         self.initialized = False
-        self.operations: Storage[OperationId, Operation] = Storage("operation")
+        self.operations: Storage[str, OperationKind] = Storage("operation")
         self.records: Storage[RecordKindId, RecordKind] = Storage("record_kind")
-        self.workflows: Storage[WorkflowId, Workflow] = Storage("workflow")
-        self.artifacts: Storage[str, ArtifactKind] = Storage("artifacts")
+        self.artifacts: Storage[str, ArtifactKind] = Storage("artifact")
+        self.renderers: Storage[str, RendererKind] = Storage("renderer")
 
     def _storages(self) -> Iterator[Storage[Any, Any]]:
-        yield self.operations
         yield self.records
-        yield self.workflows
         yield self.artifacts
 
     def initialize(self) -> None:
@@ -41,12 +39,12 @@ class PrimitivesRegister:
 
         self.initialized = True
 
-    def find_primitive(self, primitive_id: str) -> Operation | RecordKind | Workflow | None:
+    def find_primitive(self, primitive_id: str) -> RecordKind | None:
         for storage in self._storages():
             primitive = storage.get(primitive_id)
 
             if primitive:
-                return cast(Operation | RecordKind | Workflow, primitive)
+                return cast(RecordKind, primitive)
 
         return None
 
@@ -63,6 +61,14 @@ class PrimitivesRegister:
 
             if isinstance(primitive, ArtifactKind):
                 self.artifacts.add(primitive)
+                continue
+
+            if isinstance(primitive, OperationKind):
+                self.operations.add(primitive)
+                continue
+
+            if isinstance(primitive, RendererKind):
+                self.renderers.add(primitive)
                 continue
 
 
@@ -100,14 +106,6 @@ def discover_operations(register: PrimitivesRegister, directory: pathlib.Path) -
         for attr_name in dir(module):
             attr = getattr(module, attr_name)
 
-            if isinstance(attr, Operation):
-                register.operations.add(attr)
-                continue
-
             if isinstance(attr, RecordKind):
                 register.records.add(attr)
-                continue
-
-            if isinstance(attr, Workflow):
-                register.workflows.add(attr)
                 continue

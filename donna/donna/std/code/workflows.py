@@ -1,0 +1,307 @@
+from typing import Any
+
+import jinja2
+from jinja2.runtime import Context
+
+from donna.domain import types
+from donna.domain.ids import FullArtifactId, FullArtifactLocalId, NamespaceId, OperationId
+from donna.domain.types import RecordKindId
+from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
+from donna.machine.cells import Cell
+from donna.machine.operations import Operation, OperationKind, OperationMode
+from donna.machine.records import RecordKindSpec, RecordsIndex
+from donna.machine.templates import RendererKind
+from donna.primitives.records.pure_text import PureText
+from donna.world.markdown import ArtifactSource, SectionSource
+from donna.world.primitives_register import register
+from donna.world.templates import RenderMode
+
+
+class Workflow(Artifact):
+    start_operation_id: OperationId
+    operations: list[Operation]
+
+    @property
+    def full_start_operation_id(self) -> FullArtifactLocalId:
+        return self.info.id.to_full_local(self.start_operation_id)
+
+    def get_operation(self, operation_id: OperationId) -> Operation | None:
+        for operation in self.operations:
+            if operation.id == operation_id:
+                return operation
+        return None
+
+    def cells(self) -> list["Cell"]:
+        return [Cell.build_markdown(kind=self.info.kind, content=self.info.description, id=str(self.info.id))]
+
+
+def construct_operation(artifact_id: FullArtifactId, section: SectionSource) -> Operation:
+
+    data = section.merged_configs()
+
+    operation_kind = register().operations.get(data["kind"])
+    assert isinstance(operation_kind, OperationKind)
+
+    operation = operation_kind.construct(artifact_id, section)
+
+    return operation
+
+
+def find_not_reachable_operations(
+    start_id: FullArtifactLocalId,  # noqa: CCR001
+    transitions: dict[FullArtifactLocalId, set[FullArtifactLocalId]],
+) -> set[FullArtifactLocalId]:
+    reachable = set()
+    to_visit = [start_id]
+
+    while to_visit:
+        current = to_visit.pop()
+
+        if current in reachable:
+            continue
+
+        reachable.add(current)
+
+        to_visit.extend(transitions.get(current, ()))
+
+    all_operations = set()
+
+    for from_id, target_ids in transitions.items():
+        all_operations.add(from_id)
+        all_operations.update(target_ids)
+
+    return all_operations - reachable
+
+
+class WorkflowKind(ArtifactKind):
+    def construct(self, source: ArtifactSource) -> "Artifact":  # type: ignore[override]
+        description = None
+
+        description = source.head.merged_configs().get("description", description)
+        description = description or ""
+
+        title = source.head.title or str(source.id)
+
+        operation_list = [construct_operation(source.id, section) for section in source.tail]
+
+        spec = Workflow(
+            info=ArtifactInfo(kind=self.id, id=source.id, title=title, description=description),
+            start_operation_id=source.head.merged_configs()["start_operation_id"],
+            operations=operation_list,
+        )
+
+        return spec
+
+    def validate_artifact(self, artifact: Artifact) -> list[Cell]:  # noqa: CCR001
+        assert isinstance(artifact, Workflow)
+        if artifact.get_operation(artifact.start_operation_id) is None:
+            return [
+                Cell.build_meta(
+                    kind="artifact_kind_validation",
+                    id=str(artifact.info.id),
+                    status="failure",
+                    message=f"Start operation ID '{artifact.start_operation_id}' does not exist in the workflow.",
+                )
+            ]
+
+        transitions = {}
+
+        for operation in artifact.operations:
+            if operation.mode == OperationMode.final and operation.allowed_transtions:
+                return [
+                    Cell.build_meta(
+                        kind="artifact_kind_validation",
+                        id=str(artifact.info.id),
+                        status="failure",
+                        message=f"Final operation '{operation.id}' should not have outgoing transitions.",
+                    )
+                ]
+
+            if operation.mode == OperationMode.normal and not operation.allowed_transtions:
+                return [
+                    Cell.build_meta(
+                        kind="artifact_kind_validation",
+                        id=str(artifact.info.id),
+                        status="failure",
+                        message=(
+                            f"Operation '{operation.id}' must have at least one allowed transition or be marked as"
+                            " final."
+                        ),
+                    )
+                ]
+
+            transitions[operation.full_id] = set(operation.allowed_transtions)
+
+        not_reachable_operations = find_not_reachable_operations(
+            start_id=artifact.full_start_operation_id,
+            transitions=transitions,
+        )
+
+        if not_reachable_operations:
+            return [
+                Cell.build_meta(
+                    kind="artifact_kind_validation",
+                    id=str(artifact.info.id),
+                    status="failure",
+                    message=f"The following operations are not reachable from the start operation: "
+                    f"{', '.join(str(op_id) for op_id in not_reachable_operations)}.",
+                )
+            ]
+
+        return [
+            Cell.build_meta(
+                kind="artifact_kind_validation",
+                id=str(artifact.info.id),
+                status="success",
+            )
+        ]
+
+
+workflow_kind = WorkflowKind(
+    id="workflow",
+    namespace_id=NamespaceId("workflows"),
+    description="A workflow that defines a state machine for the agent to follow.",
+)
+
+
+class GoTo(RendererKind):
+
+    @jinja2.pass_context
+    def __call__(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
+        render_mode: RenderMode = context["render_mode"]
+
+        artifact_id = context["artifact_id"]
+
+        if argv is None or len(argv) != 1:
+            raise ValueError("GoTo renderer requires exactly one argument: next_operation_id")
+
+        next_operation_id = artifact_id.to_full_local(argv[0])
+
+        match render_mode:
+            case RenderMode.cli:
+                return self.render_cli(context, next_operation_id)
+
+            case RenderMode.analysis:
+                return self.render_analyze(context, next_operation_id)
+
+            case _:
+                raise NotImplementedError(f"Render mode {render_mode} not implemented in GoTo renderer.")
+
+    def render_cli(self, context: Context, next_operation_id: FullArtifactLocalId) -> str:
+        return f"donna sessions action-request-completed <action-request-id> '{next_operation_id}'"
+
+    def render_analyze(self, context: Context, next_operation_id: FullArtifactLocalId) -> str:
+        return f"$$donna {self.id} {next_operation_id} donna$$"
+
+
+goto_renderer = GoTo(
+    id="goto",
+    name="Go To Operation",
+    description="Instructs the agent to proceed to the specified operation in the workflow.",
+    example="{{ goto('<operation_id>') }}",
+)
+
+# TODO: remove this later
+
+DEVELOPER_DESCRIPTION = RecordKindSpec(
+    kind=RecordKindId(types.Slug("session_developer_description")),
+)
+WORK_DESSCRIPTION = RecordKindSpec(
+    kind=RecordKindId(types.Slug("session_work_description")),
+)
+
+GOAL = RecordKindSpec(kind=RecordKindId(types.Slug("session_goal")))
+
+OBJECTIVE = RecordKindSpec(kind=RecordKindId(types.Slug("session_objective")))
+CONSTRAINT = RecordKindSpec(kind=RecordKindId(types.Slug("session_constraint")))
+ACCEPTANCE_CRITERIA = RecordKindSpec(kind=RecordKindId(types.Slug("session_acceptance_criteria")))
+DELIVERABLE = RecordKindSpec(kind=RecordKindId(types.Slug("session_deliverable")))
+
+PLAN_ITEM = RecordKindSpec(kind=RecordKindId(types.Slug("session_plan_item")))
+
+
+def _get_aggregated_text_content(  # noqa: CCR001
+    index: RecordsIndex, kind_spec: RecordKindSpec, as_list: bool
+) -> str | None:
+    records = index.get_records_for_kind(kind_spec.kind)
+
+    if not records:
+        return None
+
+    lines = []
+
+    for record in records:
+        kind_items = index.get_record_kind_items(record.id, [kind_spec.kind])
+
+        for kind in kind_items:
+            if kind is None:
+                continue
+
+            if not isinstance(kind, PureText):
+                raise NotImplementedError(
+                    f"Record kind item for record '{record.id}' and kind '{kind_spec.kind}' is not PureText"
+                )
+
+            if as_list:
+                lines.append(f"[{record.id}] {kind.content}")
+                continue
+
+            lines.extend([kind.content, ""])
+
+    if lines[-1] == "":
+        lines.pop()
+
+    return "\n".join(lines)
+
+
+class PartialDescription(RendererKind):
+
+    @jinja2.pass_context
+    def __call__(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
+        records = RecordsIndex.load()
+
+        # TODO: move to parameters?
+        # TODO: this code is usefull only on the first pass
+        #       when the whole documents are ready, we can not use this anymore
+        #       because it will provide too much information for the operations
+        #       that should not have it
+        parts = [
+            ("Developer request", False, DEVELOPER_DESCRIPTION),
+            ("Detailed work description", False, WORK_DESSCRIPTION),
+            ("Goals", True, GOAL),
+            ("Objectives", True, OBJECTIVE),
+            ("Known Constraints", True, CONSTRAINT),
+            ("Acceptance Criteria", True, ACCEPTANCE_CRITERIA),
+            ("Deliverables / Artifacts", True, DELIVERABLE),
+            ("Work Plan", True, PLAN_ITEM),
+        ]
+
+        specification = []
+
+        for title, as_list, kind_spec in parts:
+            if not records.get_records_for_kind(kind_spec.kind):
+                break
+
+            specification.append(f"# {title}")
+            specification.append("")
+
+            content = _get_aggregated_text_content(records, kind_spec, as_list)
+
+            if content is None:
+                break
+
+            specification.append(content)
+            specification.append("")
+
+        with open("/home/tiendil/tmp/last_spec.md", "w", encoding="utf-8") as f:
+            f.write("\n".join(specification))
+
+        return "\n".join(specification)
+
+
+partial_description = PartialDescription(
+    id="partial_description",
+    name="Build Partial Description of the work",
+    description="Builds a partial description of the work based on the records available in the session.",
+    example="no example",
+)

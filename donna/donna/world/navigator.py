@@ -25,17 +25,13 @@ def get_artifact(full_id: FullArtifactId) -> Artifact:
 
 
 def list_artifacts(namespace_id: NamespaceId) -> list[Artifact]:
-    # TODO: optimize
-    artifact_ids: set[FullArtifactId] = set()
     artifacts: list[Artifact] = []
 
     for world in reversed(config().worlds):
         for artifact_id in world.list_artifacts(namespace_id):
-            artifact_ids.add(FullArtifactId((world.id, namespace_id, artifact_id)))
-
-    for full_id in artifact_ids:
-        artifact = get_artifact(full_id)
-        artifacts.append(artifact)
+            full_id = FullArtifactId((world.id, namespace_id, artifact_id))
+            artifact = get_artifact(full_id)
+            artifacts.append(artifact)
 
     return artifacts
 

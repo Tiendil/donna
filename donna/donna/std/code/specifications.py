@@ -1,14 +1,21 @@
-from donna.domain.ids import NamespaceId
+from typing import Any
+
+import jinja2
+from jinja2.runtime import Context
+
+from donna.domain.ids import NamespaceId, FullArtifactId
 from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
 from donna.world.markdown import ArtifactSource
+from donna.machine.templates import RendererKind
+from donna.world.templates import RenderMode
 
 
 class Specification(Artifact):
     content: str
 
     def cells(self) -> list["Cell"]:
-        return [Cell.build_markdown(kind="specification", content=self.content, id=str(self.info.id))]
+        return [Cell.build_markdown(kind=self.info.kind, content=self.content, id=str(self.info.id))]
 
 
 class SpecificationKind(ArtifactKind):
@@ -24,7 +31,7 @@ class SpecificationKind(ArtifactKind):
 
         spec = Specification(
             info=ArtifactInfo(kind=self.id, id=source.id, title=title, description=description),
-            content=source.as_markdown(),
+            content=source.as_original_markdown(),
         )
 
         return spec
@@ -34,4 +41,40 @@ specification_kind = SpecificationKind(
     id="specification",
     namespace_id=NamespaceId("specifications"),
     description="A specification that define various aspects of the current project.",
+)
+
+
+class Read(RendererKind):
+
+    @jinja2.pass_context
+    def __call__(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
+        render_mode: RenderMode = context["render_mode"]
+
+        if argv is None or len(argv) != 1:
+            raise ValueError("Read renderer requires exactly one argument: specificatin_id")
+
+        artifact_id = FullArtifactId.parse(str(argv[0]))
+
+        match render_mode:
+            case RenderMode.cli:
+                return self.render_cli(context, artifact_id)
+
+            case RenderMode.analysis:
+                return self.render_analyze(context, artifact_id)
+
+            case _:
+                raise NotImplementedError(f"Render mode {render_mode} not implemented in Read renderer.")
+
+    def render_cli(self, context: Context, specification_id: FullArtifactId) -> str:
+        return f"donna artifacts get '{specification_id}'"
+
+    def render_analyze(self, context: Context, specification_id: FullArtifactId) -> str:
+        return f"$$donna {self.id} {specification_id} donna$$"
+
+
+read_renderer = Read(
+    id="read",
+    name="Specification reference",
+    description="Instructs the agent how to read a specification.",
+    example="{{ read('<specification_id>') }}",
 )

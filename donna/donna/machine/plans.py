@@ -1,13 +1,17 @@
+from typing import cast
+
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.types import ActionRequestId, OperationResultId, TaskId, WorkUnitId
+from donna.domain.ids import FullArtifactLocalId, OperationId
+from donna.domain.types import ActionRequestId, TaskId, WorkUnitId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
 from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState
 from donna.machine.tasks import Task, TaskState, WorkUnit, WorkUnitState
+from donna.std.code.workflows import Workflow
+from donna.world import navigator
 from donna.world.layout import layout
-from donna.world.primitives_register import register
 
 
 # TODO: somehow separate methods that save plan and those that do not
@@ -182,17 +186,20 @@ class Plan(BaseEntity):
     def remove_action_request(self, request_id: ActionRequestId) -> None:
         self.action_requests = [request for request in self.action_requests if request.id != request_id]
 
-    def complete_action_request(self, request_id: ActionRequestId, result_id: OperationResultId) -> None:
+    def complete_action_request(self, request_id: ActionRequestId, next_operation_id: FullArtifactLocalId) -> None:
         operation_id = self.get_action_request(request_id).operation_id
 
-        operation = register().operations.get(operation_id)
+        workflow = cast(Workflow, navigator.get_artifact(operation_id.full_artifact_id))
+
+        operation = workflow.get_operation(cast(OperationId, operation_id.local_id))
         assert operation is not None
 
-        result = operation.result(result_id)
+        if next_operation_id not in operation.allowed_transtions:
+            raise NotImplementedError(f"Operation '{operation_id}' can not go to '{next_operation_id}'")
 
         current_task = self.active_tasks[-1]
 
-        new_work_unit = WorkUnit.build(task_id=current_task.id, operation=result.operation_id)
+        new_work_unit = WorkUnit.build(task_id=current_task.id, operation_id=next_operation_id)
         self.queue.append(new_work_unit)
 
         self.remove_action_request(request_id)

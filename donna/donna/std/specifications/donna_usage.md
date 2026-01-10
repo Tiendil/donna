@@ -48,12 +48,12 @@ All work in the context of session/story is managed by the `donna` tool.
 
 - Yoy start session by calling `<DONNA_CMD> sessions start`.
 - After you started a session:
-  2. List all possible workflows with command `<DONNA_CMD> workflows list`.
+  2. List all possible workflows with command `<DONNA_CMD> artifacts list workflows`.
   3. Choose the most appropriate workflow for the story you are going to work on or ask the developer if you are not sure which workflow to choose.
   4. Start working by calling `<DONNA_CMD> workflows start <workflow-id>`.
   5. The `donna` tool will output descriptions of all operations it performs to complete the story.
   6. The `donna` tool will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
-- When you done doing your part, you call `<DONNA_CMD> sessions action-request-completed <action-request-id> <action-request-result>` to report that you completed the action request. List of values `<action-request-result>` will be in the **action request** description.
+- When you done doing your part, you call `<DONNA_CMD> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report that you completed the action request. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>.<namespace>.<artifact>.<operation-id>`.
 - After you report the result:
   1. The `donna` tool will output what you need to do next.
   2. You repeat the process until the story is completed.
@@ -100,14 +100,21 @@ Command parameters:
 - `<description>` — a short text description of the record.
 - `<json-data>` — a JSON string with data of the particular kind. Record kinds have strict JSON schemas that you MUST follow exactly. You can get the schema of the record kind by using the introspection commands described below.
 
-### Working with specifications
+### Working with artifacts
 
-A specification is a document describing requirements, designs, constraints, or other important information related to the project.
+An artifact is a markdown document with some extra metadata stored in one of the Donna's worlds.
 
-Use the next commands to work with specifications:
+Use the next commands to work with artifacts
 
-- `<DONNA_CMD> artifacts list specifications` — list all specifications.
-- `<DONNA_CMD> artifacts get <world>/specifications/<specification-id>` — get the content of the specification.
+- `<DONNA_CMD> artifacts list <namespace>` — list all artifacts
+- `<DONNA_CMD> artifacts get <world>/<namespace>/<artifact-id>` — get the meaningful content of the artifact.
+- `<DONNA_CMD> artifacts validate <world>/<namespace>/<artifact-id>` — check the artifact for validity according to its kind.
+- `<DONNA_CMD> artifacts validate-all <namespace>` — check all artifacts in the given namespace for validity according to their kinds.
+
+Artifact types/namespaces:
+
+- `specificattions` — documents describing requirements, designs, constraints, or other important information related to the project.
+- `workflows` — documents describing predefined workflows that the `donna` tool can execute to manage the work of agents.
 
 ### Introspection
 
