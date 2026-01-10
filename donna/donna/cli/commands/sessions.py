@@ -3,7 +3,7 @@ import shutil
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import ActionRequestIdArgument, FullArtifactLocalIdArgument, FullArtifactIdArgument
+from donna.cli.types import ActionRequestIdArgument, FullArtifactIdArgument, FullArtifactLocalIdArgument
 from donna.cli.utils import output_cells
 from donna.machine import sessions
 from donna.machine.plans import Plan
