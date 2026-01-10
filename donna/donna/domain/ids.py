@@ -201,6 +201,9 @@ class FullArtifactLocalId(tuple[WorldId, NamespaceId, ArtifactId, ArtifactLocalI
 
     @classmethod
     def parse(cls, text: str) -> "FullArtifactLocalId":
+        if text.count(":") != 1:
+            raise NotImplementedError(f"Invalid FullArtifactLocalId format: '{text}'")
+
         artifact_part, local_part = text.rsplit(":", maxsplit=1)
         parts = artifact_part.split(".", maxsplit=2)
 
