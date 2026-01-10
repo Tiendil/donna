@@ -14,67 +14,42 @@ Initiate operations to groom and refine the donna codebase: running & fixing tes
 ```toml donna
 id = "run_autoflake"
 kind = "request_action"
-
-[[results]]
-id = "completed"
-description = "Autoflake has been run to remove unused imports and variables in the codebase."
-next_operation_id = "run_isort"
 ```
 
 1. Run `cd ./donna && poetry run autoflake .` to remove unused imports and variables in the codebase.
-2. Mark this action request as completed.
+2. `{{ goto("run_isort") }}`
 
 ## Run isort
 
 ```toml donna
 id = "run_isort"
 kind = "request_action"
-
-[[results]]
-id = "completed"
-description = "isort has been run to sort imports in the codebase."
-next_operation_id = "run_black"
 ```
 
 1. Run `cd ./donna && poetry run isort .` to sort imports in the codebase.
-2. Mark this action request as completed.
+2. `{{ goto("run_black") }}`
 
 ## Run Black
 
 ```toml donna
 id = "run_black"
 kind = "request_action"
-
-[[results]]
-id = "completed"
-description = "Black has been run to format the codebase."
-next_operation_id = "run_flake8"
 ```
 
 1. Run `cd ./donna && poetry run black .` to format the codebase.
-2. Mark this action request as completed.
+2. `{{ goto("run_flake8") }}`
 
 ## Run Flake8
 
 ```toml donna
 id = "run_flake8"
 kind = "request_action"
-
-[[results]]
-id = "completed"
-description = "No linting errors found in the codebase."
-next_operation_id = "run_mypy"
-
-[[results]]
-id = "repeat"
-description = "Linting errors were fixed, need to check again."
-next_operation_id = "run_flake8"
 ```
 
 1. Run `cd ./donna && poetry run flake8 .` to check the codebase for style issues.
 2. If any issues are found, fix them.
-3. Repeat until no issues are found.
-4. Mark this action request as completed.
+3. If you made changes, do `{{ goto("run_flake8") }}`.
+4. If no issues are found, do `{{ goto("run_mypy") }}`.
 
 Instructions on fixing special cases:
 
@@ -88,22 +63,13 @@ Instructions on fixing special cases:
 ```toml donna
 id = "run_mypy"
 kind = "request_action"
-
-[[results]]
-id = "completed"
-description = "No type checking errors found in the codebase."
-next_operation_id = "finish"
-
-[[results]]
-id = "repeat"
-description = "Type checking errors were fixed, need to check again."
-next_operation_id = "run_mypy"
 ```
 
 1. Run `cd ./donna && poetry run mypy ./donna` to check the codebase for type annotation issues.
 2. If there are issues found that you can fix, fix them.
 3. Ask developer to fix any remaining issues manually.
-4. Mark this action request as completed.
+4. If you made changes, do `{{ goto("run_mypy") }}`.
+5. If no issues are found, do `{{ goto("finish") }}`.
 
 Issues you are allowed to fix:
 
@@ -127,8 +93,4 @@ Changes you are not allowed to make:
 ```toml donna
 id = "finish"
 kind = "finish_workflow"
-
-[[results]]
-id = "completed"
-description = "Grooming workflow is completed."
 ```
