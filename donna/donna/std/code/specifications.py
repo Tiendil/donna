@@ -50,10 +50,10 @@ class Spec(RendererKind):
     def __call__(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
         render_mode: RenderMode = context["render_mode"]
 
-        artifact_id = context["artifact_id"]
-
         if argv is None or len(argv) != 1:
             raise ValueError("Spec renderer requires exactly one argument: specificatin_id")
+
+        artifact_id = FullArtifactId.parse(str(argv[0]))
 
         match render_mode:
             case RenderMode.cli:
