@@ -75,6 +75,13 @@
 * TODO do we really need multiple stories? It looks like we always work on a single story every time.
 * TODO refactor workflows + operations into configs
 ** remove operation results
+*** donna artifacts validate <artifact id>
+*** jinja2 on artifact load or on section processing?
+*** render modes
+*** cli render mode
+*** validation render mode
+*** remove resuls from the code
+*** remove results from the artifacts
 ** refactor end_to_end_story_cycle without refactoring records
 ** refactor end_to_end_story_cycle into generating artifacts
 ** remove records functionality
