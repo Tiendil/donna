@@ -105,6 +105,7 @@
 ** tune workding of workflows (what to write before goto)
 ** move workflow start into session command?
 ** unify code of different renderers? It is very similar
+*** add validation for specificaiton existence in renderers
 * TODO error messages should provide helpful hints for agents
 * TODO "Story" term still in some specs for convienience, we should think of a better naming
 * TODO artifacts descripion vs intro — they replicate each other, maybe we could keep only one of them? Intro whould work better.
