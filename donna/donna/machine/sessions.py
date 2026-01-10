@@ -7,7 +7,7 @@ from donna.machine.plans import Plan
 from donna.machine.records import RecordsIndex
 from donna.machine.tasks import Task, WorkUnit
 from donna.std.code.workflows import Workflow
-from donna.world import navigator
+from donna.world import artifacts
 from donna.world.layout import layout
 
 
@@ -36,7 +36,7 @@ def exists() -> bool:
 
 
 def start_workflow(artifact_id: FullArtifactId) -> None:
-    workflow = cast(Workflow, navigator.load_artifact(artifact_id))
+    workflow = cast(Workflow, artifacts.load_artifact(artifact_id))
 
     plan = Plan.load()
 

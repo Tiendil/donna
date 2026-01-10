@@ -3,11 +3,11 @@ from typing import Any
 import jinja2
 from jinja2.runtime import Context
 
-from donna.domain.ids import NamespaceId, FullArtifactId
+from donna.domain.ids import FullArtifactId, NamespaceId
 from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
-from donna.world.markdown import ArtifactSource
 from donna.machine.templates import RendererKind
+from donna.world.markdown import ArtifactSource
 from donna.world.templates import RenderMode
 
 

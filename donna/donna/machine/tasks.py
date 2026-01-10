@@ -83,13 +83,13 @@ class WorkUnit(BaseEntity):
 
     def run(self, task: Task) -> list["Change"]:
         from donna.std.code.workflows import Workflow
-        from donna.world import navigator
+        from donna.world import artifacts
         from donna.world.primitives_register import register
 
         if self.state != WorkUnitState.TODO:
             raise NotImplementedError("Can only run a work unit in TODO state")
 
-        workflow = cast(Workflow, navigator.load_artifact(self.operation_id.full_artifact_id))
+        workflow = cast(Workflow, artifacts.load_artifact(self.operation_id.full_artifact_id))
 
         operation = workflow.get_operation(cast(OperationId, self.operation_id.local_id))
 

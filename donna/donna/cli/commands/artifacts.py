@@ -1,10 +1,11 @@
-import typer
 import pathlib
+
+import typer
 
 from donna.cli.application import app
 from donna.cli.types import FullArtifactIdArgument, NamespaceIdArgument
 from donna.cli.utils import output_cells
-from donna.world import navigator
+from donna.world import artifacts as world_artifacts
 from donna.world.primitives_register import register
 
 artifacts_cli = typer.Typer()
@@ -12,7 +13,7 @@ artifacts_cli = typer.Typer()
 
 @artifacts_cli.command()
 def list(namespace: NamespaceIdArgument) -> None:
-    artifacts = navigator.list_artifacts(namespace)
+    artifacts = world_artifacts.list_artifacts(namespace)
 
     for artifact in artifacts:
         output_cells(artifact.info.cells())
@@ -20,25 +21,25 @@ def list(namespace: NamespaceIdArgument) -> None:
 
 @artifacts_cli.command()
 def view(id: FullArtifactIdArgument) -> None:
-    artifact = navigator.load_artifact(id)
+    artifact = world_artifacts.load_artifact(id)
     output_cells(artifact.cells())
 
 
 @artifacts_cli.command()
 def fetch(id: FullArtifactIdArgument, output: pathlib.Path) -> None:
-    navigator.fetch_artifact(id, output)
+    world_artifacts.fetch_artifact(id, output)
     typer.echo(f"Artifact `{id}` fetched to '{output}'")
 
 
 @artifacts_cli.command()
 def update(id: FullArtifactIdArgument, input: pathlib.Path) -> None:
-    navigator.update_artifact(id, input)
+    world_artifacts.update_artifact(id, input)
     typer.echo(f"Artifact `{id}` updated from '{input}'")
 
 
 @artifacts_cli.command()
 def validate(id: FullArtifactIdArgument) -> None:
-    artifact = navigator.load_artifact(id)
+    artifact = world_artifacts.load_artifact(id)
 
     artifact_kind = register().artifacts.get(artifact.info.kind)
 
@@ -49,7 +50,7 @@ def validate(id: FullArtifactIdArgument) -> None:
 
 @artifacts_cli.command()
 def validate_all(namespace: NamespaceIdArgument) -> None:
-    artifacts = navigator.list_artifacts(namespace)
+    artifacts = world_artifacts.list_artifacts(namespace)
 
     for artifact in artifacts:
         artifact_kind = register().artifacts.get(artifact.info.kind)

@@ -10,7 +10,7 @@ from donna.machine.cells import Cell
 from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState
 from donna.machine.tasks import Task, TaskState, WorkUnit, WorkUnitState
 from donna.std.code.workflows import Workflow
-from donna.world import navigator
+from donna.world import artifacts
 from donna.world.layout import layout
 
 
@@ -189,7 +189,7 @@ class Plan(BaseEntity):
     def complete_action_request(self, request_id: ActionRequestId, next_operation_id: FullArtifactLocalId) -> None:
         operation_id = self.get_action_request(request_id).operation_id
 
-        workflow = cast(Workflow, navigator.load_artifact(operation_id.full_artifact_id))
+        workflow = cast(Workflow, artifacts.load_artifact(operation_id.full_artifact_id))
 
         operation = workflow.get_operation(cast(OperationId, operation_id.local_id))
         assert operation is not None
