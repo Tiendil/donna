@@ -50,7 +50,7 @@ All work in the context of session/story is managed by the `donna` tool.
 - After you started a session:
   2. List all possible workflows with command `<DONNA_CMD> artifacts list workflows`.
   3. Choose the most appropriate workflow for the story you are going to work on or ask the developer if you are not sure which workflow to choose.
-  4. Start working by calling `<DONNA_CMD> workflows start <workflow-id>`.
+  4. Start working by calling `<DONNA_CMD> sessions run <workflow-id>`.
   5. The `donna` tool will output descriptions of all operations it performs to complete the story.
   6. The `donna` tool will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
 - When you done doing your part, you call `<DONNA_CMD> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report that you completed the action request. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>.<namespace>.<artifact>.<operation-id>`.
