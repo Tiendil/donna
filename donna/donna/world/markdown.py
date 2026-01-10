@@ -46,7 +46,7 @@ class SectionSource(BaseEntity):
     configs: list[CodeSource]
 
     original_tokens: list[Token]
-    analysis_tokens: list[Token] = pydantic.Field(default_factory=list)
+    analysis_tokens: list[Token]
 
     model_config = pydantic.ConfigDict(frozen=False)
 
@@ -129,7 +129,8 @@ def _parse_h2(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTree
     new_section = SectionSource(
         level=SectionLevel.h2,
         title=clear_heading(render_back(node.to_tokens()).strip()),
-        tokens=[],
+        original_tokens=[],
+        analysis_tokens=[],
         configs=[],
     )
 
@@ -147,7 +148,7 @@ def _parse_heading(sections: list[SectionSource], node: SyntaxTreeNode) -> Synta
     if node.tag == "h2":
         return _parse_h2(sections, node)
 
-    section.tokens.extend(node.to_tokens())
+    section.original_tokens.extend(node.to_tokens())
     return node.next_sibling
 
 
@@ -177,7 +178,7 @@ def _parse_fence(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxT
 
         section.configs.append(code_block)
     else:
-        section.tokens.extend(node.to_tokens())
+        section.original_tokens.extend(node.to_tokens())
 
     return node.next_sibling
 
@@ -187,7 +188,7 @@ def _parse_nested(sections: list[SectionSource], node: SyntaxTreeNode) -> Syntax
 
     assert node.nester_tokens is not None
 
-    section.tokens.append(node.nester_tokens.opening)
+    section.original_tokens.append(node.nester_tokens.opening)
 
     return node.children[0]
 
@@ -195,7 +196,7 @@ def _parse_nested(sections: list[SectionSource], node: SyntaxTreeNode) -> Syntax
 def _parse_others(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:
     section = sections[-1]
 
-    section.tokens.extend(node.to_tokens())
+    section.original_tokens.extend(node.to_tokens())
 
     current: SyntaxTreeNode | None = node
 
@@ -207,7 +208,7 @@ def _parse_others(sections: list[SectionSource], node: SyntaxTreeNode) -> Syntax
 
         if current.type != "root":
             assert current.nester_tokens is not None
-            section.tokens.append(current.nester_tokens.closing)
+            section.original_tokens.append(current.nester_tokens.closing)
 
     return current
 
@@ -224,7 +225,8 @@ def parse(text: str) -> list[SectionSource]:  # noqa: CCR001, CFQ001 # pylint: d
         SectionSource(
             level=SectionLevel.h1,
             title=None,
-            tokens=[],
+            original_tokens=[],
+            analysis_tokens=[],
             configs=[],
         )
     ]
