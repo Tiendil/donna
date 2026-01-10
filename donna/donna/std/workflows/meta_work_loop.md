@@ -1,13 +1,13 @@
-# Story Loop Workflow
+# Meta Work Loop
 
 ```toml donna
 start_operation_id = "start"
 description = """
-End-to-end session processing: from work description through planning to execution and grooming.
+General purpose work planning and execution workflow. Use it when you need to do complex work and there is no more specific workflow available.
 """
 ```
 
-End-to-end session processing: from work description through planning to execution and grooming.
+General purpose work planning and execution workflow. Use it when you need to do complex work and there is no more specific workflow available.
 
 ## Start Work
 
