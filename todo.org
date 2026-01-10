@@ -114,4 +114,5 @@
 * TODO Jinja2 improvements
 ** sandbox mode — do we need it?
 ** register jinja2 filters?
-* Organize standard cell kinds into enum (but allow custom kinds as well). Or just provide custom constructors for each use-case.
+* TODO Organize standard cell kinds into enum (but allow custom kinds as well). Or just provide custom constructors for each use-case.
+* TODO ask codex to straighten the naming/dictionary/terms in the donna project
