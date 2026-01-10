@@ -297,7 +297,7 @@ class PartialDescription(RendererKind):
         return "\n".join(specification)
 
 
-partial_description = GoTo(
+partial_description = PartialDescription(
     id="partial_description",
     name="Build Partial Description of the work",
     description="Builds a partial description of the work based on the records available in the session.",

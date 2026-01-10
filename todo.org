@@ -102,6 +102,7 @@
 ** Render scheme of workflow somewhere?
 ** break story_loop into multiple workflows?
 ** tune workding of workflows (what to write before goto)
+** move workflow start into session command?
 * TODO error messages should provide helpful hints for agents
 * TODO "Story" term still in some specs for convienience, we should think of a better naming
 * TODO artifacts descripion vs intro — they replicate each other, maybe we could keep only one of them? Intro whould work better.
