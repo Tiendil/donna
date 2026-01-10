@@ -1,4 +1,6 @@
 import enum
+from contextvars import ContextVar
+from contextlib import contextmanager
 from typing import Any
 import jinja2
 
@@ -22,6 +24,23 @@ class RenderMode(enum.Enum):
     """
     cli = "cli"
     analyze = "analyze"
+
+
+_render_mode: ContextVar[RenderMode] = ContextVar("render_mode", default=None)
+
+
+@contextmanager
+def render_mode(mode: RenderMode):
+    token = _render_mode.set(mode)
+
+    try:
+        yield
+    finally:
+        _render_mode.reset(token)
+
+
+def set_default_render_mode(mode: RenderMode):
+    _render_mode.set(mode)
 
 
 _ENVIRONMENT = None
@@ -55,8 +74,8 @@ def env() -> jinja2.Environment:
     return _ENVIRONMENT
 
 
-def render(mode: RenderMode, artifact_id: FullArtifactId, template: str) -> str:
-    context = {"render_mode": mode,
+def render(artifact_id: FullArtifactId, template: str) -> str:
+    context = {"render_mode": _render_mode.get(),
                "artifact_id": artifact_id}
 
     template_obj = env().from_string(template)

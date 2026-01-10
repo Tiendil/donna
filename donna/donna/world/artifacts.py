@@ -3,8 +3,8 @@ from donna.world import markdown
 from donna.world.templates import RenderMode, render
 
 
-def parse_artifact(mode: RenderMode, full_id: FullArtifactId, text: str) -> markdown.ArtifactSource:
-    markdown_source = render(mode, full_id, text)
+def parse_artifact(full_id: FullArtifactId, text: str) -> markdown.ArtifactSource:
+    markdown_source = render(full_id, text)
 
     sections = markdown.parse(markdown_source)
 

@@ -25,7 +25,6 @@ class ActionRequest(BaseEntity):
         )
 
     def cells(self) -> list[Cell]:
-        pass
 
         workflow = cast(Workflow, navigator.get_artifact(self.operation_id.full_artifact_id))
 
@@ -50,8 +49,5 @@ class ActionRequest(BaseEntity):
                 action_request_id=str(self.id),
             )
         )
-
-        for result in operation.results:
-            cells.extend(result.cells())
 
         return cells

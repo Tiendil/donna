@@ -6,7 +6,7 @@ from donna.world.primitives_register import register
 from donna.world.templates import RenderMode
 
 
-def get_artifact(mode: RenderMode, full_id: FullArtifactId) -> Artifact:
+def get_artifact(full_id: FullArtifactId) -> Artifact:
 
     world = config().get_world(full_id.world_id)
 
@@ -15,7 +15,7 @@ def get_artifact(mode: RenderMode, full_id: FullArtifactId) -> Artifact:
 
     content = world.extract(full_id.namespace_id, full_id.artifact_id)
 
-    raw_artifact = parse_artifact(mode, full_id, content)
+    raw_artifact = parse_artifact(full_id, content)
 
     kind = register().get_artifact_kind_by_namespace(full_id.namespace_id)
 
