@@ -1,6 +1,7 @@
+import re
 from typing import TYPE_CHECKING, Iterator, cast
 
-from donna.domain.ids import FullArtifactId
+from donna.domain.ids import FullArtifactId, FullArtifactLocalId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.operations import Operation, OperationKind
 from donna.machine.tasks import Task, TaskState, WorkUnit
@@ -13,6 +14,24 @@ if TYPE_CHECKING:
 ##########################
 # Request Action Operation
 ##########################
+
+def extract_transitions(text: str) -> set[FullArtifactLocalId]:
+    """Extracts all transitions from the text of action request.
+
+    Transition is specified as render of `todo` command in the format:
+    ```
+    $$donna todo <full_artifact_local_id> donna$$
+    ```
+    """
+    pattern = r"\$\$donna\s+todo\s+([a-zA-Z0-9_\-.:/]+)\s+donna\$\$"
+    matches = re.findall(pattern, text)
+
+    transitions: set[FullArtifactLocalId] = set()
+
+    for match in matches:
+        transitions.add(FullArtifactLocalId.parse(match))
+
+    return transitions
 
 
 class RequestActionKind(OperationKind):
@@ -33,7 +52,11 @@ class RequestActionKind(OperationKind):
         if "artifact_id" in data:
             raise NotImplementedError("artifact_id should not be set in RequestActionKind.construct")
 
+        if "allowed_transtions" in data:
+            raise NotImplementedError("allowed_transtions should not be set in RequestActionKind.construct")
+
         data["artifact_id"] = str(artifact_id)
+        data["allowed_transtions"] = extract_transitions(data["request_template"])
 
         return cast(RequestAction, self.operation(**data))
 
@@ -100,7 +123,11 @@ class FinishWorkflowKind(OperationKind):
         if "artifact_id" in data:
             raise NotImplementedError("artifact_id should not be set in FinishWorkflowKind.construct")
 
+        if "allowed_transtions" in data:
+            raise NotImplementedError("allowed_transtions should not be set in FinishWorkflowKind.construct")
+
         data["artifact_id"] = str(artifact_id)
+        data["allowed_transtions"] = set()
 
         return self.operation(**data)
 

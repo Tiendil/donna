@@ -6,7 +6,7 @@ from jinja2.runtime import Context
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId, NamespaceId, OperationId
 from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
-from donna.machine.operations import Operation, OperationKind
+from donna.machine.operations import Operation, OperationKind, OperationMode
 from donna.machine.templates import RendererKind
 from donna.world.markdown import ArtifactSource, SectionSource
 from donna.world.primitives_register import register
@@ -43,6 +43,31 @@ def construct_operation(artifact_id: FullArtifactId, section: SectionSource) -> 
     return operation
 
 
+def find_not_reachable_operations(start_id: FullArtifactLocalId,  # noqa: CCR001
+                                  transitions: dict[FullArtifactLocalId, set[FullArtifactLocalId]],
+                                  ) -> set[FullArtifactLocalId]:
+    reachable = set()
+    to_visit = [start_id]
+
+    while to_visit:
+        current = to_visit.pop()
+
+        if current in reachable:
+            continue
+
+        reachable.add(current)
+
+        to_visit.extend(transitions.get(current, ()))
+
+    all_operations = set()
+
+    for from_id, target_ids in transitions.items():
+        all_operations.add(from_id)
+        all_operations.update(target_ids)
+
+    return all_operations - reachable
+
+
 class WorkflowKind(ArtifactKind):
     def construct(self, source: ArtifactSource) -> "Artifact":  # type: ignore[override]
         description = None
@@ -69,6 +94,41 @@ class WorkflowKind(ArtifactKind):
                 id=str(artifact.info.id),
                 status="failure",
                 message=f"Start operation ID '{artifact.start_operation_id}' does not exist in the workflow.",
+            )]
+
+        transitions = {}
+
+        for operation in artifact.operations:
+            if operation.node_type == OperationMode.final and operation.allowed_transtions:
+                return [Cell.build_meta(
+                    kind="artifact_kind_validation",
+                    id=str(artifact.info.id),
+                    status="failure",
+                    message=f"Final operation '{operation.id}' should not have outgoing transitions.",
+                )]
+
+            if operation.mode == OperationMode.normal and not operation.allowed_transtions:
+                return [Cell.build_meta(
+                    kind="artifact_kind_validation",
+                    id=str(artifact.info.id),
+                    status="failure",
+                    message=f"Operation '{operation.id}' must have at least one allowed transition or be marked as final.",
+                )]
+
+            transitions[operation.full_id] = set(operation.allowed_transtions)
+
+        not_reachable_operations = find_not_reachable_operations(
+            start_id=artifact.start_operation_id,
+            transitions=transitions,
+        )
+
+        if not_reachable_operations:
+            return [Cell.build_meta(
+                kind="artifact_kind_validation",
+                id=str(artifact.info.id),
+                status="failure",
+                message=f"The following operations are not reachable from the start operation: "
+                        f"{', '.join(str(op_id) for op_id in not_reachable_operations)}.",
             )]
 
         return [Cell.build_meta(

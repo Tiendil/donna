@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING, Iterable
+import enum
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationId
@@ -25,6 +26,11 @@ class OperationKind(BaseEntity):
         return [Cell.build_meta(kind="operation_kind", id=self.id, title=self.title)]
 
 
+class OperationMode(enum.Enum):
+    normal = "normal"
+    final = "final"
+
+
 class Operation(BaseEntity):
     id: OperationId
     artifact_id: FullArtifactId
@@ -32,13 +38,13 @@ class Operation(BaseEntity):
     kind: str
     title: str
 
+    mode: OperationMode = OperationMode.normal
+
+    allowed_transtions: set[FullArtifactLocalId]
+
     @property
     def full_id(self) -> FullArtifactLocalId:
         return self.artifact_id.to_full_local(self.id)
 
     def cells(self) -> list[Cell]:
         return [Cell.build_meta(kind="operation", operation_id=str(self.id))]
-
-    def is_next_operation_allowed(self, next_operation_id: FullArtifactLocalId) -> bool:
-        # TODO: implement
-        return True
