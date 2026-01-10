@@ -108,6 +108,8 @@ Use the next commands to work with artifacts
 
 - `<DONNA_CMD> artifacts list <namespace>` — list all artifacts
 - `<DONNA_CMD> artifacts get <world>/<namespace>/<artifact-id>` — get the meaningful content of the artifact.
+- `<DONNA_CMD> artifacts validate <world>/<namespace>/<artifact-id>` — check the artifact for validity according to its kind.
+- `<DONNA_CMD> artifacts validate-all <namespace>` — check all artifacts in the given namespace for validity according to their kinds.
 
 Artifact types/namespaces:
 
