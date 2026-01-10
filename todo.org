@@ -110,6 +110,9 @@
 *** Spec rendere can be unified, since its cli command
 ** When we start the workflow, should we output the head cells before the first operation?
 ** We may want, by default load/upload artifacts in a custom donna-managed directory, so, no filenames are needed for agents. This also will help to add right extensions automatically => help agents to anderstand internal formats.
+* TODO Worlds improvements
+** We may want to list worlds via donna cli (introspection?)
+** We may want to register world kinds automatically.
 * TODO error messages should provide helpful hints for agents
 * TODO "Story" term still in some specs for convienience, we should think of a better naming
 * TODO artifacts descripion vs intro — they replicate each other, maybe we could keep only one of them? Intro whould work better.
