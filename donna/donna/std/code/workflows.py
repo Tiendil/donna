@@ -6,7 +6,7 @@ from donna.machine.cells import Cell
 from donna.machine.operations import Operation, OperationKind
 from donna.world.markdown import ArtifactSource, SectionSource
 from donna.world.primitives_register import register
-from donna.machine.templates import RenderKind
+from donna.machine.templates import RendererKind
 from donna.world.templates import RenderMode
 
 
@@ -67,7 +67,7 @@ workflow_kind = WorkflowKind(
 )
 
 
-class GoTo(RenderKind):
+class GoTo(RendererKind):
 
     @jinja2.pass_context
     def __call__(self, context, *argv, **kwargs) -> Any:
@@ -100,4 +100,4 @@ class GoTo(RenderKind):
 goto_renderer = GoTo(id="goto",
                      name="Go To Operation",
                      description="Instructs the agent to proceed to the specified operation in the workflow.",
-                     example_usage="{{ goto('<operation_id>') }}")
+                     example="{{ goto('<operation_id>') }}")
