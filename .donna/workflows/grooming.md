@@ -87,6 +87,7 @@ Changes you are not allowed to make:
 - Introducing new types.
 - Introducing new protocols.
 - Adding `type: ignore[import-untyped]`. If you need to use it, ask the developer to install the missing types first or to fix the issue manually.
+- Adding or removing attributes to classes. If you need to do it, ask the developer to fix the problem manually.
 
 ## Finish
 
