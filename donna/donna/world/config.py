@@ -23,7 +23,10 @@ class World(BaseEntity):
     def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def extract(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> str:
+    def read(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> str:
+        raise NotImplementedError("You must implement this method in subclasses")
+
+    def write(self, namespace_id: NamespaceId, artifact_id: ArtifactId, content: str) -> None:
         raise NotImplementedError("You must implement this method in subclasses")
 
     def list_artifacts(self, namespace_id: NamespaceId) -> list[ArtifactId]:
@@ -42,13 +45,21 @@ class WorldFilesystem(World):
     def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
         return self._artifact_path(namespace_id, artifact_id).exists()
 
-    def extract(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> str:
+    def read(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> str:
         path = self._artifact_path(namespace_id, artifact_id)
 
         if not path.exists():
             raise NotImplementedError(f"Artifact `{id}` does not exist in world `{self.id}`")
 
         return path.read_text()
+
+    def write(self, namespace_id: NamespaceId, artifact_id: ArtifactId, content: str) -> None:
+        if self.readonly:
+            raise NotImplementedError(f"World `{self.id}` is read-only")
+
+        path = self._artifact_path(namespace_id, artifact_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content)
 
     def list_artifacts(self, namespace_id: NamespaceId) -> list[ArtifactId]:
         path = self.path / namespace_id

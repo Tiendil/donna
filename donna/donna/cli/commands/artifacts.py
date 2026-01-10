@@ -20,25 +20,25 @@ def list(namespace: NamespaceIdArgument) -> None:
 
 @artifacts_cli.command()
 def view(id: FullArtifactIdArgument) -> None:
-    artifact = navigator.get_artifact(id)
+    artifact = navigator.load_artifact(id)
     output_cells(artifact.cells())
 
 
 @artifacts_cli.command()
-def read(id: FullArtifactIdArgument, destination: pathlib.Path) -> None:
-    artifact = navigator.get_artifact(id)
-    output_cells(artifact.extract_cells())
+def fetch(id: FullArtifactIdArgument, output: pathlib.Path) -> None:
+    navigator.fetch_artifact(id, output)
+    typer.echo(f"Artifact `{id}` fetched to '{output}'")
 
 
 @artifacts_cli.command()
-def write(id: FullArtifactIdArgument, source: pathlib.Path) -> None:
-    artifact = navigator.get_artifact(id)
-    output_cells(artifact.upload_cells(source))
+def update(id: FullArtifactIdArgument, input: pathlib.Path) -> None:
+    navigator.update_artifact(id, input)
+    typer.echo(f"Artifact `{id}` updated from '{input}'")
 
 
 @artifacts_cli.command()
 def validate(id: FullArtifactIdArgument) -> None:
-    artifact = navigator.get_artifact(id)
+    artifact = navigator.load_artifact(id)
 
     artifact_kind = register().artifacts.get(artifact.info.kind)
 

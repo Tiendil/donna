@@ -107,7 +107,9 @@ An artifact is a markdown document with some extra metadata stored in one of the
 Use the next commands to work with artifacts
 
 - `<DONNA_CMD> artifacts list <namespace>` — list all artifacts
-- `<DONNA_CMD> artifacts get <world>/<namespace>/<artifact-id>` — get the meaningful content of the artifact.
+- `<DONNA_CMD> artifacts view <world>/<namespace>/<artifact-id>` — get the meaningful (rendered) content of the artifact. This command shows the rendered information about the artifact. Use this command when you need to read the artifact content.
+- `<DONNA_CMD> artifacts fetch <world>/<namespace>/<artifact-id> <file-path>` — download the original source of the artifact content to the given file path. Use this command when you need to change the content of the artifact.
+- `<DONNA_CMD> artifacts update <world>/<namespace>/<artifact-id> <file-path>` — upload the given file as the artifact. Use this command when you finished changing the content of the artifact.
 - `<DONNA_CMD> artifacts validate <world>/<namespace>/<artifact-id>` — check the artifact for validity according to its kind.
 - `<DONNA_CMD> artifacts validate-all <namespace>` — check all artifacts in the given namespace for validity according to their kinds.
 

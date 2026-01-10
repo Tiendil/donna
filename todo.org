@@ -80,6 +80,8 @@
 *** etag
 *** specification of the artifact format
 *** update donna_usage.md
+*** rename navigator.py into smth more correct
+*** do we want to validate artifact contents before update?
 ** refactor end_to_end_story_cycle into generating artifacts
 ** remove records functionality
 ** remove workflows submodule
@@ -124,3 +126,4 @@
 ** register jinja2 filters?
 * TODO Organize standard cell kinds into enum (but allow custom kinds as well). Or just provide custom constructors for each use-case.
 * TODO ask codex to straighten the naming/dictionary/terms in the donna project
+* TODO remove mention of <DONNA_CMD> from specs

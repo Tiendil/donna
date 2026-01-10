@@ -1,3 +1,4 @@
+import pathlib
 from donna.domain.ids import FullArtifactId, NamespaceId
 from donna.machine.artifacts import Artifact
 from donna.world.artifacts import parse_artifact
@@ -5,14 +6,36 @@ from donna.world.config import config
 from donna.world.primitives_register import register
 
 
-def get_artifact(full_id: FullArtifactId) -> Artifact:
+def fetch_artifact(full_id: FullArtifactId, output: pathlib.Path) -> None:
+    world = config().get_world(full_id.world_id)
+
+    if not world.has(full_id.namespace_id, full_id.artifact_id):
+        raise NotImplementedError(f"Artifact `{full_id}` does not exist in world `{world.id}`")
+
+    content = world.read(full_id.namespace_id, full_id.artifact_id)
+
+    with output.open("wb") as f:
+        f.write(content)
+
+
+def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> None:
+    world = config().get_world(full_id.world_id)
+
+    if world.readonly:
+        raise NotImplementedError(f"World `{world.id}` is read-only")
+
+    with input.open("rb") as f:
+        world.write(full_id.namespace_id, full_id.artifact_id, f.read())
+
+
+def load_artifact(full_id: FullArtifactId) -> Artifact:
 
     world = config().get_world(full_id.world_id)
 
     if not world.has(full_id.namespace_id, full_id.artifact_id):
         raise NotImplementedError(f"Artifact `{full_id}` does not exist in world `{world.id}`")
 
-    content = world.extract(full_id.namespace_id, full_id.artifact_id)
+    content = world.read(full_id.namespace_id, full_id.artifact_id)
 
     raw_artifact = parse_artifact(full_id, content)
 
@@ -30,7 +53,7 @@ def list_artifacts(namespace_id: NamespaceId) -> list[Artifact]:
     for world in reversed(config().worlds):
         for artifact_id in world.list_artifacts(namespace_id):
             full_id = FullArtifactId((world.id, namespace_id, artifact_id))
-            artifact = get_artifact(full_id)
+            artifact = load_artifact(full_id)
             artifacts.append(artifact)
 
     return artifacts
