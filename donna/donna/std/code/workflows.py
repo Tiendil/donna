@@ -62,11 +62,19 @@ class WorkflowKind(ArtifactKind):
 
         return spec
 
+    def validate(self, artifact: Workflow) -> list[Cell]:
+
+        return [Cell.build_meta(
+            kind="artifact_kind_validation",
+            id=str(artifact.info.id),
+            status="success",
+        )]
+
 
 workflow_kind = WorkflowKind(
     id="workflow",
     namespace_id=NamespaceId("workflows"),
-    description="A workflow that defines a statem machine for the agent to follow.",
+    description="A workflow that defines a state machine for the agent to follow.",
 )
 
 

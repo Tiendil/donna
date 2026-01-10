@@ -103,6 +103,7 @@
 ** Can we finish action request without next operation?
 *** Probably not, because the last operation is always `finish`
 ** When finishing an action request, check that the next operation is allowed for the current operation
+** `donna artifacts` — make namespace argument optional or remove it from validate-all?
 * TODO error messages should provide helpful hints for agents
 * TODO "Story" term still in some specs for convienience, we should think of a better naming
 * TODO artifacts descripion vs intro — they replicate each other, maybe we could keep only one of them? Intro whould work better.
@@ -114,3 +115,4 @@
 * TODO Jinja2 improvements
 ** sandbox mode — do we need it?
 ** register jinja2 filters?
+* Organize standard cell kinds into enum (but allow custom kinds as well)

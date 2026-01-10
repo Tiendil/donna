@@ -25,7 +25,7 @@ class RenderMode(enum.Enum):
     """
 
     cli = "cli"
-    analyze = "analyze"
+    analysis = "analysis"
 
 
 _render_mode: ContextVar[RenderMode | None] = ContextVar("render_mode", default=None)
