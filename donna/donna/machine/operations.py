@@ -37,12 +37,7 @@ class Operation(BaseEntity):
         return self.artifact_id.to_full_local(self.id)
 
     def cells(self) -> list[Cell]:
-        cells = [Cell.build_meta(kind="operation", operation_id=str(self.id))]
-
-        for result in self.results:
-            cells.extend(result.cells())
-
-        return cells
+        return  [Cell.build_meta(kind="operation", operation_id=str(self.id))]
 
     def is_next_operation_allowed(self, next_operation_id: FullArtifactLocalId) -> bool:
         # TODO: implement
