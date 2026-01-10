@@ -36,7 +36,7 @@ def exists() -> bool:
 
 
 def start_workflow(artifact_id: FullArtifactId) -> None:
-    workflow = cast(Workflow, navigator.get_artifact(artifact_id))
+    workflow = cast(Workflow, navigator.load_artifact(artifact_id))
 
     plan = Plan.load()
 

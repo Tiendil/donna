@@ -26,7 +26,7 @@ class ActionRequest(BaseEntity):
 
     def cells(self) -> list[Cell]:
 
-        workflow = cast(Workflow, navigator.get_artifact(self.operation_id.full_artifact_id))
+        workflow = cast(Workflow, navigator.load_artifact(self.operation_id.full_artifact_id))
 
         operation = workflow.get_operation(cast(OperationId, self.operation_id.local_id))
 

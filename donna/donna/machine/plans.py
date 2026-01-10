@@ -189,7 +189,7 @@ class Plan(BaseEntity):
     def complete_action_request(self, request_id: ActionRequestId, next_operation_id: FullArtifactLocalId) -> None:
         operation_id = self.get_action_request(request_id).operation_id
 
-        workflow = cast(Workflow, navigator.get_artifact(operation_id.full_artifact_id))
+        workflow = cast(Workflow, navigator.load_artifact(operation_id.full_artifact_id))
 
         operation = workflow.get_operation(cast(OperationId, operation_id.local_id))
         assert operation is not None
