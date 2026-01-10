@@ -110,3 +110,4 @@
 ** scripts as artefacts
 * TODO Jinja2 improvements
 ** sandbox mode — do we need it?
+** .md.j2 artifacts that apply jinja2 rendering before markdown parsing
