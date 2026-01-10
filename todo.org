@@ -76,6 +76,7 @@
 * TODO refactor workflows + operations into configs
 ** refactor end_to_end_story_cycle without refactoring records
 *** `Read the specification `donna.specifications.planning` if you haven't done it yet.` -> jinjaglobal to reference specification.
+*** add specification reference check to validation step
 ** refactor end_to_end_story_cycle into generating artifacts
 ** remove records functionality
 ** remove workflows submodule
