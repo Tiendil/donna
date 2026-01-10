@@ -7,10 +7,10 @@ from donna.domain.ids import NamespaceId
 from donna.domain.types import RecordKindId
 from donna.machine.artifacts import ArtifactKind
 from donna.machine.operations import OperationKind
+from donna.machine.templates import RendererKind
 from donna.primitives.records.base import RecordKind
 from donna.world.layout import layout
 from donna.world.storage import Storage
-from donna.machine.templates import RendererKind
 
 BASE_WORKFLOWS_DIR = pathlib.Path(__file__).parent.parent / "workflows"
 

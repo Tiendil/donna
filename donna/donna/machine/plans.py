@@ -3,7 +3,7 @@ from typing import cast
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import OperationId, FullArtifactLocalId
+from donna.domain.ids import FullArtifactLocalId, OperationId
 from donna.domain.types import ActionRequestId, TaskId, WorkUnitId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
@@ -192,11 +192,10 @@ class Plan(BaseEntity):
         workflow = cast(Workflow, navigator.get_artifact(operation_id.full_artifact_id))
 
         operation = workflow.get_operation(cast(OperationId, operation_id.local_id))
+        assert operation is not None
 
         if not operation.is_next_operation_allowed(next_operation_id):
             raise NotImplementedError(f"Operation '{operation_id}' can not go to '{next_operation_id}'")
-
-        assert operation is not None
 
         current_task = self.active_tasks[-1]
 

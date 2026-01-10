@@ -37,7 +37,9 @@ def status() -> None:
 
 
 @sessions_cli.command()
-def action_request_completed(request_id: ActionRequestIdArgument, next_operation_id: FullArtifactLocalIdArgument) -> None:
+def action_request_completed(
+    request_id: ActionRequestIdArgument, next_operation_id: FullArtifactLocalIdArgument
+) -> None:
     plan = Plan.load()
 
     plan.complete_action_request(request_id, next_operation_id)
