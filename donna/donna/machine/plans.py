@@ -194,7 +194,7 @@ class Plan(BaseEntity):
         operation = workflow.get_operation(cast(OperationId, operation_id.local_id))
         assert operation is not None
 
-        if not operation.is_next_operation_allowed(next_operation_id):
+        if next_operation_id not in operation.allowed_transtions:
             raise NotImplementedError(f"Operation '{operation_id}' can not go to '{next_operation_id}'")
 
         current_task = self.active_tasks[-1]
