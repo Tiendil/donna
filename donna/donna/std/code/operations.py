@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 # Request Action Operation
 ##########################
 
+
 def extract_transitions(text: str) -> set[FullArtifactLocalId]:
     """Extracts all transitions from the text of action request.
 

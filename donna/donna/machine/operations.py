@@ -1,5 +1,5 @@
-from typing import TYPE_CHECKING, Iterable
 import enum
+from typing import TYPE_CHECKING, Iterable
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationId

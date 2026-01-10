@@ -43,9 +43,10 @@ def construct_operation(artifact_id: FullArtifactId, section: SectionSource) -> 
     return operation
 
 
-def find_not_reachable_operations(start_id: FullArtifactLocalId,  # noqa: CCR001
-                                  transitions: dict[FullArtifactLocalId, set[FullArtifactLocalId]],
-                                  ) -> set[FullArtifactLocalId]:
+def find_not_reachable_operations(
+    start_id: FullArtifactLocalId,  # noqa: CCR001
+    transitions: dict[FullArtifactLocalId, set[FullArtifactLocalId]],
+) -> set[FullArtifactLocalId]:
     reachable = set()
     to_visit = [start_id]
 
@@ -87,33 +88,43 @@ class WorkflowKind(ArtifactKind):
 
         return spec
 
-    def validate(self, artifact: Workflow) -> list[Cell]:
+    def validate_artifact(self, artifact: Artifact) -> list[Cell]:  # noqa: CCR001
+        assert isinstance(artifact, Workflow)
         if artifact.get_operation(artifact.start_operation_id) is None:
-            return [Cell.build_meta(
-                kind="artifact_kind_validation",
-                id=str(artifact.info.id),
-                status="failure",
-                message=f"Start operation ID '{artifact.start_operation_id}' does not exist in the workflow.",
-            )]
+            return [
+                Cell.build_meta(
+                    kind="artifact_kind_validation",
+                    id=str(artifact.info.id),
+                    status="failure",
+                    message=f"Start operation ID '{artifact.start_operation_id}' does not exist in the workflow.",
+                )
+            ]
 
         transitions = {}
 
         for operation in artifact.operations:
             if operation.mode == OperationMode.final and operation.allowed_transtions:
-                return [Cell.build_meta(
-                    kind="artifact_kind_validation",
-                    id=str(artifact.info.id),
-                    status="failure",
-                    message=f"Final operation '{operation.id}' should not have outgoing transitions.",
-                )]
+                return [
+                    Cell.build_meta(
+                        kind="artifact_kind_validation",
+                        id=str(artifact.info.id),
+                        status="failure",
+                        message=f"Final operation '{operation.id}' should not have outgoing transitions.",
+                    )
+                ]
 
             if operation.mode == OperationMode.normal and not operation.allowed_transtions:
-                return [Cell.build_meta(
-                    kind="artifact_kind_validation",
-                    id=str(artifact.info.id),
-                    status="failure",
-                    message=f"Operation '{operation.id}' must have at least one allowed transition or be marked as final.",
-                )]
+                return [
+                    Cell.build_meta(
+                        kind="artifact_kind_validation",
+                        id=str(artifact.info.id),
+                        status="failure",
+                        message=(
+                            f"Operation '{operation.id}' must have at least one allowed transition or be marked as"
+                            " final."
+                        ),
+                    )
+                ]
 
             transitions[operation.full_id] = set(operation.allowed_transtions)
 
@@ -123,19 +134,23 @@ class WorkflowKind(ArtifactKind):
         )
 
         if not_reachable_operations:
-            return [Cell.build_meta(
+            return [
+                Cell.build_meta(
+                    kind="artifact_kind_validation",
+                    id=str(artifact.info.id),
+                    status="failure",
+                    message=f"The following operations are not reachable from the start operation: "
+                    f"{', '.join(str(op_id) for op_id in not_reachable_operations)}.",
+                )
+            ]
+
+        return [
+            Cell.build_meta(
                 kind="artifact_kind_validation",
                 id=str(artifact.info.id),
-                status="failure",
-                message=f"The following operations are not reachable from the start operation: "
-                        f"{', '.join(str(op_id) for op_id in not_reachable_operations)}.",
-            )]
-
-        return [Cell.build_meta(
-            kind="artifact_kind_validation",
-            id=str(artifact.info.id),
-            status="success",
-        )]
+                status="success",
+            )
+        ]
 
 
 workflow_kind = WorkflowKind(
