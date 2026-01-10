@@ -1,7 +1,7 @@
 # Story Loop Workflow
 
 ```toml donna
-start_operation_id = "run_autoflake"
+start_operation_id = "start"
 description = """
 End-to-end session processing: from work description through planning to execution and grooming.
 """
