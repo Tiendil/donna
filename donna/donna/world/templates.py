@@ -56,7 +56,7 @@ def env() -> jinja2.Environment:
 
 
 def render(mode: RenderMode, artifact_id: FullArtifactId, template: str) -> str:
-    context = {"render_mode": mode.value,
+    context = {"render_mode": mode,
                "artifact_id": artifact_id}
 
     template_obj = env().from_string(template)
