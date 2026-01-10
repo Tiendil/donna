@@ -74,18 +74,9 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO do we really need multiple stories? It looks like we always work on a single story every time.
 * TODO refactor workflows + operations into configs
-** remove operation results
-*** donna artifacts validate <artifact id>
-*** jinja2 on artifact load or on section processing?
-*** render modes
-*** cli render mode
-*** validation render mode
-*** remove resuls from the code
-*** remove results from the artifacts
 ** refactor end_to_end_story_cycle without refactoring records
 ** refactor end_to_end_story_cycle into generating artifacts
 ** remove records functionality
-** ":" to access a part of the artifact? world.kind.artifact_path_with_extension:operation?
 ** remove layout.py? It's functionality should be moved to worlds
 ** global ids vs local ids (for operations)
 ** remove primitives_registry.py? Since there only artifacts will left
@@ -102,10 +93,9 @@
 *** donna comment
 ** Can we finish action request without next operation?
 *** Probably not, because the last operation is always `finish`
-** When finishing an action request, check that the next operation is allowed for the current operation
+*** However, now we have Operation.mode = final.
 ** `donna artifacts` — make namespace argument optional or remove it from validate-all?
 ** move code.operations into submodules
-** validation should check that the last operation is always `finish`
 ** should we call validation on every artifact load?
 * TODO error messages should provide helpful hints for agents
 * TODO "Story" term still in some specs for convienience, we should think of a better naming
