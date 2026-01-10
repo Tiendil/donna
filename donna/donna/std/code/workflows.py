@@ -63,6 +63,13 @@ class WorkflowKind(ArtifactKind):
         return spec
 
     def validate(self, artifact: Workflow) -> list[Cell]:
+        if artifact.get_operation(artifact.start_operation_id) is None:
+            return [Cell.build_meta(
+                kind="artifact_kind_validation",
+                id=str(artifact.info.id),
+                status="failure",
+                message=f"Start operation ID '{artifact.start_operation_id}' does not exist in the workflow.",
+            )]
 
         return [Cell.build_meta(
             kind="artifact_kind_validation",
