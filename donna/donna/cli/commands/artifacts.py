@@ -29,7 +29,7 @@ def validate(id: FullArtifactIdArgument) -> None:
     with render_mode(RenderMode.analysis):
         artifact = navigator.get_artifact(id)
 
-        artifact_kind = register().artifacts.get(artifact.kind)
+        artifact_kind = register().artifacts.get(artifact.info.kind)
 
         output_cells(artifact_kind.validate(artifact))
 
@@ -40,7 +40,7 @@ def validate_all(namespace: NamespaceIdArgument) -> None:
         artifacts = navigator.list_artifacts(namespace)
 
         for artifact in artifacts:
-            artifact_kind = register().artifacts.get(artifact.kind)
+            artifact_kind = register().artifacts.get(artifact.info.kind)
             output_cells(artifact_kind.validate(artifact))
 
 

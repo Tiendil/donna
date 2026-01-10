@@ -102,7 +102,7 @@ class GoTo(RendererKind):
             case RenderMode.cli:
                 return self.render_cli(context, next_operation_id)
 
-            case RenderMode.analyze:
+            case RenderMode.analysis:
                 return self.render_analyze(context, next_operation_id)
 
             case _:
