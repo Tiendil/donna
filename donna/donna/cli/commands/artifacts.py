@@ -29,8 +29,7 @@ def validate(id: FullArtifactIdArgument) -> None:
 
     artifact_kind = register().artifacts.get(artifact.info.kind)
 
-    if artifact_kind is None:
-        raise RuntimeError(f"Artifact kind '{artifact.info.kind}' is not registered.")
+    assert artifact_kind is not None
 
     output_cells(artifact_kind.validate_artifact(artifact))
 
@@ -41,8 +40,8 @@ def validate_all(namespace: NamespaceIdArgument) -> None:
 
     for artifact in artifacts:
         artifact_kind = register().artifacts.get(artifact.info.kind)
-        if artifact_kind is None:
-            raise RuntimeError(f"Artifact kind '{artifact.info.kind}' is not registered.")
+
+        assert artifact_kind is not None
 
         output_cells(artifact_kind.validate_artifact(artifact))
 
