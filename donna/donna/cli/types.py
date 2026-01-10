@@ -3,7 +3,7 @@ from typing import Annotated
 import typer
 
 from donna.domain import types
-from donna.domain.ids import FullArtifactId, NamespaceId, create_internal_id_parser
+from donna.domain.ids import FullArtifactId, NamespaceId, create_internal_id_parser, FullArtifactLocalId
 
 ActionRequestIdArgument = Annotated[
     types.ActionRequestId,
@@ -36,4 +36,10 @@ FullArtifactIdArgument = Annotated[
 NamespaceIdArgument = Annotated[
     NamespaceId,
     typer.Argument(parser=NamespaceId, help="The ID of the namespace"),
+]
+
+
+FullArtifactLocalIdArgument = Annotated[
+    FullArtifactLocalId,
+    typer.Argument(parser=FullArtifactLocalId.parse, help="The full local ID of the artifact"),
 ]

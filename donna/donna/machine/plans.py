@@ -3,7 +3,7 @@ from typing import cast
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import OperationId
+from donna.domain.ids import OperationId, FullArtifactLocalId
 from donna.domain.types import ActionRequestId, OperationResultId, TaskId, WorkUnitId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
@@ -186,20 +186,19 @@ class Plan(BaseEntity):
     def remove_action_request(self, request_id: ActionRequestId) -> None:
         self.action_requests = [request for request in self.action_requests if request.id != request_id]
 
-    def complete_action_request(self, request_id: ActionRequestId, result_id: OperationResultId) -> None:
+    def complete_action_request(self, request_id: ActionRequestId, next_operation_id: FullArtifactLocalId) -> None:
         operation_id = self.get_action_request(request_id).operation_id
 
         workflow = cast(Workflow, navigator.get_artifact(operation_id.full_artifact_id))
 
         operation = workflow.get_operation(cast(OperationId, operation_id.local_id))
 
+        if not operation.is_next_operation_allowed(next_operation_id):
+            raise NotImplementedError(f"Operation '{operation_id}' can not go to '{next_operation_id}'")
+
         assert operation is not None
 
-        result = operation.result(result_id)
-
-        assert result.next_operation_id is not None
-
-        next_operation_id = workflow.info.id.to_full_local(result.next_operation_id)
+        next_operation_id = workflow.info.id.to_full_local(next_operation_id)
 
         current_task = self.active_tasks[-1]
 

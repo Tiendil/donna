@@ -3,7 +3,7 @@ import shutil
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import ActionRequestIdArgument
+from donna.cli.types import ActionRequestIdArgument, FullArtifactLocalIdArgument
 from donna.cli.utils import output_cells
 from donna.domain import types
 from donna.domain.types import OperationResultId
@@ -39,10 +39,10 @@ def status() -> None:
 
 
 @sessions_cli.command()
-def action_request_completed(request_id: ActionRequestIdArgument, result_id: str) -> None:
+def action_request_completed(request_id: ActionRequestIdArgument, next_operation_id: FullArtifactLocalIdArgument) -> None:
     plan = Plan.load()
 
-    plan.complete_action_request(request_id, OperationResultId(types.slug_parser(result_id)))
+    plan.complete_action_request(request_id, next_operation_id)
 
     output_cells(plan.run())
 

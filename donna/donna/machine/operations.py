@@ -11,38 +11,6 @@ if TYPE_CHECKING:
     from donna.machine.changes import Change
 
 
-class OperationResult(BaseEntity):
-    id: OperationResultId
-    description: str
-    next_operation_id: OperationId | None = None
-
-    @classmethod
-    def completed(cls, operation_id: OperationId) -> "OperationResult":
-        return cls(
-            id=OperationResultId(Slug("completed")),
-            description="The operation was completed successfully.",
-            next_operation_id=operation_id,
-        )
-
-    @classmethod
-    def repeat(cls, operation_id: OperationId) -> "OperationResult":
-        return cls(
-            id=OperationResultId(Slug("repeat")),
-            description="The operation needs to be repeated.",
-            next_operation_id=operation_id,
-        )
-
-    def cells(self) -> list[Cell]:
-        return [
-            Cell.build_meta(
-                kind="operation_result",
-                result_description=self.description,
-                result_id=self.id,
-                next_operation_id=self.next_operation_id,
-            )
-        ]
-
-
 class OperationKind(BaseEntity):
     id: str
     title: str
@@ -65,18 +33,9 @@ class Operation(BaseEntity):
     kind: str
     title: str
 
-    results: list[OperationResult]
-
     @property
     def full_id(self) -> FullArtifactLocalId:
         return self.artifact_id.to_full_local(self.id)
-
-    def result(self, id: OperationResultId) -> OperationResult:
-        for result in self.results:
-            if result.id == id:
-                return result
-
-        raise NotImplementedError(f"OperationResult with id '{id}' does not exist")
 
     def cells(self) -> list[Cell]:
         cells = [Cell.build_meta(kind="operation", operation_id=str(self.id))]
@@ -85,3 +44,7 @@ class Operation(BaseEntity):
             cells.extend(result.cells())
 
         return cells
+
+    def is_next_operation_allowed(self, next_operation_id: FullArtifactLocalId) -> bool:
+        # TODO: implement
+        return True
