@@ -198,8 +198,6 @@ class Plan(BaseEntity):
 
         assert operation is not None
 
-        next_operation_id = workflow.info.id.to_full_local(next_operation_id)
-
         current_task = self.active_tasks[-1]
 
         new_work_unit = WorkUnit.build(task_id=current_task.id, operation_id=next_operation_id)
