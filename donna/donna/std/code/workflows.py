@@ -3,17 +3,18 @@ from typing import Any
 import jinja2
 from jinja2.runtime import Context
 
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId, NamespaceId, OperationId
 from donna.domain import types
+from donna.domain.ids import FullArtifactId, FullArtifactLocalId, NamespaceId, OperationId
 from donna.domain.types import RecordKindId
 from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
 from donna.machine.operations import Operation, OperationKind, OperationMode
+from donna.machine.records import RecordKindSpec, RecordsIndex
 from donna.machine.templates import RendererKind
+from donna.primitives.records.pure_text import PureText
 from donna.world.markdown import ArtifactSource, SectionSource
 from donna.world.primitives_register import register
 from donna.world.templates import RenderMode
-from donna.machine.records import RecordKindSpec, RecordsIndex
 
 
 class Workflow(Artifact):
@@ -217,6 +218,7 @@ ACCEPTANCE_CRITERIA = RecordKindSpec(kind=RecordKindId(types.Slug("session_accep
 DELIVERABLE = RecordKindSpec(kind=RecordKindId(types.Slug("session_deliverable")))
 
 PLAN_ITEM = RecordKindSpec(kind=RecordKindId(types.Slug("session_plan_item")))
+
 
 def _get_aggregated_text_content(  # noqa: CCR001
     index: RecordsIndex, kind_spec: RecordKindSpec, as_list: bool
