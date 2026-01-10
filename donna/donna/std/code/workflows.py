@@ -1,9 +1,13 @@
+import jinja2
+from typing import Any
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId, NamespaceId, OperationId
 from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
 from donna.machine.operations import Operation, OperationKind
 from donna.world.markdown import ArtifactSource, SectionSource
 from donna.world.primitives_register import register
+from donna.machine.templates import RenderKind
+from donna.world.templates import RenderMode
 
 
 class Workflow(Artifact):
@@ -61,3 +65,39 @@ workflow_kind = WorkflowKind(
     namespace_id=NamespaceId("workflows"),
     description="A workflow that defines a statem machine for the agent to follow.",
 )
+
+
+class GoTo(RenderKind):
+
+    @jinja2.pass_context
+    def __call__(self, context, *argv, **kwargs) -> Any:
+        render_mode: RenderMode = context["render_mode"]
+
+        artifact_id = context["artifact_id"]
+
+        if argv is None or len(argv) != 1:
+            raise ValueError("GoTo renderer requires exactly one argument: next_operation_id")
+
+        next_operation_id = artifact_id.to_full_local(argv[0])
+
+        match render_mode:
+            case RenderMode.cli:
+                return self.render_cli(context, next_operation_id)
+
+            case RenderMode.analyze:
+                return self.render_analyze(context, next_operation_id)
+
+            case _:
+                raise NotImplementedError(f"Render mode {render_mode} not implemented in GoTo renderer.")
+
+    def render_cli(self, context, next_operation_id: FullArtifactLocalId) -> str:
+        return f"donna sessions ??? {next_operation_id}"
+
+    def render_analyze(self, context, next_operation_id: FullArtifactLocalId) -> str:
+        return f"$$donna {self.id} {next_operation_id} donna$$"
+
+
+goto_renderer = GoTo(id="goto",
+                     name="Go To Operation",
+                     description="Instructs the agent to proceed to the specified operation in the workflow.",
+                     example_usage="{{ goto('<operation_id>') }}")

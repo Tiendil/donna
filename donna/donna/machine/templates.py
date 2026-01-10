@@ -13,7 +13,9 @@ from donna.world.markdown import SectionSource
 class RendererKind(BaseEntity):
     id: str
     name: str
+    description: str
+    example: str
 
     @jinja2.pass_context
-    def __call__(self, context, **kwargs) -> Any:
+    def __call__(self, context, *argv, **kwargs) -> Any:
         raise NotImplementedError("You MUST implement this method.")

@@ -1,5 +1,8 @@
 import enum
+from typing import Any
 import jinja2
+
+from donna.domain.ids import FullArtifactId
 
 
 class RenderMode(enum.Enum):
@@ -50,3 +53,11 @@ def env() -> jinja2.Environment:
         _ENVIRONMENT.globals[renderer.id] = renderer
 
     return _ENVIRONMENT
+
+
+def render(mode: RenderMode, artifact_id: FullArtifactId, template: str) -> str:
+    context = {"render_mode": mode.value,
+               "artifact_id": artifact_id}
+
+    template_obj = env().from_string(template)
+    return template_obj.render(**context)
