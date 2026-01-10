@@ -75,9 +75,6 @@
 * TODO do we really need multiple stories? It looks like we always work on a single story every time.
 * TODO refactor workflows + operations into configs
 ** Artifacts edition via donna
-*** copy source command
-*** update source command
-*** etag
 *** specification of the artifact format
 *** update donna_usage.md
 *** rename navigator.py into smth more correct

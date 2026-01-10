@@ -35,7 +35,7 @@ def load_artifact(full_id: FullArtifactId) -> Artifact:
     if not world.has(full_id.namespace_id, full_id.artifact_id):
         raise NotImplementedError(f"Artifact `{full_id}` does not exist in world `{world.id}`")
 
-    content = world.read(full_id.namespace_id, full_id.artifact_id)
+    content = world.read(full_id.namespace_id, full_id.artifact_id).decode("utf-8")
 
     raw_artifact = parse_artifact(full_id, content)
 
