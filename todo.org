@@ -98,7 +98,7 @@
 ** do we need WorkflowKind that allow specify different workflow behaviors?
 ** action request also could be an artifact?
 ** improve markdown parsing & rendering
-*** donna -> donna config
+*** donna -> donna config  (however, now we have jinja comments {# ... #}
 *** donna comment
 * TODO error messages should provide helpful hints for agents
 * TODO "Story" term still in some specs for convienience, we should think of a better naming
@@ -110,4 +110,4 @@
 ** scripts as artefacts
 * TODO Jinja2 improvements
 ** sandbox mode — do we need it?
-** .md.j2 artifacts that apply jinja2 rendering before markdown parsing
+** register jinja2 filters?

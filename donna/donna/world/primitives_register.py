@@ -10,6 +10,7 @@ from donna.machine.operations import OperationKind
 from donna.primitives.records.base import RecordKind
 from donna.world.layout import layout
 from donna.world.storage import Storage
+from donna.machine.templates import RendererKind
 
 BASE_WORKFLOWS_DIR = pathlib.Path(__file__).parent.parent / "workflows"
 
@@ -20,7 +21,8 @@ class PrimitivesRegister:
         self.initialized = False
         self.operations: Storage[str, OperationKind] = Storage("operation")
         self.records: Storage[RecordKindId, RecordKind] = Storage("record_kind")
-        self.artifacts: Storage[str, ArtifactKind] = Storage("artifacts")
+        self.artifacts: Storage[str, ArtifactKind] = Storage("artifact")
+        self.renderers: Storage[str, RendererKind] = Storage("renderer")
 
     def _storages(self) -> Iterator[Storage[Any, Any]]:
         yield self.records
@@ -63,6 +65,10 @@ class PrimitivesRegister:
 
             if isinstance(primitive, OperationKind):
                 self.operations.add(primitive)
+                continue
+
+            if isinstance(primitive, RendererKind):
+                self.renderers.add(primitive)
                 continue
 
 
