@@ -88,11 +88,19 @@ class ArtifactSource(BaseEntity):
     head: SectionSource
     tail: list[SectionSource]
 
-    def as_markdown(self) -> str:
-        parts = [self.head.as_markdown()]
+    def as_original_markdown(self) -> str:
+        parts = [self.head.as_original_markdown()]
 
         for section in self.tail:
-            parts.append(section.as_markdown())
+            parts.append(section.as_original_markdown())
+
+        return "\n".join(parts)
+
+    def as_analysis_markdown(self) -> str:
+        parts = [self.head.as_analysis_markdown()]
+
+        for section in self.tail:
+            parts.append(section.as_analysis_markdown())
 
         return "\n".join(parts)
 

@@ -24,7 +24,7 @@ class SpecificationKind(ArtifactKind):
 
         spec = Specification(
             info=ArtifactInfo(kind=self.id, id=source.id, title=title, description=description),
-            content=source.as_markdown(),
+            content=source.as_original_markdown(),
         )
 
         return spec
