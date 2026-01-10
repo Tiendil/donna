@@ -47,7 +47,7 @@ class RequestActionKind(OperationKind):
             data["title"] = section.title or "Untitled Request Action"
 
         if "request_template" not in data:
-            data["request_template"] = section.as_markdown()
+            data["request_template"] = section.as_orignal_markdown()
 
         if "artifact_id" in data:
             raise NotImplementedError("artifact_id should not be set in RequestActionKind.construct")
@@ -56,7 +56,7 @@ class RequestActionKind(OperationKind):
             raise NotImplementedError("allowed_transtions should not be set in RequestActionKind.construct")
 
         data["artifact_id"] = str(artifact_id)
-        data["allowed_transtions"] = extract_transitions(data["request_template"])
+        data["allowed_transtions"] = extract_transitions(section.as_analysis_markdown())
 
         return cast(RequestAction, self.operation(**data))
 

@@ -43,12 +43,14 @@ class CodeSource(BaseEntity):
 class SectionSource(BaseEntity):
     level: SectionLevel
     title: str | None
-    tokens: list[Token]
     configs: list[CodeSource]
+
+    original_tokens: list[Token]
+    analysis_tokens: list[Token] = pydantic.Field(default_factory=list)
 
     model_config = pydantic.ConfigDict(frozen=False)
 
-    def as_markdown(self) -> str:
+    def _as_markdown(self, tokens: list[Token]) -> str:
         parts = []
 
         if self.title is not None:
@@ -60,9 +62,15 @@ class SectionSource(BaseEntity):
 
             parts.append(f"{prefix} {self.title}")
 
-        parts.append(render_back(self.tokens))
+        parts.append(render_back(tokens))
 
         return "\n".join(parts)
+
+    def as_original_markdown(self) -> str:
+        return self._as_markdown(self.original_tokens)
+
+    def as_analysis_markdown(self) -> str:
+        return self._as_markdown(self.analysis_tokens)
 
     def merged_configs(self) -> dict[str, Any]:
         result: dict[str, Any] = {}

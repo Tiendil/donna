@@ -26,22 +26,20 @@ def get(id: FullArtifactIdArgument) -> None:
 
 @artifacts_cli.command()
 def validate(id: FullArtifactIdArgument) -> None:
-    with render_mode(RenderMode.analysis):
-        artifact = navigator.get_artifact(id)
+    artifact = navigator.get_artifact(id)
 
-        artifact_kind = register().artifacts.get(artifact.info.kind)
+    artifact_kind = register().artifacts.get(artifact.info.kind)
 
-        output_cells(artifact_kind.validate(artifact))
+    output_cells(artifact_kind.validate(artifact))
 
 
 @artifacts_cli.command()
 def validate_all(namespace: NamespaceIdArgument) -> None:
-    with render_mode(RenderMode.analysis):
-        artifacts = navigator.list_artifacts(namespace)
+    artifacts = navigator.list_artifacts(namespace)
 
-        for artifact in artifacts:
-            artifact_kind = register().artifacts.get(artifact.info.kind)
-            output_cells(artifact_kind.validate(artifact))
+    for artifact in artifacts:
+        artifact_kind = register().artifacts.get(artifact.info.kind)
+        output_cells(artifact_kind.validate(artifact))
 
 
 app.add_typer(artifacts_cli, name="artifacts", help="Manage artifacts")

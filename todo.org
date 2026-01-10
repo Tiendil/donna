@@ -106,6 +106,7 @@
 ** `donna artifacts` — make namespace argument optional or remove it from validate-all?
 ** move code.operations into submodules
 ** validation should check that the last operation is always `finish`
+** should we call validation on every artifact load?
 * TODO error messages should provide helpful hints for agents
 * TODO "Story" term still in some specs for convienience, we should think of a better naming
 * TODO artifacts descripion vs intro — they replicate each other, maybe we could keep only one of them? Intro whould work better.
