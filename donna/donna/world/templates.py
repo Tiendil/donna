@@ -1,6 +1,8 @@
 import enum
-from contextvars import ContextVar
 from contextlib import contextmanager
+from contextvars import ContextVar
+from typing import Iterator
+
 import jinja2
 
 from donna.domain.ids import FullArtifactId
@@ -21,15 +23,16 @@ class RenderMode(enum.Enum):
     For example, it can output CLI commands in CLI mode, tool specifications in tool mode,
     special markup in analyze mode, etc.
     """
+
     cli = "cli"
     analyze = "analyze"
 
 
-_render_mode: ContextVar[RenderMode] = ContextVar("render_mode", default=None)
+_render_mode: ContextVar[RenderMode | None] = ContextVar("render_mode", default=None)
 
 
 @contextmanager
-def render_mode(mode: RenderMode):
+def render_mode(mode: RenderMode) -> Iterator[None]:
     token = _render_mode.set(mode)
 
     try:
@@ -38,7 +41,7 @@ def render_mode(mode: RenderMode):
         _render_mode.reset(token)
 
 
-def set_default_render_mode(mode: RenderMode):
+def set_default_render_mode(mode: RenderMode) -> None:
     _render_mode.set(mode)
 
 
@@ -53,19 +56,16 @@ def env() -> jinja2.Environment:
     if _ENVIRONMENT is not None:
         return _ENVIRONMENT
 
-    _ENVIRONMENT = jinja2.Environment(loader=None,
-                                      # we render into markdown, not into HTML
-                                      # i.e. before (possible) displaying in the browser,
-                                      # the result of the jinja2 render will be rendered by markdown renderer
-                                      # markdown renderer should take care of escaping
-                                      autoescape=False,
-                                      auto_reload=False,
-                                      extensions=[
-                                          "jinja2.ext.do",
-                                          "jinja2.ext.loopcontrols",
-                                          "jinja2.ext.debug"
-                                      ]
-                                      )
+    _ENVIRONMENT = jinja2.Environment(
+        loader=None,
+        # we render into markdown, not into HTML
+        # i.e. before (possible) displaying in the browser,
+        # the result of the jinja2 render will be rendered by markdown renderer
+        # markdown renderer should take care of escaping
+        autoescape=jinja2.select_autoescape(default=False, default_for_string=False),
+        auto_reload=False,
+        extensions=["jinja2.ext.do", "jinja2.ext.loopcontrols", "jinja2.ext.debug"],
+    )
 
     for renderer in register().renderers.values():
         _ENVIRONMENT.globals[renderer.id] = renderer
@@ -74,8 +74,7 @@ def env() -> jinja2.Environment:
 
 
 def render(artifact_id: FullArtifactId, template: str) -> str:
-    context = {"render_mode": _render_mode.get(),
-               "artifact_id": artifact_id}
+    context = {"render_mode": _render_mode.get(), "artifact_id": artifact_id}
 
     template_obj = env().from_string(template)
     return template_obj.render(**context)
