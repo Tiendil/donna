@@ -1,7 +1,6 @@
 import enum
 from contextvars import ContextVar
 from contextlib import contextmanager
-from typing import Any
 import jinja2
 
 from donna.domain.ids import FullArtifactId

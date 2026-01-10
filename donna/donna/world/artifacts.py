@@ -1,6 +1,6 @@
 from donna.domain.ids import FullArtifactId
 from donna.world import markdown
-from donna.world.templates import RenderMode, render
+from donna.world.templates import render
 
 
 def parse_artifact(full_id: FullArtifactId, text: str) -> markdown.ArtifactSource:

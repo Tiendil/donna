@@ -3,7 +3,6 @@ from donna.machine.artifacts import Artifact
 from donna.world.artifacts import parse_artifact
 from donna.world.config import config
 from donna.world.primitives_register import register
-from donna.world.templates import RenderMode
 
 
 def get_artifact(full_id: FullArtifactId) -> Artifact:

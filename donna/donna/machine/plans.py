@@ -4,7 +4,7 @@ import pydantic
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import OperationId, FullArtifactLocalId
-from donna.domain.types import ActionRequestId, OperationResultId, TaskId, WorkUnitId
+from donna.domain.types import ActionRequestId, TaskId, WorkUnitId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
 from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState

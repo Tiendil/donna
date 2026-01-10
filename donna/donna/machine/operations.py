@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING, Iterable
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationId
-from donna.domain.types import OperationResultId, Slug
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.markdown import SectionSource
