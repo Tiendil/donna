@@ -4,6 +4,8 @@ import jinja2
 from jinja2.runtime import Context
 
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId, NamespaceId, OperationId
+from donna.domain import types
+from donna.domain.types import RecordKindId
 from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
 from donna.machine.operations import Operation, OperationKind, OperationMode
