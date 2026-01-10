@@ -77,7 +77,6 @@
 ** Artifacts edition via donna
 *** specification of the artifact format
 *** update donna_usage.md
-*** rename navigator.py into smth more correct
 *** do we want to validate artifact contents before update?
 ** refactor end_to_end_story_cycle into generating artifacts
 ** remove records functionality
