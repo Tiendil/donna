@@ -74,9 +74,6 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO do we really need multiple stories? It looks like we always work on a single story every time.
 * TODO refactor workflows + operations into configs
-** refactor end_to_end_story_cycle without refactoring records
-*** `Read the specification `donna.specifications.planning` if you haven't done it yet.` -> jinjaglobal to reference specification.
-*** add specification reference check to validation step
 ** refactor end_to_end_story_cycle into generating artifacts
 ** remove records functionality
 ** remove workflows submodule
