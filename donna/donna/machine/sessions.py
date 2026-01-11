@@ -3,7 +3,6 @@ from typing import cast
 
 from donna.domain.ids import FullArtifactId
 from donna.machine.plans import Plan
-from donna.machine.tasks import Task, WorkUnit
 from donna.std.code.workflows import Workflow
 from donna.world import artifacts
 from donna.world.layout import layout

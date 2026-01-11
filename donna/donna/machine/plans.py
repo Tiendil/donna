@@ -225,7 +225,10 @@ class Plan(BaseEntity):
 
         current_task = self.active_tasks[-1]
 
-        new_work_unit = WorkUnit.build(task_id=current_task.id, operation_id=next_operation_id)
+        new_work_unit = WorkUnit.build(
+            self.next_work_unit_id(),
+            task_id=current_task.id,
+            operation_id=next_operation_id)
         self.queue.append(new_work_unit)
 
         self.remove_action_request(request_id)

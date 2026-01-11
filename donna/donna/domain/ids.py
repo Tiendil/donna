@@ -1,8 +1,7 @@
-from typing import Any, Callable
+from typing import Any
 
 from pydantic_core import core_schema
 
-from donna.domain import types
 
 
 def _id_crc(number: int) -> str:
