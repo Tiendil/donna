@@ -136,3 +136,4 @@
 ** bootstrap.donna.craete_specifications
 ** bootstrap.python.create_grooming_workflow
 ** bootstrap.python.create_project
+* Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
