@@ -42,8 +42,6 @@ id = "list_primary_goals"
 kind = "request_action"
 ```
 
-You MUST list the goals of this session.
-
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
 2. Read the specification `{{ view("donna.specifications.default_text_artifacts_behavior") }}` if you haven't done it yet.
 3. If you can add more goals based on existing `{{ view("session.specification.work_scope.md") }}` add them to the specification.
@@ -57,19 +55,13 @@ id = "list_objectives"
 kind = "request_action"
 ```
 
-Here is current state of the session specification.
-
-```
-{{partial_description()}}
-```
-
 You MUST list objectives that need to be achieved to complete each goal.
 
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
-2. If you can identify one more objective:
-2.1. add it as a `<record kind: session_objective>` to the session;
-2.2. `{{ goto("list_objectives") }}`;
-3. Otherwise, `{{ goto("list_constraints") }}`
+2. Read the specification `{{ view("donna.specifications.default_text_artifacts_behavior") }}` if you haven't done it yet.
+3. If you can add more objectives based on existing `{{ view("session.specification.work_scope.md") }}` add them to the specification.
+4. If you can polish the existing objectives according to the quality criteria in the `{{ view("donna.specifications.planning") }}` do it.
+5. `{{ goto("list_constraints") }}`
 
 ## List Constraints
 
@@ -78,19 +70,11 @@ id = "list_constraints"
 kind = "request_action"
 ```
 
-Here is current state of the session specification.
-
-```
-{{partial_description()}}
-```
-
-You MUST list the known constraints for this session.
-
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
-2. If you can identify one more constraint:
-2.1. add it as a `<record kind: session_constraint>` to the session;
-2.2. `{{ goto("list_constraints") }}`;
-3. Otherwise, `{{ goto("list_acceptance_criteria") }}`
+2. Read the specification `{{ view("donna.specifications.default_text_artifacts_behavior") }}` if you haven't done it yet.
+3. If you can add more constraints based on existing `{{ view("session.specification.work_scope.md") }}` add them to the specification.
+4. If you can polish the existing constraints according to the quality criteria in the `{{ view("donna.specifications.planning") }}` do it.
+5. `{{ goto("list_acceptance_criteria") }}`
 
 ## List Acceptance Criteria
 
@@ -99,19 +83,11 @@ id = "list_acceptance_criteria"
 kind = "request_action"
 ```
 
-Here is current state of the session specification.
-
-```
-{{partial_description()}}
-```
-
-You MUST list the acceptance criteria for this session.
-
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
-2. If you can identify one more acceptance criterion:
-2.1. add it as a `<record kind: session_acceptance_criterion>` to the session;
-2.2. `{{ goto("list_acceptance_criteria") }}`;
-3. Otherwise, `{{ goto("list_deliverables") }}`
+2. Read the specification `{{ view("donna.specifications.default_text_artifacts_behavior") }}` if you haven't done it yet.
+3. If you can add more acceptance criteria based on existing `{{ view("session.specification.work_scope.md") }}` add them to the specification.
+4. If you can polish the existing acceptance criteria according to the quality criteria in the `{{ view("donna.specifications.planning") }}` do it.
+5. `{{ goto("list_deliverables") }}`
 
 ## List Deliverables
 
@@ -120,19 +96,11 @@ id = "list_deliverables"
 kind = "request_action"
 ```
 
-Here is current state of the session specification.
-
-```
-{{partial_description()}}
-```
-
-You MUST list the deliverables / artifacts for this session.
-
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
-2. If you can identify one more deliverable:
-2.1. add it as a `<record kind: session_deliverable>` to the session;
-2.2. `{{ goto("list_deliverables") }}`;
-2. Otherwise, `{{ goto("prepare_plan") }}`
+2. Read the specification `{{ view("donna.specifications.default_text_artifacts_behavior") }}` if you haven't done it yet.
+3. If you can list more deliverables based on existing `{{ view("session.specification.work_scope.md") }}` add them to the specification.
+4. If you can polish the existing deliverables according to the quality criteria in the `{{ view("donna.specifications.planning") }}` do it.
+5. `{{ goto("prepare_plan") }}`
 
 ## Prepare Work Plan
 
