@@ -113,6 +113,7 @@
 *** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
 *** Declare explicit refining loop
 *** Add mini workflows to polish each kind of records?
+*** add tmp directory for intermediate artifacts?
 * TODO Worlds improvements
 ** We may want to list worlds via donna cli (introspection?)
 ** We may want to register world kinds automatically.
