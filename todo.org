@@ -99,6 +99,10 @@
 **** supported primary formats
 **** supported properties
 *** update default_text_artifacts_behavior.md to reference introspection instead of harding info.
+*** add info about merging configs into default_text_artifacts_behavior.md
+*** resolve duplication of config.description and markdown description in the head section of the artifact
+*** we can reference artifact_id:operation_id, should we make id required for each section (or, at least, optional) to be able to reference each section?
+*** We have duplicated logic: Final operation (that finishes the workflow) and mode = final for operation node (that does not guarantee finishing the workflow).
 * TODO Worlds improvements
 ** We may want to list worlds via donna cli (introspection?)
 ** We may want to register world kinds automatically.

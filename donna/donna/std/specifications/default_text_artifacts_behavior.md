@@ -56,11 +56,19 @@ Artifact is devided into multiple sections:
 
 Head section provides a description of the artifact and its purpose and MUST contain a configuration block of the artifact. Also, header section is used when Donna needs to show a brief summary of the artifact, for example, when listing artifacts.
 
-Tail sections describes one of the components of the artifact and CAN contain configuration blocks as well.
+Tail sections describes one of the components of the artifact and CAN contain configuration blocks as well. Configuration blocks placed in subsections (h3 and below) count as part of the parent tail section.
+
+The content of the header (text after `#` or `##`) is considered the section title.
+
+Donna always interprets the head section as a general description of the artifact.
+
+Donna interprets a tail section according to the artifact kind and configuration blocks in that section.
 
 ### Configuration Blocks
 
 Configuration blocks are fenced code blocks with specified primary format, followed by the `donna` keyword and, optionally, list of properties.
+
+The supported primary formats are: TOML, JSON, YAML. **You MUST prefer TOML for configuration blocks**.
 
 The configuration block properties format is `property1 property2=value2 property3=value3"`, which will be parsed into a dictionary like:
 
@@ -77,3 +85,80 @@ The content of the block is parsed according to the primary format and interpret
 Configuration blocks are intended to be used by Donna and viewed by developers, so Donna does not render them into most artifact representations.
 
 Fences without `donna` keyword are considered regular code blocks and have no special meaning for Donna.
+
+## Artifact Kinds, Their Formats and Behaviors
+
+### Header section
+
+Header section MUST contain config block with `description` property set to a short text description of the artifact.
+
+Example (`donna` keyword skipped for examples):
+
+```toml
+description = "Short description"
+```
+
+Header section MUST also contain short human-readable description of the artifact outside of the config block.
+
+### Kind: Specification
+
+Specification artifacts describe various aspects of the project in a structured way.
+
+Currently there is no additional structure or semantics for this kind of artifact.
+
+### Kind: Workflow
+
+Workflow artifacts describe a sequence of operations that Donna and agents can perform to achieve a specific goal.
+
+Workflow is a Finite State Machine (FSM) where each tail section describes one operation in the workflow.
+
+Donna do additional work to validate that FSM is correct and that there are no unreachable operations, no dead ends, etc. In case of problems Donna notifies the agent about the issues.
+
+Workflow head config MUST contain `start_operation_id` property that specifies the identifier of the operation where the workflow starts.
+
+Example (`donna` keyword skipped for examples):
+
+```toml
+start_operation_id = "operation_id"
+description = "A description of what the workflow does."
+```
+
+Each tail section MUST contain config block with `id` and `kind` properties that specifies the identifier and kind of the operation.
+
+Example (`donna` keyword skipped for examples):
+
+```toml
+id = "operation_id"
+kind = "request_action"
+```
+
+#### Kinds of Workflow Operations
+
+1. `request_action` operation kind indicates that Donna will request the agent to perform some action.
+
+The content of the tail section is the text instructions for the agent on what to do.
+
+Example of the instructions:
+
+```
+1. Run `some cli command` to do something.
+2. If no errors encountered `{{ goto("next_operation") }}`
+3. If errors encountered `{{ goto("error_handling_operation") }}`
+
+Here may be any additional instructions, requirements, notes, references, etc.
+```
+
+`goto` callback will be rendered in the direct instruction for agent of what to call after it completed the action.
+
+2. `finish_worflow` operation kind indicates that the workflow is finished.
+
+Each possible path through the workflow MUST end with this operation kind.
+
+## Render Callbacks
+
+Donna provides multiple callbacks that MUST be used in the artifact source to enhance its behavior.
+
+Here they are:
+
+1. `{{ view("<full-artifact-id>") }}` — references another artifact. Depending of the rendering mode can be: exect CLI command to view the artifact, specially formatted reference link to the artifact to easier track dependencies.
+2. `{{ goto("<workflow-operation-id>") }}` — references the next workflow operation to execute. Depending of the rendering mode can be: exect CLI command to push workflow forward, specially formatted reference link to the operation to enable FSM validation of the workflow.
