@@ -52,6 +52,10 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO refactor workflows + operations into configs
 ** remove primitives_registry.py? Since there only artifacts will left
+*** python modules are artifacts also
+*** system python can be a world to?
+*** so, we can lazy import any primitive we want, by referencing to it by a full id.
+*** however, we'll lose the ability to list/discover all available primitives => can not introspect?
 ** remove introspections functionality? because it is fully covered by artifacts?
 ** merged section configs MUST be parsed directly by pydantic models, no magic
 ** action request also could be an artifact?
