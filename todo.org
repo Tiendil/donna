@@ -61,6 +61,8 @@
 ** => introspection uses worlds to list available artifact/primitives
 ** remove primitives registry completely
 ** improve introspection cli
+*** `artifacts list *` goest to introspection? or should be refactored into `artifacts search *`?
+** Each primitive should have a link to related specification?
 * TODO refactor workflows + operations into configs
 ** merged section configs MUST be parsed directly by pydantic models, no magic
 ** action request also could be an artifact?
@@ -71,13 +73,14 @@
 ** Can we finish action request without next operation?
 *** Probably not, because the last operation is always `finish`
 *** However, now we have Operation.mode = final.
-** `donna artifacts` — make namespace argument optional or remove it from validate-all?
 ** move code.operations into submodules
 ** should we call validation on every artifact load?
 ** Render scheme of workflow somewhere?
+*** using the donna to render schema in some specific format looks expensive
+*** maybe we can ask agent to do it? By adding instructions into specifications
+*** it can be an actual workflow
 ** break story_loop into multiple workflows?
 ** tune wording of workflows (what to write before goto)
-** move workflow start into session command?
 ** unify code of different renderers? It is very similar
 *** add validation for specificaiton existence in renderers
 *** Spec rendere can be unified, since its cli command
