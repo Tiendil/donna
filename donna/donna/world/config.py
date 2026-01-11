@@ -9,7 +9,6 @@ from donna.core import utils
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactId, NamespaceId, WorldId
 
-
 DONNA_DIR_NAME = ".donna"
 DONNA_CONFIG_NAME = "donna.toml"
 DONNA_DESSION_DIR_NAME = "session"
