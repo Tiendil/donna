@@ -8,7 +8,6 @@ _SESSION_COUNTERS: dict[Callable[[types.InternalId], types.InternalId], types.Co
     types.WorkUnitId: types.CounterId("WU"),
     types.ActionRequestId: types.CounterId("AR"),
     types.TaskId: types.CounterId("T"),
-    types.RecordId: types.CounterId("R"),
 }
 
 

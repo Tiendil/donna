@@ -3,7 +3,7 @@ import shutil
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import ActionRequestIdArgument, FullArtifactLocalIdArgument
+from donna.cli.types import ActionRequestIdArgument, FullArtifactIdArgument, FullArtifactLocalIdArgument
 from donna.cli.utils import output_cells
 from donna.machine import sessions
 from donna.machine.plans import Plan
@@ -34,6 +34,15 @@ def status() -> None:
 
     plan = Plan.load()
     output_cells(plan.status_cells())
+
+
+@sessions_cli.command()
+def run(workflow_id: FullArtifactIdArgument) -> None:
+    sessions.start_workflow(workflow_id)
+
+    plan = Plan.load()
+
+    output_cells(plan.run())
 
 
 @sessions_cli.command()

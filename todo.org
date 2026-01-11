@@ -1,14 +1,7 @@
 
-* TODO automatic action request finish on artifact creation
-* TODO when we want to get a record/record-kind from the story we do not load the whole index — artifact id should be enough.
-* TODO need some task/command to output the whole story spec
 * TODO freeze pydantic models which are possible
 * TODO codex should explain what it is doing, while executing requests from donna
-* TODO replace all NotImplementedError exceptions with custom exceptions and smart error handling
-* TODO review the dictionary of primary terms
 * TODO complex story workflow
-** DONE choose the name for the story
-** DONE simplest linear workflow: agent description -> goals -> objectives -> risks -> plan -> exectution -> grooming
 ** TODO list based artifacts
 *** TODO LIST artifacts with operations add, remove, replace
 *** TODO iterate and groom over goals & objectives
@@ -30,16 +23,8 @@
 ** TODO basic / lowest unit tests for primitive operations
 ** TODO domain-level unit tests
 ** TODO intergration tests for workflows/stories/scenarios
-* TODO split operations into code and configs, since most of them are configs
-* TODO end_to_end_story_cycle — maybe we should move the whole task flows into a separate package? or organize them better?
-* TODO codex struggle with artifact names (skips file extensions, until explicitly told to use the full name). Maybe we should simplify artifact names?
 * TODO optimize imports by moving most used ones to \__init__.py files
 * TODO `behavior` can be something on top of workflows. Maybe it be a constructor of workflows. I.e. user define own workflow by parametrizing them via `behavior`.
-* TODO Relations / dependencies between records
-** TODO Store relations in the records index
-** TODO cli commands to add/remove relations
-** TODO storage of allowed relation types
-** TODO operations to validate that each list item has required relations
 * TODO Objectives loop
 ** TODO Full spec on planing activities
 ** TODO Objectives grooming loop
@@ -50,13 +35,7 @@
 ** TODO Iterate goals into objectives
 ** TODO Full objective set grooming (may be moved into separate TODO list, since it may require planing)
 ** TODO Goals grooming (may be moved into separate TODO list, since it may require planing)
-* TODO We may want to get counters on every level of workspaces like "a:b:c", where story is one of the levels and donna workspace is the other.
-* TODO move action requests cli out of story cli, but where?
-* TODO Action request operation refactoring (most-likely, rewrite to Jinja2)
-** requested_kind_spec can be removed in the honor of using jinjaglobal function in the template
-*** however, the hidden functionality ensures displaying the specification of the record kind before the action request is displayed
-** partical_description should be built somehow differently then now (not transparent enough)
-** Include the exact donna commands in the action request body. Right now it assumes the agent remembers or infers the CLI syntax
+* TODO Do we need counters as a separate entity/config?
 * TODO Records navigation + introspection
 ** TODO donna records ?extract? <kind*> <--property=>*
 *** add <display/renderer> as the global object that defines how to render the output
@@ -70,18 +49,8 @@
 ** TODO Maybe we do not need kinds separate from records?
 * TODO Consider using https://github.com/toon-format/toon for json formatting in cells
 * TODO WE CAN ASK DONNA TO MAKE A FSM FOR DONNA!!! WHICH WILL BE OUR PLAN OF WORK!!!
-* TODO rename plan.py/plan.json, because it conflates with the planing records
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
-* TODO do we really need multiple stories? It looks like we always work on a single story every time.
 * TODO refactor workflows + operations into configs
-** Artifacts edition via donna
-*** copy source command
-*** update source command
-*** etag
-*** specification of the artifact format
-** refactor end_to_end_story_cycle into generating artifacts
-** remove records functionality
-** remove workflows submodule
 ** remove layout.py? It's functionality should be moved to worlds
 ** global ids vs local ids (for operations)
 ** remove primitives_registry.py? Since there only artifacts will left
@@ -104,12 +73,45 @@
 ** should we call validation on every artifact load?
 ** Render scheme of workflow somewhere?
 ** break story_loop into multiple workflows?
-** tune workding of workflows (what to write before goto)
+** tune wording of workflows (what to write before goto)
 ** move workflow start into session command?
 ** unify code of different renderers? It is very similar
 *** add validation for specificaiton existence in renderers
 *** Spec rendere can be unified, since its cli command
 ** When we start the workflow, should we output the head cells before the first operation?
+** We may want, by default load/upload artifacts in a custom donna-managed directory, so, no filenames are needed for agents. This also will help to add right extensions automatically => help agents to anderstand internal formats.
+** meta_work_loop.md contains a lot of repetitive commands to read specifications. We should optimize them somehow.
+*** Approach 1: move them to the head section text
+*** Approach 2: move them to the head section config
+*** Approach 3: keep them, but add some meta info on analysis phase that donna can use.
+** Run CLI operation
+*** new operation type to run cli
+*** specify next operations depending on the cli result code
+*** update artifacts specification with new code block info
+** Improve work with artifact specifications
+*** Introspection of renderers
+*** Introspection of artifact kinds
+*** Introspection of code block formats
+**** supported primary formats
+**** supported properties
+*** update default_text_artifacts_behavior.md to reference introspection instead of harding info.
+*** add info about merging configs into default_text_artifacts_behavior.md
+*** resolve duplication of config.description and markdown description in the head section of the artifact
+*** we can reference artifact_id:operation_id, should we make id required for each section (or, at least, optional) to be able to reference each section?
+*** We have duplicated logic: Final operation (that finishes the workflow) and mode = final for operation node (that does not guarantee finishing the workflow).
+*** Optionaly (true by default) validate artifact contents before update.
+** Planning improvements:
+*** align naming of session-level specifications
+*** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
+*** {{ edit(specification) }} renderer?
+*** {{ run(workflow) }} renderer?
+*** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
+*** Declare explicit refining loop
+*** Add mini workflows to polish each kind of records?
+*** add tmp directory for intermediate artifacts? mayby in .donna/session/tmp/
+* TODO Worlds improvements
+** We may want to list worlds via donna cli (introspection?)
+** We may want to register world kinds automatically.
 * TODO error messages should provide helpful hints for agents
 * TODO "Story" term still in some specs for convienience, we should think of a better naming
 * TODO artifacts descripion vs intro — they replicate each other, maybe we could keep only one of them? Intro whould work better.
@@ -123,3 +125,10 @@
 ** register jinja2 filters?
 * TODO Organize standard cell kinds into enum (but allow custom kinds as well). Or just provide custom constructors for each use-case.
 * TODO ask codex to straighten the naming/dictionary/terms in the donna project
+** review the dictionary of primary terms
+* TODO remove mention of <DONNA_CMD> from specs
+* TODO errors processing improvements
+** Vebose jinja2 render errors to help agents and developers
+** replace all NotImplementedError exceptions with custom exceptions and smart error handling
+** exceptions must output cells?
+* TODO Workflow for explicit morphological analysis
