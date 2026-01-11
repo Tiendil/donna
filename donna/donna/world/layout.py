@@ -2,7 +2,6 @@ import pathlib
 
 from donna.core import utils
 from donna.domain.ids import WorldId
-from donna.domain.types import RecordId, RecordKindId
 from donna.world.config import WorldFilesystem, config
 
 # TODO: Make configurable
@@ -24,15 +23,6 @@ class Layout:
 
     def session_plan(self) -> pathlib.Path:
         return self.session / "plan.json"
-
-    def session_records_dir(self) -> pathlib.Path:
-        return self.session / "records"
-
-    def session_records_index(self) -> pathlib.Path:
-        return self.session / "index.json"
-
-    def session_record_kind(self, record_id: RecordId, kind: RecordKindId) -> pathlib.Path:
-        return self.session / f"{record_id}.{kind}.json"
 
     def session_counters(self) -> pathlib.Path:
         return self.session / "counters.json"

@@ -15,12 +15,6 @@ ActionRequestIdOption = Annotated[
 ]
 
 
-RecordIdArgument = Annotated[
-    types.RecordId,
-    typer.Argument(parser=create_internal_id_parser(types.RecordId), help="The ID of the record"),
-]
-
-
 SlugArgument = Annotated[
     types.Slug,
     typer.Argument(parser=types.slug_parser, help="The slug identifier"),

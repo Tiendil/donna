@@ -12,13 +12,11 @@ NestedId = NewType("NestedId", str)
 WorkUnitId = NewType("WorkUnitId", InternalId)
 ActionRequestId = NewType("ActionRequestId", InternalId)
 TaskId = NewType("TaskId", InternalId)
-RecordId = NewType("RecordId", InternalId)
 
 # Ids that are lowercase ASCII without spaces
 
 Slug = NewType("Slug", str)
 
-RecordKindId = NewType("RecordKindId", Slug)
 OperationResultId = NewType("OperationResultId", Slug)
 
 

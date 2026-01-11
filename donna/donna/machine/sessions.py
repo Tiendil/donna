@@ -4,7 +4,6 @@ from typing import cast
 from donna.domain.ids import FullArtifactId
 from donna.machine.counters import Counters
 from donna.machine.plans import Plan
-from donna.machine.records import RecordsIndex
 from donna.machine.tasks import Task, WorkUnit
 from donna.std.code.workflows import Workflow
 from donna.world import artifacts
@@ -17,18 +16,13 @@ def start() -> None:
 
     counters = Counters.build()
 
-    records_index = RecordsIndex(records=[])
-
     shutil.rmtree(layout().session)
 
     layout().session.mkdir(parents=True, exist_ok=True)
-    layout().session_records_dir().mkdir(parents=True, exist_ok=True)
 
     plan.save()
 
     counters.save()
-
-    records_index.save()
 
 
 def exists() -> bool:

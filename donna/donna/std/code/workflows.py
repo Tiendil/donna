@@ -3,15 +3,11 @@ from typing import Any
 import jinja2
 from jinja2.runtime import Context
 
-from donna.domain import types
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId, NamespaceId, OperationId
-from donna.domain.types import RecordKindId
 from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
 from donna.machine.operations import Operation, OperationKind, OperationMode
-from donna.machine.records import RecordKindSpec, RecordsIndex
 from donna.machine.templates import RendererKind
-from donna.primitives.records.pure_text import PureText
 from donna.world.markdown import ArtifactSource, SectionSource
 from donna.world.primitives_register import register
 from donna.world.templates import RenderMode
@@ -200,55 +196,3 @@ goto_renderer = GoTo(
     description="Instructs the agent to proceed to the specified operation in the workflow.",
     example="{{ goto('<operation_id>') }}",
 )
-
-# TODO: remove this later
-
-DEVELOPER_DESCRIPTION = RecordKindSpec(
-    kind=RecordKindId(types.Slug("session_developer_description")),
-)
-WORK_DESSCRIPTION = RecordKindSpec(
-    kind=RecordKindId(types.Slug("session_work_description")),
-)
-
-GOAL = RecordKindSpec(kind=RecordKindId(types.Slug("session_goal")))
-
-OBJECTIVE = RecordKindSpec(kind=RecordKindId(types.Slug("session_objective")))
-CONSTRAINT = RecordKindSpec(kind=RecordKindId(types.Slug("session_constraint")))
-ACCEPTANCE_CRITERIA = RecordKindSpec(kind=RecordKindId(types.Slug("session_acceptance_criteria")))
-DELIVERABLE = RecordKindSpec(kind=RecordKindId(types.Slug("session_deliverable")))
-
-PLAN_ITEM = RecordKindSpec(kind=RecordKindId(types.Slug("session_plan_item")))
-
-
-def _get_aggregated_text_content(  # noqa: CCR001
-    index: RecordsIndex, kind_spec: RecordKindSpec, as_list: bool
-) -> str | None:
-    records = index.get_records_for_kind(kind_spec.kind)
-
-    if not records:
-        return None
-
-    lines = []
-
-    for record in records:
-        kind_items = index.get_record_kind_items(record.id, [kind_spec.kind])
-
-        for kind in kind_items:
-            if kind is None:
-                continue
-
-            if not isinstance(kind, PureText):
-                raise NotImplementedError(
-                    f"Record kind item for record '{record.id}' and kind '{kind_spec.kind}' is not PureText"
-                )
-
-            if as_list:
-                lines.append(f"[{record.id}] {kind.content}")
-                continue
-
-            lines.extend([kind.content, ""])
-
-    if lines[-1] == "":
-        lines.pop()
-
-    return "\n".join(lines)
