@@ -50,13 +50,18 @@
 * TODO Consider using https://github.com/toon-format/toon for json formatting in cells
 * TODO WE CAN ASK DONNA TO MAKE A FSM FOR DONNA!!! WHICH WILL BE OUR PLAN OF WORK!!!
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
+* TODO Lazy import of primitives from Python artifacts
+** world kinds are configured via python module imports (not artifact paths?)
+*** or somehow very smartly via artifact paths
+** system python (i.e. donna's environment) can be a world also with predefined behavior
+*** so references to actual python modules should also work
+** artifacts listing/search functionality goest to the worlds
+*** words should return standardized short info records about each artifact
+*** and about each primitive (?) or should primitives be left for the donna side?
+** => introspection uses worlds to list available artifact/primitives
+** remove primitives registry completely
+** improve introspection cli
 * TODO refactor workflows + operations into configs
-** remove primitives_registry.py? Since there only artifacts will left
-*** python modules are artifacts also
-*** system python can be a world to?
-*** so, we can lazy import any primitive we want, by referencing to it by a full id.
-*** however, we'll lose the ability to list/discover all available primitives => can not introspect?
-** remove introspections functionality? because it is fully covered by artifacts?
 ** merged section configs MUST be parsed directly by pydantic models, no magic
 ** action request also could be an artifact?
 ** review how changes work, maybe we can refactor them or remove
