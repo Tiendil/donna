@@ -69,6 +69,7 @@
 *** or without their current role in the code
 ** mark artifacts and sections with tags to simplify filtering/searching
 *** Do we need speciciations for tags? I.e. does tag a primitive?
+** We may want to allow donna render part of artifact only (by section id)
 * TODO Refining architecture
 ** Artifacts configs improvements
 *** merged section configs MUST be parsed directly by pydantic models, no magic
