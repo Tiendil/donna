@@ -19,7 +19,7 @@ kind = "request_action"
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
 2. Read the specification `{{ view("donna.specifications.default_text_artifacts_behavior") }}` if you haven't done it yet.
 3. If the developer hasn't provided you a description of the work for this session, ask them to provide it.
-4. Create new session-level specification `session.specification.work_scope.md` with developer-provided description of the work to be done.
+4. Create new session-level specification `session.specification.work_scope` with developer-provided description of the work to be done.
 5. `{{ goto("create_work_description") }}`
 
 ## Create Work Description
@@ -32,7 +32,7 @@ kind = "request_action"
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
 2. Read the specification `{{ view("donna.specifications.default_text_artifacts_behavior") }}` if you haven't done it yet.
 3. Formulate a concise high-level description of the work to be done, based on the developer-provided description.
-4. Add this description to the `session.specification.work_scope.md`.
+4. Add this description to the `session.specification.work_scope`.
 5. `{{ goto("list_primary_goals") }}`
 
 ## List Primary Goals
@@ -44,7 +44,7 @@ kind = "request_action"
 
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
 2. Read the specification `{{ view("donna.specifications.default_text_artifacts_behavior") }}` if you haven't done it yet.
-3. If you can add more goals based on existing `{{ view("session.specification.work_scope.md") }}` add them to the specification.
+3. If you can add more goals based on existing `{{ view("session.specification.work_scope") }}` add them to the specification.
 4. If you can polish the existing goals according to the quality criteria in the `{{ view("donna.specifications.planning") }}` do it.
 5. `{{ goto("list_objectives") }}`
 
@@ -59,7 +59,7 @@ You MUST list objectives that need to be achieved to complete each goal.
 
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
 2. Read the specification `{{ view("donna.specifications.default_text_artifacts_behavior") }}` if you haven't done it yet.
-3. If you can add more objectives based on existing `{{ view("session.specification.work_scope.md") }}` add them to the specification.
+3. If you can add more objectives based on existing `{{ view("session.specification.work_scope") }}` add them to the specification.
 4. If you can polish the existing objectives according to the quality criteria in the `{{ view("donna.specifications.planning") }}` do it.
 5. `{{ goto("list_constraints") }}`
 
@@ -72,7 +72,7 @@ kind = "request_action"
 
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
 2. Read the specification `{{ view("donna.specifications.default_text_artifacts_behavior") }}` if you haven't done it yet.
-3. If you can add more constraints based on existing `{{ view("session.specification.work_scope.md") }}` add them to the specification.
+3. If you can add more constraints based on existing `{{ view("session.specification.work_scope") }}` add them to the specification.
 4. If you can polish the existing constraints according to the quality criteria in the `{{ view("donna.specifications.planning") }}` do it.
 5. `{{ goto("list_acceptance_criteria") }}`
 
@@ -85,7 +85,7 @@ kind = "request_action"
 
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
 2. Read the specification `{{ view("donna.specifications.default_text_artifacts_behavior") }}` if you haven't done it yet.
-3. If you can add more acceptance criteria based on existing `{{ view("session.specification.work_scope.md") }}` add them to the specification.
+3. If you can add more acceptance criteria based on existing `{{ view("session.specification.work_scope") }}` add them to the specification.
 4. If you can polish the existing acceptance criteria according to the quality criteria in the `{{ view("donna.specifications.planning") }}` do it.
 5. `{{ goto("list_deliverables") }}`
 
@@ -98,7 +98,7 @@ kind = "request_action"
 
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
 2. Read the specification `{{ view("donna.specifications.default_text_artifacts_behavior") }}` if you haven't done it yet.
-3. If you can list more deliverables based on existing `{{ view("session.specification.work_scope.md") }}` add them to the specification.
+3. If you can list more deliverables based on existing `{{ view("session.specification.work_scope") }}` add them to the specification.
 4. If you can polish the existing deliverables according to the quality criteria in the `{{ view("donna.specifications.planning") }}` do it.
 5. `{{ goto("prepare_plan") }}`
 
@@ -109,19 +109,11 @@ id = "prepare_plan"
 kind = "request_action"
 ```
 
-Here is current state of the session specification.
-
-```
-{{partial_description()}}
-```
-
-You MUST prepare a detailed work plan for this session.
-
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
-2. If you can identify one more plan item:
-2.1. add it as a `<record kind: session_plan_item>` to the session;
-2.2. `{{ goto("prepare_plan") }}`;
-3. Otherwise, `{{ goto("execute_plan") }}`
+2. Read the specification `{{ view("donna.specifications.default_text_artifacts_behavior") }}` if you haven't done it yet.
+3. Read the specification `{{ view("session.specification.work_scope") }}` if you haven't done it yet.
+4. Create new session-level workflow `session.specification.work_execution` according to the scope of work you have defined.
+5. `{{ goto("execute_plan") }}`
 
 ## Execute Plan
 
@@ -130,16 +122,8 @@ id = "execute_plan"
 kind = "request_action"
 ```
 
-Here is the work plan for the session.
-
-```
-{{partial_description()}}
-```
-
-You MUST thoroughly execute the plan step by step to finish the work.
-
-1. Follow the plan carefully and implement the necessary changes to complete the session.
-2. When you finish executing the plan, `{{ goto("groom_work") }}`
+1. Run workflow `session.specification.work_execution` to execute the work according to the plan.
+2. `{{ goto("groom_work") }}`
 
 ## Groom Work
 
@@ -148,10 +132,8 @@ id = "groom_work"
 kind = "request_action"
 ```
 
-You have completed the work according to the plan.
-
 1. Run the grooming workflow to ensure that the result is polished, clean, and ready for review.
-2. When you finish grooming workflow, `{{ goto("finish") }}`
+2. `{{ goto("finish") }}`
 
 ## Finish
 

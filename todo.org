@@ -111,6 +111,7 @@
 *** align naming of session-level specifications
 *** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
 *** {{ edit(specification) }} renderer?
+*** {{ run(workflow) }} renderer?
 *** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
 *** Declare explicit refining loop
 *** Add mini workflows to polish each kind of records?
