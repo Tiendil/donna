@@ -131,3 +131,4 @@
 ** Vebose jinja2 render errors to help agents and developers
 ** replace all NotImplementedError exceptions with custom exceptions and smart error handling
 ** exceptions must output cells?
+* TODO Workflow for explicit morphological analysis
