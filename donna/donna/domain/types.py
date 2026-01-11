@@ -1,15 +1,5 @@
 from typing import Callable, NewType
 
-# Internal base types
-
-InternalId = NewType("InternalId", str)
-
-# Ids that are integer-based with a prefix and CRC
-# I.e. dynamically generated ids
-
-WorkUnitId = NewType("WorkUnitId", InternalId)
-ActionRequestId = NewType("ActionRequestId", InternalId)
-TaskId = NewType("TaskId", InternalId)
 
 # Ids that are lowercase ASCII without spaces
 

@@ -2,7 +2,6 @@ import shutil
 from typing import cast
 
 from donna.domain.ids import FullArtifactId
-from donna.machine.counters import Counters
 from donna.machine.plans import Plan
 from donna.machine.tasks import Task, WorkUnit
 from donna.std.code.workflows import Workflow
@@ -14,15 +13,11 @@ def start() -> None:
 
     plan = Plan.build()
 
-    counters = Counters.build()
-
     shutil.rmtree(layout().session)
 
     layout().session.mkdir(parents=True, exist_ok=True)
 
     plan.save()
-
-    counters.save()
 
 
 def exists() -> bool:

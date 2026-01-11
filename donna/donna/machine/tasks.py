@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING, Any, cast
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import FullArtifactLocalId, OperationId, next_id
-from donna.domain.types import TaskId, WorkUnitId
+from donna.domain.ids import FullArtifactLocalId, OperationId, TaskId, WorkUnitId
+
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -34,9 +34,9 @@ class Task(BaseEntity):
     model_config = pydantic.ConfigDict(frozen=False)
 
     @classmethod
-    def build(cls) -> "Task":
+    def build(cls, id: TaskId) -> "Task":
         return Task(
-            id=next_id(TaskId),
+            id=id,
             state=TaskState.TODO,
             context={},
         )
@@ -61,12 +61,11 @@ class WorkUnit(BaseEntity):
     @classmethod
     def build(
         cls,
+        id: WorkUnitId,
         task_id: TaskId,
         operation_id: FullArtifactLocalId,
         context: dict[str, Any] | None = None,
     ) -> "WorkUnit":
-
-        id = next_id(WorkUnitId)
 
         if context is None:
             context = {}

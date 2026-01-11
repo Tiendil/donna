@@ -2,10 +2,7 @@ import textwrap
 from typing import cast
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import FullArtifactLocalId, OperationId, next_id
-from donna.domain.types import (
-    ActionRequestId,
-)
+from donna.domain.ids import FullArtifactLocalId, OperationId, ActionRequestId
 from donna.machine.cells import Cell
 from donna.std.code.workflows import Workflow
 from donna.world import artifacts
@@ -17,9 +14,9 @@ class ActionRequest(BaseEntity):
     operation_id: FullArtifactLocalId
 
     @classmethod
-    def build(cls, request: str, operation_id: FullArtifactLocalId) -> "ActionRequest":
+    def build(cls, id: ActionRequestId, request: str, operation_id: FullArtifactLocalId) -> "ActionRequest":
         return cls(
-            id=next_id(ActionRequestId),
+            id=id,
             request=request,
             operation_id=operation_id,
         )

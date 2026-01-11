@@ -3,8 +3,7 @@ from typing import cast
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import FullArtifactLocalId, OperationId, RichInternalId
-from donna.domain.types import ActionRequestId, TaskId, WorkUnitId
+from donna.domain.ids import FullArtifactLocalId, OperationId, InternalId, ActionRequestId, TaskId, WorkUnitId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
 from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState
@@ -37,8 +36,8 @@ class Plan(BaseEntity):
             next_id=1,
         )
 
-    def next_id(self, prefix: str) -> RichInternalId:
-        new_id = RichInternalId(prefix, self.last_id)
+    def next_id(self, prefix: str) -> InternalId:
+        new_id = InternalId.build(prefix, self.last_id)
         self.last_id += 1
         return new_id
 

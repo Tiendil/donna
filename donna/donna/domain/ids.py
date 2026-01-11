@@ -22,11 +22,57 @@ def _id_crc(number: int) -> str:
     return "".join(chars)
 
 
-class RichInternalId(str):
+class InternalId(str):
     __slots__ = ()
 
-    def __init__(self, prefix: str, value: int) -> None:
-        super().__init__(f"{prefix}-{value}-{_id_crc(value)}")
+    def __new__(cls, value: str) -> "InternalId":
+        if not cls.validate(value):
+            raise NotImplementedError(f"Invalid InternalId: '{value}'")
+
+        return super().__new__(cls, value)
+
+    @classmethod
+    def build(cls, prefix: str, value: int) -> "InternalId":
+        return cls(f"{prefix}-{value}-{_id_crc(value)}")
+
+    @classmethod
+    def validate(cls, id: str) -> bool:
+        prefix, value, crc = id.rsplit("-", maxsplit=2)
+        expected_id = cls.build(prefix, int(value))
+        return expected_id == id
+
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
+
+        def validate(v: Any) -> "InternalId":
+            if isinstance(v, cls):
+                return v
+
+            if not isinstance(v, str):
+                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
+
+            if not cls.validate(v):
+                raise ValueError(f"Invalid {cls.__name__}: {v!r}")
+
+            return cls(v)
+
+        return core_schema.json_or_python_schema(
+            json_schema=core_schema.str_schema(),
+            python_schema=core_schema.no_info_plain_validator_function(validate),
+            serialization=core_schema.to_string_ser_schema(),
+        )
+
+
+class WorkUnitId(InternalId):
+    __slots__ = ()
+
+
+class ActionRequestId(InternalId):
+    __slots__ = ()
+
+
+class TaskId(InternalId):
+    __slots__ = ()
 
 
 class Identifier(str):
@@ -204,24 +250,3 @@ class FullArtifactLocalId(tuple[WorldId, NamespaceId, ArtifactId, ArtifactLocalI
             python_schema=core_schema.no_info_plain_validator_function(validate),
             serialization=core_schema.to_string_ser_schema(),
         )
-
-
-def create_internal_id_parser[InternalIdType: types.InternalId](
-    type_id: Callable[[types.InternalId], InternalIdType],
-) -> Callable[[str], InternalIdType]:
-    def parser(text: str) -> InternalIdType:
-        parts = text.split("-")
-
-        if len(parts) != 3:
-            raise ValueError(f"Invalid id format: '{text}'")
-
-        prefix, number, crc = parts
-
-        id = RichInternalId(prefix=prefix, value=int(number))
-
-        if id.crc() != crc:
-            raise NotImplementedError(f"Invalid crc for id: '{text}'")
-
-        return type_id(id.to_internal())
-
-    return parser
