@@ -5,7 +5,7 @@ from donna.cli.types import ActionRequestIdArgument, FullArtifactIdArgument, Ful
 from donna.cli.utils import output_cells
 from donna.domain.ids import WorldId
 from donna.machine import sessions
-from donna.machine.plans import Plan
+from donna.machine.state import State
 from donna.world.config import config
 
 sessions_cli = typer.Typer()
@@ -21,36 +21,36 @@ def start() -> None:
 def _continue() -> None:
     sessions.start()
 
-    plan = Plan.load()
-    output_cells(plan.run())
+    state = State.load()
+    output_cells(state.run())
 
 
 @sessions_cli.command()
 def status() -> None:
     sessions.start()
 
-    plan = Plan.load()
-    output_cells(plan.status_cells())
+    state = State.load()
+    output_cells(state.status_cells())
 
 
 @sessions_cli.command()
 def run(workflow_id: FullArtifactIdArgument) -> None:
     sessions.start_workflow(workflow_id)
 
-    plan = Plan.load()
+    state = State.load()
 
-    output_cells(plan.run())
+    output_cells(state.run())
 
 
 @sessions_cli.command()
 def action_request_completed(
     request_id: ActionRequestIdArgument, next_operation_id: FullArtifactLocalIdArgument
 ) -> None:
-    plan = Plan.load()
+    state = State.load()
 
-    plan.complete_action_request(request_id, next_operation_id)
+    state.complete_action_request(request_id, next_operation_id)
 
-    output_cells(plan.run())
+    output_cells(state.run())
 
 
 @sessions_cli.command()

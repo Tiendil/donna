@@ -21,8 +21,8 @@ from donna.world import artifacts
 from donna.world.config import config
 
 
-# TODO: somehow separate methods that save plan and those that do not
-class Plan(BaseEntity):
+# TODO: somehow separate methods that save state and those that do not
+class State(BaseEntity):
     active_tasks: list[Task]
     queue: list[WorkUnit]  # TODO: rename from queue, because it's not a queue anymore
     action_requests: list[ActionRequest]
@@ -34,7 +34,7 @@ class Plan(BaseEntity):
     model_config = pydantic.ConfigDict(frozen=False)
 
     @classmethod
-    def build(cls) -> "Plan":
+    def build(cls) -> "State":
         return cls(
             active_tasks=[],
             action_requests=[],
@@ -73,7 +73,7 @@ class Plan(BaseEntity):
         self.started = True
 
     def is_completed(self) -> bool:
-        # A plan can not consider itself completed if it was never started
+        # A state can not consider itself completed if it was never started
         # it is important to distinguish sessions with unfinished initialization and sessions that are done
         return not self.active_tasks and self.started and not self.action_requests
 
@@ -92,21 +92,21 @@ class Plan(BaseEntity):
             if request.id == request_id:
                 return request
 
-        raise NotImplementedError(f"Action request with id '{request_id}' not found in plan")
+        raise NotImplementedError(f"Action request with id '{request_id}' not found in state")
 
     def get_work_unit(self, work_unit_id: WorkUnitId) -> WorkUnit:
         for unit in self.queue:
             if unit.id == work_unit_id:
                 return unit
 
-        raise NotImplementedError(f"Work unit with id '{work_unit_id}' not found in plan")
+        raise NotImplementedError(f"Work unit with id '{work_unit_id}' not found in state")
 
     def save(self) -> None:
         world = config().get_world(WorldId("session"))
         world.write_state("state.json", self.to_json().encode("utf-8"))
 
     @classmethod
-    def load(cls) -> "Plan":
+    def load(cls) -> "State":
         world = config().get_world(WorldId("session"))
         return cls.from_json(world.read_state("state.json").decode("utf-8"))
 
@@ -209,7 +209,7 @@ class Plan(BaseEntity):
     def status_cells(self) -> list[Cell]:
         return [
             Cell.build_meta(
-                kind="plan_status",
+                kind="state_status",
                 active_tasks=len(self.active_tasks),
                 queued_work_units=len(self.queue),
                 pending_action_requests=len(self.action_requests),
