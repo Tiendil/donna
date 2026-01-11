@@ -32,14 +32,14 @@ The source of the text artifact is a Jinja2-template of Markdown document.
 
 When rendering the artifact, Donna processes the Jinja2 template with a predefined set of variables and filters, and then renders the resulting Markdown content into the desired representation.
 
-**Artifact source should not use Jinja2 inheretance features** like `{% extends %}` and `{% block %}`.
+**Artifact source should not use Jinja2 inheretance features** like `{{ "{% extends %}" }}` and `{{ "{% block %}" }}`.
 
 Donna provides a set of special callbacks that can and MUST be used in the artifact source to enhance its behavior. Some of these callbacks are valid for all artifacts, some are valid only for specific artifact kinds.
 
 Here are some examples:
 
-- `{{ view("<artifact-id>") }}` — references another artifact. Depending of the rendering mode can be: exect CLI command to view the artifact, specially formatted reference link to the artifact to easier track dependencies.
-- `{{ goto("<workflow-operation-id>") }}` — references the next workflow operation to execute. Depending of the rendering mode can be: exect CLI command to push workflow forward, specially formatted reference link to the operation to enable FSM validation of the workflow.
+- `{{ "{{ view(<artifact-id>) }}" }}` — references another artifact. Depending of the rendering mode can be: exect CLI command to view the artifact, specially formatted reference link to the artifact to easier track dependencies.
+- `{{ "{{ goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. Depending of the rendering mode can be: exect CLI command to push workflow forward, specially formatted reference link to the operation to enable FSM validation of the workflow.
 
 ## Structure of a Text Artifact
 
@@ -142,8 +142,8 @@ Example of the instructions:
 
 ```
 1. Run `some cli command` to do something.
-2. If no errors encountered `{{ goto("next_operation") }}`
-3. If errors encountered `{{ goto("error_handling_operation") }}`
+2. If no errors encountered `{{ '{{ goto("next_operation") }}' }}`
+3. If errors encountered `{{ '{{ goto("error_handling_operation") }}' }}`
 
 Here may be any additional instructions, requirements, notes, references, etc.
 ```
@@ -162,5 +162,5 @@ Donna provides multiple callbacks that MUST be used in the artifact source to en
 
 Here they are:
 
-1. `{{ view("<full-artifact-id>") }}` — references another artifact. Depending of the rendering mode can be: exect CLI command to view the artifact, specially formatted reference link to the artifact to easier track dependencies.
-2. `{{ goto("<workflow-operation-id>") }}` — references the next workflow operation to execute. Depending of the rendering mode can be: exect CLI command to push workflow forward, specially formatted reference link to the operation to enable FSM validation of the workflow.
+1. `{{ "{{ view(<full-artifact-id>) }}" }}` — references another artifact. Depending of the rendering mode can be: exect CLI command to view the artifact, specially formatted reference link to the artifact to easier track dependencies.
+2. `{{ "{{ goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. Depending of the rendering mode can be: exect CLI command to push workflow forward, specially formatted reference link to the operation to enable FSM validation of the workflow.
