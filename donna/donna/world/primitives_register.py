@@ -1,4 +1,3 @@
-import importlib.util
 import pathlib
 import types
 from typing import Any, Iterator, cast
