@@ -69,7 +69,7 @@
 *** or without their current role in the code
 ** mark artifacts and sections with tags to simplify filtering/searching
 *** Do we need speciciations for tags? I.e. does tag a primitive?
-* TODO refactor workflows + operations into configs
+* TODO Refining architecture
 ** Artifacts configs improvements
 *** merged section configs MUST be parsed directly by pydantic models, no magic
 *** improve markdown parsing & rendering
