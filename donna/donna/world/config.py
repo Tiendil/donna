@@ -110,6 +110,8 @@ class WorldFilesystem(World):
 def _default_worlds() -> list["WorldFilesystem"]:
     _donna = DONNA_DIR_NAME
 
+    project_dir = utils.discover_project_dir(_donna)
+
     return [
         WorldFilesystem(
             id=WorldId("donna"),
@@ -125,13 +127,13 @@ def _default_worlds() -> list["WorldFilesystem"]:
         ),
         WorldFilesystem(
             id=WorldId("project"),
-            path=utils.project_dir(_donna) / _donna,
+            path=project_dir / _donna,
             readonly=False,
             session=False,
         ),
         WorldFilesystem(
             id=WorldId("session"),
-            path=utils.project_dir(_donna) / _donna / DONNA_DESSION_DIR_NAME,
+            path=project_dir / _donna / DONNA_DESSION_DIR_NAME,
             readonly=False,
             session=True,
         ),
@@ -158,7 +160,7 @@ def config() -> Config:
     if _CONFIG:
         return _CONFIG
 
-    config_path = utils.project_dir(DONNA_DIR_NAME) / DONNA_CONFIG_NAME
+    config_path = utils.discover_project_dir(DONNA_DIR_NAME) / DONNA_CONFIG_NAME
 
     if config_path.exists():
         _CONFIG = Config.model_validate(tomllib.loads(config_path.read_text()))

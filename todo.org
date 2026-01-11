@@ -133,4 +133,7 @@
 ** bootstrap.donna.craete_specifications
 ** bootstrap.python.create_grooming_workflow
 ** bootstrap.python.create_project
-* Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
+* TODO Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
+* TODO initialization of donna for the new project
+** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
+** create a copy of the default config for the new project
