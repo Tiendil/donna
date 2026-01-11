@@ -86,7 +86,10 @@
 *** Spec rendere can be unified, since its cli command
 ** When we start the workflow, should we output the head cells before the first operation?
 ** We may want, by default load/upload artifacts in a custom donna-managed directory, so, no filenames are needed for agents. This also will help to add right extensions automatically => help agents to anderstand internal formats.
-** meta_work_loop.md contains a lot of repetitive commands to read specifications. We should optimize them somehow. Maybe move them to the head section?
+** meta_work_loop.md contains a lot of repetitive commands to read specifications. We should optimize them somehow.
+*** Approach 1: move them to the head section text
+*** Approach 2: move them to the head section config
+*** Approach 3: keep them, but add some meta info on analysis phase that donna can use.
 ** Run CLI operation
 *** new operation type to run cli
 *** specify next operations depending on the cli result code
