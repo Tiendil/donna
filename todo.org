@@ -106,6 +106,7 @@
 *** we can reference artifact_id:operation_id, should we make id required for each section (or, at least, optional) to be able to reference each section?
 *** We have duplicated logic: Final operation (that finishes the workflow) and mode = final for operation node (that does not guarantee finishing the workflow).
 *** Optionaly (true by default) validate artifact contents before update.
+** Vebose jinja2 render errors to help agents and developers
 ** Planning improvements:
 *** align naming of session-level specifications
 *** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
