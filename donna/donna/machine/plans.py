@@ -95,12 +95,12 @@ class Plan(BaseEntity):
 
     def save(self) -> None:
         world = config().get_world("session")
-        world.write_state("state.json", self.to_json())
+        world.write_state("state.json", self.to_json().encode("utf-8"))
 
     @classmethod
     def load(cls) -> "Plan":
         world = config().get_world("session")
-        return cls.from_json(world.read_state("state.json"))
+        return cls.from_json(world.read_state("state.json").decode("utf-8"))
 
     def get_next_work_unit(self) -> WorkUnit | None:
         task_id = self.active_tasks[-1].id
