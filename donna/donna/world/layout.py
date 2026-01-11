@@ -24,9 +24,6 @@ class Layout:
     def session_plan(self) -> pathlib.Path:
         return self.session / "plan.json"
 
-    def session_counters(self) -> pathlib.Path:
-        return self.session / "counters.json"
-
     def sync(self) -> None:
         self.session.mkdir(exist_ok=True)
         self.workflows.mkdir(exist_ok=True)
