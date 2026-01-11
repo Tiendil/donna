@@ -10,7 +10,6 @@ from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeT
 from donna.machine.tasks import Task, TaskState, WorkUnit, WorkUnitState
 from donna.std.code.workflows import Workflow
 from donna.world import artifacts
-from donna.world.layout import layout
 from donna.world.config import config
 
 

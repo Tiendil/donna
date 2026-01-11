@@ -1,4 +1,5 @@
 import importlib.util
+import shutil
 import pathlib
 import tomllib
 import types
@@ -47,6 +48,9 @@ class World(BaseEntity):
 
     def write_state(self, name: str, content: bytes) -> None:
         raise NotImplementedError("You must implement this method in subclasses")
+
+    def initialize(self, reset: bool = False) -> None:
+        pass
 
 
 class WorldFilesystem(World):
@@ -138,6 +142,15 @@ class WorldFilesystem(World):
             modules.append(module)
 
         return modules
+
+    def initialize(self, reset: bool = False) -> None:
+        if self.readonly:
+            return
+
+        if self.path.exists() and reset:
+            shutil.rmtree(self.path)
+
+        self.path.mkdir(parents=True, exist_ok=True)
 
 
 # TODO: refactor donna to use importlib.resources and enable WorldPackage
