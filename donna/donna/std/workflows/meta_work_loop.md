@@ -29,29 +29,17 @@ id = "create_work_description"
 kind = "request_action"
 ```
 
-Here is current state of the session specification.
-
-```
-{{partial_description()}}
-```
-
-You MUST produce a high-level description of the work to be done based on the developer's description.
-
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
-2. Add the description as `<record kind: session_work_description>` to the session.
-3. `{{ goto("list_primary_goals") }}`
+2. Read the specification `{{ view("donna.specifications.default_text_artifacts_behavior") }}` if you haven't done it yet.
+3. Formulate a concise high-level description of the work to be done, based on the developer-provided description.
+4. Add this description to the `session.specification.work_scope.md`.
+5. `{{ goto("list_primary_goals") }}`
 
 ## List Primary Goals
 
 ```toml donna
 id = "list_primary_goals"
 kind = "request_action"
-```
-
-Here is current state of the session specification.
-
-```
-{{partial_description()}}
 ```
 
 You MUST list the goals of this session.
