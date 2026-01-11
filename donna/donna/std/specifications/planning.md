@@ -203,7 +203,11 @@ The work execution workflow has a standard name `session.workflows.work_executio
 
 The workflow MUST be an artifact of kind `workflow`, see details `{{ view("donna.specifications.default_text_artifacts_behavior") }}`. I.e. the final workflow must be a valid FSM that agent will execute with the help of `donna` tool.
 
-**You MUST prefer non-linear or cyclic workflows for complex tasks instead of long linear sequences.** I.e. use loops, conditionals, parallel branches, etc. where appropriate. That should help you to apply changes iteratively, validate them early and often and to polish the results step by step. I.e. prefere an incremental/evolutionary approach over a big-bang one.
+Primary requirement:
+
+1. **You MUST prefer non-linear or cyclic workflows for complex tasks instead of long linear sequences.** I.e. use loops, conditionals, parallel branches, etc. where appropriate. That should help you to apply changes iteratively, validate them early and often and to polish the results step by step. I.e. prefere an incremental/evolutionary approach over a big-bang one.
+2. However, prefere multiple short loops over a single long loop. The approach `do everything then repeat from scratch` is a bad practice. Instead, break down the work into smaller steps that can be done, verified and polished independently.
+3. Describe each operation with effort: add details, examples, behavior for edge cases, etc. Formulate each term and action precisely.
 
 General requirements:
 
