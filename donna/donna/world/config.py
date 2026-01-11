@@ -8,7 +8,7 @@ import pydantic
 from donna.core import utils
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactId, NamespaceId, WorldId
-from donna.domain.types import slug_parser
+
 
 DONNA_DIR_NAME = ".donna"
 DONNA_CONFIG_NAME = "donna.toml"
@@ -113,25 +113,25 @@ def _default_worlds() -> list["WorldFilesystem"]:
 
     return [
         WorldFilesystem(
-            id=WorldId(slug_parser("donna")),
+            id=WorldId("donna"),
             path=pathlib.Path(__file__).parent.parent / "std",
             readonly=True,
             session=False,
         ),
         WorldFilesystem(
-            id=WorldId(slug_parser("home")),
+            id=WorldId("home"),
             path=pathlib.Path.home() / _donna,
             readonly=True,
             session=False,
         ),
         WorldFilesystem(
-            id=WorldId(slug_parser("project")),
+            id=WorldId("project"),
             path=utils.project_dir(_donna) / _donna,
             readonly=False,
             session=False,
         ),
         WorldFilesystem(
-            id=WorldId(slug_parser("session")),
+            id=WorldId("session"),
             path=utils.project_dir(_donna) / _donna / DONNA_DESSION_DIR_NAME,
             readonly=False,
             session=True,

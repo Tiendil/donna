@@ -2,7 +2,6 @@ from typing import Annotated
 
 import typer
 
-from donna.domain import types
 from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactLocalId, NamespaceId
 
 ActionRequestIdArgument = Annotated[
@@ -12,12 +11,6 @@ ActionRequestIdArgument = Annotated[
 ActionRequestIdOption = Annotated[
     ActionRequestId,
     typer.Option(parser=ActionRequestId, help="The ID of the action request"),
-]
-
-
-SlugArgument = Annotated[
-    types.Slug,
-    typer.Argument(parser=types.slug_parser, help="The slug identifier"),
 ]
 
 
