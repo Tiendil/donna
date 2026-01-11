@@ -52,7 +52,7 @@ class ChangeAddActionRequest(Change):
         self.action_request = action_request
 
     def apply_to(self, plan: "Plan", task: Task) -> None:
-        plan.action_requests.append(self.action_request)
+        plan.add_action_request(self.action_request)
 
 
 class ChangeRemoveWorkUnitFromQueue(Change):

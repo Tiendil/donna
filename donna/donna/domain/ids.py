@@ -37,9 +37,9 @@ class InternalId(str):
 
     @classmethod
     def validate(cls, id: str) -> bool:
-        prefix, value, crc = id.rsplit("-", maxsplit=2)
-        expected_id = cls.build(prefix, int(value))
-        return expected_id == id
+        _prefix, value, crc = id.rsplit("-", maxsplit=2)
+        expected_crc = _id_crc(int(value))
+        return crc == expected_crc
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:

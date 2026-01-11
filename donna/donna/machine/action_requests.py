@@ -1,6 +1,8 @@
 import textwrap
 from typing import cast
 
+import pydantic
+
 from donna.core.entities import BaseEntity
 from donna.domain.ids import FullArtifactLocalId, OperationId, ActionRequestId
 from donna.machine.cells import Cell
@@ -9,14 +11,17 @@ from donna.world import artifacts
 
 
 class ActionRequest(BaseEntity):
-    id: ActionRequestId
+    id: ActionRequestId | None
     request: str
     operation_id: FullArtifactLocalId
 
+    # TODO: we may want to make queue items frozen later
+    model_config = pydantic.ConfigDict(frozen=False)
+
     @classmethod
-    def build(cls, id: ActionRequestId, request: str, operation_id: FullArtifactLocalId) -> "ActionRequest":
+    def build(cls, request: str, operation_id: FullArtifactLocalId) -> "ActionRequest":
         return cls(
-            id=id,
+            id=None,
             request=request,
             operation_id=operation_id,
         )

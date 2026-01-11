@@ -33,13 +33,33 @@ class Plan(BaseEntity):
             queue=[],
             last_cells=[],
             started=False,
-            next_id=1,
+            last_id=0,
         )
 
-    def next_id(self, prefix: str) -> InternalId:
-        new_id = InternalId.build(prefix, self.last_id)
+    def start_workflow(self, full_operation_id: FullArtifactLocalId) -> None:
+        task = Task.build(self.next_task_id())
+        work_unit = WorkUnit.build(
+            self.next_work_unit_id(),
+            task.id, full_operation_id)
+        self.add_task(task, work_unit)
+
+    def add_action_request(self, action_request: ActionRequest) -> None:
+        action_request.id = self.next_action_request_id()
+        self.action_requests.append(action_request)
+
+    def _next_id(self, prefix: str) -> InternalId:
         self.last_id += 1
+        new_id = InternalId.build(prefix, self.last_id)
         return new_id
+
+    def next_task_id(self) -> TaskId:
+        return cast(TaskId, self._next_id("T"))
+
+    def next_work_unit_id(self) -> WorkUnitId:
+        return cast(WorkUnitId, self._next_id("WU"))
+
+    def next_action_request_id(self) -> ActionRequestId:
+        return cast(ActionRequestId, self._next_id("AR"))
 
     def add_task(self, task: Task, work_unit: WorkUnit) -> None:
         self.active_tasks.append(task)
