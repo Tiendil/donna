@@ -52,11 +52,8 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO refactor workflows + operations into configs
 ** remove layout.py? It's functionality should be moved to worlds
-** global ids vs local ids (for operations)
 ** remove primitives_registry.py? Since there only artifacts will left
 ** remove introspections functionality? because it is fully covered by artifacts?
-** move all ids from types.py into ids.py
-** cleanum ids.py
 ** search for all left str ids and replace them with proper id types
 ** merged section configs MUST be parsed directly by pydantic models, no magic
 ** remove `primitives` submodule?
