@@ -7,7 +7,6 @@ import pydantic
 from donna.core.entities import BaseEntity
 from donna.domain.ids import FullArtifactLocalId, OperationId, TaskId, WorkUnitId
 
-
 if TYPE_CHECKING:
     from donna.machine.changes import Change
 

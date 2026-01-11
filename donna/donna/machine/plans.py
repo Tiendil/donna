@@ -3,7 +3,7 @@ from typing import cast
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import FullArtifactLocalId, OperationId, InternalId, ActionRequestId, TaskId, WorkUnitId
+from donna.domain.ids import ActionRequestId, FullArtifactLocalId, InternalId, OperationId, TaskId, WorkUnitId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
 from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState
@@ -38,9 +38,7 @@ class Plan(BaseEntity):
 
     def start_workflow(self, full_operation_id: FullArtifactLocalId) -> None:
         task = Task.build(self.next_task_id())
-        work_unit = WorkUnit.build(
-            self.next_work_unit_id(),
-            task.id, full_operation_id)
+        work_unit = WorkUnit.build(self.next_work_unit_id(), task.id, full_operation_id)
         self.add_task(task, work_unit)
 
     def add_action_request(self, action_request: ActionRequest) -> None:
@@ -226,9 +224,8 @@ class Plan(BaseEntity):
         current_task = self.active_tasks[-1]
 
         new_work_unit = WorkUnit.build(
-            self.next_work_unit_id(),
-            task_id=current_task.id,
-            operation_id=next_operation_id)
+            self.next_work_unit_id(), task_id=current_task.id, operation_id=next_operation_id
+        )
         self.queue.append(new_work_unit)
 
         self.remove_action_request(request_id)

@@ -3,7 +3,6 @@ from typing import Any
 from pydantic_core import core_schema
 
 
-
 def _id_crc(number: int) -> str:
     """Translates int into a compact string representation with a-zA-Z0-9 characters."""
     charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"

@@ -1,6 +1,5 @@
 from typing import Callable, NewType
 
-
 # Ids that are lowercase ASCII without spaces
 
 Slug = NewType("Slug", str)

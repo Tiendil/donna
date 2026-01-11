@@ -3,8 +3,7 @@ from typing import Annotated
 import typer
 
 from donna.domain import types
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId, NamespaceId, ActionRequestId
-
+from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactLocalId, NamespaceId
 
 ActionRequestIdArgument = Annotated[
     ActionRequestId,
