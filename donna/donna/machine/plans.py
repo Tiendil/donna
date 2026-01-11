@@ -11,6 +11,7 @@ from donna.machine.tasks import Task, TaskState, WorkUnit, WorkUnitState
 from donna.std.code.workflows import Workflow
 from donna.world import artifacts
 from donna.world.layout import layout
+from donna.world.config import config
 
 
 # TODO: somehow separate methods that save plan and those that do not
@@ -94,11 +95,13 @@ class Plan(BaseEntity):
         raise NotImplementedError(f"Work unit with id '{work_unit_id}' not found in plan")
 
     def save(self) -> None:
-        layout().session_plan().write_text(self.to_json())
+        world = config().get_world("session")
+        world.write_state("state.json", self.to_json())
 
     @classmethod
     def load(cls) -> "Plan":
-        return cls.from_json(layout().session_plan().read_text())
+        world = config().get_world("session")
+        return cls.from_json(world.read_state("state.json"))
 
     def get_next_work_unit(self) -> WorkUnit | None:
         task_id = self.active_tasks[-1].id

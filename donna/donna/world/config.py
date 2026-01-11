@@ -34,6 +34,20 @@ class World(BaseEntity):
     def get_modules(self) -> list[types.ModuleType]:
         raise NotImplementedError("You must implement this method in subclasses")
 
+    # These two methods are intended for storing world state (e.g., session data)
+    # It is and open question if the world state is an artifact itself or something else
+    # For the artifact: uniform API for storing/loading data
+    # Against the artifact:
+    # - session data MUST be accessible only by Donna => no one should be able to read/write/list it
+    # - session data will require an additonal kind(s) of artifact(s) just for that purpose
+    # - session data may change more frequently than regular artifacts
+
+    def read_state(self, name: str) -> bytes:
+        raise NotImplementedError("You must implement this method in subclasses")
+
+    def write_state(self, name: str, content: bytes) -> None:
+        raise NotImplementedError("You must implement this method in subclasses")
+
 
 class WorldFilesystem(World):
     path: pathlib.Path
@@ -57,6 +71,28 @@ class WorldFilesystem(World):
             raise NotImplementedError(f"World `{self.id}` is read-only")
 
         path = self._artifact_path(namespace_id, artifact_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+
+    def read_state(self, name: str) -> bytes:
+        if not self.session:
+            raise NotImplementedError(f"World `{self.id}` does not support state storage")
+
+        path = self.path / name
+
+        if not path.exists():
+            raise NotImplementedError(f"State `{name}` does not exist in world `{self.id}`")
+
+        return path.read_bytes()
+
+    def write_state(self, name: str, content: bytes) -> None:
+        if self.readonly:
+            raise NotImplementedError(f"World `{self.id}` is read-only")
+
+        if not self.session:
+            raise NotImplementedError(f"World `{self.id}` does not support state storage")
+
+        path = self.path / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)
 
