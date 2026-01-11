@@ -52,10 +52,6 @@
 * TODO WE CAN ASK DONNA TO MAKE A FSM FOR DONNA!!! WHICH WILL BE OUR PLAN OF WORK!!!
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO refactor workflows + operations into configs
-** Artifacts edition via donna
-*** specification of the artifact format
-*** update donna_usage.md
-*** do we want to validate artifact contents before update?
 ** refactor end_to_end_story_cycle into generating artifacts
 ** remove records functionality
 ** remove workflows submodule
@@ -103,6 +99,7 @@
 *** resolve duplication of config.description and markdown description in the head section of the artifact
 *** we can reference artifact_id:operation_id, should we make id required for each section (or, at least, optional) to be able to reference each section?
 *** We have duplicated logic: Final operation (that finishes the workflow) and mode = final for operation node (that does not guarantee finishing the workflow).
+*** Optionaly (true by default) validate artifact contents before update.
 * TODO Worlds improvements
 ** We may want to list worlds via donna cli (introspection?)
 ** We may want to register world kinds automatically.
