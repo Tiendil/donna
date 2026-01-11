@@ -150,6 +150,8 @@ Here may be any additional instructions, requirements, notes, references, etc.
 
 `goto` callback will be rendered in the direct instruction for agent of what to call after it completed the action.
 
+**The body of the operation MUST contain a neat strictly defined algorithm for the agent to follow.**
+
 2. `finish_worflow` operation kind indicates that the workflow is finished.
 
 Each possible path through the workflow MUST end with this operation kind.

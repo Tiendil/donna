@@ -112,7 +112,7 @@ kind = "request_action"
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
 2. Read the specification `{{ view("donna.specifications.default_text_artifacts_behavior") }}` if you haven't done it yet.
 3. Read the specification `{{ view("session.specification.work_scope") }}` if you haven't done it yet.
-4. Create new session-level workflow `session.specification.work_execution` according to the scope of work you have defined.
+4. Create new session-level workflow `session.workflows.work_execution` according to the scope of work you have defined.
 5. `{{ goto("execute_plan") }}`
 
 ## Execute Plan
@@ -122,7 +122,7 @@ id = "execute_plan"
 kind = "request_action"
 ```
 
-1. Run workflow `session.specification.work_execution` to execute the work according to the plan.
+1. Run workflow `session.workflows.work_execution` to execute the work according to the plan.
 2. `{{ goto("groom_work") }}`
 
 ## Groom Work

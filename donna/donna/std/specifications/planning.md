@@ -5,48 +5,62 @@ description = """
 This document describes how Donna MUST plan work on a session with the help of
 workflows. The document describes the process of planning, kinds of involved
 entities and requirements for them.
+
+This requirements MUST be applied to all planning workflows that Donna uses.
 """
 ```
 
 This document describes how Donna MUST plan work on a session with the help of workflows. The
 document describes the process of planning, kinds of involved entities and requirements for them.
 
+**This requirements MUST be applied to all planning workflows that Donna uses.**
+
 ## Overview
 
-Donna's workflows create a plan of work on a session by iteratively polishing the set of records
-associated with the session.
+Donna's workflows create a plan of work on a session by iteratively polishing the set of session-level artifacts.
 
-The kinds of records involved are outside the scope of this document, the agent will get full
-details on the required workflow steps.
+Artifacts are:
 
-The final plan contains the next sections, in order:
+- `session.specification.work_scope` — a specification that describes the scope of work to be done on the session.
+- `session.workflows.work_execution` — a workflow that describes the step-by-step plan of work to be done on the session.
+
+The agent MUST create and iteratively polish these artifacts until they meet all quality criteria described in this document. After the plan is ready, the agent MUST run it as a workflow.
+
+## Work Scope Specification
+
+The work scope specification has a standard name `session.specification.work_scope` and describes the work to be done in the context of the current session.
+
+The specification MUST contain the following sections:
 
 1. `Developer request` — a copy of the original description of the work from the developer.
-2. `Detailed work description` — a high-level description of the work to be done, created by Donna
+2. `Work description` — a high-level description of the work to be done, created by Donna
    based on the developer request.
 3. `Goals` — a list of goals that work strives to achieve.
 4. `Objectives` — a list of specific objectives that need to be completed to achieve the goals.
 5. `Known constraints` — a list of constraints for the session.
 6. `Acceptance criteria` — a list of acceptance criteria for the resulted work.
 7. `Deliverables / Artifacts` — a list of concrete deliverables / artifacts that MUST be produced.
-8. `Work plan` — a step-by-step plan of work to be done to achieve the objectives.
 
-Sections `Developer request` and `Detailed work description` are single-record sections.
-Sections `Goals`, `Objectives` are multi-record sections — a single record per a list item.
+Sections `Developer request` and `Detailed work description` are free-form text sections.
+Sections `Goals`, `Objectives` should contain lists of items.
 
-## "Developer Request" section requirements
+### "Developer Request" section requirements
 
-- This record MUST contain the original request from the developer. It MUST NOT be modified by Donna.
+- This section MUST contain the original request from the developer. The request MUST NOT be modified by Donna.
 
-## Detailed Work Description
+### "Work Description" section requirements
 
-- The record MUST contain a clear professional high-level description of the work to be done based
+- The section MUST contain a clear professional high-level description of the work to be done based
   on the developer's request.
-- The record MUST be limited to a single paragraph with a few sentences.
-- The record MUST explain what someone gains after these changes and how they can see it working.
+- The section MUST be limited to a single paragraph with a few sentences.
+- The sectino MUST explain what someone gains after these changes and how they can see it working.
   State the user-visible behavior the task will enable.
 
-## "Goals" section requirements
+### "Goals" section requirements
+
+- The section MUST contain a list of high-level goals that the work strives to achieve.
+
+The goal quality criteria:
 
 - A goal describes a desired end state, outcome or result.
 - A goal defines what should ultimately be true, not how to achieve it.
@@ -57,7 +71,11 @@ Sections `Goals`, `Objectives` are multi-record sections — a single record per
   c) reformulate to a list of second-layer items as required properties of the top-level goal.
 - Each goal must has clear scope and boundaries.
 
-## "Objectives" section requirements
+### "Objectives" section requirements
+
+- The section MUST contain a list of specific objectives that need to be completed to achieve the goals.
+
+Objective quality criteria:
 
 - An objective MUST describe an achieved state or capability not the act of describing it.
 - An objective MUST be phrased as "X exists / is implemented / is defined / is executable /
@@ -71,7 +89,11 @@ Sections `Goals`, `Objectives` are multi-record sections — a single record per
 - Each goal MUST have a set of objectives that, when all achieved, ensure the goal is met.
 - Each goal MUST have 2–6 objectives, unless the goal is demonstrably trivial (≤1 artifact, no dependencies).
 
-## "Known Constraints" section requirements
+### "Known Constraints" section requirements
+
+- The section MUST contain a list of known constraints that the work MUST respect.
+
+Constraint quality criteria:
 
 - A known constraint describes a non-negotiable limitation or requirement that the work MUST
   respect (technical, organizational, legal, temporal, compatibility, security, operational).
@@ -101,7 +123,11 @@ Examples:
 - Bad: `Prefer elegant code`
 - Bad: `Try to keep it simple`
 
-## "Acceptance criteria" section requirements
+### "Acceptance criteria" section requirements
+
+- The section MUST contain a list of acceptance criteria that define how to evaluate the session's results.
+
+Acceptance criteria quality criteria:
 
 - An acceptance criterion describes a pass/fail condition that determines whether the session's
   results are acceptable to a reviewer, user, or automated gate.
@@ -134,7 +160,11 @@ Regression rules:
   criteria SHOULD include explicit non-regression checks (what must remain unchanged).
 - The section MUST NOT be empty.
 
-## "Deliverables / Artifacts" section requirements
+### "Deliverables / Artifacts" section requirements
+
+- The section MUST contain a list of concrete deliverables/artifacts that MUST be produced by the work.
+
+Deliverable/artifact quality criteria:
 
 - A deliverable/artifact record MUST name a concrete output that will exist after the work is
   complete (a file, module, package, binary, schema, configuration, test suite, generated report,
@@ -167,38 +197,36 @@ Source files as artifacts:
   do not know which files will be changed/added). In such cases, focus on higher-level deliverables
   (e.g., "MUST add CLI documentation" instead of listing specific files).
 
-## "Work plan" section requirements
+## Work Execution Workflow
 
-- The work plan section MUST be an ordered, step-by-step list of work items that, when executed in
-  sequence, achieves all objectives while respecting all known constraints.
-- Each work plan item MUST be phrased as an imperative action ("Implement …", "Add …", "Refactor …",
-  "Run …", "Publish …"), i.e., it describes what to do (unlike objectives, which describe what exists).
-- Each work plan item MUST be derived from explicitly available inputs (developer request + prior
-  plan sections). It MUST NOT introduce new scope, features, constraints, or deliverables.
-- Each work plan item MUST map to ≥1 objective.
-- Each objective MUST be covered by ≥1 work plan item that produces the required change/artifact,
+The work execution workflow has a standard name `session.workflows.work_execution` and describes the step-by-step plan of work to be done in the context of the current session.
+
+The workflow MUST be an artifact of kind `workflow`, see details `{{ view("donna.specifications.default_text_artifacts_behavior") }}`. I.e. the final workflow must be a valid FSM that agent will execute with the help of `donna` tool.
+
+General requirements:
+
+- Each workflow step should describe an operation dedicated to one semantically atomic task.
+- Each operation of the workflow MUST be derived from explicitly available inputs (developer request +
+  prior plan sections). It MUST NOT introduce new scope, features, constraints, or deliverables.
+- Each workflow operation item MUST map to ≥1 objective.
+- Each objective MUST be covered by ≥1 workflow operation that produces the required change/artifact,
   and where relevant by additional item(s) that validate it (tests, checks, demo run).
-- Work plan items SHOULD be grouped logically (e.g., by goal, then by objective), but ordering MUST
-  reflect dependencies.
-- Each work plan item MUST be atomic: one primary action per item (no "and/or" bundles). If
+- Each workflow operation MUST be atomic: one primary action per item (no "and/or" bundles). If
   multiple actions are needed, split into multiple items.
-- Each work plan item MUST be actionable and specific enough that a developer can execute it
+- Each workflow operation MUST be actionable and specific enough that a agent can execute it
   without needing additional prose:
   - It SHOULD name the component/module/subsystem affected, if known.
   - It SHOULD name the concrete artifact(s) it will create/modify when those artifacts are already
     known from the "Deliverables / Artifacts" section (do not invent file paths).
 - If a command is required (e.g., a CLI (Command-Line Interface) invocation, test runner command),
-  it SHOULD include the exact command.
-- Work plan items MUST NOT be vague (e.g., "Improve code quality", "Handle edge cases", "Do the thing").
-- Work plan items MUST respect all "Known constraints".
-- If preserving existing behavior is implied by the developer request or constraints, the work plan
-  SHOULD include explicit non-regression steps (e.g., adding/adjusting tests, running relevant
-  suites, verifying unchanged outputs).
-- If plan includes research/design work, there results MUST be represented as concrete artifacts.
+  operation SHOULD include the exact command.
+- Workflow operation MUST NOT be vague (e.g., "Improve code quality", "Handle edge cases", "Do the thing").
+- Workflow operations MUST respect all "Known constraints".
+- If workflow operation includes research/design work, there results MUST be represented as concrete artifacts or changes in the `session.specification.work_scope` and `session.workflows.work_execution` artifacts.
 
 Verification steps:
 
-- The work plan SHOULD include explicit verification activities that demonstrate acceptance
+- The workflow SHOULD include explicit verification operations that demonstrate acceptance
   criteria, such as:
   - adding or updating automated tests;
   - running tests/lint/static checks (if such gates exist in the project inputs);
