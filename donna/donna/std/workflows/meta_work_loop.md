@@ -45,10 +45,10 @@ kind = "request_action"
 You MUST list the goals of this session.
 
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
-2. If you can identify one more goal:
-2.1. add it as a `<record kind: session_goal>` to the session;
-2.2. `{{ goto("list_primary_goals") }}`;
-3. Otherwise, `{{ goto("list_objectives") }}`
+2. Read the specification `{{ view("donna.specifications.default_text_artifacts_behavior") }}` if you haven't done it yet.
+3. If you can add more goals based on existing `{{ view("session.specification.work_scope.md") }}` add them to the specification.
+4. If you can polish the existing goals according to the quality criteria in the `{{ view("donna.specifications.planning") }}` do it.
+5. `{{ goto("list_objectives") }}`
 
 ## List Objectives
 
