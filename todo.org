@@ -51,8 +51,6 @@
 * TODO WE CAN ASK DONNA TO MAKE A FSM FOR DONNA!!! WHICH WILL BE OUR PLAN OF WORK!!!
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO refactor workflows + operations into configs
-** refactor end_to_end_story_cycle into generating artifacts
-*** remove records functionality
 ** remove layout.py? It's functionality should be moved to worlds
 ** global ids vs local ids (for operations)
 ** remove primitives_registry.py? Since there only artifacts will left
