@@ -106,6 +106,8 @@
 *** we can reference artifact_id:operation_id, should we make id required for each section (or, at least, optional) to be able to reference each section?
 *** We have duplicated logic: Final operation (that finishes the workflow) and mode = final for operation node (that does not guarantee finishing the workflow).
 *** Optionaly (true by default) validate artifact contents before update.
+** Planning improvements:
+*** align naming of session-level specifications
 * TODO Worlds improvements
 ** We may want to list worlds via donna cli (introspection?)
 ** We may want to register world kinds automatically.
