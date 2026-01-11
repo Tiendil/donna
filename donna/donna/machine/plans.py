@@ -3,7 +3,7 @@ from typing import cast
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import FullArtifactLocalId, OperationId
+from donna.domain.ids import FullArtifactLocalId, OperationId, RichInternalId
 from donna.domain.types import ActionRequestId, TaskId, WorkUnitId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
@@ -21,6 +21,7 @@ class Plan(BaseEntity):
     action_requests: list[ActionRequest]
     last_cells: list[Cell]
     started: bool
+    last_id: int
 
     # TODO: we may want to make queue items frozen later
     model_config = pydantic.ConfigDict(frozen=False)
@@ -33,7 +34,13 @@ class Plan(BaseEntity):
             queue=[],
             last_cells=[],
             started=False,
+            next_id=1,
         )
+
+    def next_id(self, prefix: str) -> RichInternalId:
+        new_id = RichInternalId(prefix, self.last_id)
+        self.last_id += 1
+        return new_id
 
     def add_task(self, task: Task, work_unit: WorkUnit) -> None:
         self.active_tasks.append(task)

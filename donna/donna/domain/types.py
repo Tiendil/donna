@@ -2,9 +2,7 @@ from typing import Callable, NewType
 
 # Internal base types
 
-CounterId = NewType("CounterId", str)
 InternalId = NewType("InternalId", str)
-NestedId = NewType("NestedId", str)
 
 # Ids that are integer-based with a prefix and CRC
 # I.e. dynamically generated ids
