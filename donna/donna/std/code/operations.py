@@ -1,7 +1,7 @@
 import re
 from typing import TYPE_CHECKING, Iterator, cast
 
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId
+from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationKindId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.operations import Operation, OperationKind, OperationMode
 from donna.machine.tasks import Task, TaskState, WorkUnit
@@ -98,7 +98,7 @@ class RequestAction(Operation):
 
 
 request_action_kind = RequestActionKind(
-    id="request_action",
+    id=OperationKindId("request_action"),
     title="Request Action",
     operation=RequestAction,
 )
@@ -137,4 +137,8 @@ class FinishWorkflowKind(OperationKind):
         return self.operation(**data)
 
 
-finish_workflow_kind = FinishWorkflowKind(id="finish_workflow", title="Finish Workflow", operation=Operation)
+finish_workflow_kind = FinishWorkflowKind(
+    id=OperationKindId("finish_workflow"),
+    title="Finish Workflow",
+    operation=Operation,
+)

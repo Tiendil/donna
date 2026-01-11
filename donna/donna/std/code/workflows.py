@@ -3,7 +3,15 @@ from typing import Any
 import jinja2
 from jinja2.runtime import Context
 
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId, NamespaceId, OperationId
+from donna.domain.ids import (
+    ArtifactKindId,
+    FullArtifactId,
+    FullArtifactLocalId,
+    NamespaceId,
+    OperationId,
+    OperationKindId,
+    RendererKindId,
+)
 from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
 from donna.machine.operations import Operation, OperationKind, OperationMode
@@ -35,7 +43,7 @@ def construct_operation(artifact_id: FullArtifactId, section: SectionSource) -> 
 
     data = section.merged_configs()
 
-    operation_kind = register().operations.get(data["kind"])
+    operation_kind = register().operations.get(OperationKindId(data["kind"]))
     assert isinstance(operation_kind, OperationKind)
 
     operation = operation_kind.construct(artifact_id, section)
@@ -154,7 +162,7 @@ class WorkflowKind(ArtifactKind):
 
 
 workflow_kind = WorkflowKind(
-    id="workflow",
+    id=ArtifactKindId("workflow"),
     namespace_id=NamespaceId("workflows"),
     description="A workflow that defines a state machine for the agent to follow.",
 )
@@ -191,7 +199,7 @@ class GoTo(RendererKind):
 
 
 goto_renderer = GoTo(
-    id="goto",
+    id=RendererKindId("goto"),
     name="Go To Operation",
     description="Instructs the agent to proceed to the specified operation in the workflow.",
     example="{{ goto('<operation_id>') }}",

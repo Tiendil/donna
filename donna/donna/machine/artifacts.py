@@ -1,11 +1,11 @@
 from donna.core.entities import BaseEntity
-from donna.domain.ids import FullArtifactId, NamespaceId
+from donna.domain.ids import ArtifactKindId, FullArtifactId, NamespaceId
 from donna.machine.cells import Cell
 from donna.world.markdown import ArtifactSource
 
 
 class ArtifactKind(BaseEntity):
-    id: str
+    id: ArtifactKindId
     description: str
     namespace_id: NamespaceId
 
@@ -30,7 +30,7 @@ class ArtifactKind(BaseEntity):
 
 
 class ArtifactInfo(BaseEntity):
-    kind: str
+    kind: ArtifactKindId
     id: FullArtifactId
     title: str
     description: str

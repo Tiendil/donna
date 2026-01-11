@@ -2,7 +2,7 @@ import enum
 from typing import TYPE_CHECKING, Iterable
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationId
+from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationId, OperationKindId
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.markdown import SectionSource
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class OperationKind(BaseEntity):
-    id: str
+    id: OperationKindId
     title: str
     operation: type["Operation"]
 
@@ -35,7 +35,7 @@ class Operation(BaseEntity):
     id: OperationId
     artifact_id: FullArtifactId
 
-    kind: str
+    kind: OperationKindId
     title: str
 
     mode: OperationMode = OperationMode.normal
