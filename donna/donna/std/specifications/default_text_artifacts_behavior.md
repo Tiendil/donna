@@ -24,6 +24,8 @@ To get information from the artifact, developers, agents and Donna view one of i
 
 **If you need an information from the artifact, you MUST view its representation**. Artifact sources are only for editing.
 
+Read the specification `{{ view("donna.specifications.donna_usage") }}` to learn how to work with artifacts via Donna CLI.
+
 ## Source Format and Rendering
 
 The source of the text artifact is a Jinja2-template of Markdown document.
@@ -52,7 +54,7 @@ Artifact is devided into multiple sections:
 - H1 header and all text till the first H2 header is considered the `head section` of the artifact.
 - Each H2 header and all text till the next H2 header (or end of document) is considered a `tail section` of the artifact.
 
-Head section provides a description of the artifact and its purpose and MUST contain a configuration block of the artifact.
+Head section provides a description of the artifact and its purpose and MUST contain a configuration block of the artifact. Also, header section is used when Donna needs to show a brief summary of the artifact, for example, when listing artifacts.
 
 Tail sections describes one of the components of the artifact and CAN contain configuration blocks as well.
 
