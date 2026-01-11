@@ -56,8 +56,7 @@
 *** rewrite donna.specifications.planning
 *** rewrute meta_work_loop
 *** remove `partial_description` renderer
-** remove records functionality
-** remove workflows submodule
+*** remove records functionality
 ** remove layout.py? It's functionality should be moved to worlds
 ** global ids vs local ids (for operations)
 ** remove primitives_registry.py? Since there only artifacts will left
