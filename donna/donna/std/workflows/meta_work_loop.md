@@ -17,9 +17,10 @@ kind = "request_action"
 ```
 
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
-2. If the developer hasn't provided you a description of the work for this session, ask them to provide it.
-3. Add the description as `<record kind: session_developer_description>` to the session.
-4. `{{ goto("create_work_description") }}`
+2. Read the specification `{{ view("donna.specifications.default_text_artifacts_behavior") }}` if you haven't done it yet.
+3. If the developer hasn't provided you a description of the work for this session, ask them to provide it.
+4. Create new session-level specification `session.specification.work_scope.md` with developer-provided description of the work to be done.
+5. `{{ goto("create_work_description") }}`
 
 ## Create Work Description
 

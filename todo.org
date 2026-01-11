@@ -108,6 +108,7 @@
 *** Optionaly (true by default) validate artifact contents before update.
 ** Planning improvements:
 *** align naming of session-level specifications
+*** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
 * TODO Worlds improvements
 ** We may want to list worlds via donna cli (introspection?)
 ** We may want to register world kinds automatically.
