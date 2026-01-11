@@ -23,7 +23,6 @@ def donna_home_dir(donna_dir_name: str) -> pathlib.Path:
 
 def discover_project_dir(donna_dir_name: str) -> pathlib.Path:
     """Discover the project directory by looking for the donna directory in parent folders."""
-
     donna_dir = first_donna_dir(donna_dir_name)
 
     if donna_dir is None:

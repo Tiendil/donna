@@ -1,7 +1,6 @@
-import shutil
 from typing import cast
 
-from donna.domain.ids import FullArtifactId
+from donna.domain.ids import FullArtifactId, WorldId
 from donna.machine.plans import Plan
 from donna.std.code.workflows import Workflow
 from donna.world import artifacts
@@ -9,8 +8,7 @@ from donna.world.config import config
 
 
 def start() -> None:
-
-    config().get_world("session").initialize(reset=True)
+    config().get_world(WorldId("session")).initialize(reset=True)
 
     plan = Plan.build()
 

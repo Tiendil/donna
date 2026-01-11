@@ -3,7 +3,15 @@ from typing import cast
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import ActionRequestId, FullArtifactLocalId, InternalId, OperationId, TaskId, WorkUnitId
+from donna.domain.ids import (
+    ActionRequestId,
+    FullArtifactLocalId,
+    InternalId,
+    OperationId,
+    TaskId,
+    WorkUnitId,
+    WorldId,
+)
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
 from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState
@@ -94,12 +102,12 @@ class Plan(BaseEntity):
         raise NotImplementedError(f"Work unit with id '{work_unit_id}' not found in plan")
 
     def save(self) -> None:
-        world = config().get_world("session")
+        world = config().get_world(WorldId("session"))
         world.write_state("state.json", self.to_json().encode("utf-8"))
 
     @classmethod
     def load(cls) -> "Plan":
-        world = config().get_world("session")
+        world = config().get_world(WorldId("session"))
         return cls.from_json(world.read_state("state.json").decode("utf-8"))
 
     def get_next_work_unit(self) -> WorkUnit | None:

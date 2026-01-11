@@ -1,14 +1,12 @@
-import shutil
-
 import typer
 
 from donna.cli.application import app
 from donna.cli.types import ActionRequestIdArgument, FullArtifactIdArgument, FullArtifactLocalIdArgument
 from donna.cli.utils import output_cells
+from donna.domain.ids import WorldId
 from donna.machine import sessions
 from donna.machine.plans import Plan
 from donna.world.config import config
-
 
 sessions_cli = typer.Typer()
 
@@ -16,7 +14,7 @@ sessions_cli = typer.Typer()
 @sessions_cli.command()
 def start() -> None:
     sessions.start()
-    typer.echo(f"Started new session")
+    typer.echo("Started new session")
 
 
 @sessions_cli.command(name="continue")
@@ -57,7 +55,7 @@ def action_request_completed(
 
 @sessions_cli.command()
 def clear() -> None:
-    config().get_world("session").initialize(reset=True)
+    config().get_world(WorldId("session")).initialize(reset=True)
 
 
 app.add_typer(sessions_cli, name="sessions", help="Manage current session")
