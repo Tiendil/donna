@@ -16,11 +16,11 @@ from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
 from donna.machine.changes import (
     Change,
+    ChangeAddTask,
     ChangeAddToQueue,
     ChangeRemoveActionRequest,
     ChangeRemoveWorkUnitFromQueue,
     ChangeTaskState,
-    ChangeAddTask
 )
 from donna.machine.tasks import Task, TaskState, WorkUnit
 from donna.std.code.workflows import Workflow
