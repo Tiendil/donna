@@ -55,5 +55,9 @@ class Operation(BaseEntity):
     def kind(self) -> OperationKindId:
         return self.config.kind
 
+    @property
+    def mode(self) -> OperationMode:
+        return self.config.mode
+
     def cells(self) -> list[Cell]:
         return [Cell.build_meta(kind="operation", operation_id=str(self.id))]
