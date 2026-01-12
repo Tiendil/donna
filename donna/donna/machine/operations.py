@@ -36,6 +36,7 @@ class OperationConfig(BaseEntity):
     kind: OperationKindId
     mode: OperationMode = OperationMode.normal
 
+
 class Operation(BaseEntity):
     id: OperationId
     artifact_id: FullArtifactId
