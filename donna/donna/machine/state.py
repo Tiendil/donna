@@ -84,7 +84,7 @@ class State(BaseEntity):
             ChangeAddToQueue(work_unit),
         ]
 
-        self.apply_changes(changes)
+        self.apply_changes(task, changes)
 
     def is_completed(self) -> bool:
         # A state can not consider itself completed if it was never started
