@@ -1,7 +1,7 @@
 import copy
 from typing import TYPE_CHECKING, Any
 
-from donna.domain.ids import WorkUnitId, ActionRequestId
+from donna.domain.ids import ActionRequestId, WorkUnitId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, TaskState, WorkUnit
@@ -60,9 +60,7 @@ class ChangeRemoveActionRequest(Change):
         self.action_request_id = action_request_id
 
     def apply_to(self, state: "State", task: Task) -> None:
-        state.action_requests = [
-            req for req in state.action_requests if req.id != self.action_request_id
-        ]
+        state.action_requests = [req for req in state.action_requests if req.id != self.action_request_id]
 
 
 class ChangeRemoveWorkUnitFromQueue(Change):

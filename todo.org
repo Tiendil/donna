@@ -75,7 +75,6 @@
 * TODO Refining architecture
 ** review how changes work, maybe we can refactor them or remove
 ***  Unused change types suggest partial/incomplete change tracking: ChangeAddToQueue, ChangeTaskContext, ChangeAddCell exist but are never emitted. This also makes State.last_cells effectively dead (donna/donna/machine/changes.py, donna/donna/machine/state.py).
-*** Core state mutation happens outside the change system: WorkUnit.run mutates self.state directly, and State.complete_action_request mutates queue and action_requests directly without Change objects (donna/donna/machine/tasks.py, donna/donna/machine/state.py). This breaks the “all state changes flow through Change” intent.
 ** Can we finish action request without next operation?
 *** Probably not, because the last operation is always `finish`
 *** However, now we have Operation.mode = final.

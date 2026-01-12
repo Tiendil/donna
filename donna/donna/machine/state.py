@@ -14,7 +14,13 @@ from donna.domain.ids import (
 )
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
-from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState, ChangeAddToQueue, ChangeRemoveActionRequest
+from donna.machine.changes import (
+    Change,
+    ChangeAddToQueue,
+    ChangeRemoveActionRequest,
+    ChangeRemoveWorkUnitFromQueue,
+    ChangeTaskState,
+)
 from donna.machine.tasks import Task, TaskState, WorkUnit
 from donna.std.code.workflows import Workflow
 from donna.world import artifacts
@@ -232,8 +238,7 @@ class State(BaseEntity):
             self.next_work_unit_id(), task_id=self.current_task.id, operation_id=next_operation_id
         )
 
-        changes = [ChangeAddToQueue(new_work_unit),
-                   ChangeRemoveActionRequest(request_id)]
+        changes = [ChangeAddToQueue(new_work_unit), ChangeRemoveActionRequest(request_id)]
 
         self.apply_changes(self.current_task, changes)
 
