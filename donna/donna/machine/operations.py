@@ -14,7 +14,6 @@ if TYPE_CHECKING:
 class OperationKind(BaseEntity):
     id: OperationKindId
     title: str
-    operation: type["Operation"]
 
     def execute(self, task: Task, unit: WorkUnit, operation: "Operation") -> Iterable["Change"]:
         raise NotImplementedError("You MUST implement this method.")
@@ -38,19 +37,23 @@ class OperationConfig(BaseEntity):
 
 
 class Operation(BaseEntity):
-    id: OperationId
+    condig: OperationConfig
+
     artifact_id: FullArtifactId
-
-    kind: OperationKindId
     title: str
-
-    mode: OperationMode
-
     allowed_transtions: set[FullArtifactLocalId]
 
     @property
     def full_id(self) -> FullArtifactLocalId:
         return self.artifact_id.to_full_local(self.id)
+
+    @property
+    def id(self) -> OperationId:
+        return self.condig.id
+
+    @property
+    def kind(self) -> OperationKindId:
+        return self.condig.kind
 
     def cells(self) -> list[Cell]:
         return [Cell.build_meta(kind="operation", operation_id=str(self.id))]

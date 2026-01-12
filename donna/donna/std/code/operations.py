@@ -1,9 +1,9 @@
 import re
-from typing import TYPE_CHECKING, Iterator, cast, Literal
+from typing import TYPE_CHECKING, Iterator, Literal, cast
 
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationKindId
 from donna.machine.action_requests import ActionRequest
-from donna.machine.operations import Operation, OperationKind, OperationMode, OperationConfig
+from donna.machine.operations import Operation, OperationConfig, OperationKind, OperationMode
 from donna.machine.tasks import Task, TaskState, WorkUnit
 from donna.world.markdown import SectionSource
 
@@ -48,13 +48,15 @@ class RequestActionKind(OperationKind):
     ) -> "RequestAction":
         config = RequestActionConfig.parse_obj(section.merged_configs())
 
-        opeation = self.operation(**config.dict(),
-                                  title=section.title,
-                                  artifact_id=str(artifact_id),
-                                  allowed_transtions=extract_transitions(section.as_analysis_markdown()),
-                                  request_template=section.as_original_markdown())
+        title = section.title or ""
 
-        return opeation
+        return RequestAction(
+            config=config,
+            title=title,
+            artifact_id=artifact_id,
+            allowed_transtions=extract_transitions(section.as_analysis_markdown()),
+            request_template=section.as_original_markdown(),
+        )
 
     def construct_context(self, task: Task, operation: "RequestAction") -> dict[str, object]:
         context: dict[str, object] = {}
@@ -95,7 +97,6 @@ class RequestAction(Operation):
 request_action_kind = RequestActionKind(
     id=OperationKindId("request_action"),
     title="Request Action",
-    operation=RequestAction,
 )
 
 
@@ -117,16 +118,12 @@ class FinishWorkflowKind(OperationKind):
     def construct(self, artifact_id: FullArtifactId, section: SectionSource) -> "Operation":  # type: ignore[override]
         config = FinishWorkflowConfig.parse_obj(section.merged_configs())
 
-        operation = self.operation(**config.dict(),
-                                   title=section.title,
-                                   artifact_id=str(artifact_id),
-                                   allowed_transtions=set())
+        title = section.title or ""
 
-        return operation
+        return Operation(config, title=title, artifact_id=artifact_id, allowed_transtions=set())
 
 
 finish_workflow_kind = FinishWorkflowKind(
     id=OperationKindId("finish_workflow"),
     title="Finish Workflow",
-    operation=Operation,
 )
