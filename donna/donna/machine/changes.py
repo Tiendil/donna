@@ -15,6 +15,15 @@ class Change:
         raise NotImplementedError()
 
 
+class ChangeAddTask(Change):
+    def __init__(self, task: Task) -> None:
+        self.task = task
+
+    def apply_to(self, state: "State", task: Task) -> None:
+        state.active_tasks.append(self.task)
+        state.started = True
+
+
 class ChangeTaskState(Change):
     def __init__(self, new_state: TaskState) -> None:
         self.new_state = new_state

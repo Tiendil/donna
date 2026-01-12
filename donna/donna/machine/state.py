@@ -20,6 +20,7 @@ from donna.machine.changes import (
     ChangeRemoveActionRequest,
     ChangeRemoveWorkUnitFromQueue,
     ChangeTaskState,
+    ChangeAddTask
 )
 from donna.machine.tasks import Task, TaskState, WorkUnit
 from donna.std.code.workflows import Workflow
@@ -78,9 +79,12 @@ class State(BaseEntity):
         return cast(ActionRequestId, self._next_id("AR"))
 
     def add_task(self, task: Task, work_unit: WorkUnit) -> None:
-        self.active_tasks.append(task)
-        self.queue.append(work_unit)
-        self.started = True
+        changes = [
+            ChangeAddTask(task),
+            ChangeAddToQueue(work_unit),
+        ]
+
+        self.apply_changes(changes)
 
     def is_completed(self) -> bool:
         # A state can not consider itself completed if it was never started
