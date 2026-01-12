@@ -31,6 +31,11 @@ class OperationMode(enum.Enum):
     final = "final"
 
 
+class OperationConfig(BaseEntity):
+    id: OperationId
+    kind: OperationKindId
+    mode: OperationMode = OperationMode.normal
+
 class Operation(BaseEntity):
     id: OperationId
     artifact_id: FullArtifactId
@@ -38,7 +43,7 @@ class Operation(BaseEntity):
     kind: OperationKindId
     title: str
 
-    mode: OperationMode = OperationMode.normal
+    mode: OperationMode
 
     allowed_transtions: set[FullArtifactLocalId]
 

@@ -1,9 +1,9 @@
 import re
-from typing import TYPE_CHECKING, Iterator, cast
+from typing import TYPE_CHECKING, Iterator, cast, Literal
 
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationKindId
 from donna.machine.action_requests import ActionRequest
-from donna.machine.operations import Operation, OperationKind, OperationMode
+from donna.machine.operations import Operation, OperationKind, OperationMode, OperationConfig
 from donna.machine.tasks import Task, TaskState, WorkUnit
 from donna.world.markdown import SectionSource
 
@@ -35,6 +35,10 @@ def extract_transitions(text: str) -> set[FullArtifactLocalId]:
     return transitions
 
 
+class RequestActionConfig(OperationConfig):
+    pass
+
+
 class RequestActionKind(OperationKind):
 
     def construct(  # type: ignore[override]
@@ -42,24 +46,15 @@ class RequestActionKind(OperationKind):
         artifact_id: FullArtifactId,
         section: SectionSource,
     ) -> "RequestAction":
-        data = section.merged_configs()
+        config = RequestActionConfig.parse_obj(section.merged_configs())
 
-        if "title" not in data:
-            data["title"] = section.title or "Untitled Request Action"
+        opeation = self.operation(**config.dict(),
+                                  title=section.title,
+                                  artifact_id=str(artifact_id),
+                                  allowed_transtions=extract_transitions(section.as_analysis_markdown()),
+                                  request_template=section.as_original_markdown())
 
-        if "request_template" not in data:
-            data["request_template"] = section.as_original_markdown()
-
-        if "artifact_id" in data:
-            raise NotImplementedError("artifact_id should not be set in RequestActionKind.construct")
-
-        if "allowed_transtions" in data:
-            raise NotImplementedError("allowed_transtions should not be set in RequestActionKind.construct")
-
-        data["artifact_id"] = str(artifact_id)
-        data["allowed_transtions"] = extract_transitions(section.as_analysis_markdown())
-
-        return cast(RequestAction, self.operation(**data))
+        return opeation
 
     def construct_context(self, task: Task, operation: "RequestAction") -> dict[str, object]:
         context: dict[str, object] = {}
@@ -109,6 +104,10 @@ request_action_kind = RequestActionKind(
 ##################
 
 
+class FinishWorkflowConfig(OperationConfig):
+    mode: Literal[OperationMode.final] = OperationMode.final
+
+
 class FinishWorkflowKind(OperationKind):
     def execute(self, task: Task, unit: WorkUnit, operation: Operation) -> Iterator["Change"]:
         from donna.machine.changes import ChangeTaskState
@@ -116,25 +115,14 @@ class FinishWorkflowKind(OperationKind):
         yield ChangeTaskState(TaskState.COMPLETED)
 
     def construct(self, artifact_id: FullArtifactId, section: SectionSource) -> "Operation":  # type: ignore[override]
-        data = section.merged_configs()
+        config = FinishWorkflowConfig.parse_obj(section.merged_configs())
 
-        if "title" not in data:
-            data["title"] = section.title or "Untitled Finish Workflow"
+        operation = self.operation(**config.dict(),
+                                   title=section.title,
+                                   artifact_id=str(artifact_id),
+                                   allowed_transtions=set())
 
-        if "artifact_id" in data:
-            raise NotImplementedError("artifact_id should not be set in FinishWorkflowKind.construct")
-
-        if "allowed_transtions" in data:
-            raise NotImplementedError("allowed_transtions should not be set in FinishWorkflowKind.construct")
-
-        if "mode" in data:
-            raise NotImplementedError("mode should not be set in FinishWorkflowKind.construct")
-
-        data["artifact_id"] = str(artifact_id)
-        data["allowed_transtions"] = set()
-        data["mode"] = OperationMode.final
-
-        return self.operation(**data)
+        return operation
 
 
 finish_workflow_kind = FinishWorkflowKind(
