@@ -15,7 +15,7 @@ from donna.domain.ids import (
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
 from donna.machine.changes import Change, ChangeRemoveWorkUnitFromQueue, ChangeTaskState
-from donna.machine.tasks import Task, TaskState, WorkUnit, WorkUnitState
+from donna.machine.tasks import Task, TaskState, WorkUnit
 from donna.std.code.workflows import Workflow
 from donna.world import artifacts
 from donna.world.config import config
@@ -114,9 +114,6 @@ class State(BaseEntity):
         task_id = self.active_tasks[-1].id
 
         for work_unit in self.queue:
-            if work_unit.state != WorkUnitState.TODO:
-                continue
-
             if work_unit.task_id != task_id:
                 continue
 
@@ -143,9 +140,7 @@ class State(BaseEntity):
             return changes
 
         changes.extend(next_work_unit.run(task))
-
-        if next_work_unit.state == WorkUnitState.COMPLETED:
-            changes.append(ChangeRemoveWorkUnitFromQueue(next_work_unit.id))
+        changes.append(ChangeRemoveWorkUnitFromQueue(next_work_unit.id))
 
         return changes
 

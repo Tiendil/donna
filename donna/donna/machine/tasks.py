@@ -41,21 +41,11 @@ class Task(BaseEntity):
         )
 
 
-class WorkUnitState(enum.StrEnum):
-    TODO = "todo"
-    COMPLETED = "completed"
-    FAILED = "failed"
-
-
 class WorkUnit(BaseEntity):
-    state: WorkUnitState
     id: WorkUnitId
     task_id: TaskId
     operation_id: FullArtifactLocalId
     context: dict[str, Any]
-
-    # TODO: we may want to make queue items frozen later
-    model_config = pydantic.ConfigDict(frozen=False)
 
     @classmethod
     def build(
@@ -70,7 +60,6 @@ class WorkUnit(BaseEntity):
             context = {}
 
         unit = cls(
-            state=WorkUnitState.TODO,
             task_id=task_id,
             id=id,
             operation_id=operation_id,
@@ -84,9 +73,6 @@ class WorkUnit(BaseEntity):
         from donna.world import artifacts
         from donna.world.primitives_register import register
 
-        if self.state != WorkUnitState.TODO:
-            raise NotImplementedError("Can only run a work unit in TODO state")
-
         workflow = cast(Workflow, artifacts.load_artifact(self.operation_id.full_artifact_id))
 
         operation = workflow.get_operation(cast(OperationId, self.operation_id.local_id))
@@ -98,7 +84,5 @@ class WorkUnit(BaseEntity):
         assert operation_kind is not None
 
         cells = list(operation_kind.execute(task, self, operation))
-
-        self.state = WorkUnitState.COMPLETED
 
         return cells
