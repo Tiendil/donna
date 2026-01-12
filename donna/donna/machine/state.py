@@ -44,6 +44,10 @@ class State(BaseEntity):
             last_id=0,
         )
 
+    @property
+    def current_task(self) -> Task:
+        return self.active_tasks[-1]
+
     def start_workflow(self, full_operation_id: FullArtifactLocalId) -> None:
         task = Task.build(self.next_task_id())
         work_unit = WorkUnit.build(self.next_work_unit_id(), task.id, full_operation_id)
@@ -111,10 +115,8 @@ class State(BaseEntity):
         return cls.from_json(world.read_state("state.json").decode("utf-8"))
 
     def get_next_work_unit(self) -> WorkUnit | None:
-        task_id = self.active_tasks[-1].id
-
         for work_unit in self.queue:
-            if work_unit.task_id != task_id:
+            if work_unit.task_id != self.current_task.id:
                 continue
 
             return work_unit
@@ -149,7 +151,7 @@ class State(BaseEntity):
             change.apply_to(self, task)
 
     def step(self) -> list[Cell]:
-        task = self.active_tasks[-1]
+        task = self.current_task
 
         changes = self.try_step(task)
         self.apply_changes(task, changes)
@@ -226,10 +228,8 @@ class State(BaseEntity):
         if next_operation_id not in operation.allowed_transtions:
             raise NotImplementedError(f"Operation '{operation_id}' can not go to '{next_operation_id}'")
 
-        current_task = self.active_tasks[-1]
-
         new_work_unit = WorkUnit.build(
-            self.next_work_unit_id(), task_id=current_task.id, operation_id=next_operation_id
+            self.next_work_unit_id(), task_id=self.current_task.id, operation_id=next_operation_id
         )
         self.queue.append(new_work_unit)
 
