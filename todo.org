@@ -72,11 +72,6 @@
 ** We may want to allow donna render part of artifact only (by section id)
 ** Python package world will allow us to keep artifacts in standard python packages without hacks
 * TODO Refining architecture
-** Artifacts configs improvements
-*** merged section configs MUST be parsed directly by pydantic models, no magic
-*** improve markdown parsing & rendering
-**** donna -> donna config  (however, now we have jinja comments {# ... #}
-**** donna comment
 ** review how changes work, maybe we can refactor them or remove
 ** Can we finish action request without next operation?
 *** Probably not, because the last operation is always `finish`
