@@ -1,7 +1,7 @@
 import copy
 from typing import TYPE_CHECKING, Any
 
-from donna.domain.ids import WorkUnitId
+from donna.domain.ids import WorkUnitId, ActionRequestId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, TaskState, WorkUnit
@@ -53,6 +53,16 @@ class ChangeAddActionRequest(Change):
 
     def apply_to(self, state: "State", task: Task) -> None:
         state.add_action_request(self.action_request)
+
+
+class ChangeRemoveActionRequest(Change):
+    def __init__(self, action_request_id: ActionRequestId) -> None:
+        self.action_request_id = action_request_id
+
+    def apply_to(self, state: "State", task: Task) -> None:
+        state.action_requests = [
+            req for req in state.action_requests if req.id != self.action_request_id
+        ]
 
 
 class ChangeRemoveWorkUnitFromQueue(Change):
