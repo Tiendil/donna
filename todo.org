@@ -120,6 +120,7 @@
 ** remove mention of <DONNA_CMD> from specs
 ** "Story" term still in some specs for convienience, we should think of a better naming
 ** currently we do not output the whole workflow body on the request of the artifact, only description. Maybe we should output the whole body?
+** mention jinja comments {# ... #} in artifact specification
 * TODO Jinja2 improvements
 ** sandbox mode — do we need it?
 ** register jinja2 filters?
