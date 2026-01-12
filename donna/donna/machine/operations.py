@@ -37,7 +37,7 @@ class OperationConfig(BaseEntity):
 
 
 class Operation(BaseEntity):
-    condig: OperationConfig
+    config: OperationConfig
 
     artifact_id: FullArtifactId
     title: str
@@ -49,11 +49,11 @@ class Operation(BaseEntity):
 
     @property
     def id(self) -> OperationId:
-        return self.condig.id
+        return self.config.id
 
     @property
     def kind(self) -> OperationKindId:
-        return self.condig.kind
+        return self.config.kind
 
     def cells(self) -> list[Cell]:
         return [Cell.build_meta(kind="operation", operation_id=str(self.id))]
