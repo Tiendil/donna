@@ -120,7 +120,7 @@ class FinishWorkflowKind(OperationKind):
 
         title = section.title or ""
 
-        return Operation(config, title=title, artifact_id=artifact_id, allowed_transtions=set())
+        return Operation(config=config, title=title, artifact_id=artifact_id, allowed_transtions=set())
 
 
 finish_workflow_kind = FinishWorkflowKind(
