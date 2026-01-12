@@ -71,6 +71,7 @@
 *** Do we need speciciations for tags? I.e. does tag a primitive?
 ** We may want to allow donna render part of artifact only (by section id)
 ** Python package world will allow us to keep artifacts in standard python packages without hacks
+** tree-based artifacts discovery? I.e. folders with descriptions and folders as artifacts?
 * TODO Refining architecture
 ** review how changes work, maybe we can refactor them or remove
 ***  Unused change types suggest partial/incomplete change tracking: ChangeAddToQueue, ChangeTaskContext, ChangeAddCell exist but are never emitted. This also makes State.last_cells effectively dead (donna/donna/machine/changes.py, donna/donna/machine/state.py).
