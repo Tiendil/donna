@@ -74,7 +74,8 @@
 ** tree-based artifacts discovery? I.e. folders with descriptions and folders as artifacts?
 * TODO Refining architecture
 ** review how changes work, maybe we can refactor them or remove
-***  Unused change types suggest partial/incomplete change tracking: ChangeAddToQueue, ChangeTaskContext, ChangeAddCell exist but are never emitted. This also makes State.last_cells effectively dead (donna/donna/machine/changes.py, donna/donna/machine/state.py).
+*** changes are pydantic objects
+*** rename queue
 ** Can we finish action request without next operation?
 *** Probably not, because the last operation is always `finish`
 *** However, now we have Operation.mode = final.
@@ -139,3 +140,4 @@
 * TODO initialization of donna for the new project
 ** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
 ** create a copy of the default config for the new project
+* TODO Add spelling validation to grooming workflow
