@@ -33,7 +33,6 @@ class State(BaseEntity):
     active_tasks: list[Task]
     queue: list[WorkUnit]  # TODO: rename from queue, because it's not a queue anymore
     action_requests: list[ActionRequest]
-    last_cells: list[Cell]
     started: bool
     last_id: int
 
@@ -46,7 +45,6 @@ class State(BaseEntity):
             active_tasks=[],
             action_requests=[],
             queue=[],
-            last_cells=[],
             started=False,
             last_id=0,
         )
@@ -166,7 +164,7 @@ class State(BaseEntity):
         changes = self.try_step(task)
         self.apply_changes(task, changes)
 
-        cells = list(self.last_cells)
+        cells = []
 
         if task.state == TaskState.COMPLETED:
             self.active_tasks.pop()

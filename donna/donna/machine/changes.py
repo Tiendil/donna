@@ -48,14 +48,6 @@ class ChangeAddToQueue(Change):
         state.queue.append(self.unit)
 
 
-class ChangeAddCell(Change):
-    def __init__(self, cell: Cell) -> None:
-        self.cell = cell
-
-    def apply_to(self, state: "State", task: Task) -> None:
-        state.last_cells.append(self.cell)
-
-
 class ChangeAddActionRequest(Change):
     def __init__(self, action_request: ActionRequest) -> None:
         self.action_request = action_request
