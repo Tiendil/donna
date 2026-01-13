@@ -25,8 +25,8 @@ from donna.machine.tasks import Task, WorkUnit
 
 
 class BaseState(BaseEntity):
-    active_tasks: list[Task]
-    queue: list[WorkUnit]  # TODO: rename from queue, because it's not a queue anymore
+    tasks: list[Task]
+    work_units: list[WorkUnit]
     action_requests: list[ActionRequest]
     started: bool
     last_id: int
@@ -35,10 +35,10 @@ class BaseState(BaseEntity):
     def is_completed(self) -> bool:
         # A state can not consider itself completed if it was never started
         # it is important to distinguish sessions with unfinished initialization and sessions that are done
-        return not self.active_tasks and self.started and not self.action_requests
+        return not self.tasks and self.started and not self.action_requests
 
     def has_work(self) -> bool:
-        return bool(self.queue)
+        return bool(self.work_units)
 
     ###########
     # Accessors
@@ -46,10 +46,10 @@ class BaseState(BaseEntity):
 
     @property
     def current_task(self) -> Task:
-        return self.active_tasks[-1]
+        return self.tasks[-1]
 
     def get_task(self, task_id: TaskId) -> Task:
-        for task in self.active_tasks:
+        for task in self.tasks:
             if task.id == task_id:
                 return task
 
@@ -62,15 +62,11 @@ class BaseState(BaseEntity):
 
         raise NotImplementedError(f"Action request with id '{request_id}' not found in state")
 
-    def get_work_unit(self, work_unit_id: WorkUnitId) -> WorkUnit:
-        for unit in self.queue:
-            if unit.id == work_unit_id:
-                return unit
-
-        raise NotImplementedError(f"Work unit with id '{work_unit_id}' not found in state")
-
+    # Currently we execute first work unit found for the current task
+    # Since we only append work units, this effectively works as a queue per task
+    # In the future we may want to have more sophisticated scheduling
     def get_next_work_unit(self) -> WorkUnit | None:
-        for work_unit in self.queue:
+        for work_unit in self.work_units:
             if work_unit.task_id != self.current_task.id:
                 continue
 
@@ -95,8 +91,8 @@ class BaseState(BaseEntity):
         return [
             Cell.build_meta(
                 kind="state_status",
-                active_tasks=len(self.active_tasks),
-                queued_work_units=len(self.queue),
+                tasks=len(self.tasks),
+                queued_work_units=len(self.work_units),
                 pending_action_requests=len(self.action_requests),
                 is_completed=self.is_completed,
             )
@@ -128,9 +124,9 @@ class MutableState(BaseState):
     @classmethod
     def build(cls) -> "MutableState":
         return cls(
-            active_tasks=[],
+            tasks=[],
             action_requests=[],
-            queue=[],
+            work_units=[],
             started=False,
             last_id=0,
         )
@@ -168,19 +164,19 @@ class MutableState(BaseState):
         self.action_requests.append(action_request)
 
     def add_work_unit(self, work_unit: WorkUnit) -> None:
-        self.queue.append(work_unit)
+        self.work_units.append(work_unit)
 
     def add_task(self, task: Task) -> None:
-        self.active_tasks.append(task)
+        self.tasks.append(task)
 
     def remove_action_request(self, request_id: ActionRequestId) -> None:
         self.action_requests = [request for request in self.action_requests if request.id != request_id]
 
     def remove_work_unit(self, work_unit_id: WorkUnitId) -> None:
-        self.queue = [unit for unit in self.queue if unit.id != work_unit_id]
+        self.work_units = [unit for unit in self.work_units if unit.id != work_unit_id]
 
     def remove_task(self, task_id: TaskId) -> None:
-        self.active_tasks = [task for task in self.active_tasks if task.id != task_id]
+        self.tasks = [task for task in self.tasks if task.id != task_id]
 
     def apply_changes(self, changes: Sequence[Change]) -> None:
         for change in changes:
