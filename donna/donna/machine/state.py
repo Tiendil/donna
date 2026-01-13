@@ -189,9 +189,9 @@ class MutableState(BaseState):
     def remove_task(self, task_id: TaskId) -> None:
         self.active_tasks = [task for task in self.active_tasks if task.id != task_id]
 
-    def apply_changes(self, task: Task, changes: list[Change]) -> None:
+    def apply_changes(self, changes: list[Change]) -> None:
         for change in changes:
-            change.apply_to(self, task)
+            change.apply_to(self)
 
     ####################
     # Complex operations
@@ -200,15 +200,15 @@ class MutableState(BaseState):
     def complete_action_request(self, request_id: ActionRequestId, next_operation_id: FullArtifactLocalId) -> None:
         changes = [ChangeAddWorkUnit(self.current_task.id, next_operation_id),
                    ChangeRemoveActionRequest(request_id)]
-        self.apply_changes(self.current_task, changes)
+        self.apply_changes(changes)
 
     def start_workflow(self, full_operation_id: FullArtifactLocalId) -> None:
         changes = [ChangeAddTask(full_operation_id)]
-        self.apply_changes(self.current_task, changes)
+        self.apply_changes(changes)
 
     def finish_workflow(self, task_id: TaskId) -> None:
         changes = [ChangeRemoveTask(task_id)]
-        self.apply_changes(self.current_task, changes)
+        self.apply_changes(changes)
 
     def exectute_next_work_unit(self) -> None:
         next_work_unit = self.get_next_work_unit()
@@ -216,4 +216,4 @@ class MutableState(BaseState):
         changes = next_work_unit.run(self.current_task)
         changes.append(ChangeRemoveWorkUnit(next_work_unit.id))
 
-        self.apply_changes(self.current_task, changes)
+        self.apply_changes(changes)

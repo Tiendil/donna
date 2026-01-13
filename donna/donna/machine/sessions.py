@@ -46,7 +46,7 @@ def _state_mutator() -> MutableState:
 
 def _state_run(mutator: MutableState) -> None:
     while mutator.has_work():
-        mutator.step()
+        mutator.exectute_next_work_unit()
         _save_state(mutator.freeze())
 
 
