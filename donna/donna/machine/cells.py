@@ -80,3 +80,7 @@ class Cell(BaseEntity):
         cell = "\n".join(lines).strip()
 
         return cell
+
+
+def cell_donna_message(content: str) -> Cell:
+    return Cell.build_markdown(kind="donna_message", content=content)

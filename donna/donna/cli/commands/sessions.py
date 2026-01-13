@@ -13,24 +13,17 @@ sessions_cli = typer.Typer()
 
 @sessions_cli.command()
 def start() -> None:
-    sessions.start()
-    typer.echo("Started new session")
+    output_cells(sessions.start())
 
 
 @sessions_cli.command(name="continue")
-def _continue() -> None:
-    sessions.start()
-
-    state = State.load()
-    output_cells(state.run())
+def continue_() -> None:
+    output_cells(sessions.continue_())
 
 
 @sessions_cli.command()
 def status() -> None:
-    sessions.start()
-
-    state = State.load()
-    output_cells(state.status_cells())
+    output_cells(sessions.status())
 
 
 @sessions_cli.command()

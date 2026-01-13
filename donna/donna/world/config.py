@@ -52,6 +52,9 @@ class World(BaseEntity):
     def initialize(self, reset: bool = False) -> None:
         pass
 
+    def is_initialized(self) -> bool:
+        raise NotImplementedError("You must implement this method in subclasses")
+
 
 class WorldFilesystem(World):
     path: pathlib.Path
@@ -151,6 +154,9 @@ class WorldFilesystem(World):
             shutil.rmtree(self.path)
 
         self.path.mkdir(parents=True, exist_ok=True)
+
+    def is_initialized(self) -> bool:
+        return self.path.exists()
 
 
 # TODO: refactor donna to use importlib.resources and enable WorldPackage

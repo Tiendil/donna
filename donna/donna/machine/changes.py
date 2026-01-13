@@ -1,7 +1,7 @@
 import copy
 from typing import TYPE_CHECKING, Any
 
-from donna.domain.ids import ActionRequestId, WorkUnitId
+from donna.domain.ids import ActionRequestId, WorkUnitId, TaskId, FullArtifactLocalId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, TaskState, WorkUnit
@@ -15,21 +15,12 @@ class Change:
         raise NotImplementedError()
 
 
-class ChangeAddTask(Change):
-    def __init__(self, task: Task) -> None:
-        self.task = task
+class ChangeFinishTask(Change):
+    def __init__(self, task_id: TaskId) -> None:
+        self.task_id = task_id
 
     def apply_to(self, state: "State", task: Task) -> None:
-        state.active_tasks.append(self.task)
-        state.started = True
-
-
-class ChangeTaskState(Change):
-    def __init__(self, new_state: TaskState) -> None:
-        self.new_state = new_state
-
-    def apply_to(self, state: "State", task: Task) -> None:
-        task.state = self.new_state
+        state.finish_workflow(self.task_id)
 
 
 class ChangeTaskContext(Change):
@@ -40,12 +31,46 @@ class ChangeTaskContext(Change):
         task.context.update(self.new_context)
 
 
-class ChangeAddToQueue(Change):
-    def __init__(self, unit: WorkUnit) -> None:
-        self.unit = unit
+class ChangeAddWorkUnit(Change):
+    def __init__(self, task_id: TaskId, operation_id: FullArtifactLocalId) -> None:
+        self.task_id = task_id
+        self.operation_id = operation_id
 
     def apply_to(self, state: "State", task: Task) -> None:
-        state.queue.append(self.unit)
+        work_unit = WorkUnit.build(
+            id=state.next_work_unit_id(),
+            task_id=self.task_id,
+            operation_id=self.operation_id
+        )
+        state.add_work_unit(work_unit)
+
+
+class ChangeAddTask(Change):
+    def __init__(self, operation_id: FullArtifactLocalId) -> None:
+        self.operation_id = operation_id
+
+    def apply_to(self, state: "State", task: Task) -> None:
+        task = Task.build(state.next_task_id())
+
+        state.add_task(task)
+
+        work_unit = WorkUnit.build(
+            id=state.next_work_unit_id(),
+            task_id=task.id,
+            operation_id=self.operation_id
+        )
+
+        state.add_work_unit(work_unit)
+
+        state.mark_started()
+
+
+class ChangeRemoveTask(Change):
+    def __init__(self, task_id: TaskId) -> None:
+        self.task_id = task_id
+
+    def apply_to(self, state: "State", task: Task) -> None:
+        state.remove_task(self.task_id)
 
 
 class ChangeAddActionRequest(Change):
@@ -61,12 +86,12 @@ class ChangeRemoveActionRequest(Change):
         self.action_request_id = action_request_id
 
     def apply_to(self, state: "State", task: Task) -> None:
-        state.action_requests = [req for req in state.action_requests if req.id != self.action_request_id]
+        state.remove_action_request(self.action_request_id)
 
 
-class ChangeRemoveWorkUnitFromQueue(Change):
+class ChangeRemoveWorkUnit(Change):
     def __init__(self, work_unit_id: WorkUnitId) -> None:
         self.work_unit_id = work_unit_id
 
     def apply_to(self, state: "State", task: Task) -> None:
-        state.queue = [item for item in state.queue if item.id != self.work_unit_id]
+        state.remove_work_unit(self.work_unit_id)

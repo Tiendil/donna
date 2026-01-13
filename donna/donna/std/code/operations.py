@@ -111,9 +111,9 @@ class FinishWorkflowConfig(OperationConfig):
 
 class FinishWorkflowKind(OperationKind):
     def execute(self, task: Task, unit: WorkUnit, operation: Operation) -> Iterator["Change"]:
-        from donna.machine.changes import ChangeTaskState
+        from donna.machine.changes import ChangeFinishTask
 
-        yield ChangeTaskState(TaskState.COMPLETED)
+        yield ChangeFinishTask(task.id)
 
     def construct(self, artifact_id: FullArtifactId, section: SectionSource) -> "Operation":  # type: ignore[override]
         config = FinishWorkflowConfig.parse_obj(section.merged_configs())

@@ -11,22 +11,8 @@ if TYPE_CHECKING:
     from donna.machine.changes import Change
 
 
-class TaskState(enum.StrEnum):
-    TODO = "todo"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    # Task should not have WAITING state,
-    # because work unit may wait for input, not the whole task.
-    # For example:
-    # - a work unit requests agent work
-    # - while agent processing units's request, it adds more work units
-    # - donna may be able to process those units without waiting for the agent
-
-
 class Task(BaseEntity):
     id: TaskId
-    state: TaskState
     context: dict[str, Any]
 
     # TODO: we may want to make queue items frozen later
@@ -36,7 +22,6 @@ class Task(BaseEntity):
     def build(cls, id: TaskId) -> "Task":
         return Task(
             id=id,
-            state=TaskState.TODO,
             context={},
         )
 

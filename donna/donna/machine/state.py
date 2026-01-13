@@ -1,4 +1,6 @@
 from typing import cast
+import copy
+import contextlib
 
 import pydantic
 
@@ -20,70 +22,25 @@ from donna.machine.changes import (
     ChangeAddToQueue,
     ChangeRemoveActionRequest,
     ChangeRemoveWorkUnitFromQueue,
-    ChangeTaskState,
+    ChangeAddWorkUnit,
+    ChangeAddTask,
+    ChangeRemoveTask,
+    ChangeRemoveWork
 )
-from donna.machine.tasks import Task, TaskState, WorkUnit
+from donna.machine.tasks import Task, WorkUnit
 from donna.std.code.workflows import Workflow
 from donna.world import artifacts
 from donna.world.config import config
 
 
-# TODO: somehow separate methods that save state and those that do not
-class State(BaseEntity):
-    active_tasks: list[Task]
+class BaseState(BaseEntity):
+    active_tasks: list[Task]  # TODO: rename task to workflow?
     queue: list[WorkUnit]  # TODO: rename from queue, because it's not a queue anymore
     action_requests: list[ActionRequest]
     started: bool
     last_id: int
 
-    # TODO: we may want to make queue items frozen later
-    model_config = pydantic.ConfigDict(frozen=False)
-
-    @classmethod
-    def build(cls) -> "State":
-        return cls(
-            active_tasks=[],
-            action_requests=[],
-            queue=[],
-            started=False,
-            last_id=0,
-        )
-
     @property
-    def current_task(self) -> Task:
-        return self.active_tasks[-1]
-
-    def start_workflow(self, full_operation_id: FullArtifactLocalId) -> None:
-        task = Task.build(self.next_task_id())
-        work_unit = WorkUnit.build(self.next_work_unit_id(), task.id, full_operation_id)
-        self.add_task(task, work_unit)
-
-    def add_action_request(self, action_request: ActionRequest) -> None:
-        action_request.id = self.next_action_request_id()
-        self.action_requests.append(action_request)
-
-    def _next_id(self, prefix: str) -> InternalId:
-        self.last_id += 1
-        new_id = InternalId.build(prefix, self.last_id)
-        return new_id
-
-    def next_task_id(self) -> TaskId:
-        return cast(TaskId, self._next_id("T"))
-
-    def next_work_unit_id(self) -> WorkUnitId:
-        return cast(WorkUnitId, self._next_id("WU"))
-
-    def next_action_request_id(self) -> ActionRequestId:
-        return cast(ActionRequestId, self._next_id("AR"))
-
-    def add_task(self, task: Task, work_unit: WorkUnit) -> None:
-        changes = [
-            ChangeAddTask(task),
-            ChangeAddToQueue(work_unit),
-        ]
-
-        self.apply_changes(task, changes)
-
     def is_completed(self) -> bool:
         # A state can not consider itself completed if it was never started
         # it is important to distinguish sessions with unfinished initialization and sessions that are done
@@ -91,6 +48,14 @@ class State(BaseEntity):
 
     def has_work(self) -> bool:
         return bool(self.queue)
+
+    ###########
+    # Accessors
+    ###########
+
+    @property
+    def current_task(self) -> Task:
+        return self.active_tasks[-1]
 
     def get_task(self, task_id: TaskId) -> Task:
         for task in self.active_tasks:
@@ -113,15 +78,6 @@ class State(BaseEntity):
 
         raise NotImplementedError(f"Work unit with id '{work_unit_id}' not found in state")
 
-    def save(self) -> None:
-        world = config().get_world(WorldId("session"))
-        world.write_state("state.json", self.to_json().encode("utf-8"))
-
-    @classmethod
-    def load(cls) -> "State":
-        world = config().get_world(WorldId("session"))
-        return cls.from_json(world.read_state("state.json").decode("utf-8"))
-
     def get_next_work_unit(self) -> WorkUnit | None:
         for work_unit in self.queue:
             if work_unit.task_id != self.current_task.id:
@@ -131,52 +87,11 @@ class State(BaseEntity):
 
         return None
 
-    def try_step(self, task: Task) -> list[Change]:  # noqa: CCR001
-        changes: list[Change] = []
+    #######
+    # Cells
+    #######
 
-        if task.state == TaskState.TODO:
-            changes.append(ChangeTaskState(TaskState.IN_PROGRESS))
-
-        if task.state in (TaskState.COMPLETED, TaskState.FAILED):
-            raise NotImplementedError(f"can not make step while in state {task.state}")
-
-        if not self.queue:
-            # TODO: we need to ensure that FSM will end with finish operation
-            return changes
-
-        next_work_unit = self.get_next_work_unit()
-
-        if next_work_unit is None:
-            return changes
-
-        changes.extend(next_work_unit.run(task))
-        changes.append(ChangeRemoveWorkUnitFromQueue(next_work_unit.id))
-
-        return changes
-
-    def apply_changes(self, task: Task, changes: list[Change]) -> None:
-        for change in changes:
-            change.apply_to(self, task)
-
-    def step(self) -> list[Cell]:
-        task = self.current_task
-
-        changes = self.try_step(task)
-        self.apply_changes(task, changes)
-
-        cells = []
-
-        if task.state == TaskState.COMPLETED:
-            self.active_tasks.pop()
-
-        if task.state == TaskState.FAILED:
-            raise NotImplementedError("Cannot step failed task")
-
-        self.save()
-
-        return cells
-
-    def complete_message(self) -> Cell:
+    def cells_for_complete(self) -> Cell:
         return Cell.build_markdown(
             kind="work_is_completed",
             content=(
@@ -185,63 +100,126 @@ class State(BaseEntity):
             ),
         )
 
-    def run(self) -> list[Cell]:  # noqa: CCR001
-        if self.is_completed():
-            return [self.complete_message()]
-
-        if not self.has_work():
-            return []
-
-        cells = self.step()
-
-        while True:
-
-            if self.is_completed():
-                cells.append(self.complete_message())
-                break
-
-            if not self.has_work():
-                break
-
-            cells.extend(self.step())
-
-        for action_request in self.action_requests:
-            for cell in action_request.cells():
-                cells.append(cell)
-
-        return cells
-
-    def status_cells(self) -> list[Cell]:
+    def cells_for_status(self) -> list[Cell]:
         return [
             Cell.build_meta(
                 kind="state_status",
                 active_tasks=len(self.active_tasks),
                 queued_work_units=len(self.queue),
                 pending_action_requests=len(self.action_requests),
-                is_completed=self.is_completed(),
+                is_completed=self.is_completed,
             )
         ]
+
+    def get_cells(self) -> list[Cell]:
+
+        cells = []
+
+        for action_request in self.action_requests:
+            for cell in action_request.cells():
+                cells.append(cell)
+
+        if self.is_completed:
+            cells.append(self.cells_for_complete())
+
+        return cells
+
+
+class ConsistentState(BaseState):
+
+    def mutator(self) -> "MutatedState":
+        return MutatedState.from_dict(copy.deepcopy(self.model_dump()))
+
+
+class MutatedState(BaseState):
+    model_config = pydantic.ConfigDict(frozen=False)
+
+    @classmethod
+    def build(cls) -> "MutatedState":
+        return cls(
+            active_tasks=[],
+            action_requests=[],
+            queue=[],
+            started=False,
+            last_id=0,
+        )
+
+    def freeze(self) -> ConsistentState:
+        return ConsistentState.from_dict(copy.deepcopy(self.model_dump()))
+
+    ################
+    # Ids generation
+    ################
+
+    def next_id(self, prefix: str) -> InternalId:
+        self.last_id += 1
+        new_id = InternalId.build(prefix, self.last_id)
+        return new_id
+
+    def next_task_id(self) -> TaskId:
+        return cast(TaskId, self.next_id("T"))
+
+    def next_work_unit_id(self) -> WorkUnitId:
+        return cast(WorkUnitId, self.next_id("WU"))
+
+    def next_action_request_id(self) -> ActionRequestId:
+        return cast(ActionRequestId, self.next_id("AR"))
+
+    ##########
+    # Mutators
+    ##########
+
+    def mark_started(self) -> None:
+        self.started = True
+
+    def add_action_request(self, action_request: ActionRequest) -> None:
+        action_request.id = self.next_action_request_id()
+        self.action_requests.append(action_request)
+
+    def add_work_unit(self, work_unit: WorkUnit) -> None:
+        self.queue.append(work_unit)
+
+    def add_task(self, task: Task) -> None:
+        self.active_tasks.append(task)
 
     def remove_action_request(self, request_id: ActionRequestId) -> None:
         self.action_requests = [request for request in self.action_requests if request.id != request_id]
 
+    def remove_work_unit(self, work_unit_id: WorkUnitId) -> None:
+        self.queue = [unit for unit in self.queue if unit.id != work_unit_id]
+
+    def remove_task(self, task_id: TaskId) -> None:
+        self.active_tasks = [task for task in self.active_tasks if task.id != task_id]
+
+    def apply_changes(self, task: Task, changes: list[Change]) -> None:
+        for change in changes:
+            change.apply_to(self, task)
+
+    ####################
+    # Complex operations
+    ####################
+
     def complete_action_request(self, request_id: ActionRequestId, next_operation_id: FullArtifactLocalId) -> None:
-        operation_id = self.get_action_request(request_id).operation_id
+        changes = [ChangeAddWorkUnit(self.current_task.id, next_operation_id),
+                   ChangeRemoveActionRequest(request_id)]
+        self.apply_changes(self.current_task, changes)
 
-        workflow = cast(Workflow, artifacts.load_artifact(operation_id.full_artifact_id))
+    def start_workflow(self, full_operation_id: FullArtifactLocalId) -> None:
+        changes = [ChangeAddTask(full_operation_id)]
+        self.apply_changes(self.current_task, changes)
 
-        operation = workflow.get_operation(cast(OperationId, operation_id.local_id))
-        assert operation is not None
+    def finish_workflow(self, task_id: TaskId) -> None:
+        changes = [ChangeRemoveTask(task_id)]
+        self.apply_changes(self.current_task, changes)
 
-        if next_operation_id not in operation.allowed_transtions:
-            raise NotImplementedError(f"Operation '{operation_id}' can not go to '{next_operation_id}'")
+    def exectute_next_work_unit(self) -> None:
+        next_work_unit = self.get_next_work_unit()
 
-        new_work_unit = WorkUnit.build(
-            self.next_work_unit_id(), task_id=self.current_task.id, operation_id=next_operation_id
-        )
-
-        changes = [ChangeAddToQueue(new_work_unit), ChangeRemoveActionRequest(request_id)]
+        changes = next_work_unit.run(self.current_task)
+        changes.append(ChangeRemoveWork(next_work_unit.id))
 
         self.apply_changes(self.current_task, changes)
 
-        self.save()
+    # def run(self) -> None:
+    #     while self.has_work():
+    #         self.step()
