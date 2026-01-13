@@ -34,7 +34,7 @@ def _state() -> ConsistentState:
 
 @contextlib.contextmanager
 def _state_mutator() -> MutableState:
-    mutator = _load_state().mutate()
+    mutator = _load_state().mutator()
 
     try:
         yield mutator
@@ -81,7 +81,7 @@ def status() -> list[Cell]:
 def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
     workflow = cast(Workflow, artifacts.load_artifact(artifact_id))
 
-    with ConsistentState.mutate() as mutator:
+    with _state_mutator() as mutator:
         mutator.start_workflow(workflow.full_start_operation_id)
         _save_state(mutator.freeze())
         _state_run(mutator)
@@ -104,7 +104,7 @@ def _validate_operation_transition(state: MutableState,
 
 
 def complete_action_request(request_id: ActionRequestId, next_operation_id: FullArtifactLocalId) -> list[Cell]:
-    with ConsistentState.mutate() as mutator:
+    with _state_mutator() as mutator:
         _validate_operation_transition(mutator, request_id, next_operation_id)
         mutator.complete_action_request(request_id, next_operation_id)
         _save_state(mutator.freeze())
