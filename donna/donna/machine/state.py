@@ -126,7 +126,7 @@ class BaseState(BaseEntity):
 class ConsistentState(BaseState):
 
     def mutator(self) -> "MutableState":
-        return MutableState.from_dict(copy.deepcopy(self.model_dump()))
+        return MutableState.model_validate(copy.deepcopy(self.model_dump()))
 
 
 class MutableState(BaseState):
@@ -143,7 +143,7 @@ class MutableState(BaseState):
         )
 
     def freeze(self) -> ConsistentState:
-        return ConsistentState.from_dict(copy.deepcopy(self.model_dump()))
+        return ConsistentState.model_validate(copy.deepcopy(self.model_dump()))
 
     ################
     # Ids generation
