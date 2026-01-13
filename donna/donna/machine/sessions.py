@@ -55,6 +55,20 @@ def _state_cells() -> list[Cell]:
         return state.get_cells()
 
 
+def _session_required(func):
+    # TODO: refactor to catch domain exception from load_state
+    #       when we implement domain exceptions
+    def wrapper(*args, **kwargs) -> list[Cell]:
+        try:
+            _load_state()
+        except Exception:
+            return [cell_donna_message("No active session. Please start a new session.")]
+
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
 def start() -> list[Cell]:
     _session().initialize(reset=True)
     _save_state(MutableState.build().freeze())
@@ -66,6 +80,7 @@ def clear() -> list[Cell]:
     return [cell_donna_message("Cleared session.")]
 
 
+@_session_required
 def continue_() -> list[Cell]:
     with _state_mutator() as mutator:
         _state_run(mutator)
@@ -73,11 +88,13 @@ def continue_() -> list[Cell]:
     return _state_cells()
 
 
+@_session_required
 def status() -> list[Cell]:
     with _state() as state:
-        return state.get_status_cells()
+        return state.cells_for_status()
 
 
+@_session_required
 def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
     workflow = cast(Workflow, artifacts.load_artifact(artifact_id))
 
@@ -103,6 +120,7 @@ def _validate_operation_transition(state: MutableState,
         raise NotImplementedError(f"Operation '{operation_id}' can not go to '{next_operation_id}'")
 
 
+@_session_required
 def complete_action_request(request_id: ActionRequestId, next_operation_id: FullArtifactLocalId) -> list[Cell]:
     with _state_mutator() as mutator:
         _validate_operation_transition(mutator, request_id, next_operation_id)
