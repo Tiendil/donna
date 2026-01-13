@@ -87,7 +87,7 @@ class RequestActionKind(OperationKind):
 
         request = ActionRequest.build(request_text, operation.full_id)
 
-        yield ChangeAddActionRequest(request)
+        yield ChangeAddActionRequest(action_request=request)
 
 
 class RequestAction(Operation):
@@ -113,7 +113,7 @@ class FinishWorkflowKind(OperationKind):
     def execute(self, task: Task, unit: WorkUnit, operation: Operation) -> Iterator["Change"]:
         from donna.machine.changes import ChangeFinishTask
 
-        yield ChangeFinishTask(task.id)
+        yield ChangeFinishTask(task_id=task.id)
 
     def construct(self, artifact_id: FullArtifactId, section: SectionSource) -> "Operation":  # type: ignore[override]
         config = FinishWorkflowConfig.parse_obj(section.merged_configs())

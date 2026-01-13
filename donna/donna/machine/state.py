@@ -187,15 +187,18 @@ class MutableState(BaseState):
     ####################
 
     def complete_action_request(self, request_id: ActionRequestId, next_operation_id: FullArtifactLocalId) -> None:
-        changes = [ChangeAddWorkUnit(self.current_task.id, next_operation_id), ChangeRemoveActionRequest(request_id)]
+        changes = [
+            ChangeAddWorkUnit(task_id=self.current_task.id, operation_id=next_operation_id),
+            ChangeRemoveActionRequest(action_request_id=request_id),
+        ]
         self.apply_changes(changes)
 
     def start_workflow(self, full_operation_id: FullArtifactLocalId) -> None:
-        changes = [ChangeAddTask(full_operation_id)]
+        changes = [ChangeAddTask(operation_id=full_operation_id)]
         self.apply_changes(changes)
 
     def finish_workflow(self, task_id: TaskId) -> None:
-        changes = [ChangeRemoveTask(task_id)]
+        changes = [ChangeRemoveTask(task_id=task_id)]
         self.apply_changes(changes)
 
     def exectute_next_work_unit(self) -> None:
@@ -203,6 +206,6 @@ class MutableState(BaseState):
         assert next_work_unit is not None
 
         changes = next_work_unit.run(self.current_task)
-        changes.append(ChangeRemoveWorkUnit(next_work_unit.id))
+        changes.append(ChangeRemoveWorkUnit(work_unit_id=next_work_unit.id))
 
         self.apply_changes(changes)

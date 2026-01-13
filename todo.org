@@ -73,9 +73,6 @@
 ** Python package world will allow us to keep artifacts in standard python packages without hacks
 ** tree-based artifacts discovery? I.e. folders with descriptions and folders as artifacts?
 * TODO Refining architecture
-** review how changes work, maybe we can refactor them or remove
-*** changes are pydantic objects
-*** rename queue
 ** Can we finish action request without next operation?
 *** Probably not, because the last operation is always `finish`
 *** However, now we have Operation.mode = final.
