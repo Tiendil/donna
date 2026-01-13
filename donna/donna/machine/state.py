@@ -19,13 +19,11 @@ from donna.machine.cells import Cell
 from donna.machine.changes import (
     Change,
     ChangeAddTask,
-    ChangeAddToQueue,
     ChangeRemoveActionRequest,
-    ChangeRemoveWorkUnitFromQueue,
     ChangeAddWorkUnit,
     ChangeAddTask,
     ChangeRemoveTask,
-    ChangeRemoveWork
+    ChangeRemoveWorkUnit
 )
 from donna.machine.tasks import Task, WorkUnit
 from donna.std.code.workflows import Workflow
@@ -127,15 +125,15 @@ class BaseState(BaseEntity):
 
 class ConsistentState(BaseState):
 
-    def mutator(self) -> "MutatedState":
-        return MutatedState.from_dict(copy.deepcopy(self.model_dump()))
+    def mutator(self) -> "MutableState":
+        return MutableState.from_dict(copy.deepcopy(self.model_dump()))
 
 
-class MutatedState(BaseState):
+class MutableState(BaseState):
     model_config = pydantic.ConfigDict(frozen=False)
 
     @classmethod
-    def build(cls) -> "MutatedState":
+    def build(cls) -> "MutableState":
         return cls(
             active_tasks=[],
             action_requests=[],
@@ -216,6 +214,6 @@ class MutatedState(BaseState):
         next_work_unit = self.get_next_work_unit()
 
         changes = next_work_unit.run(self.current_task)
-        changes.append(ChangeRemoveWork(next_work_unit.id))
+        changes.append(ChangeRemoveWorkUnit(next_work_unit.id))
 
         self.apply_changes(self.current_task, changes)

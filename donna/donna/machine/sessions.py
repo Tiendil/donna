@@ -7,7 +7,7 @@ from donna.std.code.workflows import Workflow
 from donna.world import artifacts
 from donna.world.config import config, World
 from donna.domain.ids import ActionRequestId, FullArtifactLocalId, OperationId
-from donna.machine.cells import Cell, donna_message
+from donna.machine.cells import Cell, cell_donna_message
 
 
 def _session() -> World:
@@ -58,12 +58,12 @@ def _state_cells() -> list[Cell]:
 def start() -> list[Cell]:
     _session().initialize(reset=True)
     _save_state(MutableState.build().freeze())
-    return [donna_message("Started new session.")]
+    return [cell_donna_message("Started new session.")]
 
 
 def clear() -> list[Cell]:
     _session().initialize(reset=True)
-    return [donna_message("Cleared session.")]
+    return [cell_donna_message("Cleared session.")]
 
 
 def continue_() -> list[Cell]:

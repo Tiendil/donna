@@ -3,10 +3,7 @@ import typer
 from donna.cli.application import app
 from donna.cli.types import ActionRequestIdArgument, FullArtifactIdArgument, FullArtifactLocalIdArgument
 from donna.cli.utils import output_cells
-from donna.domain.ids import WorldId
 from donna.machine import sessions
-from donna.machine.state import State
-from donna.world.config import config
 
 sessions_cli = typer.Typer()
 

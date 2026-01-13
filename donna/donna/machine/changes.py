@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 from donna.domain.ids import ActionRequestId, WorkUnitId, TaskId, FullArtifactLocalId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.cells import Cell
-from donna.machine.tasks import Task, TaskState, WorkUnit
+from donna.machine.tasks import Task, WorkUnit
 
 if TYPE_CHECKING:
     from donna.machine.state import State

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Iterator, Literal, cast
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationKindId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.operations import Operation, OperationConfig, OperationKind, OperationMode
-from donna.machine.tasks import Task, TaskState, WorkUnit
+from donna.machine.tasks import Task, WorkUnit
 from donna.world.markdown import SectionSource
 
 if TYPE_CHECKING:
