@@ -1,13 +1,13 @@
-from typing import cast
 import contextlib
+import functools
+from typing import Callable, Iterator, ParamSpec, cast
 
-from donna.domain.ids import FullArtifactId, WorldId
+from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactLocalId, OperationId, WorldId
+from donna.machine.cells import Cell, cell_donna_message
 from donna.machine.state import ConsistentState, MutableState
 from donna.std.code.workflows import Workflow
 from donna.world import artifacts
-from donna.world.config import config, World
-from donna.domain.ids import ActionRequestId, FullArtifactLocalId, OperationId
-from donna.machine.cells import Cell, cell_donna_message
+from donna.world.config import World, config
 
 
 def _session() -> World:
@@ -28,12 +28,12 @@ def _save_state(state: ConsistentState) -> None:
 
 
 @contextlib.contextmanager
-def _state() -> ConsistentState:
+def _state() -> Iterator[ConsistentState]:
     yield _load_state()
 
 
 @contextlib.contextmanager
-def _state_mutator() -> MutableState:
+def _state_mutator() -> Iterator[MutableState]:
     mutator = _load_state().mutator()
 
     try:
@@ -55,10 +55,14 @@ def _state_cells() -> list[Cell]:
         return state.get_cells()
 
 
-def _session_required(func):
+P = ParamSpec("P")
+
+
+def _session_required(func: Callable[P, list[Cell]]) -> Callable[P, list[Cell]]:
     # TODO: refactor to catch domain exception from load_state
     #       when we implement domain exceptions
-    def wrapper(*args, **kwargs) -> list[Cell]:
+    @functools.wraps(func)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> list[Cell]:
         try:
             _load_state()
         except Exception:
@@ -106,9 +110,9 @@ def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
     return _state_cells()
 
 
-def _validate_operation_transition(state: MutableState,
-                                   request_id: ActionRequestId,
-                                   next_operation_id: FullArtifactLocalId) -> None:
+def _validate_operation_transition(
+    state: MutableState, request_id: ActionRequestId, next_operation_id: FullArtifactLocalId
+) -> None:
     operation_id = state.get_action_request(request_id).operation_id
 
     workflow = cast(Workflow, artifacts.load_artifact(operation_id.full_artifact_id))
