@@ -138,3 +138,4 @@
 ** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
 ** create a copy of the default config for the new project
 * TODO Add spelling validation to grooming workflow
+* TODO integration into emacs? How?
