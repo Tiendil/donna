@@ -34,7 +34,7 @@ from donna.world.config import config
 
 
 class BaseState(BaseEntity):
-    active_tasks: list[Task]  # TODO: rename task to workflow?
+    active_tasks: list[Task]
     queue: list[WorkUnit]  # TODO: rename from queue, because it's not a queue anymore
     action_requests: list[ActionRequest]
     started: bool
@@ -219,7 +219,3 @@ class MutatedState(BaseState):
         changes.append(ChangeRemoveWork(next_work_unit.id))
 
         self.apply_changes(self.current_task, changes)
-
-    # def run(self) -> None:
-    #     while self.has_work():
-    #         self.step()

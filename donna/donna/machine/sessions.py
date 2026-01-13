@@ -5,7 +5,7 @@ from donna.domain.ids import FullArtifactId, WorldId
 from donna.machine.state import ConsistentState, MutableState
 from donna.std.code.workflows import Workflow
 from donna.world import artifacts
-from donna.world.config import config
+from donna.world.config import config, World
 from donna.domain.ids import ActionRequestId, FullArtifactLocalId, OperationId
 from donna.machine.cells import Cell, donna_message
 
@@ -61,6 +61,11 @@ def start() -> list[Cell]:
     return [donna_message("Started new session.")]
 
 
+def clear() -> list[Cell]:
+    _session().initialize(reset=True)
+    return [donna_message("Cleared session.")]
+
+
 def continue_() -> list[Cell]:
     with _state_mutator() as mutator:
         _state_run(mutator)
@@ -73,11 +78,15 @@ def status() -> list[Cell]:
         return state.get_status_cells()
 
 
-def start_workflow(artifact_id: FullArtifactId) -> None:
+def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
     workflow = cast(Workflow, artifacts.load_artifact(artifact_id))
 
     with ConsistentState.mutate() as mutator:
         mutator.start_workflow(workflow.full_start_operation_id)
+        _save_state(mutator.freeze())
+        _state_run(mutator)
+
+    return _state_cells()
 
 
 def _validate_operation_transition(state: MutableState,
@@ -94,7 +103,11 @@ def _validate_operation_transition(state: MutableState,
         raise NotImplementedError(f"Operation '{operation_id}' can not go to '{next_operation_id}'")
 
 
-def complete_action_request(request_id: ActionRequestId, next_operation_id: FullArtifactLocalId) -> None:
+def complete_action_request(request_id: ActionRequestId, next_operation_id: FullArtifactLocalId) -> list[Cell]:
     with ConsistentState.mutate() as mutator:
         _validate_operation_transition(mutator, request_id, next_operation_id)
         mutator.complete_action_request(request_id, next_operation_id)
+        _save_state(mutator.freeze())
+        _state_run(mutator)
+
+    return _state_cells()
