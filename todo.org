@@ -74,6 +74,7 @@
 ** tree-based artifacts discovery? I.e. folders with descriptions and folders as artifacts?
 ** full ids for references to objects kinds
 *** that'll allow to remove register in the honor of search in worlds
+** OperationConfig is actually a section config — it should be equal for every kind of secttion?
 * TODO Refining architecture
 ** Can we finish action request without next operation?
 *** Probably not, because the last operation is always `finish`
