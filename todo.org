@@ -91,16 +91,17 @@
 ** unify code of different renderers? It is very similar
 *** add validation for specificaiton existence in renderers
 *** Spec rendere can be unified, since its cli command
+** we can reference artifact_id:operation_id, should we make id required for each section (or, at least, optional) to be able to reference each section? It may be required for lazy imports of primitives and listing primitives.
 * TODO Refining architecture
+** add info about merging configs into default_text_artifacts_behavior.md
+** resolve duplication of config.description and markdown description in the head section of the artifact
 ** Run CLI operation
 *** new operation type to run cli
-*** specify next operations depending on the cli result code
-*** update artifacts specification with new code block info
-*** add info about merging configs into default_text_artifacts_behavior.md
-*** resolve duplication of config.description and markdown description in the head section of the artifact
-*** we can reference artifact_id:operation_id, should we make id required for each section (or, at least, optional) to be able to reference each section? It may be required for lazy imports of primitives and listing primitives.
-*** We have duplicated logic: Final operation (that finishes the workflow) and mode = final for operation node (that does not guarantee finishing the workflow).
-*** Optionaly (true by default) validate artifact contents before update.
+*** specify next operations depending on the cli result code (as a map in the config block)
+**** on success (zero code?)
+   - on failure (none zero code?)
+   - on specific code
+*** update artifacts format specification with new operation info
 * Artifact improvements:
 ** We may want, by default load/upload artifacts in a custom donna-managed directory, so, no filenames are needed for agents. This also will help to add right extensions automatically => help agents to anderstand internal formats.
 ** When we start the workflow, should we output the head cells before the first operation?
