@@ -86,6 +86,15 @@ Configuration blocks are intended to be used by Donna and viewed by developers, 
 
 Fences without `donna` keyword are considered regular code blocks and have no special meaning for Donna.
 
+### Configuration Merging
+
+When a section contains multiple configuration blocks, Donna merges them in document order.
+
+- The merge is applied per section: the head section is merged independently, and each tail section has its own merged configuration.
+- Config blocks are merged in the order they appear; later blocks override earlier keys.
+- The merge is shallow: if a key maps to a nested object, a later block replaces the whole value (there is no deep merge).
+- Config blocks in subsections (H3 and below) belong to their parent H2 tail section and are merged into that section's configuration.
+
 ## Artifact Kinds, Their Formats and Behaviors
 
 ### Header section
