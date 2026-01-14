@@ -96,10 +96,10 @@ class WorkflowKind(ArtifactKind):
 
         return spec
 
-    def validate_artifact(self, artifact: Artifact) -> list[Cell]:  # noqa: CCR001
+    def validate_artifact(self, artifact: Artifact) -> tuple[bool, list[Cell]]:  # noqa: CCR001
         assert isinstance(artifact, Workflow)
         if artifact.get_operation(artifact.start_operation_id) is None:
-            return [
+            return False, [
                 Cell.build_meta(
                     kind="artifact_kind_validation",
                     id=str(artifact.info.id),
@@ -112,7 +112,7 @@ class WorkflowKind(ArtifactKind):
 
         for operation in artifact.operations:
             if operation.mode == OperationMode.final and operation.allowed_transtions:
-                return [
+                return False, [
                     Cell.build_meta(
                         kind="artifact_kind_validation",
                         id=str(artifact.info.id),
@@ -122,7 +122,7 @@ class WorkflowKind(ArtifactKind):
                 ]
 
             if operation.mode == OperationMode.normal and not operation.allowed_transtions:
-                return [
+                return False, [
                     Cell.build_meta(
                         kind="artifact_kind_validation",
                         id=str(artifact.info.id),
@@ -142,7 +142,7 @@ class WorkflowKind(ArtifactKind):
         )
 
         if not_reachable_operations:
-            return [
+            return False, [
                 Cell.build_meta(
                     kind="artifact_kind_validation",
                     id=str(artifact.info.id),
@@ -152,7 +152,7 @@ class WorkflowKind(ArtifactKind):
                 )
             ]
 
-        return [
+        return True, [
             Cell.build_meta(
                 kind="artifact_kind_validation",
                 id=str(artifact.info.id),

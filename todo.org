@@ -89,9 +89,6 @@
 *** meta
 *** sections
 * TODO Refining architecture
-** Validation
-*** should we call validation on every artifact update?
-*** should we call validation on every artifact load?
 ** Render scheme of workflow somewhere?
 *** using the donna to render schema in some specific format looks expensive
 *** maybe we can ask agent to do it? By adding instructions into specifications
@@ -129,6 +126,7 @@
 ** "Story" term still in some specs for convienience, we should think of a better naming
 ** currently we do not output the whole workflow body on the request of the artifact, only description. Maybe we should output the whole body?
 ** mention jinja comments {# ... #} in artifact specification
+** artifact cli should always return Cells
 * TODO Jinja2 improvements
 ** sandbox mode — do we need it?
 ** register jinja2 filters?

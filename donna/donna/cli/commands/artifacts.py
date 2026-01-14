@@ -45,7 +45,9 @@ def validate(id: FullArtifactIdArgument) -> None:
 
     assert artifact_kind is not None
 
-    output_cells(artifact_kind.validate_artifact(artifact))
+    _is_valid, cells = artifact_kind.validate_artifact(artifact)
+
+    output_cells(cells)
 
 
 @artifacts_cli.command()
@@ -57,7 +59,9 @@ def validate_all(namespace: NamespaceIdArgument) -> None:
 
         assert artifact_kind is not None
 
-        output_cells(artifact_kind.validate_artifact(artifact))
+        _is_valid, cells = artifact_kind.validate_artifact(artifact)
+
+        output_cells(cells)
 
 
 app.add_typer(artifacts_cli, name="artifacts", help="Manage artifacts")
