@@ -80,15 +80,15 @@
 ** spec chapter is a section
 ** section has meta:
 *** operations meta
+**** has fsm_mode: start, final, normal
+**** => we can remove start_operation_id from workflow config
+**** request action can not be final node, because we should control that agent will finish all the work
 *** chapter meta
 ** artifact has:
 *** info
 *** meta
 *** sections
 * TODO Refining architecture
-** Can we finish action request without next operation?
-*** Probably not, because the last operation is always `finish`
-*** However, now we have Operation.mode = final.
 ** Validation
 *** should we call validation on every artifact update?
 *** should we call validation on every artifact load?
