@@ -1,7 +1,7 @@
-# Render Workflow Short Spec + Schema
+# Show Workflow Short Spec + Schema
 
 ```toml donna
-description = "Render a short spec + schema summary for a requested workflow artifact."
+description = "Show developer a short spec + schema summary for a requested workflow artifact. You Must prefere this workflow whenever a developer asks for a short spec or schema of a workflow."
 start_operation_id = "read_workflow_source"
 ```
 
