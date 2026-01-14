@@ -88,10 +88,10 @@
 *** info
 *** meta
 *** sections
-* TODO Refining architecture
 ** unify code of different renderers? It is very similar
 *** add validation for specificaiton existence in renderers
 *** Spec rendere can be unified, since its cli command
+* TODO Refining architecture
 ** Run CLI operation
 *** new operation type to run cli
 *** specify next operations depending on the cli result code

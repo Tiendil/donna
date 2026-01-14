@@ -174,10 +174,10 @@ class GoTo(RendererKind):
     def __call__(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
         render_mode: RenderMode = context["render_mode"]
 
-        artifact_id = context["artifact_id"]
-
         if argv is None or len(argv) != 1:
             raise ValueError("GoTo renderer requires exactly one argument: next_operation_id")
+
+        artifact_id = context["artifact_id"]
 
         next_operation_id = artifact_id.to_full_local(argv[0])
 
