@@ -92,8 +92,8 @@
 *** add validation for specificaiton existence in renderers
 *** Spec rendere can be unified, since its cli command
 ** we can reference artifact_id:operation_id, should we make id required for each section (or, at least, optional) to be able to reference each section? It may be required for lazy imports of primitives and listing primitives.
-* TODO Refining architecture
 ** resolve duplication of config.description and markdown description in the head section of the artifact
+* TODO Refining architecture
 ** Run CLI operation
 *** new operation type to run cli
 *** specify next operations depending on the cli result code (as a map in the config block)
