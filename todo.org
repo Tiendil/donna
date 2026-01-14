@@ -142,8 +142,10 @@
 * TODO CLI operation
 ** Add a new operation kind, that runs cli commands as part of the workflow.
 ** The operation should not requre interaction with the agent or the user.
-** Cli command should start in the same environment as the donna runs
-** Cli commands should be specified as a string and interpreted as a shell command, pipes are allowed
+** Cli command
+*** should start in the same environment as the donna runs
+*** should be specified as a string and interpreted as a shell command, pipes are allowed
+*** should be specified in a specialized code block
 ** We consider those commands save enough, because they will be defined in the workflows (i.e. reviewed by humans and agents).
 ** For this operation, specify next operations depending on the cli result code (as a map in the config block)
 *** on success (zero code?)
