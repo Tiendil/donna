@@ -65,12 +65,15 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> None:
 
     artifact_kind = register().artifacts.get(test_artifact.info.kind)
 
+    if artifact_kind is None:
+        raise NotImplementedError(f"Artifact kind `{test_artifact.info.kind}` is not registered")
+
     is_valid, _cells = artifact_kind.validate_artifact(test_artifact)
 
     if not is_valid:
         raise NotImplementedError(f"Artifact `{full_id}` is not valid and cannot be updated")
 
-    world.write(full_id.namespace_id, full_id.artifact_id, content)
+    world.write(full_id.namespace_id, full_id.artifact_id, content.encode("utf-8"))
 
 
 def _construct_from_content(full_id: FullArtifactId, content: str) -> Artifact:
@@ -93,7 +96,6 @@ def load_artifact(full_id: FullArtifactId) -> Artifact:
     content = world.read(full_id.namespace_id, full_id.artifact_id).decode("utf-8")
 
     return _construct_from_content(full_id, content)
-
 
 
 def list_artifacts(namespace_id: NamespaceId) -> list[Artifact]:
