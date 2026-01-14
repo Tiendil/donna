@@ -72,6 +72,8 @@
 ** We may want to allow donna render part of artifact only (by section id)
 ** Python package world will allow us to keep artifacts in standard python packages without hacks
 ** tree-based artifacts discovery? I.e. folders with descriptions and folders as artifacts?
+** full ids for references to objects kinds
+*** that'll allow to remove register in the honor of search in worlds
 * TODO Refining architecture
 ** Can we finish action request without next operation?
 *** Probably not, because the last operation is always `finish`
@@ -139,3 +141,4 @@
 ** create a copy of the default config for the new project
 * TODO Add spelling validation to grooming workflow
 * TODO integration into emacs? How?
+** https://github.com/d12frosted/vui.el/
