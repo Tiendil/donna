@@ -89,10 +89,6 @@
 *** meta
 *** sections
 * TODO Refining architecture
-** Render scheme of workflow somewhere?
-*** using the donna to render schema in some specific format looks expensive
-*** maybe we can ask agent to do it? By adding instructions into specifications
-*** it can be an actual workflow
 ** unify code of different renderers? It is very similar
 *** add validation for specificaiton existence in renderers
 *** Spec rendere can be unified, since its cli command
