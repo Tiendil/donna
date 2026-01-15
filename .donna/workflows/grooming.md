@@ -1,7 +1,6 @@
 # Grooming Workflow
 
 ```toml donna
-start_operation_id = "run_autoflake"
 description = """
 Initiate operations to groom and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc.
 """
@@ -14,6 +13,7 @@ Initiate operations to groom and refine the donna codebase: running & fixing tes
 ```toml donna
 id = "run_autoflake"
 kind = "request_action"
+fsm_mode = "start"
 ```
 
 1. Run `cd ./donna && poetry run autoflake .` to remove unused imports and variables in the codebase.

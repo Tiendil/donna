@@ -1,7 +1,6 @@
 # Meta Work Loop
 
 ```toml donna
-start_operation_id = "start"
 description = """
 General purpose work planning and execution workflow. Use it when you need to do complex work and there is no more specific workflow available.
 """
@@ -14,6 +13,7 @@ General purpose work planning and execution workflow. Use it when you need to do
 ```toml donna
 id = "start"
 kind = "request_action"
+fsm_mode = "start"
 ```
 
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
