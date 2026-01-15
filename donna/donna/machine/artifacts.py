@@ -50,7 +50,7 @@ class ArtifactSection(BaseEntity):
     meta: ArtifactSectionMeta
 
     def cells(self) -> list[Cell]:
-        return [Cell.build_meta(kind="artifact_section",
+        return [Cell.build_meta(kind="artifact_section_meta",
                                 section_id=str(self.id) if self.id else None,
                                 section_kind=str(self.kind) if self.kind else None,
                                 section_title=self.title,
@@ -76,7 +76,7 @@ class Artifact(BaseEntity):
 
     # TODO: should we attach section cells here as well?
     def cells(self) -> list[Cell]:
-        return [Cell.build_meta(kind="artifact",
+        return [Cell.build_meta(kind="artifact_meta",
                                 artifact_id=str(self.id),
                                 artifact_kind=self.kind,
                                 artifact_title=self.title,
