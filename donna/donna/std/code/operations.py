@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING, Iterator, Literal, cast
 
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationKindId
 from donna.machine.action_requests import ActionRequest
-from donna.machine.operations import Operation, OperationConfig, OperationKind, FsmMode, OperationMeta
+from donna.machine.operations import OperationConfig, OperationKind, FsmMode, OperationMeta
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.markdown import SectionSource
-from donna.machine.artifacts import ArtifactSection
+from donna.machine.artifacts import ArtifactSection, ArtifactSectionKindId
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -60,10 +60,8 @@ class RequestActionKind(OperationKind):
                                allowed_transtions=extract_transitions(section.as_analysis_markdown())),
         )
 
-    def execute(self, task: Task, unit: WorkUnit, operation: Operation) -> Iterator["Change"]:
+    def execute(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterator["Change"]:
         from donna.machine.changes import ChangeAddActionRequest
-
-        operation = cast(RequestAction, operation)
 
         context: dict[str, object] = {
             "scheme": operation,
@@ -78,12 +76,8 @@ class RequestActionKind(OperationKind):
         yield ChangeAddActionRequest(action_request=request)
 
 
-class RequestAction(Operation):
-    request_template: str
-
-
 request_action_kind = RequestActionKind(
-    id=OperationKindId("request_action"),
+    id=ArtifactSectionKindId("request_action"),
     title="Request Action",
 )
 
@@ -98,12 +92,12 @@ class FinishWorkflowConfig(OperationConfig):
 
 
 class FinishWorkflowKind(OperationKind):
-    def execute(self, task: Task, unit: WorkUnit, operation: Operation) -> Iterator["Change"]:
+    def execute(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterator["Change"]:
         from donna.machine.changes import ChangeFinishTask
 
         yield ChangeFinishTask(task_id=task.id)
 
-    def construct(self, artifact_id: FullArtifactId, section: SectionSource) -> "Operation":  # type: ignore[override]
+    def construct(self, artifact_id: FullArtifactId, section: SectionSource) -> ArtifactSection:
         config = FinishWorkflowConfig.parse_obj(section.merged_configs())
 
         title = section.title or ""
@@ -118,6 +112,6 @@ class FinishWorkflowKind(OperationKind):
 
 
 finish_workflow_kind = FinishWorkflowKind(
-    id=OperationKindId("finish_workflow"),
+    id=ArtifactSectionKindId("finish_workflow"),
     title="Finish Workflow",
 )
