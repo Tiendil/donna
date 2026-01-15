@@ -87,6 +87,7 @@
 *** you can skip a lot of ids, because they are not required
 *** the root section is also an operation (?) like linear execution
 *** if we unify section, than we do not need to separate head & tail, head is just a section with special meta
+*** Risk, currently, the section defines all outgoing edges, that simplifies a lot (describing FSM, reading). If we allow "operational" sections to have nested sections, we smear control flow logic across the document, that may complicate understanding and processing, especially for agents.
 ** unify code of different renderers? It is very similar
 *** add validation for specificaiton existence in renderers
 *** Spec rendere can be unified, since its cli command
