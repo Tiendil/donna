@@ -159,6 +159,7 @@
 * TODO interesting software to integrate with
 ** https://github.com/m0n0x41d/quint-code
 ** https://github.com/Fission-AI/OpenSpec
+** https://www.reddit.com/r/PKMS/comments/1qdgr5a/would_a_simple_pkm_programming_language_make_sense/
 * TODO README.md notes
 ** `No API keys required.` as a feature
 ** `save tokens by taking work from your agent to your code`
