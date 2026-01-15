@@ -19,7 +19,6 @@ from donna.domain.ids import ArtifactSectionKindId, FullArtifactId, FullArtifact
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.markdown import SectionSource
-from donna.world.primitives_register import register
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -38,6 +37,8 @@ class ArtifactKind(BaseEntity):
         ]
 
     def construct_section(artifact_id: FullArtifactId, raw_section: SectionSource) -> 'ArtifactSection':
+        from donna.world.primitives_register import register
+
         data = raw_section.merged_configs()
 
         section_kind = register().operations.get(data.get("kind", "text"))
@@ -157,7 +158,7 @@ class ArtifactSectionKind(BaseEntity):
         return [Cell.build_meta(kind="section_kind", id=self.id, title=self.title)]
 
 
-class TextArtifactSectionTextKind(ArtifactSectionKind):
+class ArtifactSectionTextKind(ArtifactSectionKind):
 
     def execute_section(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("Text sections cannot be executed.")
