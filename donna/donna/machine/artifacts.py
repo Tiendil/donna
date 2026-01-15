@@ -59,7 +59,9 @@ class ArtifactSection(BaseEntity):
 
 
 class ArtifactMeta(BaseEntity):
-    pass
+
+    def cells_meta(self) -> dict[str, Any]:
+        return {}
 
 
 class Artifact(BaseEntity):
@@ -71,5 +73,18 @@ class Artifact(BaseEntity):
     meta: ArtifactMeta
     sections: list[ArtifactSection]
 
+    # TODO: should we attach section cells here as well?
     def cells(self) -> list[Cell]:
-        raise NotImplementedError("You must implement this method in subclasses")
+        return [Cell.build_meta(kind="artifact",
+                                artifact_id=self.id,
+                                artifact_kind=self.kind,
+                                artifact_title=self.title,
+                                artifact_description=self.description,
+                                **self.meta.cells_meta()
+                                )]
+
+    def get_section(self, section_id: ArtifactLocalId) -> ArtifactSection | None:
+        for section in self.sections:
+            if section.id == section_id:
+                return section
+        return None

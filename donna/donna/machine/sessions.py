@@ -5,6 +5,7 @@ from typing import Callable, Iterator, ParamSpec, cast
 from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactLocalId, OperationId, WorldId
 from donna.machine.cells import Cell, cell_donna_message
 from donna.machine.state import ConsistentState, MutableState
+from donna.machine.operations import FsmMode
 from donna.std.code.workflows import Workflow
 from donna.world import artifacts
 from donna.world.config import World, config
@@ -100,10 +101,10 @@ def status() -> list[Cell]:
 
 @_session_required
 def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
-    workflow = cast(Workflow, artifacts.load_artifact(artifact_id))
+    workflow = artifacts.load_artifact(artifact_id)
 
     with _state_mutator() as mutator:
-        mutator.start_workflow(workflow.full_start_operation_id)
+        mutator.start_workflow(workflow.meta.start_operation_id)
         _save_state(mutator.freeze())
         _state_run(mutator)
 

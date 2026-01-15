@@ -14,7 +14,7 @@ from donna.domain.ids import (
 )
 from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
-from donna.machine.operations import OperationKind, OperationMode, OperationMeta
+from donna.machine.operations import OperationKind, OperationMode, OperationMeta, FsmMode
 from donna.machine.templates import RendererKind
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactMeta
 from donna.world.markdown import ArtifactSource, SectionSource
@@ -22,22 +22,8 @@ from donna.world.primitives_register import register
 from donna.world.templates import RenderMode
 
 
-# class Workflow(Artifact):
-#     start_operation_id: OperationId
-#     operations: list[Operation]
-
-#     @property
-#     def full_start_operation_id(self) -> FullArtifactLocalId:
-#         return self.info.id.to_full_local(self.start_operation_id)
-
-#     def get_operation(self, operation_id: OperationId) -> Operation | None:
-#         for operation in self.operations:
-#             if operation.id == operation_id:
-#                 return operation
-#         return None
-
-#     def cells(self) -> list["Cell"]:
-#         return [Cell.build_markdown(kind=self.info.kind, content=self.info.description, id=str(self.info.id))]
+class WorkflowMeta(ArtifactMeta):
+    start_operation_id: FullArtifactLocalId
 
 
 def construct_operation(artifact_id: FullArtifactId, section: SectionSource) -> ArtifactSection:
@@ -89,59 +75,82 @@ class WorkflowKind(ArtifactKind):
 
         sections = [construct_operation(source.id, section) for section in source.tail]
 
+        start_operation_id = None
+
+        for section in sections:
+            if section.meta.fsm_mode == FsmMode.start:
+                start_operation_id = section.id
+                break
+        else:
+            raise NotImplementedError(f"Workflow '{source.id}' does not have a start operation.")
+
         spec = Artifact(
             id=source.id,
             kind=self.id,
             title=title,
             description=description,
-            meta=ArtifactMeta(),
+            meta=WorkflowMeta(start_operation_id=start_operation_id),
             sections=sections
         )
 
         return spec
 
     def validate_artifact(self, artifact: Artifact) -> tuple[bool, list[Cell]]:  # noqa: CCR001
-        assert isinstance(artifact, Workflow)
-        if artifact.get_operation(artifact.start_operation_id) is None:
+        start_operation_id: FullArtifactLocalId = artifact.meta.start_operation_id
+
+        if artifact.get_section(start_operation_id) is None:
             return False, [
                 Cell.build_meta(
                     kind="artifact_kind_validation",
                     id=str(artifact.info.id),
                     status="failure",
-                    message=f"Start operation ID '{artifact.start_operation_id}' does not exist in the workflow.",
+                    message=f"Start operation ID '{start_operation_id}' does not exist in the workflow.",
                 )
             ]
 
         transitions = {}
 
-        for operation in artifact.operations:
-            if operation.mode == OperationMode.final and operation.allowed_transtions:
+        for section in artifact.sections:
+            if section.meta.fsm_mode == FsmMode.final and section.meta.allowed_transtions:
                 return False, [
                     Cell.build_meta(
                         kind="artifact_kind_validation",
-                        id=str(artifact.info.id),
+                        id=str(artifact.id),
                         status="failure",
-                        message=f"Final operation '{operation.id}' should not have outgoing transitions.",
+                        message=f"Final operation '{section.id}' should not have outgoing transitions.",
                     )
                 ]
 
-            if operation.mode == OperationMode.normal and not operation.allowed_transtions:
+            if section.meta.fsm_mode == FsmMode.start and section.id != start_operation_id:
                 return False, [
                     Cell.build_meta(
                         kind="artifact_kind_validation",
-                        id=str(artifact.info.id),
+                        id=str(artifact.id),
                         status="failure",
                         message=(
-                            f"Operation '{operation.id}' must have at least one allowed transition or be marked as"
+                            f"Operation '{section.id}' is marked as start but does not match the workflow's start"
+                            f" operation ID '{start_operation_id}'."
+                        ),
+                    )
+                ]
+
+            if section.meta.mode == FsmMode.normal and not section.meta.allowed_transtions:
+                return False, [
+                    Cell.build_meta(
+                        kind="artifact_kind_validation",
+                        id=str(artifact.id),
+                        status="failure",
+                        message=(
+                            f"Operation '{section.id}' must have at least one allowed transition or be marked as"
                             " final."
                         ),
                     )
                 ]
 
-            transitions[operation.full_id] = set(operation.allowed_transtions)
+            transitions[section.id] = set(section.meta.allowed_transtions)
 
         not_reachable_operations = find_not_reachable_operations(
-            start_id=artifact.full_start_operation_id,
+            start_id=start_operation_id,
             transitions=transitions,
         )
 
@@ -149,7 +158,7 @@ class WorkflowKind(ArtifactKind):
             return False, [
                 Cell.build_meta(
                     kind="artifact_kind_validation",
-                    id=str(artifact.info.id),
+                    id=str(artifact.id),
                     status="failure",
                     message=f"The following operations are not reachable from the start operation: "
                     f"{', '.join(str(op_id) for op_id in not_reachable_operations)}.",
@@ -159,7 +168,7 @@ class WorkflowKind(ArtifactKind):
         return True, [
             Cell.build_meta(
                 kind="artifact_kind_validation",
-                id=str(artifact.info.id),
+                id=str(artifact.id),
                 status="success",
             )
         ]
