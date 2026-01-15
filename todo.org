@@ -50,85 +50,108 @@
 * TODO Consider using https://github.com/toon-format/toon for json formatting in cells
 * TODO WE CAN ASK DONNA TO MAKE A FSM FOR DONNA!!! WHICH WILL BE OUR PLAN OF WORK!!!
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
-* TODO refactor workflows + operations into configs
-** remove layout.py? It's functionality should be moved to worlds
-** global ids vs local ids (for operations)
-** remove primitives_registry.py? Since there only artifacts will left
-** remove introspections functionality? because it is fully covered by artifacts?
-** move all ids from types.py into ids.py
-** cleanum ids.py
-** search for all left str ids and replace them with proper id types
-** merged section configs MUST be parsed directly by pydantic models, no magic
-** remove `primitives` submodule?
-** do we need WorkflowKind that allow specify different workflow behaviors?
+* TODO Lazy import of primitives from Python artifacts
+** world kinds are configured via python module imports (not artifact paths?)
+*** or somehow very smartly via artifact paths
+** system python (i.e. donna's environment) can be a world also with predefined behavior
+*** so references to actual python modules should also work
+** artifacts listing/search functionality goest to the worlds
+*** words should return standardized short info records about each artifact
+*** and about each primitive (?) or should primitives be left for the donna side?
+** => introspection uses worlds to list available artifact/primitives
+** remove primitives registry completely
+** improve introspection cli
+*** `artifacts list *` goest to introspection? or should be refactored into `artifacts search *`?
+** Each primitive should have a link to related specification or to the section in the specification?
 ** action request also could be an artifact?
-** improve markdown parsing & rendering
-*** donna -> donna config  (however, now we have jinja comments {# ... #}
-*** donna comment
-** Can we finish action request without next operation?
-*** Probably not, because the last operation is always `finish`
-*** However, now we have Operation.mode = final.
-** `donna artifacts` — make namespace argument optional or remove it from validate-all?
 ** move code.operations into submodules
-** should we call validation on every artifact load?
-** Render scheme of workflow somewhere?
-** break story_loop into multiple workflows?
-** tune wording of workflows (what to write before goto)
-** move workflow start into session command?
+** In the context of all those changes, do we need namespaces for artifacts? Maybe we can live without them?
+*** or without their current role in the code
+** mark artifacts and sections with tags to simplify filtering/searching
+*** Do we need speciciations for tags? I.e. does tag a primitive?
+** We may want to allow donna render part of artifact only (by section id)
+** Python package world will allow us to keep artifacts in standard python packages without hacks
+** tree-based artifacts discovery? I.e. folders with descriptions and folders as artifacts?
+** full ids for references to objects kinds
+*** that'll allow to remove register in the honor of search in worlds
+** OperationConfig is actually a section config — it should be equal for every kind of secttion?
+* TODO Artifact sections
+** operation is a section
+** spec chapter is a section
+** section has meta:
+*** operations meta
+**** has fsm_mode: start, final, normal
+**** => we can remove start_operation_id from workflow config
+**** request action can not be final node, because we should control that agent will finish all the work
+*** chapter meta
+** artifact has:
+*** info
+*** meta
+*** sections
 ** unify code of different renderers? It is very similar
 *** add validation for specificaiton existence in renderers
 *** Spec rendere can be unified, since its cli command
-** When we start the workflow, should we output the head cells before the first operation?
+** we can reference artifact_id:operation_id, should we make id required for each section (or, at least, optional) to be able to reference each section? It may be required for lazy imports of primitives and listing primitives.
+** resolve duplication of config.description and markdown description in the head section of the artifact
+** align naming of session-level specifications
+** if we unify section, than we do not need to separate head & tail, head is just a section with special meta
+* Artifact improvements:
 ** We may want, by default load/upload artifacts in a custom donna-managed directory, so, no filenames are needed for agents. This also will help to add right extensions automatically => help agents to anderstand internal formats.
+** When we start the workflow, should we output the head cells before the first operation?
+** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
+** {{ edit(specification) }} renderer?
+** {{ run(workflow) }} renderer?
+** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
+** Declare explicit refining loop
+** Add mini workflows to polish each kind of records?
+** add tmp directory for intermediate artifacts? mayby in .donna/session/tmp/
 ** meta_work_loop.md contains a lot of repetitive commands to read specifications. We should optimize them somehow.
 *** Approach 1: move them to the head section text
 *** Approach 2: move them to the head section config
 *** Approach 3: keep them, but add some meta info on analysis phase that donna can use.
-** Run CLI operation
-*** new operation type to run cli
-*** specify next operations depending on the cli result code
-*** update artifacts specification with new code block info
-** Improve work with artifact specifications
-*** Introspection of renderers
-*** Introspection of artifact kinds
-*** Introspection of code block formats
-**** supported primary formats
-**** supported properties
-*** update default_text_artifacts_behavior.md to reference introspection instead of harding info.
-*** add info about merging configs into default_text_artifacts_behavior.md
-*** resolve duplication of config.description and markdown description in the head section of the artifact
-*** we can reference artifact_id:operation_id, should we make id required for each section (or, at least, optional) to be able to reference each section?
-*** We have duplicated logic: Final operation (that finishes the workflow) and mode = final for operation node (that does not guarantee finishing the workflow).
-*** Optionaly (true by default) validate artifact contents before update.
-** Planning improvements:
-*** align naming of session-level specifications
-*** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
-*** {{ edit(specification) }} renderer?
-*** {{ run(workflow) }} renderer?
-*** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
-*** Declare explicit refining loop
-*** Add mini workflows to polish each kind of records?
-*** add tmp directory for intermediate artifacts? mayby in .donna/session/tmp/
-* TODO Worlds improvements
-** We may want to list worlds via donna cli (introspection?)
-** We may want to register world kinds automatically.
-* TODO error messages should provide helpful hints for agents
-* TODO "Story" term still in some specs for convienience, we should think of a better naming
-* TODO artifacts descripion vs intro — they replicate each other, maybe we could keep only one of them? Intro whould work better.
-* TODO artifacts improvements
-** mark specification sections with tags to allow flexible information extraction
+** tune wording of workflows (what to write before goto)
+** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
+** remove mention of <DONNA_CMD> from specs
+** "Story" term still in some specs for convienience, we should think of a better naming
 ** currently we do not output the whole workflow body on the request of the artifact, only description. Maybe we should output the whole body?
-** currently we have different approaches to read/write artifacts: we read them via donna, but write via direct file operations. Maybe we should unify it?
-** scripts as artefacts
+** mention jinja comments {# ... #} in artifact specification
+** artifact cli should always return Cells
 * TODO Jinja2 improvements
 ** sandbox mode — do we need it?
 ** register jinja2 filters?
 * TODO Organize standard cell kinds into enum (but allow custom kinds as well). Or just provide custom constructors for each use-case.
 * TODO ask codex to straighten the naming/dictionary/terms in the donna project
 ** review the dictionary of primary terms
-* TODO remove mention of <DONNA_CMD> from specs
 * TODO errors processing improvements
 ** Vebose jinja2 render errors to help agents and developers
 ** replace all NotImplementedError exceptions with custom exceptions and smart error handling
 ** exceptions must output cells?
-* TODO Workflow for explicit morphological analysis
+* TODO Possible workflows
+** bootstrap.bootstrap_all.
+** bootstrap.donna.create_project
+** bootstrap.donna.craete_specifications
+** bootstrap.python.create_grooming_workflow
+** bootstrap.python.create_project
+** morphologica_analysis — workflow for explicit morphological analysis
+** simple_task — workflow for simple tasks to not bother with complex story workflows
+* TODO initialization of donna for the new project
+** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
+** create a copy of the default config for the new project
+* TODO Add spelling validation to grooming workflow
+* TODO integration into emacs? How?
+** https://github.com/d12frosted/vui.el/
+* TODO CLI operation
+** Add a new operation kind, that runs cli commands as part of the workflow.
+** The operation should not requre interaction with the agent or the user.
+** Cli command
+*** should start in the same environment as the donna runs
+*** should be specified as a string and interpreted as a shell command, pipes are allowed
+*** should be specified in a specialized code block
+** We consider those commands save enough, because they will be defined in the workflows (i.e. reviewed by humans and agents).
+** For this operation, specify next operations depending on the cli result code (as a map in the config block)
+*** on success (zero code?)
+*** on failure (none zero code?)
+*** on specific code
+** The next commands should be able to access the cli output (stdout and stderr) via variables.
+*** Use WorkUnit context for this
+** Update artifacts format specification with new operation info

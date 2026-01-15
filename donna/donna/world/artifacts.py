@@ -59,8 +59,32 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> None:
     if world.readonly:
         raise NotImplementedError(f"World `{world.id}` is read-only")
 
-    with input.open("rb") as f:
-        world.write(full_id.namespace_id, full_id.artifact_id, f.read())
+    content = input.read_text(encoding="utf-8")
+
+    test_artifact = _construct_from_content(full_id, content)
+
+    artifact_kind = register().artifacts.get(test_artifact.info.kind)
+
+    if artifact_kind is None:
+        raise NotImplementedError(f"Artifact kind `{test_artifact.info.kind}` is not registered")
+
+    is_valid, _cells = artifact_kind.validate_artifact(test_artifact)
+
+    if not is_valid:
+        raise NotImplementedError(f"Artifact `{full_id}` is not valid and cannot be updated")
+
+    world.write(full_id.namespace_id, full_id.artifact_id, content.encode("utf-8"))
+
+
+def _construct_from_content(full_id: FullArtifactId, content: str) -> Artifact:
+    raw_artifact = parse_artifact(full_id, content)
+
+    kind = register().get_artifact_kind_by_namespace(full_id.namespace_id)
+
+    if kind is None:
+        raise NotImplementedError(f"Artifact kind for artifact `{full_id}` is not registered")
+
+    return kind.construct(raw_artifact)
 
 
 def load_artifact(full_id: FullArtifactId) -> Artifact:
@@ -71,14 +95,7 @@ def load_artifact(full_id: FullArtifactId) -> Artifact:
 
     content = world.read(full_id.namespace_id, full_id.artifact_id).decode("utf-8")
 
-    raw_artifact = parse_artifact(full_id, content)
-
-    kind = register().get_artifact_kind_by_namespace(full_id.namespace_id)
-
-    if kind is None:
-        raise NotImplementedError(f"Artifact kind for artifact `{full_id}` is not registered")
-
-    return kind.construct(raw_artifact)
+    return _construct_from_content(full_id, content)
 
 
 def list_artifacts(namespace_id: NamespaceId) -> list[Artifact]:

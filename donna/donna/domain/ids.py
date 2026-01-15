@@ -1,66 +1,76 @@
-from typing import Any, Callable
+from typing import Any
 
 from pydantic_core import core_schema
 
-from donna.domain import types
 
-_SESSION_COUNTERS: dict[Callable[[types.InternalId], types.InternalId], types.CounterId] = {
-    types.WorkUnitId: types.CounterId("WU"),
-    types.ActionRequestId: types.CounterId("AR"),
-    types.TaskId: types.CounterId("T"),
-}
+def _id_crc(number: int) -> str:
+    """Translates int into a compact string representation with a-zA-Z0-9 characters."""
+    charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    base = len(charset)
 
+    if number == 0:
+        return charset[0]
 
-class RichInternalId:
-    __slots__ = ("id", "value")
+    chars = []
+    while number > 0:
+        number, rem = divmod(number, base)
+        chars.append(charset[rem])
 
-    id: types.CounterId
-    value: int
-
-    def __init__(self, id: types.CounterId, value: int) -> None:
-        self.id = id
-        self.value = value
-
-    def to_int(self) -> int:
-        return self.value
-
-    def to_internal(self) -> types.InternalId:
-        return types.InternalId(f"{self.id}-{self.value}-{self.crc()}")
-
-    def crc(self) -> str:
-        """Translates int into a compact string representation with a-zA-Z0-9 characters."""
-        charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-        base = len(charset)
-
-        num = self.value
-        if num == 0:
-            return charset[0]
-
-        chars = []
-        while num > 0:
-            num, rem = divmod(num, base)
-            chars.append(charset[rem])
-
-        chars.reverse()
-        return "".join(chars)
+    chars.reverse()
+    return "".join(chars)
 
 
-class RichNestedId(tuple[str, ...]):
+class InternalId(str):
     __slots__ = ()
 
-    def __new__(cls, value: str | tuple[str, ...]) -> "RichNestedId":
-        if isinstance(value, str):
-            parts = tuple(value.split(":"))
-        else:
-            parts = tuple(value)
+    def __new__(cls, value: str) -> "InternalId":
+        if not cls.validate(value):
+            raise NotImplementedError(f"Invalid InternalId: '{value}'")
 
-        if not parts:
-            raise ValueError("NestedId cannot be empty")
+        return super().__new__(cls, value)
 
-        return super().__new__(cls, parts)
+    @classmethod
+    def build(cls, prefix: str, value: int) -> "InternalId":
+        return cls(f"{prefix}-{value}-{_id_crc(value)}")
 
-    def to_nested(self) -> types.NestedId:
-        return types.NestedId(":".join(self))
+    @classmethod
+    def validate(cls, id: str) -> bool:
+        _prefix, value, crc = id.rsplit("-", maxsplit=2)
+        expected_crc = _id_crc(int(value))
+        return crc == expected_crc
+
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
+
+        def validate(v: Any) -> "InternalId":
+            if isinstance(v, cls):
+                return v
+
+            if not isinstance(v, str):
+                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
+
+            if not cls.validate(v):
+                raise ValueError(f"Invalid {cls.__name__}: {v!r}")
+
+            return cls(v)
+
+        return core_schema.json_or_python_schema(
+            json_schema=core_schema.str_schema(),
+            python_schema=core_schema.no_info_plain_validator_function(validate),
+            serialization=core_schema.to_string_ser_schema(),
+        )
+
+
+class WorkUnitId(InternalId):
+    __slots__ = ()
+
+
+class ActionRequestId(InternalId):
+    __slots__ = ()
+
+
+class TaskId(InternalId):
+    __slots__ = ()
 
 
 class Identifier(str):
@@ -92,6 +102,18 @@ class Identifier(str):
             python_schema=core_schema.no_info_plain_validator_function(validate),
             serialization=core_schema.to_string_ser_schema(),
         )
+
+
+class ArtifactKindId(Identifier):
+    __slots__ = ()
+
+
+class OperationKindId(Identifier):
+    __slots__ = ()
+
+
+class RendererKindId(Identifier):
+    __slots__ = ()
 
 
 class WorldId(Identifier):
@@ -238,60 +260,3 @@ class FullArtifactLocalId(tuple[WorldId, NamespaceId, ArtifactId, ArtifactLocalI
             python_schema=core_schema.no_info_plain_validator_function(validate),
             serialization=core_schema.to_string_ser_schema(),
         )
-
-
-def next_id[InternalIdType: types.InternalId](
-    type_id: Callable[[types.InternalId], InternalIdType],
-) -> InternalIdType:
-    # TODO: the direction of this dependency is wrong (`domain` should not depend on `machine`).
-    #       It is acceptable on the early stages of development, but should be fixed later.
-    from donna.machine.counters import Counters
-
-    counters = Counters.load()
-
-    if type_id not in _SESSION_COUNTERS:
-        raise NotImplementedError(f"No counter defined for type '{type_id}'")
-
-    counter_id = _SESSION_COUNTERS[type_id]
-
-    next_id = counters.next(counter_id)
-
-    counters.save()
-
-    id = RichInternalId(id=counter_id, value=next_id)
-
-    return type_id(id.to_internal())
-
-
-def create_internal_id_parser[InternalIdType: types.InternalId](
-    type_id: Callable[[types.InternalId], InternalIdType],
-) -> Callable[[str], InternalIdType]:
-    def parser(text: str) -> InternalIdType:
-        parts = text.split("-")
-
-        if len(parts) != 3:
-            raise ValueError(f"Invalid id format: '{text}'")
-
-        counter_id, number, crc = parts
-
-        if counter_id not in _SESSION_COUNTERS.values():
-            raise NotImplementedError(f"Unknown counter id: '{counter_id}'")
-
-        id = RichInternalId(id=types.CounterId(counter_id), value=int(number))
-
-        if id.crc() != crc:
-            raise NotImplementedError(f"Invalid crc for id: '{text}'")
-
-        return type_id(id.to_internal())
-
-    return parser
-
-
-def create_nested_id_parser[InternalIdType: types.NestedId](
-    type_id: Callable[[types.NestedId], InternalIdType],
-) -> Callable[[str], InternalIdType]:
-    def parser(text: str) -> InternalIdType:
-        id = RichNestedId(text)
-        return type_id(id.to_nested())
-
-    return parser

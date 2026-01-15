@@ -1,11 +1,11 @@
 from donna.core.entities import BaseEntity
-from donna.domain.ids import FullArtifactId, NamespaceId
+from donna.domain.ids import ArtifactKindId, FullArtifactId, NamespaceId
 from donna.machine.cells import Cell
 from donna.world.markdown import ArtifactSource
 
 
 class ArtifactKind(BaseEntity):
-    id: str
+    id: ArtifactKindId
     description: str
     namespace_id: NamespaceId
 
@@ -19,8 +19,8 @@ class ArtifactKind(BaseEntity):
     def construct(self, source: ArtifactSource) -> "Artifact":  # type: ignore[override]
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def validate_artifact(self, artifact: "Artifact") -> list[Cell]:
-        return [
+    def validate_artifact(self, artifact: "Artifact") -> tuple[bool, list[Cell]]:
+        return True, [
             Cell.build_meta(
                 kind="artifact_kind_validation",
                 id=str(artifact.info.id),
@@ -30,7 +30,7 @@ class ArtifactKind(BaseEntity):
 
 
 class ArtifactInfo(BaseEntity):
-    kind: str
+    kind: ArtifactKindId
     id: FullArtifactId
     title: str
     description: str

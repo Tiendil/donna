@@ -1,5 +1,6 @@
 import importlib.util
 import pathlib
+import shutil
 import tomllib
 import types
 
@@ -8,7 +9,6 @@ import pydantic
 from donna.core import utils
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactId, NamespaceId, WorldId
-from donna.domain.types import slug_parser
 
 DONNA_DIR_NAME = ".donna"
 DONNA_CONFIG_NAME = "donna.toml"
@@ -35,6 +35,26 @@ class World(BaseEntity):
     def get_modules(self) -> list[types.ModuleType]:
         raise NotImplementedError("You must implement this method in subclasses")
 
+    # These two methods are intended for storing world state (e.g., session data)
+    # It is and open question if the world state is an artifact itself or something else
+    # For the artifact: uniform API for storing/loading data
+    # Against the artifact:
+    # - session data MUST be accessible only by Donna => no one should be able to read/write/list it
+    # - session data will require an additonal kind(s) of artifact(s) just for that purpose
+    # - session data may change more frequently than regular artifacts
+
+    def read_state(self, name: str) -> bytes:
+        raise NotImplementedError("You must implement this method in subclasses")
+
+    def write_state(self, name: str, content: bytes) -> None:
+        raise NotImplementedError("You must implement this method in subclasses")
+
+    def initialize(self, reset: bool = False) -> None:
+        pass
+
+    def is_initialized(self) -> bool:
+        raise NotImplementedError("You must implement this method in subclasses")
+
 
 class WorldFilesystem(World):
     path: pathlib.Path
@@ -58,6 +78,28 @@ class WorldFilesystem(World):
             raise NotImplementedError(f"World `{self.id}` is read-only")
 
         path = self._artifact_path(namespace_id, artifact_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+
+    def read_state(self, name: str) -> bytes:
+        if not self.session:
+            raise NotImplementedError(f"World `{self.id}` does not support state storage")
+
+        path = self.path / name
+
+        if not path.exists():
+            raise NotImplementedError(f"State `{name}` does not exist in world `{self.id}`")
+
+        return path.read_bytes()
+
+    def write_state(self, name: str, content: bytes) -> None:
+        if self.readonly:
+            raise NotImplementedError(f"World `{self.id}` is read-only")
+
+        if not self.session:
+            raise NotImplementedError(f"World `{self.id}` does not support state storage")
+
+        path = self.path / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)
 
@@ -104,6 +146,18 @@ class WorldFilesystem(World):
 
         return modules
 
+    def initialize(self, reset: bool = False) -> None:
+        if self.readonly:
+            return
+
+        if self.path.exists() and reset:
+            shutil.rmtree(self.path)
+
+        self.path.mkdir(parents=True, exist_ok=True)
+
+    def is_initialized(self) -> bool:
+        return self.path.exists()
+
 
 # TODO: refactor donna to use importlib.resources and enable WorldPackage
 
@@ -111,28 +165,30 @@ class WorldFilesystem(World):
 def _default_worlds() -> list["WorldFilesystem"]:
     _donna = DONNA_DIR_NAME
 
+    project_dir = utils.discover_project_dir(_donna)
+
     return [
         WorldFilesystem(
-            id=WorldId(slug_parser("donna")),
+            id=WorldId("donna"),
             path=pathlib.Path(__file__).parent.parent / "std",
             readonly=True,
             session=False,
         ),
         WorldFilesystem(
-            id=WorldId(slug_parser("home")),
+            id=WorldId("home"),
             path=pathlib.Path.home() / _donna,
             readonly=True,
             session=False,
         ),
         WorldFilesystem(
-            id=WorldId(slug_parser("project")),
-            path=utils.project_dir(_donna) / _donna,
+            id=WorldId("project"),
+            path=project_dir / _donna,
             readonly=False,
             session=False,
         ),
         WorldFilesystem(
-            id=WorldId(slug_parser("session")),
-            path=utils.project_dir(_donna) / _donna / DONNA_DESSION_DIR_NAME,
+            id=WorldId("session"),
+            path=project_dir / _donna / DONNA_DESSION_DIR_NAME,
             readonly=False,
             session=True,
         ),
@@ -159,7 +215,7 @@ def config() -> Config:
     if _CONFIG:
         return _CONFIG
 
-    config_path = utils.project_dir(DONNA_DIR_NAME) / DONNA_CONFIG_NAME
+    config_path = utils.discover_project_dir(DONNA_DIR_NAME) / DONNA_CONFIG_NAME
 
     if config_path.exists():
         _CONFIG = Config.model_validate(tomllib.loads(config_path.read_text()))

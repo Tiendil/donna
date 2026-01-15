@@ -3,7 +3,7 @@ from typing import Any
 import jinja2
 from jinja2.runtime import Context
 
-from donna.domain.ids import FullArtifactId, NamespaceId
+from donna.domain.ids import ArtifactKindId, FullArtifactId, NamespaceId, RendererKindId
 from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
 from donna.machine.templates import RendererKind
@@ -38,7 +38,7 @@ class SpecificationKind(ArtifactKind):
 
 
 specification_kind = SpecificationKind(
-    id="specification",
+    id=ArtifactKindId("specification"),
     namespace_id=NamespaceId("specifications"),
     description="A specification that define various aspects of the current project.",
 )
@@ -73,7 +73,7 @@ class View(RendererKind):
 
 
 view_renderer = View(
-    id="view",
+    id=RendererKindId("view"),
     name="Specification reference",
     description="Instructs the agent how to view a specification.",
     example="{{ view('<specification_id>') }}",
