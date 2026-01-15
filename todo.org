@@ -77,8 +77,6 @@
 ** OperationConfig is actually a section config — it should be equal for every kind of secttion?
 ** we may want to remove separation of artifacts by namespaces/directories
 * TODO Artifact sections
-** Fix poetry run donna artifacts view 'donna.specifications.default_text_artifacts_behavior'
-*** must show the whole artifact
 ** we need a base type for Kinds that are paired for sections.
 *** artifact/section kind id should be full (with namespace)? the same for all other ids?
 *** add default section kind for text sections

@@ -28,8 +28,8 @@ class SpecificationKind(ArtifactKind):
             section = ArtifactSection(
                 id=None,
                 kind=None,
-                title=title,
-                description=raw_section.as_original_markdown(),
+                title=raw_section.title or "",
+                description=raw_section.as_original_markdown(with_title=False),
                 meta=ArtifactSectionMeta())
             sections.append(section)
 

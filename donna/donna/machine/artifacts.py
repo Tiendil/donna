@@ -58,6 +58,9 @@ class ArtifactSection(BaseEntity):
                                 **self.meta.cells_meta()
                                 )]
 
+    def markdown_blocks(self) -> list[str]:
+        return [f'## {self.title}', self.description]
+
 
 class ArtifactMeta(BaseEntity):
 
@@ -76,16 +79,35 @@ class Artifact(BaseEntity):
 
     # TODO: should we attach section cells here as well?
     def cells(self) -> list[Cell]:
-        return [Cell.build_meta(kind="artifact_meta",
-                                artifact_id=str(self.id),
-                                artifact_kind=self.kind,
-                                artifact_title=self.title,
-                                artifact_description=self.description,
-                                **self.meta.cells_meta()
-                                )]
+        cells = [Cell.build_meta(kind="artifact_meta",
+                                 artifact_id=str(self.id),
+                                 artifact_kind=self.kind,
+                                 artifact_title=self.title,
+                                 artifact_description=self.description,
+                                 **self.meta.cells_meta()
+                                 )]
+
+        markdown = '\n'.join(self.markdown_blocks())
+
+        cells.append(
+            Cell.build_markdown(
+                kind="artifact_markdown",
+                content=markdown,
+                artifact_id=str(self.id))
+        )
+
+        return cells
 
     def get_section(self, section_id: FullArtifactLocalId) -> ArtifactSection | None:
         for section in self.sections:
             if section.id == section_id:
                 return section
         return None
+
+    def markdown_blocks(self) -> list[str]:
+        blocks = [f'# {self.title}', self.description]
+
+        for section in self.sections:
+            blocks.extend(section.markdown_blocks())
+
+        return blocks

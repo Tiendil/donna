@@ -63,9 +63,9 @@ class RequestActionKind(OperationKind):
             id=artifact_id.to_full_local(config.id),
             kind=self.id,
             title=title,
-            description=section.as_original_markdown(),
+            description=section.as_original_markdown(with_title=False),
             meta=OperationMeta(fsm_mode=config.fsm_mode,
-                               allowed_transtions=extract_transitions(section.as_analysis_markdown())),
+                               allowed_transtions=extract_transitions(section.as_analysis_markdown(with_title=True))),
         )
 
     def execute(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterator["Change"]:
@@ -116,7 +116,7 @@ class FinishWorkflowKind(OperationKind):
             id=artifact_id.to_full_local(config.id),
             kind=self.id,
             title=title,
-            description=section.as_original_markdown(),
+            description=section.as_original_markdown(with_title=False),
             meta=OperationMeta(fsm_mode=config.fsm_mode,
                                allowed_transtions=set()))
 
