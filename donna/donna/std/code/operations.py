@@ -71,7 +71,7 @@ class RequestActionKind(OperationKind):
             ),
         )
 
-    def execute(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterator["Change"]:
+    def execute_section(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterator["Change"]:
         from donna.machine.changes import ChangeAddActionRequest
 
         context: dict[str, object] = {

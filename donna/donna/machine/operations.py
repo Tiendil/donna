@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Iterable
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactSectionKindId, FullArtifactId, FullArtifactLocalId
-from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
+from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta, ArtifactSectionKind
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.markdown import SectionSource
@@ -12,24 +12,14 @@ if TYPE_CHECKING:
     from donna.machine.changes import Change
 
 
-class OperationKind(BaseEntity):
-    id: ArtifactSectionKindId
-    title: str
-
-    def execute(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterable["Change"]:
-        raise NotImplementedError("You MUST implement this method.")
-
-    def construct_section(self, artifact_id: FullArtifactId, section: SectionSource) -> ArtifactSection:
-        raise NotImplementedError("You MUST implement this method.")
-
-    def cells(self) -> list[Cell]:
-        return [Cell.build_meta(kind="operation_kind", id=self.id, title=self.title)]
-
-
 class FsmMode(enum.Enum):
     start = "start"
     normal = "normal"
     final = "final"
+
+
+class OperationKind(ArtifactSectionKind):
+    pass
 
 
 class OperationConfig(ArtifactSectionConfig):

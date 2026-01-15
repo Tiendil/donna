@@ -11,6 +11,18 @@ from donna.domain.ids import (
 )
 from donna.machine.cells import Cell
 from donna.world.markdown import ArtifactSource
+import enum
+from typing import TYPE_CHECKING, Any, Iterable, Callable
+
+from donna.core.entities import BaseEntity
+from donna.domain.ids import ArtifactSectionKindId, FullArtifactId, FullArtifactLocalId
+from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
+from donna.machine.cells import Cell
+from donna.machine.tasks import Task, WorkUnit
+from donna.world.markdown import SectionSource
+
+if TYPE_CHECKING:
+    from donna.machine.changes import Change
 
 
 class ArtifactKind(BaseEntity):
@@ -120,3 +132,36 @@ class Artifact(BaseEntity):
             blocks.extend(section.markdown_blocks())
 
         return blocks
+
+
+class ArtifactSectionKind(BaseEntity):
+    id: ArtifactSectionKindId
+    title: str
+
+    def execute_section(self, task: Task, unit: WorkUnit, section: ArtifactSection) -> Iterable["Change"]:
+        raise NotImplementedError("You MUST implement this method.")
+
+    def construct_section(self, artifact_id: FullArtifactId, raw_section: SectionSource) -> ArtifactSection:
+        raise NotImplementedError("You MUST implement this method.")
+
+    def cells(self) -> list[Cell]:
+        return [Cell.build_meta(kind="section_kind", id=self.id, title=self.title)]
+
+
+class TextSectionKind(ArtifactSectionKind):
+
+    def execute_section(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterable["Change"]:
+        raise NotImplementedError("Text sections cannot be executed.")
+
+    def construct_section(self, artifact_id: FullArtifactId, section: SectionSource) -> ArtifactSection:
+        config = ArtifactSectionConfig.parse_obj(section.merged_configs())
+
+        title = section.title or ""
+
+        return ArtifactSection(
+            id=artifact_id.to_full_local(config.id),
+            kind=self.id,
+            title=title,
+            description=section.as_original_markdown(with_title=False),
+            meta=ArtifactSectionMeta(),
+        )

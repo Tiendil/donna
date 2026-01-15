@@ -79,7 +79,6 @@
 ** In case we implemen python modules as artifacts, ArtifactSectionKindId should be full python module path to the kind definition.
 * TODO Artifact sections
 ** we need a base type for Kinds that are paired for sections.
-*** artifact/section kind id should be full (with namespace)? the same for all other ids?
 *** add default section kind for text sections
 *** relation between ArtifactSectionKindId and OperationKindId (cleanup types?)
 ** Artifact & ArtifactSection has literary the same structure and logic (if we consider deeper sections) => we may want to make artifacts a tree of sections
