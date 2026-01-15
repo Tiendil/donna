@@ -5,8 +5,8 @@ from typing import Callable, Iterator, ParamSpec, cast
 from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactLocalId, OperationId, WorldId
 from donna.machine.cells import Cell, cell_donna_message
 from donna.machine.state import ConsistentState, MutableState
-from donna.machine.operations import FsmMode
-from donna.std.code.workflows import Workflow
+from donna.machine.workflows import WorkflowMeta
+from donna.machine.operations import FsmMode, OperationMeta
 from donna.world import artifacts
 from donna.world.config import World, config
 
@@ -104,6 +104,7 @@ def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
     workflow = artifacts.load_artifact(artifact_id)
 
     with _state_mutator() as mutator:
+        assert isinstance(workflow.meta, WorkflowMeta)
         mutator.start_workflow(workflow.meta.start_operation_id)
         _save_state(mutator.freeze())
         _state_run(mutator)
@@ -116,12 +117,14 @@ def _validate_operation_transition(
 ) -> None:
     operation_id = state.get_action_request(request_id).operation_id
 
-    workflow = cast(Workflow, artifacts.load_artifact(operation_id.full_artifact_id))
+    workflow = artifacts.load_artifact(operation_id.full_artifact_id)
 
-    operation = workflow.get_operation(cast(OperationId, operation_id.local_id))
+    operation = workflow.get_section(operation_id)
     assert operation is not None
 
-    if next_operation_id not in operation.allowed_transtions:
+    assert isinstance(operation.meta, OperationMeta)
+
+    if next_operation_id not in operation.meta.allowed_transtions:
         raise NotImplementedError(f"Operation '{operation_id}' can not go to '{next_operation_id}'")
 
 

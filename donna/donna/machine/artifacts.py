@@ -83,7 +83,7 @@ class Artifact(BaseEntity):
                                 **self.meta.cells_meta()
                                 )]
 
-    def get_section(self, section_id: ArtifactLocalId) -> ArtifactSection | None:
+    def get_section(self, section_id: FullArtifactLocalId) -> ArtifactSection | None:
         for section in self.sections:
             if section.id == section_id:
                 return section

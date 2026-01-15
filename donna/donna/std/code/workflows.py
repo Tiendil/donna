@@ -17,13 +17,10 @@ from donna.machine.cells import Cell
 from donna.machine.operations import OperationKind, OperationMode, OperationMeta, FsmMode
 from donna.machine.templates import RendererKind
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactMeta
+from donna.machine.workflows import WorkflowMeta
 from donna.world.markdown import ArtifactSource, SectionSource
 from donna.world.primitives_register import register
 from donna.world.templates import RenderMode
-
-
-class WorkflowMeta(ArtifactMeta):
-    start_operation_id: FullArtifactLocalId
 
 
 def construct_operation(artifact_id: FullArtifactId, section: SectionSource) -> ArtifactSection:
