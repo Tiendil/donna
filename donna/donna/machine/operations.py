@@ -2,11 +2,11 @@ import enum
 from typing import TYPE_CHECKING, Iterable, Any
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationId, OperationKindId, ArtifactSectionConfig, ArtifactSectionKindId
+from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationId, OperationKindId, ArtifactSectionKindId
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.markdown import SectionSource
-from donna.machine.artifacts import ArtifactSectionMeta, ArtifactSection
+from donna.machine.artifacts import ArtifactSectionMeta, ArtifactSection, ArtifactSectionConfig
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change

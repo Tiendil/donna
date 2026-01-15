@@ -63,10 +63,12 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> None:
 
     test_artifact = _construct_from_content(full_id, content)
 
-    artifact_kind = register().artifacts.get(test_artifact.info.kind)
+    assert test_artifact.kind is not None
+
+    artifact_kind = register().artifacts.get(test_artifact.kind)
 
     if artifact_kind is None:
-        raise NotImplementedError(f"Artifact kind `{test_artifact.info.kind}` is not registered")
+        raise NotImplementedError(f"Artifact kind `{test_artifact.kind}` is not registered")
 
     is_valid, _cells = artifact_kind.validate_artifact(test_artifact)
 
@@ -84,7 +86,7 @@ def _construct_from_content(full_id: FullArtifactId, content: str) -> Artifact:
     if kind is None:
         raise NotImplementedError(f"Artifact kind for artifact `{full_id}` is not registered")
 
-    return kind.construct(raw_artifact)
+    return kind.construct_artifact(raw_artifact)
 
 
 def load_artifact(full_id: FullArtifactId) -> Artifact:

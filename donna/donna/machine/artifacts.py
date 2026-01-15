@@ -24,7 +24,7 @@ class ArtifactKind(BaseEntity):
         return True, [
             Cell.build_meta(
                 kind="artifact_kind_validation",
-                id=str(artifact.info.id),
+                id=str(artifact.id),
                 status="success",
             )
         ]
@@ -51,8 +51,8 @@ class ArtifactSection(BaseEntity):
 
     def cells(self) -> list[Cell]:
         return [Cell.build_meta(kind="artifact_section",
-                                section_id=self.id,
-                                section_kind=self.kind,
+                                section_id=str(self.id) if self.id else None,
+                                section_kind=str(self.kind) if self.kind else None,
                                 section_title=self.title,
                                 section_description=self.description,
                                 **self.meta.cells_meta()
@@ -77,7 +77,7 @@ class Artifact(BaseEntity):
     # TODO: should we attach section cells here as well?
     def cells(self) -> list[Cell]:
         return [Cell.build_meta(kind="artifact",
-                                artifact_id=self.id,
+                                artifact_id=str(self.id),
                                 artifact_kind=self.kind,
                                 artifact_title=self.title,
                                 artifact_description=self.description,

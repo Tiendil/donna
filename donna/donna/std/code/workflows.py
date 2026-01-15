@@ -27,7 +27,7 @@ def construct_operation(artifact_id: FullArtifactId, section: SectionSource) -> 
 
     data = section.merged_configs()
 
-    operation_kind = register().operations.get(OperationKindId(data["kind"]))
+    operation_kind = register().operations.get(data["kind"])
     assert isinstance(operation_kind, OperationKind)
 
     operation = operation_kind.construct_section(artifact_id, section)

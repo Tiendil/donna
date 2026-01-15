@@ -53,18 +53,20 @@ class WorkUnit(BaseEntity):
         return unit
 
     def run(self, task: Task) -> list["Change"]:
-        from donna.std.code.workflows import Workflow
         from donna.world import artifacts
         from donna.world.primitives_register import register
 
-        workflow = cast(Workflow, artifacts.load_artifact(self.operation_id.full_artifact_id))
+        workflow = artifacts.load_artifact(self.operation_id.full_artifact_id)
 
-        operation = workflow.get_operation(cast(OperationId, self.operation_id.local_id))
+        operation = workflow.get_section(self.operation_id)
 
         if not operation:
             raise NotImplementedError(f"Operation with id '{self.operation_id.local_id}' not found")
 
+        assert operation.kind is not None
+
         operation_kind = register().operations.get(operation.kind)
+
         assert operation_kind is not None
 
         cells = list(operation_kind.execute(task, self, operation))

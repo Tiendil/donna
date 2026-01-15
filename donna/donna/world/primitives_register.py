@@ -2,7 +2,7 @@ import pathlib
 import types
 from typing import Any, Iterator, cast
 
-from donna.domain.ids import ArtifactKindId, NamespaceId, OperationKindId, RendererKindId
+from donna.domain.ids import ArtifactKindId, NamespaceId, OperationKindId, RendererKindId, ArtifactSectionKindId
 from donna.machine.artifacts import ArtifactKind
 from donna.machine.operations import OperationKind
 from donna.machine.templates import RendererKind
@@ -14,7 +14,7 @@ BASE_WORKFLOWS_DIR = pathlib.Path(__file__).parent.parent / "workflows"
 class PrimitivesRegister:
 
     def __init__(self) -> None:
-        self.operations: Storage[OperationKindId, OperationKind] = Storage("operation")
+        self.operations: Storage[ArtifactSectionKindId, OperationKind] = Storage("operation")
         self.artifacts: Storage[ArtifactKindId, ArtifactKind] = Storage("artifact")
         self.renderers: Storage[RendererKindId, RendererKind] = Storage("renderer")
 
