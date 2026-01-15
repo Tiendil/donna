@@ -1,15 +1,11 @@
 import enum
-from typing import TYPE_CHECKING, Any, Iterable
+from typing import TYPE_CHECKING, Any
 
-from donna.core.entities import BaseEntity
-from donna.domain.ids import ArtifactSectionKindId, FullArtifactId, FullArtifactLocalId
-from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta, ArtifactSectionKind
-from donna.machine.cells import Cell
-from donna.machine.tasks import Task, WorkUnit
-from donna.world.markdown import SectionSource
+from donna.domain.ids import FullArtifactLocalId
+from donna.machine.artifacts import ArtifactSectionConfig, ArtifactSectionKind, ArtifactSectionMeta
 
 if TYPE_CHECKING:
-    from donna.machine.changes import Change
+    pass
 
 
 class FsmMode(enum.Enum):

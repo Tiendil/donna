@@ -4,7 +4,7 @@ import jinja2
 from jinja2.runtime import Context
 
 from donna.domain.ids import ArtifactKindId, FullArtifactId, NamespaceId, RendererKindId
-from donna.machine.artifacts import Artifact, ArtifactKind, ArtifactMeta, ArtifactSection, ArtifactSectionMeta
+from donna.machine.artifacts import Artifact, ArtifactKind, ArtifactMeta
 from donna.machine.templates import RendererKind
 from donna.world.markdown import ArtifactSource
 from donna.world.templates import RenderMode

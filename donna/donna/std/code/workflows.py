@@ -5,18 +5,16 @@ from jinja2.runtime import Context
 
 from donna.domain.ids import (
     ArtifactKindId,
-    FullArtifactId,
     FullArtifactLocalId,
     NamespaceId,
     RendererKindId,
 )
-from donna.machine.artifacts import Artifact, ArtifactKind, ArtifactSection
+from donna.machine.artifacts import Artifact, ArtifactKind
 from donna.machine.cells import Cell
-from donna.machine.operations import FsmMode, OperationKind, OperationMeta
+from donna.machine.operations import FsmMode, OperationMeta
 from donna.machine.templates import RendererKind
 from donna.machine.workflows import WorkflowMeta
-from donna.world.markdown import ArtifactSource, SectionSource
-from donna.world.primitives_register import register
+from donna.world.markdown import ArtifactSource
 from donna.world.templates import RenderMode
 
 

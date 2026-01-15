@@ -1,4 +1,5 @@
-from typing import Any
+import uuid
+from typing import TYPE_CHECKING, Any, Iterable
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import (
@@ -10,16 +11,8 @@ from donna.domain.ids import (
     NamespaceId,
 )
 from donna.machine.cells import Cell
-from donna.world.markdown import ArtifactSource
-import enum
-from typing import TYPE_CHECKING, Any, Iterable, Callable
-
-from donna.core.entities import BaseEntity
-from donna.domain.ids import ArtifactSectionKindId, FullArtifactId, FullArtifactLocalId
-from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
-from donna.world.markdown import SectionSource
-import uuid
+from donna.world.markdown import ArtifactSource, SectionSource
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -38,15 +31,16 @@ class ArtifactKind(BaseEntity):
             )
         ]
 
-    def construct_section(self, artifact_id: FullArtifactId, raw_section: SectionSource) -> 'ArtifactSection':
+    def construct_section(self, artifact_id: FullArtifactId, raw_section: SectionSource) -> "ArtifactSection":
         from donna.world.primitives_register import register
 
         data = raw_section.merged_configs()
 
-        if 'kind' not in data:
-            data['kind'] = self.default_section_kind
+        if "kind" not in data:
+            data["kind"] = self.default_section_kind
 
-        section_kind = register().sections.get(ArtifactSectionKindId(data['kind']))
+        section_kind = register().sections.get(ArtifactSectionKindId(data["kind"]))
+        assert section_kind is not None
 
         section = section_kind.construct_section(artifact_id, raw_section)
 
@@ -175,16 +169,16 @@ class ArtifactSectionTextKind(ArtifactSectionKind):
     def construct_section(self, artifact_id: FullArtifactId, raw_section: SectionSource) -> ArtifactSection:
         data = raw_section.merged_configs()
 
-        if 'kind' not in data:
-            data['kind'] = self.id
+        if "kind" not in data:
+            data["kind"] = self.id
 
-        if 'id' not in data:
+        if "id" not in data:
             # TODO: we should replace this hack with a proper ID generator
             #       to keep that id stable between runs
             #       options:
             #       - a hash of the content
             #       - a sequential ID generator per artifact
-            data['id'] = "text" + uuid.uuid4().hex.replace("-", "")
+            data["id"] = "text" + uuid.uuid4().hex.replace("-", "")
 
         config = TextConfig.parse_obj(data)
 

@@ -4,7 +4,6 @@ from typing import Any, Iterator, cast
 
 from donna.domain.ids import ArtifactKindId, ArtifactSectionKindId, NamespaceId, RendererKindId
 from donna.machine.artifacts import ArtifactKind, ArtifactSectionKind
-from donna.machine.operations import OperationKind
 from donna.machine.templates import RendererKind
 from donna.world.storage import Storage
 
