@@ -65,10 +65,10 @@ class WorkUnit(BaseEntity):
 
         assert operation.kind is not None
 
-        operation_kind = register().operations.get(operation.kind)
+        operation_kind = register().sections.get(operation.kind)
 
         assert operation_kind is not None
 
-        cells = list(operation_kind.execute(task, self, operation))
+        cells = list(operation_kind.execute_section(task, self, operation))
 
         return cells
