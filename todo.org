@@ -81,21 +81,17 @@
 ** we need a base type for Kinds that are paired for sections.
 *** artifact/section kind id should be full (with namespace)? the same for all other ids?
 *** add default section kind for text sections
-** operation is a section
-** spec chapter is a section
-** unify code of different renderers? It is very similar
-*** add validation for specificaiton existence in renderers
-*** Spec rendere can be unified, since its cli command
-** we can reference artifact_id:operation_id, should we make id required for each section (or, at least, optional) to be able to reference each section? It may be required for lazy imports of primitives and listing primitives.
-** resolve duplication of config.description and markdown description in the head section of the artifact
-** align naming of session-level specifications
-** if we unify section, than we do not need to separate head & tail, head is just a section with special meta
-** relation between ArtifactSectionKindId and OperationKindId (cleanup types?)
+*** relation between ArtifactSectionKindId and OperationKindId (cleanup types?)
 ** Artifact & ArtifactSection has literary the same structure and logic (if we consider deeper sections) => we may want to make artifacts a tree of sections
 *** that'll allow loops
 *** that'll allow conditions
 *** any other control expressions will be possible
 *** however, that'll complicate FSM logic or make it impossible to validate
+** unify code of different renderers? It is very similar
+*** add validation for specificaiton existence in renderers
+*** Spec rendere can be unified, since its cli command
+** resolve duplication of config.description and markdown description in the head section of the artifact
+** if we unify section, than we do not need to separate head & tail, head is just a section with special meta
 * Artifact improvements:
 ** We may want, by default load/upload artifacts in a custom donna-managed directory, so, no filenames are needed for agents. This also will help to add right extensions automatically => help agents to anderstand internal formats.
 ** When we start the workflow, should we output the head cells before the first operation?
