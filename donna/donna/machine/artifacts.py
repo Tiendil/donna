@@ -16,10 +16,10 @@ from typing import TYPE_CHECKING, Any, Iterable, Callable
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactSectionKindId, FullArtifactId, FullArtifactLocalId
-from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.markdown import SectionSource
+from donna.world.primitives_register import register
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -36,6 +36,15 @@ class ArtifactKind(BaseEntity):
                 kind="artifact_kind", id=self.id, namespace_id=self.namespace_id, description=self.description
             )
         ]
+
+    def construct_section(artifact_id: FullArtifactId, raw_section: SectionSource) -> 'ArtifactSection':
+        data = raw_section.merged_configs()
+
+        section_kind = register().operations.get(data.get("kind", "text"))
+
+        section = section_kind.construct_section(artifact_id, raw_section)
+
+        return section
 
     def construct_artifact(self, source: ArtifactSource) -> "Artifact":
         raise NotImplementedError("You must implement this method in subclasses")
@@ -148,7 +157,7 @@ class ArtifactSectionKind(BaseEntity):
         return [Cell.build_meta(kind="section_kind", id=self.id, title=self.title)]
 
 
-class TextSectionKind(ArtifactSectionKind):
+class TextArtifactSectionTextKind(ArtifactSectionKind):
 
     def execute_section(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("Text sections cannot be executed.")

@@ -20,18 +20,6 @@ from donna.world.primitives_register import register
 from donna.world.templates import RenderMode
 
 
-def construct_operation(artifact_id: FullArtifactId, section: SectionSource) -> ArtifactSection:
-
-    data = section.merged_configs()
-
-    operation_kind = register().operations.get(data["kind"])
-    assert isinstance(operation_kind, OperationKind)
-
-    operation = operation_kind.construct_section(artifact_id, section)
-
-    return operation
-
-
 def find_not_reachable_operations(
     start_id: FullArtifactLocalId,  # noqa: CCR001
     transitions: dict[FullArtifactLocalId, set[FullArtifactLocalId]],
@@ -67,7 +55,7 @@ class WorkflowKind(ArtifactKind):
 
         title = source.head.title or str(source.id)
 
-        sections = [construct_operation(source.id, section) for section in source.tail]
+        sections = [self.construct_section(source.id, section) for section in source.tail]
 
         start_operation_id = None
 

@@ -19,21 +19,8 @@ class SpecificationKind(ArtifactKind):
 
         title = source.head.title or str(source.id)
 
-        sections = []
+        sections = [self.construct_section(source.id, section) for section in source.tail]
 
-        # TODO: do we need to process that via section kinds?
-        #       most likely yes — this is a way to unify artifacts processing
-        for raw_section in source.tail:
-            section = ArtifactSection(
-                id=None,
-                kind=None,
-                title=raw_section.title or "",
-                description=raw_section.as_original_markdown(with_title=False),
-                meta=ArtifactSectionMeta(),
-            )
-            sections.append(section)
-
-        # TODO: Should we add somewhere `content=source.as_original_markdown()`
         spec = Artifact(
             id=source.id, kind=self.id, title=title, description=description, meta=ArtifactMeta(), sections=sections
         )
