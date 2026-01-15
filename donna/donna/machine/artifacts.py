@@ -36,7 +36,7 @@ class ArtifactKind(BaseEntity):
             )
         ]
 
-    def construct_section(artifact_id: FullArtifactId, raw_section: SectionSource) -> 'ArtifactSection':
+    def construct_section(self, artifact_id: FullArtifactId, raw_section: SectionSource) -> 'ArtifactSection':
         from donna.world.primitives_register import register
 
         data = raw_section.merged_configs()
