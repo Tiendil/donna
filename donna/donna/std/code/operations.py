@@ -1,6 +1,7 @@
 import re
 from typing import TYPE_CHECKING, Iterator, Literal, cast
 
+import pydantic
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationKindId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.operations import OperationConfig, OperationKind, FsmMode, OperationMeta
@@ -37,7 +38,14 @@ def extract_transitions(text: str) -> set[FullArtifactLocalId]:
 
 
 class RequestActionConfig(OperationConfig):
-    pass
+
+    @pydantic.field_validator("fsm_mode", mode="after")
+    @classmethod
+    def validate_fsm_mode(cls, v: FsmMode) -> FsmMode:
+        if v == FsmMode.final:
+            raise ValueError("RequestAction operation cannot have 'final' fsm_mode")
+
+        return v
 
 
 class RequestActionKind(OperationKind):

@@ -76,20 +76,13 @@
 *** that'll allow to remove register in the honor of search in worlds
 ** OperationConfig is actually a section config — it should be equal for every kind of secttion?
 * TODO Artifact sections
-** ! artifact render is broken
+** Fix poetry run donna artifacts view 'donna.specifications.default_text_artifacts_behavior'
+*** must show the whole artifact
+** we need a base type for Kinds that are paired for sections.
+*** artifact/section kind id should be full (with namespace)? the same for all other ids?
+*** add default section kind for text sections
 ** operation is a section
 ** spec chapter is a section
-** section has meta:
-*** operations meta
-**** has fsm_mode: start, final, normal
-**** => we can remove start_operation_id from workflow config
-**** request action can not be final node, because we should control that agent will finish all the work
-**** add validation that the workflow has a single start operation
-*** chapter meta
-** artifact has:
-*** info
-*** meta
-*** sections
 ** unify code of different renderers? It is very similar
 *** add validation for specificaiton existence in renderers
 *** Spec rendere can be unified, since its cli command
@@ -103,9 +96,6 @@
 *** that'll allow conditions
 *** any other control expressions will be possible
 *** however, that'll complicate FSM logic or make it impossible to validate
-** artifact kind id should be full (with namespace)? the same for all other ids?
-** we need a base type for Kinds that are paired for sections.
-** add default section kind for text sections
 * Artifact improvements:
 ** We may want, by default load/upload artifacts in a custom donna-managed directory, so, no filenames are needed for agents. This also will help to add right extensions automatically => help agents to anderstand internal formats.
 ** When we start the workflow, should we output the head cells before the first operation?
