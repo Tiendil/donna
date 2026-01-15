@@ -17,7 +17,7 @@ class ArtifactKind(BaseEntity):
             )
         ]
 
-    def construct(self, source: ArtifactSource) -> "Artifact":  # type: ignore[override]
+    def construct_artifact(self, source: ArtifactSource) -> "Artifact":
         raise NotImplementedError("You must implement this method in subclasses")
 
     def validate_artifact(self, artifact: "Artifact") -> tuple[bool, list[Cell]]:
@@ -41,8 +41,9 @@ class ArtifactSectionMeta(BaseEntity):
 
 
 class ArtifactSection(BaseEntity):
-    id: FullArtifactLocalId
-    kind: ArtifactSectionKindId
+    # some section may have no id and kind — it is ok for simple text sections
+    id: FullArtifactLocalId | None
+    kind: ArtifactSectionKindId | None
     title: str
     description: str
 

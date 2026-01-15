@@ -76,6 +76,7 @@
 *** that'll allow to remove register in the honor of search in worlds
 ** OperationConfig is actually a section config — it should be equal for every kind of secttion?
 * TODO Artifact sections
+** ! artifact render is broken
 ** operation is a section
 ** spec chapter is a section
 ** section has meta:
@@ -104,6 +105,7 @@
 *** however, that'll complicate FSM logic or make it impossible to validate
 ** artifact kind id should be full (with namespace)? the same for all other ids?
 ** we need a base type for Kinds that are paired for sections.
+** add default section kind for text sections
 * Artifact improvements:
 ** We may want, by default load/upload artifacts in a custom donna-managed directory, so, no filenames are needed for agents. This also will help to add right extensions automatically => help agents to anderstand internal formats.
 ** When we start the workflow, should we output the head cells before the first operation?

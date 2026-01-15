@@ -30,7 +30,7 @@ def construct_operation(artifact_id: FullArtifactId, section: SectionSource) -> 
     operation_kind = register().operations.get(OperationKindId(data["kind"]))
     assert isinstance(operation_kind, OperationKind)
 
-    operation = operation_kind.construct(artifact_id, section)
+    operation = operation_kind.construct_section(artifact_id, section)
 
     return operation
 
@@ -62,7 +62,7 @@ def find_not_reachable_operations(
 
 
 class WorkflowKind(ArtifactKind):
-    def construct(self, source: ArtifactSource) -> "Artifact":
+    def construct_artifact(self, source: ArtifactSource) -> "Artifact":
         description = None
 
         description = source.head.merged_configs().get("description", description)

@@ -4,7 +4,7 @@ import jinja2
 from jinja2.runtime import Context
 
 from donna.domain.ids import ArtifactKindId, FullArtifactId, NamespaceId, RendererKindId
-from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
+from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind, ArtifactMeta, ArtifactSection, ArtifactSectionMeta
 from donna.machine.cells import Cell
 from donna.machine.templates import RendererKind
 from donna.world.markdown import ArtifactSource
@@ -19,6 +19,50 @@ class Specification(Artifact):
 
 
 class SpecificationKind(ArtifactKind):
+    def construct_artifact(self, source: ArtifactSource) -> "Artifact":
+        description = None
+
+        description = source.head.merged_configs().get("description", description)
+        description = description or ""
+
+        title = source.head.title or str(source.id)
+
+        sections = []
+
+        # TODO: do we need to process that via section kinds?
+        #       most likely yes — this is a way to unify artifacts processing
+        for raw_section in source.tail:
+            section = ArtifactSection(
+                id=None,
+                kind=None,
+                title=title,
+                description=raw_section.as_original_markdown(),
+                meta=ArtifactSectionMeta())
+            sections.append(section)
+
+        # TODO: Should we add somewhere `content=source.as_original_markdown()`
+        spec = Artifact(
+            id=source.id,
+            kind=self.id,
+            title=title,
+            description=description,
+            meta=ArtifactMeta(),
+            sections=sections
+        )
+
+        return spec
+
+
+specification_kind = SpecificationKind(
+    id=ArtifactKindId("specification"),
+    namespace_id=NamespaceId("specifications"),
+    description="A specification that define various aspects of the current project.",
+)
+
+
+class View(RendererKind):
+
+    @jinja2.pass_context
     def __call__(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
         render_mode: RenderMode = context["render_mode"]
 
