@@ -156,3 +156,4 @@
 ** The next commands should be able to access the cli output (stdout and stderr) via variables.
 *** Use WorkUnit context for this
 ** Update artifacts format specification with new operation info
+* TODO We can track causality between artifact sections (what depends on what) as universal functionality of the artifact system. I.e. no need to introduce specialized relations for specialized artifacts.
