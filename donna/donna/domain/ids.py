@@ -112,10 +112,6 @@ class ArtifactSectionKindId(Identifier):
     __slots__ = ()
 
 
-class OperationKindId(Identifier):
-    __slots__ = ()
-
-
 class RendererKindId(Identifier):
     __slots__ = ()
 
