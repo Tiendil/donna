@@ -1,5 +1,6 @@
+from typing import Any
 from donna.core.entities import BaseEntity
-from donna.domain.ids import ArtifactKindId, FullArtifactId, NamespaceId
+from donna.domain.ids import ArtifactKindId, FullArtifactId, NamespaceId, FullArtifactLocalId, ArtifactSectionKindId
 from donna.machine.cells import Cell
 from donna.world.markdown import ArtifactSource
 
@@ -29,25 +30,41 @@ class ArtifactKind(BaseEntity):
         ]
 
 
-class ArtifactInfo(BaseEntity):
-    kind: ArtifactKindId
-    id: FullArtifactId
+class ArtifactSectionMeta(BaseEntity):
+    def cells_meta(self) -> dict[str, Any]:
+        return {}
+
+
+class ArtifactSection(BaseEntity):
+    id: FullArtifactLocalId
+    kind: ArtifactSectionKindId
     title: str
     description: str
 
+    meta: ArtifactSectionMeta
+
     def cells(self) -> list[Cell]:
-        return [
-            Cell.build_meta(
-                kind="artifact_info",
-                id=str(self.id),
-                title=self.title,
-                description=self.description,
-            )
-        ]
+        return [Cell.build_meta(kind="artifact_section",
+                                section_id=self.id,
+                                section_kind=self.kind,
+                                section_title=self.title,
+                                section_description=self.description,
+                                **self.meta.cells_meta()
+                                )]
+
+
+class ArtifactMeta(BaseEntity):
+    pass
 
 
 class Artifact(BaseEntity):
-    info: ArtifactInfo
+    id: FullArtifactId
+    kind: ArtifactKindId
+    title: str
+    description: str
+
+    meta: ArtifactMeta
+    sections: list[ArtifactSection]
 
     def cells(self) -> list[Cell]:
         raise NotImplementedError("You must implement this method in subclasses")

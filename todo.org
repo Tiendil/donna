@@ -95,6 +95,8 @@
 ** resolve duplication of config.description and markdown description in the head section of the artifact
 ** align naming of session-level specifications
 ** if we unify section, than we do not need to separate head & tail, head is just a section with special meta
+** relation between ArtifactSectionKindId and OperationKindId (cleanup types?)
+** Artifact & ArtifactSection has literary the same structure and logic (if we consider deeper sections) => we may want to make artifacts a tree of sections
 * Artifact improvements:
 ** We may want, by default load/upload artifacts in a custom donna-managed directory, so, no filenames are needed for agents. This also will help to add right extensions automatically => help agents to anderstand internal formats.
 ** When we start the workflow, should we output the head cells before the first operation?
