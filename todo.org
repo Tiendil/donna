@@ -160,6 +160,7 @@
 * TODO We can track causality between artifact sections (what depends on what) as universal functionality of the artifact system. I.e. no need to introduce specialized relations for specialized artifacts.
 * TODO interesting software to integrate with
 ** https://github.com/m0n0x41d/quint-code
+** https://github.com/Fission-AI/OpenSpec
 * TODO README.md notes
 ** `No API keys required.` as a feature
 ** compare to https://github.com/Fission-AI/OpenSpec
