@@ -87,6 +87,7 @@
 *** that'll allow conditions
 *** any other control expressions will be possible
 *** however, that'll complicate FSM logic or make it impossible to validate
+*** maybe we can make nested only section with explicit ids? However, that may complicate understanding of the documents for humans.
 ** unify code of different renderers? It is very similar
 *** add validation for specificaiton existence in renderers
 *** Spec rendere can be unified, since its cli command
