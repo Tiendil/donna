@@ -6,7 +6,6 @@ import pydantic
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ActionRequestId, FullArtifactLocalId, OperationId
 from donna.machine.cells import Cell
-from donna.std.code.workflows import Workflow
 from donna.world import artifacts
 
 
@@ -28,11 +27,11 @@ class ActionRequest(BaseEntity):
 
     def cells(self) -> list[Cell]:
 
-        workflow = cast(Workflow, artifacts.load_artifact(self.operation_id.full_artifact_id))
+        # workflow = artifacts.load_artifact(self.operation_id.full_artifact_id)
 
-        operation = workflow.get_operation(cast(OperationId, self.operation_id.local_id))
+        # operation = workflow.get_section(self.operation_id)
 
-        assert operation is not None
+        # assert operation is not None
 
         message = textwrap.dedent(
             """

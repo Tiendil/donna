@@ -12,9 +12,9 @@ from donna.domain.ids import (
     OperationKindId,
     RendererKindId,
 )
-from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
+from donna.machine.artifacts import Artifact, ArtifactKind
 from donna.machine.cells import Cell
-from donna.machine.operations import OperationKind, OperationMode, OperationMeta, FsmMode
+from donna.machine.operations import OperationKind, OperationMeta, FsmMode
 from donna.machine.templates import RendererKind
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactMeta
 from donna.machine.workflows import WorkflowMeta
@@ -75,11 +75,14 @@ class WorkflowKind(ArtifactKind):
         start_operation_id = None
 
         for section in sections:
+            assert isinstance(section.meta, OperationMeta)
             if section.meta.fsm_mode == FsmMode.start:
                 start_operation_id = section.id
                 break
         else:
             raise NotImplementedError(f"Workflow '{source.id}' does not have a start operation.")
+
+        assert start_operation_id is not None
 
         spec = Artifact(
             id=source.id,
@@ -93,13 +96,16 @@ class WorkflowKind(ArtifactKind):
         return spec
 
     def validate_artifact(self, artifact: Artifact) -> tuple[bool, list[Cell]]:  # noqa: CCR001
+
+        assert isinstance(artifact.meta, WorkflowMeta)
+
         start_operation_id: FullArtifactLocalId = artifact.meta.start_operation_id
 
         if artifact.get_section(start_operation_id) is None:
             return False, [
                 Cell.build_meta(
                     kind="artifact_kind_validation",
-                    id=str(artifact.info.id),
+                    id=str(artifact.id),
                     status="failure",
                     message=f"Start operation ID '{start_operation_id}' does not exist in the workflow.",
                 )
@@ -108,6 +114,8 @@ class WorkflowKind(ArtifactKind):
         transitions = {}
 
         for section in artifact.sections:
+            assert isinstance(section.meta, OperationMeta)
+
             if section.meta.fsm_mode == FsmMode.final and section.meta.allowed_transtions:
                 return False, [
                     Cell.build_meta(
@@ -131,7 +139,7 @@ class WorkflowKind(ArtifactKind):
                     )
                 ]
 
-            if section.meta.mode == FsmMode.normal and not section.meta.allowed_transtions:
+            if section.meta.fsm_mode == FsmMode.normal and not section.meta.allowed_transtions:
                 return False, [
                     Cell.build_meta(
                         kind="artifact_kind_validation",
@@ -144,6 +152,7 @@ class WorkflowKind(ArtifactKind):
                     )
                 ]
 
+            assert section.id is not None
             transitions[section.id] = set(section.meta.allowed_transtions)
 
         not_reachable_operations = find_not_reachable_operations(

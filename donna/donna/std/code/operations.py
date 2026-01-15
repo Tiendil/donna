@@ -71,6 +71,8 @@ class RequestActionKind(OperationKind):
 
         request_text = operation.description.format(**context)
 
+        assert operation.id is not None
+
         request = ActionRequest.build(request_text, operation.id)
 
         yield ChangeAddActionRequest(action_request=request)

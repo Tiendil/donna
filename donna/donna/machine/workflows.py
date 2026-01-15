@@ -12,9 +12,9 @@ from donna.domain.ids import (
     OperationKindId,
     RendererKindId,
 )
-from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
+from donna.machine.artifacts import Artifact, ArtifactKind
 from donna.machine.cells import Cell
-from donna.machine.operations import OperationKind, OperationMode, OperationMeta, FsmMode
+from donna.machine.operations import OperationKind, OperationMeta, FsmMode
 from donna.machine.templates import RendererKind
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactMeta
 from donna.world.markdown import ArtifactSource, SectionSource

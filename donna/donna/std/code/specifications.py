@@ -4,18 +4,11 @@ import jinja2
 from jinja2.runtime import Context
 
 from donna.domain.ids import ArtifactKindId, FullArtifactId, NamespaceId, RendererKindId
-from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind, ArtifactMeta, ArtifactSection, ArtifactSectionMeta
+from donna.machine.artifacts import Artifact, ArtifactKind, ArtifactMeta, ArtifactSection, ArtifactSectionMeta
 from donna.machine.cells import Cell
 from donna.machine.templates import RendererKind
 from donna.world.markdown import ArtifactSource
 from donna.world.templates import RenderMode
-
-
-class Specification(Artifact):
-    content: str
-
-    def cells(self) -> list["Cell"]:
-        return [Cell.build_markdown(kind=self.info.kind, content=self.content, id=str(self.info.id))]
 
 
 class SpecificationKind(ArtifactKind):
