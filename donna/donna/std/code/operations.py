@@ -42,7 +42,7 @@ class RequestActionConfig(OperationConfig):
 
 class RequestActionKind(OperationKind):
 
-    def construct(  # type: ignore[override]
+    def construct_section(
         self,
         artifact_id: FullArtifactId,
         section: SectionSource,
@@ -97,7 +97,7 @@ class FinishWorkflowKind(OperationKind):
 
         yield ChangeFinishTask(task_id=task.id)
 
-    def construct(self, artifact_id: FullArtifactId, section: SectionSource) -> ArtifactSection:
+    def construct_section(self, artifact_id: FullArtifactId, section: SectionSource) -> ArtifactSection:
         config = FinishWorkflowConfig.parse_obj(section.merged_configs())
 
         title = section.title or ""

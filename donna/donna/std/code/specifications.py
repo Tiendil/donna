@@ -19,34 +19,6 @@ class Specification(Artifact):
 
 
 class SpecificationKind(ArtifactKind):
-    def construct(self, source: ArtifactSource) -> "Artifact":  # type: ignore[override]
-        description = None
-
-        for config in source.head.configs:
-            data = config.structured_data()
-            description = data.get("description", description)
-
-        title = source.head.title or str(source.id)
-        description = description or ""
-
-        spec = Specification(
-            info=ArtifactInfo(kind=self.id, id=source.id, title=title, description=description),
-            content=source.as_original_markdown(),
-        )
-
-        return spec
-
-
-specification_kind = SpecificationKind(
-    id=ArtifactKindId("specification"),
-    namespace_id=NamespaceId("specifications"),
-    description="A specification that define various aspects of the current project.",
-)
-
-
-class View(RendererKind):
-
-    @jinja2.pass_context
     def __call__(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
         render_mode: RenderMode = context["render_mode"]
 

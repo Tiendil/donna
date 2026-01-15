@@ -19,7 +19,7 @@ class OperationKind(BaseEntity):
     def execute(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("You MUST implement this method.")
 
-    def construct(self, artifact_id: FullArtifactId, section: SectionSource) -> ArtifactSection:  # type: ignore[override]
+    def construct_section(self, artifact_id: FullArtifactId, section: SectionSource) -> ArtifactSection:
         raise NotImplementedError("You MUST implement this method.")
 
     def cells(self) -> list[Cell]:
