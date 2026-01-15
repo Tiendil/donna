@@ -162,3 +162,6 @@
 ** https://github.com/m0n0x41d/quint-code
 * TODO README.md notes
 ** `No API keys required.` as a feature
+** compare to https://github.com/Fission-AI/OpenSpec
+*** fsms instead of plain texts
+*** "better" Markdown
