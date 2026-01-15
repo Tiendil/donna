@@ -19,6 +19,7 @@ from donna.domain.ids import ArtifactSectionKindId, FullArtifactId, FullArtifact
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.markdown import SectionSource
+from import uuid
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -28,6 +29,7 @@ class ArtifactKind(BaseEntity):
     id: ArtifactKindId
     description: str
     namespace_id: NamespaceId
+    default_section_kind: str = "text"
 
     def cells(self) -> list[Cell]:
         return [
@@ -41,7 +43,10 @@ class ArtifactKind(BaseEntity):
 
         data = raw_section.merged_configs()
 
-        section_kind = register().operations.get(data.get("kind", "text"))
+        if 'kind' not in data:
+            data['kind'] = self.default_section_kind
+
+        section_kind = register().sections.get(ArtifactSectionKindId(data['kind']))
 
         section = section_kind.construct_section(artifact_id, raw_section)
 
@@ -158,20 +163,37 @@ class ArtifactSectionKind(BaseEntity):
         return [Cell.build_meta(kind="section_kind", id=self.id, title=self.title)]
 
 
+class TextConfig(ArtifactSectionConfig):
+    pass
+
+
 class ArtifactSectionTextKind(ArtifactSectionKind):
 
     def execute_section(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("Text sections cannot be executed.")
 
-    def construct_section(self, artifact_id: FullArtifactId, section: SectionSource) -> ArtifactSection:
-        config = ArtifactSectionConfig.parse_obj(section.merged_configs())
+    def construct_section(self, artifact_id: FullArtifactId, raw_section: SectionSource) -> ArtifactSection:
+        data = raw_section.merged_configs()
 
-        title = section.title or ""
+        if 'kind' not in data:
+            data['kind'] = self.id
+
+        if 'id' not in data:
+            # TODO: we should replace this hack with a proper ID generator
+            #       to keep that id stable between runs
+            #       options:
+            #       - a hash of the content
+            #       - a sequential ID generator per artifact
+            data['id'] = uuid.uuid4().hex.replace("-", "")
+
+        config = TextConfig.parse_obj(data)
+
+        title = raw_section.title or ""
 
         return ArtifactSection(
             id=artifact_id.to_full_local(config.id),
             kind=self.id,
             title=title,
-            description=section.as_original_markdown(with_title=False),
+            description=raw_section.as_original_markdown(with_title=False),
             meta=ArtifactSectionMeta(),
         )
