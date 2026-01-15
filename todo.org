@@ -75,6 +75,7 @@
 ** full ids for references to objects kinds
 *** that'll allow to remove register in the honor of search in worlds
 ** OperationConfig is actually a section config — it should be equal for every kind of secttion?
+** we may want to remove separation of artifacts by namespaces/directories
 * TODO Artifact sections
 ** Fix poetry run donna artifacts view 'donna.specifications.default_text_artifacts_behavior'
 *** must show the whole artifact
