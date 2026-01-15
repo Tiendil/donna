@@ -19,7 +19,7 @@ from donna.domain.ids import ArtifactSectionKindId, FullArtifactId, FullArtifact
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.markdown import SectionSource
-from import uuid
+import uuid
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -184,7 +184,7 @@ class ArtifactSectionTextKind(ArtifactSectionKind):
             #       options:
             #       - a hash of the content
             #       - a sequential ID generator per artifact
-            data['id'] = uuid.uuid4().hex.replace("-", "")
+            data['id'] = "text" + uuid.uuid4().hex.replace("-", "")
 
         config = TextConfig.parse_obj(data)
 
