@@ -161,6 +161,7 @@
 ** https://github.com/Fission-AI/OpenSpec
 * TODO README.md notes
 ** `No API keys required.` as a feature
+** `save tokens by taking work from your agent to your code`
 ** compare to https://github.com/Fission-AI/OpenSpec
 *** fsms instead of plain texts
 *** "better" Markdown
