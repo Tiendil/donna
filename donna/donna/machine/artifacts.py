@@ -1,6 +1,14 @@
 from typing import Any
+
 from donna.core.entities import BaseEntity
-from donna.domain.ids import ArtifactKindId, FullArtifactId, NamespaceId, FullArtifactLocalId, ArtifactSectionKindId, ArtifactLocalId
+from donna.domain.ids import (
+    ArtifactKindId,
+    ArtifactLocalId,
+    ArtifactSectionKindId,
+    FullArtifactId,
+    FullArtifactLocalId,
+    NamespaceId,
+)
 from donna.machine.cells import Cell
 from donna.world.markdown import ArtifactSource
 
@@ -50,16 +58,19 @@ class ArtifactSection(BaseEntity):
     meta: ArtifactSectionMeta
 
     def cells(self) -> list[Cell]:
-        return [Cell.build_meta(kind="artifact_section_meta",
-                                section_id=str(self.id) if self.id else None,
-                                section_kind=str(self.kind) if self.kind else None,
-                                section_title=self.title,
-                                section_description=self.description,
-                                **self.meta.cells_meta()
-                                )]
+        return [
+            Cell.build_meta(
+                kind="artifact_section_meta",
+                section_id=str(self.id) if self.id else None,
+                section_kind=str(self.kind) if self.kind else None,
+                section_title=self.title,
+                section_description=self.description,
+                **self.meta.cells_meta(),
+            )
+        ]
 
     def markdown_blocks(self) -> list[str]:
-        return [f'## {self.title}', self.description]
+        return [f"## {self.title}", self.description]
 
 
 class ArtifactMeta(BaseEntity):
@@ -79,22 +90,20 @@ class Artifact(BaseEntity):
 
     # TODO: should we attach section cells here as well?
     def cells(self) -> list[Cell]:
-        cells = [Cell.build_meta(kind="artifact_meta",
-                                 artifact_id=str(self.id),
-                                 artifact_kind=self.kind,
-                                 artifact_title=self.title,
-                                 artifact_description=self.description,
-                                 **self.meta.cells_meta()
-                                 )]
+        cells = [
+            Cell.build_meta(
+                kind="artifact_meta",
+                artifact_id=str(self.id),
+                artifact_kind=self.kind,
+                artifact_title=self.title,
+                artifact_description=self.description,
+                **self.meta.cells_meta(),
+            )
+        ]
 
-        markdown = '\n'.join(self.markdown_blocks())
+        markdown = "\n".join(self.markdown_blocks())
 
-        cells.append(
-            Cell.build_markdown(
-                kind="artifact_markdown",
-                content=markdown,
-                artifact_id=str(self.id))
-        )
+        cells.append(Cell.build_markdown(kind="artifact_markdown", content=markdown, artifact_id=str(self.id)))
 
         return cells
 
@@ -105,7 +114,7 @@ class Artifact(BaseEntity):
         return None
 
     def markdown_blocks(self) -> list[str]:
-        blocks = [f'# {self.title}', self.description]
+        blocks = [f"# {self.title}", self.description]
 
         for section in self.sections:
             blocks.extend(section.markdown_blocks())

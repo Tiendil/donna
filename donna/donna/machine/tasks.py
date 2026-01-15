@@ -1,10 +1,10 @@
 import copy
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import FullArtifactLocalId, OperationId, TaskId, WorkUnitId
+from donna.domain.ids import FullArtifactLocalId, TaskId, WorkUnitId
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change

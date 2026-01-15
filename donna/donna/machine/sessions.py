@@ -1,12 +1,12 @@
 import contextlib
 import functools
-from typing import Callable, Iterator, ParamSpec, cast
+from typing import Callable, Iterator, ParamSpec
 
-from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactLocalId, OperationId, WorldId
+from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactLocalId, WorldId
 from donna.machine.cells import Cell, cell_donna_message
+from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
 from donna.machine.workflows import WorkflowMeta
-from donna.machine.operations import FsmMode, OperationMeta
 from donna.world import artifacts
 from donna.world.config import World, config
 

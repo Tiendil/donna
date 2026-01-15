@@ -2,7 +2,7 @@ import pathlib
 import types
 from typing import Any, Iterator, cast
 
-from donna.domain.ids import ArtifactKindId, NamespaceId, OperationKindId, RendererKindId, ArtifactSectionKindId
+from donna.domain.ids import ArtifactKindId, ArtifactSectionKindId, NamespaceId, RendererKindId
 from donna.machine.artifacts import ArtifactKind
 from donna.machine.operations import OperationKind
 from donna.machine.templates import RendererKind

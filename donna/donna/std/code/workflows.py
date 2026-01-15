@@ -8,15 +8,12 @@ from donna.domain.ids import (
     FullArtifactId,
     FullArtifactLocalId,
     NamespaceId,
-    OperationId,
-    OperationKindId,
     RendererKindId,
 )
-from donna.machine.artifacts import Artifact, ArtifactKind
+from donna.machine.artifacts import Artifact, ArtifactKind, ArtifactSection
 from donna.machine.cells import Cell
-from donna.machine.operations import OperationKind, OperationMeta, FsmMode
+from donna.machine.operations import FsmMode, OperationKind, OperationMeta
 from donna.machine.templates import RendererKind
-from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactMeta
 from donna.machine.workflows import WorkflowMeta
 from donna.world.markdown import ArtifactSource, SectionSource
 from donna.world.primitives_register import register
@@ -90,7 +87,7 @@ class WorkflowKind(ArtifactKind):
             title=title,
             description=description,
             meta=WorkflowMeta(start_operation_id=start_operation_id),
-            sections=sections
+            sections=sections,
         )
 
         return spec

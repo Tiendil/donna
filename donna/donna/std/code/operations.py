@@ -1,13 +1,14 @@
 import re
-from typing import TYPE_CHECKING, Iterator, Literal, cast
+from typing import TYPE_CHECKING, Iterator, Literal
 
 import pydantic
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationKindId
+
+from donna.domain.ids import FullArtifactId, FullArtifactLocalId
 from donna.machine.action_requests import ActionRequest
-from donna.machine.operations import OperationConfig, OperationKind, FsmMode, OperationMeta
+from donna.machine.artifacts import ArtifactSection, ArtifactSectionKindId
+from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.markdown import SectionSource
-from donna.machine.artifacts import ArtifactSection, ArtifactSectionKindId
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -64,8 +65,10 @@ class RequestActionKind(OperationKind):
             kind=self.id,
             title=title,
             description=section.as_original_markdown(with_title=False),
-            meta=OperationMeta(fsm_mode=config.fsm_mode,
-                               allowed_transtions=extract_transitions(section.as_analysis_markdown(with_title=True))),
+            meta=OperationMeta(
+                fsm_mode=config.fsm_mode,
+                allowed_transtions=extract_transitions(section.as_analysis_markdown(with_title=True)),
+            ),
         )
 
     def execute(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterator["Change"]:
@@ -117,8 +120,8 @@ class FinishWorkflowKind(OperationKind):
             kind=self.id,
             title=title,
             description=section.as_original_markdown(with_title=False),
-            meta=OperationMeta(fsm_mode=config.fsm_mode,
-                               allowed_transtions=set()))
+            meta=OperationMeta(fsm_mode=config.fsm_mode, allowed_transtions=set()),
+        )
 
 
 finish_workflow_kind = FinishWorkflowKind(

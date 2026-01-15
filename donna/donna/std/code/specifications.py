@@ -5,7 +5,6 @@ from jinja2.runtime import Context
 
 from donna.domain.ids import ArtifactKindId, FullArtifactId, NamespaceId, RendererKindId
 from donna.machine.artifacts import Artifact, ArtifactKind, ArtifactMeta, ArtifactSection, ArtifactSectionMeta
-from donna.machine.cells import Cell
 from donna.machine.templates import RendererKind
 from donna.world.markdown import ArtifactSource
 from donna.world.templates import RenderMode
@@ -30,17 +29,13 @@ class SpecificationKind(ArtifactKind):
                 kind=None,
                 title=raw_section.title or "",
                 description=raw_section.as_original_markdown(with_title=False),
-                meta=ArtifactSectionMeta())
+                meta=ArtifactSectionMeta(),
+            )
             sections.append(section)
 
         # TODO: Should we add somewhere `content=source.as_original_markdown()`
         spec = Artifact(
-            id=source.id,
-            kind=self.id,
-            title=title,
-            description=description,
-            meta=ArtifactMeta(),
-            sections=sections
+            id=source.id, kind=self.id, title=title, description=description, meta=ArtifactMeta(), sections=sections
         )
 
         return spec
