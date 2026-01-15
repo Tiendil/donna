@@ -83,6 +83,7 @@
 **** has fsm_mode: start, final, normal
 **** => we can remove start_operation_id from workflow config
 **** request action can not be final node, because we should control that agent will finish all the work
+**** add validation that the workflow has a single start operation
 *** chapter meta
 ** artifact has:
 *** info
@@ -97,6 +98,7 @@
 ** if we unify section, than we do not need to separate head & tail, head is just a section with special meta
 ** relation between ArtifactSectionKindId and OperationKindId (cleanup types?)
 ** Artifact & ArtifactSection has literary the same structure and logic (if we consider deeper sections) => we may want to make artifacts a tree of sections
+** artifact kind id should be full (with namespace)? the same for all other ids?
 * Artifact improvements:
 ** We may want, by default load/upload artifacts in a custom donna-managed directory, so, no filenames are needed for agents. This also will help to add right extensions automatically => help agents to anderstand internal formats.
 ** When we start the workflow, should we output the head cells before the first operation?

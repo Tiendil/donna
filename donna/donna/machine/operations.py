@@ -2,7 +2,7 @@ import enum
 from typing import TYPE_CHECKING, Iterable, Any
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationId, OperationKindId
+from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationId, OperationKindId, ArtifactSectionConfig
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.markdown import SectionSource
@@ -32,6 +32,10 @@ class FsmMode(enum.Enum):
     final = "final"
 
 
+class OperationConfig(ArtifactSectionConfig):
+    fsm_mode: FsmMode = FsmMode.normal
+
+
 class OperationMeta(ArtifactSectionMeta):
     fsm_mode: FsmMode = FsmMode.normal
     allowed_transtions: set[FullArtifactLocalId]
@@ -39,11 +43,3 @@ class OperationMeta(ArtifactSectionMeta):
     def cells_meta(self) -> dict[str, Any]:
         return {"fsm_mode": self.fsm_mode.value,
                 "allowed_transtions": [str(t) for t in self.allowed_transtions]}
-
-
-# ** section has meta:
-# *** operations meta
-# **** has fsm_mode: start, final, normal
-# **** => we can remove start_operation_id from workflow config
-# **** request action can not be final node, because we should control that agent will finish all the work
-# *** chapter meta

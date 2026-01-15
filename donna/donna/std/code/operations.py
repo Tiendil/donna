@@ -3,9 +3,10 @@ from typing import TYPE_CHECKING, Iterator, Literal, cast
 
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationKindId
 from donna.machine.action_requests import ActionRequest
-from donna.machine.operations import Operation, OperationConfig, OperationKind, OperationMode
+from donna.machine.operations import Operation, OperationConfig, OperationKind, FsmMode, OperationMeta
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.markdown import SectionSource
+from donna.machine.artifacts import ArtifactSection
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -45,47 +46,34 @@ class RequestActionKind(OperationKind):
         self,
         artifact_id: FullArtifactId,
         section: SectionSource,
-    ) -> "RequestAction":
+    ) -> "ArtifactSection":
         config = RequestActionConfig.parse_obj(section.merged_configs())
 
         title = section.title or ""
 
-        return RequestAction(
-            config=config,
+        return ArtifactSection(
+            id=artifact_id.to_full_local(config.id),
+            kind=self.id,
             title=title,
-            artifact_id=artifact_id,
-            allowed_transtions=extract_transitions(section.as_analysis_markdown()),
-            request_template=section.as_original_markdown(),
+            description=section.as_original_markdown(),
+            meta=OperationMeta(fsm_mode=config.fsm_mode,
+                               allowed_transtions=extract_transitions(section.as_analysis_markdown())),
         )
-
-    def construct_context(self, task: Task, operation: "RequestAction") -> dict[str, object]:
-        context: dict[str, object] = {}
-
-        for method_name in dir(operation):
-            if not method_name.startswith("context_"):
-                continue
-
-            name = method_name[len("context_") :]
-            value = getattr(operation, method_name)(task)
-
-            if value is None:
-                continue
-
-            context[name] = value
-
-        context["scheme"] = operation
-
-        return context
 
     def execute(self, task: Task, unit: WorkUnit, operation: Operation) -> Iterator["Change"]:
         from donna.machine.changes import ChangeAddActionRequest
 
         operation = cast(RequestAction, operation)
-        context = self.construct_context(task, operation)
 
-        request_text = operation.request_template.format(**context)
+        context: dict[str, object] = {
+            "scheme": operation,
+            "task": task,
+            "work_unit": unit,
+        }
 
-        request = ActionRequest.build(request_text, operation.full_id)
+        request_text = operation.description.format(**context)
+
+        request = ActionRequest.build(request_text, operation.id)
 
         yield ChangeAddActionRequest(action_request=request)
 
@@ -106,7 +94,7 @@ request_action_kind = RequestActionKind(
 
 
 class FinishWorkflowConfig(OperationConfig):
-    mode: Literal[OperationMode.final] = OperationMode.final
+    fsm_mode: Literal[FsmMode.final] = FsmMode.final
 
 
 class FinishWorkflowKind(OperationKind):
@@ -120,7 +108,13 @@ class FinishWorkflowKind(OperationKind):
 
         title = section.title or ""
 
-        return Operation(config=config, title=title, artifact_id=artifact_id, allowed_transtions=set())
+        return ArtifactSection(
+            id=artifact_id.to_full_local(config.id),
+            kind=self.id,
+            title=title,
+            description=section.as_original_markdown(),
+            meta=OperationMeta(fsm_mode=config.fsm_mode,
+                               allowed_transtions=set()))
 
 
 finish_workflow_kind = FinishWorkflowKind(

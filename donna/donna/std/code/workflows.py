@@ -14,32 +14,33 @@ from donna.domain.ids import (
 )
 from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
 from donna.machine.cells import Cell
-from donna.machine.operations import Operation, OperationKind, OperationMode
+from donna.machine.operations import OperationKind, OperationMode, OperationMeta
 from donna.machine.templates import RendererKind
+from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactMeta
 from donna.world.markdown import ArtifactSource, SectionSource
 from donna.world.primitives_register import register
 from donna.world.templates import RenderMode
 
 
-class Workflow(Artifact):
-    start_operation_id: OperationId
-    operations: list[Operation]
+# class Workflow(Artifact):
+#     start_operation_id: OperationId
+#     operations: list[Operation]
 
-    @property
-    def full_start_operation_id(self) -> FullArtifactLocalId:
-        return self.info.id.to_full_local(self.start_operation_id)
+#     @property
+#     def full_start_operation_id(self) -> FullArtifactLocalId:
+#         return self.info.id.to_full_local(self.start_operation_id)
 
-    def get_operation(self, operation_id: OperationId) -> Operation | None:
-        for operation in self.operations:
-            if operation.id == operation_id:
-                return operation
-        return None
+#     def get_operation(self, operation_id: OperationId) -> Operation | None:
+#         for operation in self.operations:
+#             if operation.id == operation_id:
+#                 return operation
+#         return None
 
-    def cells(self) -> list["Cell"]:
-        return [Cell.build_markdown(kind=self.info.kind, content=self.info.description, id=str(self.info.id))]
+#     def cells(self) -> list["Cell"]:
+#         return [Cell.build_markdown(kind=self.info.kind, content=self.info.description, id=str(self.info.id))]
 
 
-def construct_operation(artifact_id: FullArtifactId, section: SectionSource) -> Operation:
+def construct_operation(artifact_id: FullArtifactId, section: SectionSource) -> ArtifactSection:
 
     data = section.merged_configs()
 
@@ -78,7 +79,7 @@ def find_not_reachable_operations(
 
 
 class WorkflowKind(ArtifactKind):
-    def construct(self, source: ArtifactSource) -> "Artifact":  # type: ignore[override]
+    def construct(self, source: ArtifactSource) -> "Artifact":
         description = None
 
         description = source.head.merged_configs().get("description", description)
@@ -86,12 +87,15 @@ class WorkflowKind(ArtifactKind):
 
         title = source.head.title or str(source.id)
 
-        operation_list = [construct_operation(source.id, section) for section in source.tail]
+        sections = [construct_operation(source.id, section) for section in source.tail]
 
-        spec = Workflow(
-            info=ArtifactInfo(kind=self.id, id=source.id, title=title, description=description),
-            start_operation_id=source.head.merged_configs()["start_operation_id"],
-            operations=operation_list,
+        spec = Artifact(
+            id=source.id,
+            kind=self.id,
+            title=title,
+            description=description,
+            meta=ArtifactMeta(),
+            sections=sections
         )
 
         return spec

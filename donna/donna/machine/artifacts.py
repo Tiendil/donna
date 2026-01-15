@@ -1,6 +1,6 @@
 from typing import Any
 from donna.core.entities import BaseEntity
-from donna.domain.ids import ArtifactKindId, FullArtifactId, NamespaceId, FullArtifactLocalId, ArtifactSectionKindId
+from donna.domain.ids import ArtifactKindId, FullArtifactId, NamespaceId, FullArtifactLocalId, ArtifactSectionKindId, ArtifactLocalId
 from donna.machine.cells import Cell
 from donna.world.markdown import ArtifactSource
 
@@ -28,6 +28,11 @@ class ArtifactKind(BaseEntity):
                 status="success",
             )
         ]
+
+
+class ArtifactSectionConfig(BaseEntity):
+    id: ArtifactLocalId
+    kind: ArtifactSectionKindId
 
 
 class ArtifactSectionMeta(BaseEntity):
