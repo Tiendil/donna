@@ -12,12 +12,8 @@ from donna.world.templates import RenderMode
 
 class SpecificationKind(ArtifactKind):
     def construct_artifact(self, source: ArtifactSource) -> "Artifact":
-        description = None
-
-        description = source.head.merged_configs().get("description", description)
-        description = description or ""
-
         title = source.head.title or str(source.id)
+        description = source.head.as_original_markdown(with_title=False)
 
         sections = [self.construct_section(source.id, section) for section in source.tail]
 
