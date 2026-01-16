@@ -91,9 +91,9 @@
 *** If we make control-flow operations, there may be restrictions on how nested sections can be used. For example, if we had "execute linearly" operation, how the nested "action request" operation should behave. Normaly an agent completes the request and specifies the next operation, but "execute linearly" operation also will want to specify the next operation.
 *** explicit is better than implicit => hiden control flow logic will mess with agents.
 *** we should wait till use cases appear that require or prohibit such unification.
-** unify code of different renderers? It is very similar
-*** add validation for specificaiton existence in renderers
-*** Spec rendere can be unified, since its cli command
+* unify code of different renderers? It is very similar
+** add validation for specificaiton existence in renderers
+** Spec rendere can be unified, since its cli command
 * Artifact improvements:
 ** We may want, by default load/upload artifacts in a custom donna-managed directory, so, no filenames are needed for agents. This also will help to add right extensions automatically => help agents to anderstand internal formats.
 ** When we start the workflow, should we output the head cells before the first operation?
