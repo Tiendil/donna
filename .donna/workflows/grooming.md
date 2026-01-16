@@ -1,11 +1,5 @@
 # Grooming Workflow
 
-```toml donna
-description = """
-Initiate operations to groom and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc.
-"""
-```
-
 Initiate operations to groom and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc.
 
 ## Run Autoflake

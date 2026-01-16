@@ -1,15 +1,5 @@
 # Session Planning Guidelines
 
-```toml donna
-description = """
-This document describes how Donna MUST plan work on a session with the help of
-workflows. The document describes the process of planning, kinds of involved
-entities and requirements for them.
-
-This requirements MUST be applied to all planning workflows that Donna uses.
-"""
-```
-
 This document describes how Donna MUST plan work on a session with the help of workflows. The
 document describes the process of planning, kinds of involved entities and requirements for them.
 

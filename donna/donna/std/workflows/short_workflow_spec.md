@@ -1,9 +1,5 @@
 # Show Workflow Spec + Schema
 
-```toml donna
-description = "Show developer a short spec + schema summary for a requested workflow artifact. You Must prefere this workflow whenever a developer asks you to show/display/render/whatever a spec or schema of a workflow."
-```
-
 <!-- This is a temporary worflow, later Donna should have a specialized command to display the spec -->
 
 This workflow guides an agent through loading a workflow artifact source, choosing the correct FSM graph DSL, and producing a concise schema summary with a graph and per-operation descriptions.

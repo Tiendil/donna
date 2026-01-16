@@ -1,11 +1,5 @@
 # Default Text Artifacts Behavior
 
-```toml donna
-description = """
-This document describes the default format and behavior of Donna's text artifacts. This format and behavior is what should be expected by default from an artifact if not specified otherwise.
-"""
-```
-
 This document describes the default format and behavior of Donna's text artifacts.
 This format and behavior is what should be expected by default from an artifact if not specified otherwise.
 

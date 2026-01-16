@@ -1,12 +1,5 @@
 # Donna World Layout
 
-```toml donna
-description = """
-This document describes how Donna discovers and manages its dynamic and/or external artifacts.
-Including specifications, workflows, operations, current work state and additional code.
-"""
-```
-
 This document describes how Donna discovers and manages its dynamic and/or external artifacts.
 Including specifications, workflows, operations, current work state and additional code.
 

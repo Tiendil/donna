@@ -1,11 +1,5 @@
 # Meta Work Loop
 
-```toml donna
-description = """
-General purpose work planning and execution workflow. Use it when you need to do complex work and there is no more specific workflow available.
-"""
-```
-
 General purpose work planning and execution workflow. Use it when you need to do complex work and there is no more specific workflow available.
 
 ## Start Work

@@ -1,11 +1,5 @@
 # Donna Usage Instructions
 
-```toml donna
-description = """
-This document describes how agents MUST use Donna to manage and perform their workflows.
-"""
-```
-
 This document describes how agents MUST use Donna to manage and perform their workflows.
 
 **Agents MUST follow the instructions and guidelines outlined in this document precisely.**
