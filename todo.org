@@ -77,20 +77,6 @@
 ** OperationConfig is actually a section config — it should be equal for every kind of secttion?
 ** we may want to remove separation of artifacts by namespaces/directories
 ** In case we implemen python modules as artifacts, ArtifactSectionKindId should be full python module path to the kind definition.
-* TODO Artifact sections
-** Artifact & ArtifactSection has literary the same structure and logic (if we consider deeper sections) => we may want to make artifacts a tree of sections
-*** that'll allow loops
-*** that'll allow conditions
-*** any other control expressions will be possible
-*** however, that'll complicate FSM logic or make it impossible to validate
-*** maybe we can make nested only section with explicit ids? However, that may complicate understanding of the documents for humans.
-*** you can skip a lot of ids, because they are not required
-*** the root section is also an operation (?) like linear execution
-*** if we unify section, than we do not need to separate head & tail, head is just a section with special meta
-*** Risk, currently, the section defines all outgoing edges, that simplifies a lot (describing FSM, reading). If we allow "operational" sections to have nested sections, we smear control flow logic across the document, that may complicate understanding and processing, especially for agents.
-*** If we make control-flow operations, there may be restrictions on how nested sections can be used. For example, if we had "execute linearly" operation, how the nested "action request" operation should behave. Normaly an agent completes the request and specifies the next operation, but "execute linearly" operation also will want to specify the next operation.
-*** explicit is better than implicit => hiden control flow logic will mess with agents.
-*** we should wait till use cases appear that require or prohibit such unification.
 * unify code of different renderers? It is very similar
 ** add validation for specificaiton existence in renderers
 ** Spec rendere can be unified, since its cli command
