@@ -94,7 +94,6 @@
 ** unify code of different renderers? It is very similar
 *** add validation for specificaiton existence in renderers
 *** Spec rendere can be unified, since its cli command
-** resolve duplication of config.description and markdown description in the head section of the artifact
 * Artifact improvements:
 ** We may want, by default load/upload artifacts in a custom donna-managed directory, so, no filenames are needed for agents. This also will help to add right extensions automatically => help agents to anderstand internal formats.
 ** When we start the workflow, should we output the head cells before the first operation?
