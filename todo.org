@@ -77,6 +77,7 @@
 ** OperationConfig is actually a section config — it should be equal for every kind of secttion?
 ** we may want to remove separation of artifacts by namespaces/directories
 ** In case we implemen python modules as artifacts, ArtifactSectionKindId should be full python module path to the kind definition.
+** World kind that acts as a proxy to another donna project?
 * unify code of different renderers? It is very similar
 ** add validation for specificaiton existence in renderers
 ** Spec rendere can be unified, since its cli command
