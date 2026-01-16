@@ -50,10 +50,10 @@ class SectionSource(BaseEntity):
 
     model_config = pydantic.ConfigDict(frozen=False)
 
-    def _as_markdown(self, tokens: list[Token]) -> str:
+    def _as_markdown(self, tokens: list[Token], with_title: bool) -> str:
         parts = []
 
-        if self.title is not None:
+        if with_title and self.title is not None:
             match self.level:
                 case SectionLevel.h1:
                     prefix = "#"
@@ -66,11 +66,11 @@ class SectionSource(BaseEntity):
 
         return "\n".join(parts)
 
-    def as_original_markdown(self) -> str:
-        return self._as_markdown(self.original_tokens)
+    def as_original_markdown(self, with_title: bool) -> str:
+        return self._as_markdown(self.original_tokens, with_title)
 
-    def as_analysis_markdown(self) -> str:
-        return self._as_markdown(self.analysis_tokens)
+    def as_analysis_markdown(self, with_title: bool) -> str:
+        return self._as_markdown(self.analysis_tokens, with_title)
 
     def merged_configs(self) -> dict[str, Any]:
         result: dict[str, Any] = {}
@@ -89,18 +89,18 @@ class ArtifactSource(BaseEntity):
     tail: list[SectionSource]
 
     def as_original_markdown(self) -> str:
-        parts = [self.head.as_original_markdown()]
+        parts = [self.head.as_original_markdown(with_title=True)]
 
         for section in self.tail:
-            parts.append(section.as_original_markdown())
+            parts.append(section.as_original_markdown(with_title=True))
 
         return "\n".join(parts)
 
     def as_analysis_markdown(self) -> str:
-        parts = [self.head.as_analysis_markdown()]
+        parts = [self.head.as_analysis_markdown(with_title=True)]
 
         for section in self.tail:
-            parts.append(section.as_analysis_markdown())
+            parts.append(section.as_analysis_markdown(with_title=True))
 
         return "\n".join(parts)
 

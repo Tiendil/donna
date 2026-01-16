@@ -1,63 +1,30 @@
 import enum
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Any
 
-from donna.core.entities import BaseEntity
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId, OperationId, OperationKindId
-from donna.machine.cells import Cell
-from donna.machine.tasks import Task, WorkUnit
-from donna.world.markdown import SectionSource
+from donna.domain.ids import FullArtifactLocalId
+from donna.machine.artifacts import ArtifactSectionConfig, ArtifactSectionKind, ArtifactSectionMeta
 
 if TYPE_CHECKING:
-    from donna.machine.changes import Change
+    pass
 
 
-class OperationKind(BaseEntity):
-    id: OperationKindId
-    title: str
-
-    def execute(self, task: Task, unit: WorkUnit, operation: "Operation") -> Iterable["Change"]:
-        raise NotImplementedError("You MUST implement this method.")
-
-    def construct(self, artifact_id: FullArtifactId, section: SectionSource) -> "Operation":  # type: ignore[override]
-        raise NotImplementedError("You MUST implement this method.")
-
-    def cells(self) -> list[Cell]:
-        return [Cell.build_meta(kind="operation_kind", id=self.id, title=self.title)]
-
-
-class OperationMode(enum.Enum):
+class FsmMode(enum.Enum):
+    start = "start"
     normal = "normal"
     final = "final"
 
 
-class OperationConfig(BaseEntity):
-    id: OperationId
-    kind: OperationKindId
-    mode: OperationMode = OperationMode.normal
+class OperationKind(ArtifactSectionKind):
+    pass
 
 
-class Operation(BaseEntity):
-    config: OperationConfig
+class OperationConfig(ArtifactSectionConfig):
+    fsm_mode: FsmMode = FsmMode.normal
 
-    artifact_id: FullArtifactId
-    title: str
+
+class OperationMeta(ArtifactSectionMeta):
+    fsm_mode: FsmMode = FsmMode.normal
     allowed_transtions: set[FullArtifactLocalId]
 
-    @property
-    def full_id(self) -> FullArtifactLocalId:
-        return self.artifact_id.to_full_local(self.id)
-
-    @property
-    def id(self) -> OperationId:
-        return self.config.id
-
-    @property
-    def kind(self) -> OperationKindId:
-        return self.config.kind
-
-    @property
-    def mode(self) -> OperationMode:
-        return self.config.mode
-
-    def cells(self) -> list[Cell]:
-        return [Cell.build_meta(kind="operation", operation_id=str(self.id))]
+    def cells_meta(self) -> dict[str, Any]:
+        return {"fsm_mode": self.fsm_mode.value, "allowed_transtions": [str(t) for t in self.allowed_transtions]}

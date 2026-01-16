@@ -16,7 +16,7 @@ def list(namespace: NamespaceIdArgument) -> None:
     artifacts = world_artifacts.list_artifacts(namespace)
 
     for artifact in artifacts:
-        output_cells(artifact.info.cells())
+        output_cells(artifact.cells())
 
 
 @artifacts_cli.command()
@@ -41,7 +41,7 @@ def update(id: FullArtifactIdArgument, input: pathlib.Path) -> None:
 def validate(id: FullArtifactIdArgument) -> None:
     artifact = world_artifacts.load_artifact(id)
 
-    artifact_kind = register().artifacts.get(artifact.info.kind)
+    artifact_kind = register().artifacts.get(artifact.kind)
 
     assert artifact_kind is not None
 
@@ -55,7 +55,7 @@ def validate_all(namespace: NamespaceIdArgument) -> None:
     artifacts = world_artifacts.list_artifacts(namespace)
 
     for artifact in artifacts:
-        artifact_kind = register().artifacts.get(artifact.info.kind)
+        artifact_kind = register().artifacts.get(artifact.kind)
 
         assert artifact_kind is not None
 

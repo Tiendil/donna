@@ -4,34 +4,21 @@ import jinja2
 from jinja2.runtime import Context
 
 from donna.domain.ids import ArtifactKindId, FullArtifactId, NamespaceId, RendererKindId
-from donna.machine.artifacts import Artifact, ArtifactInfo, ArtifactKind
-from donna.machine.cells import Cell
+from donna.machine.artifacts import Artifact, ArtifactKind, ArtifactMeta
 from donna.machine.templates import RendererKind
 from donna.world.markdown import ArtifactSource
 from donna.world.templates import RenderMode
 
 
-class Specification(Artifact):
-    content: str
-
-    def cells(self) -> list["Cell"]:
-        return [Cell.build_markdown(kind=self.info.kind, content=self.content, id=str(self.info.id))]
-
-
 class SpecificationKind(ArtifactKind):
-    def construct(self, source: ArtifactSource) -> "Artifact":  # type: ignore[override]
-        description = None
-
-        for config in source.head.configs:
-            data = config.structured_data()
-            description = data.get("description", description)
-
+    def construct_artifact(self, source: ArtifactSource) -> "Artifact":
         title = source.head.title or str(source.id)
-        description = description or ""
+        description = source.head.as_original_markdown(with_title=False)
 
-        spec = Specification(
-            info=ArtifactInfo(kind=self.id, id=source.id, title=title, description=description),
-            content=source.as_original_markdown(),
+        sections = [self.construct_section(source.id, section) for section in source.tail]
+
+        spec = Artifact(
+            id=source.id, kind=self.id, title=title, description=description, meta=ArtifactMeta(), sections=sections
         )
 
         return spec

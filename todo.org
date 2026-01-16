@@ -75,26 +75,11 @@
 ** full ids for references to objects kinds
 *** that'll allow to remove register in the honor of search in worlds
 ** OperationConfig is actually a section config — it should be equal for every kind of secttion?
-* TODO Artifact sections
-** operation is a section
-** spec chapter is a section
-** section has meta:
-*** operations meta
-**** has fsm_mode: start, final, normal
-**** => we can remove start_operation_id from workflow config
-**** request action can not be final node, because we should control that agent will finish all the work
-*** chapter meta
-** artifact has:
-*** info
-*** meta
-*** sections
-** unify code of different renderers? It is very similar
-*** add validation for specificaiton existence in renderers
-*** Spec rendere can be unified, since its cli command
-** we can reference artifact_id:operation_id, should we make id required for each section (or, at least, optional) to be able to reference each section? It may be required for lazy imports of primitives and listing primitives.
-** resolve duplication of config.description and markdown description in the head section of the artifact
-** align naming of session-level specifications
-** if we unify section, than we do not need to separate head & tail, head is just a section with special meta
+** we may want to remove separation of artifacts by namespaces/directories
+** In case we implemen python modules as artifacts, ArtifactSectionKindId should be full python module path to the kind definition.
+* unify code of different renderers? It is very similar
+** add validation for specificaiton existence in renderers
+** Spec rendere can be unified, since its cli command
 * Artifact improvements:
 ** We may want, by default load/upload artifacts in a custom donna-managed directory, so, no filenames are needed for agents. This also will help to add right extensions automatically => help agents to anderstand internal formats.
 ** When we start the workflow, should we output the head cells before the first operation?
@@ -126,6 +111,7 @@
 ** Vebose jinja2 render errors to help agents and developers
 ** replace all NotImplementedError exceptions with custom exceptions and smart error handling
 ** exceptions must output cells?
+** cleanup asserts — replace with real checks and exceptions
 * TODO Possible workflows
 ** bootstrap.bootstrap_all.
 ** bootstrap.donna.create_project
@@ -137,7 +123,9 @@
 * TODO initialization of donna for the new project
 ** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
 ** create a copy of the default config for the new project
-* TODO Add spelling validation to grooming workflow
+* TODO Grooming improvements
+** Add spelling validation
+** Add import/dependency flow restrictions (there were a specialized package for that)
 * TODO integration into emacs? How?
 ** https://github.com/d12frosted/vui.el/
 * TODO CLI operation
@@ -155,3 +143,14 @@
 ** The next commands should be able to access the cli output (stdout and stderr) via variables.
 *** Use WorkUnit context for this
 ** Update artifacts format specification with new operation info
+* TODO We can track causality between artifact sections (what depends on what) as universal functionality of the artifact system. I.e. no need to introduce specialized relations for specialized artifacts.
+* TODO interesting software to integrate with
+** https://github.com/m0n0x41d/quint-code
+** https://github.com/Fission-AI/OpenSpec
+** https://www.reddit.com/r/PKMS/comments/1qdgr5a/would_a_simple_pkm_programming_language_make_sense/
+* TODO README.md notes
+** `No API keys required.` as a feature
+** `save tokens by taking work from your agent to your code`
+** compare to https://github.com/Fission-AI/OpenSpec
+*** fsms instead of plain texts
+*** "better" Markdown

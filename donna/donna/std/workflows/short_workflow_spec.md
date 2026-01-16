@@ -1,10 +1,5 @@
 # Show Workflow Spec + Schema
 
-```toml donna
-description = "Show developer a short spec + schema summary for a requested workflow artifact. You Must prefere this workflow whenever a developer asks you to show/display/render/whatever a spec or schema of a workflow."
-start_operation_id = "read_workflow_source"
-```
-
 <!-- This is a temporary worflow, later Donna should have a specialized command to display the spec -->
 
 This workflow guides an agent through loading a workflow artifact source, choosing the correct FSM graph DSL, and producing a concise schema summary with a graph and per-operation descriptions.
@@ -14,6 +9,7 @@ This workflow guides an agent through loading a workflow artifact source, choosi
 ```toml donna
 id = "read_workflow_source"
 kind = "request_action"
+fsm_mode = "start"
 ```
 
 1. Identify the full workflow artifact id to summarize from the developer request (for example: `project.workflows.grooming`).

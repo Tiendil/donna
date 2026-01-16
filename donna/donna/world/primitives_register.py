@@ -2,9 +2,8 @@ import pathlib
 import types
 from typing import Any, Iterator, cast
 
-from donna.domain.ids import ArtifactKindId, NamespaceId, OperationKindId, RendererKindId
-from donna.machine.artifacts import ArtifactKind
-from donna.machine.operations import OperationKind
+from donna.domain.ids import ArtifactKindId, ArtifactSectionKindId, NamespaceId, RendererKindId
+from donna.machine.artifacts import ArtifactKind, ArtifactSectionKind
 from donna.machine.templates import RendererKind
 from donna.world.storage import Storage
 
@@ -14,7 +13,7 @@ BASE_WORKFLOWS_DIR = pathlib.Path(__file__).parent.parent / "workflows"
 class PrimitivesRegister:
 
     def __init__(self) -> None:
-        self.operations: Storage[OperationKindId, OperationKind] = Storage("operation")
+        self.sections: Storage[ArtifactSectionKindId, ArtifactSectionKind] = Storage("section")
         self.artifacts: Storage[ArtifactKindId, ArtifactKind] = Storage("artifact")
         self.renderers: Storage[RendererKindId, RendererKind] = Storage("renderer")
 
@@ -47,8 +46,8 @@ class PrimitivesRegister:
                 self.artifacts.add(primitive)
                 continue
 
-            if isinstance(primitive, OperationKind):
-                self.operations.add(primitive)
+            if isinstance(primitive, ArtifactSectionKind):
+                self.sections.add(primitive)
                 continue
 
             if isinstance(primitive, RendererKind):
