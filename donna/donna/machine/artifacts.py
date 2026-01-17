@@ -1,3 +1,5 @@
+import inspect
+import types
 import uuid
 from typing import TYPE_CHECKING, Any, Iterable
 
@@ -190,4 +192,69 @@ class ArtifactSectionTextKind(ArtifactSectionKind):
             title=title,
             description=raw_section.as_original_markdown(with_title=False),
             meta=ArtifactSectionMeta(),
+        )
+
+
+class PythonModuleSectionMeta(ArtifactSectionMeta):
+    attribute_value: Any
+
+    model_config = BaseEntity.model_config | {"arbitrary_types_allowed": True}
+
+    def cells_meta(self) -> dict[str, Any]:
+        return {"attribute_value": repr(self.attribute_value)}
+
+
+class PythonModuleSectionKind(ArtifactSectionKind):
+
+    def execute_section(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterable["Change"]:
+        raise NotImplementedError("Python module sections cannot be executed.")
+
+    def construct_section(self, artifact_id: FullArtifactId, raw_section: SectionSource) -> ArtifactSection:
+        raise NotImplementedError("Python module sections are constructed from module attributes.")
+
+    def build_section(self, artifact_id: FullArtifactId, name: str, value: Any) -> ArtifactSection:
+        description = inspect.getdoc(value) or ""
+
+        return ArtifactSection(
+            id=artifact_id.to_full_local(ArtifactLocalId(name)),
+            kind=self.id,
+            title=name,
+            description=description,
+            meta=PythonModuleSectionMeta(attribute_value=value),
+        )
+
+
+class PythonArtifact(ArtifactKind):
+
+    def construct_artifact(self, source: ArtifactSource) -> "Artifact":
+        raise NotImplementedError("Python artifacts are constructed from modules, not markdown sources.")
+
+    def construct_module(self, module: types.ModuleType, artifact_id: FullArtifactId) -> "Artifact":  # noqa: CCR001
+        from donna.world.primitives_register import register
+
+        description = inspect.getdoc(module) or ""
+        title = module.__name__
+        section_kind = register().sections.get(ArtifactSectionKindId(self.default_section_kind))
+
+        if section_kind is None or not isinstance(section_kind, PythonModuleSectionKind):
+            raise NotImplementedError("Python module section kind is not registered")
+
+        sections: list[ArtifactSection] = []
+
+        for name, value in sorted(module.__dict__.items()):
+            if not name.isidentifier():
+                continue
+
+            if name.startswith("_"):
+                continue
+
+            sections.append(section_kind.build_section(artifact_id, name, value))
+
+        return Artifact(
+            id=artifact_id,
+            kind=self.id,
+            title=title,
+            description=description,
+            meta=ArtifactMeta(),
+            sections=sections,
         )

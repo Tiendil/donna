@@ -58,6 +58,18 @@
 *** `World.update(...)` must raise NotImplementedError in Python world
 *** `World.read_state(...)` and `World.write_state(...)` must raise NotImplementedError in Python world
 *** `World.get_modules()` may be removed, because modules in Python world are just artifacts?
+*** What with the namespace? which one? maybe by the top-level package name of the artifact?
+*** We need an option to prohibit loading artifact sources
+*** we may want to allow update method to update artifact source of writable worlds
+*** list_artifacts behaviour is weird, may be want to refactor it in pair with namespace
+*** get_modules behaviour is weird as well
+*** split donna.machin.artifacts into submodules?
+*** donna.std submodule as an artifact?
+*** PythonModuleSectionMeta.attribute_value -> PythonModuleSectionMeta.entity
+*** PythonArtifact -> PythonModuleArtifact
+*** PythonModuleSectionKind.exectu_section should work
+*** Should we use PythonModuleSectionKind.construct_section to construct sections?
+*** Should we use PythonArtifact.construct_artifact to construct artifacts?
 ** python world implementation, WANTs
 *** world kinds are configured via python module imports (not artifact paths?) or somehow very smartly via artifact paths
 *** system python (i.e. donna's environment) can be a world also with predefined behavior
