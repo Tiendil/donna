@@ -36,7 +36,7 @@ class World(BaseEntity):
         raise NotImplementedError("You must implement this method in subclasses")
 
     # These two methods are intended for storing world state (e.g., session data)
-    # It is and open question if the world state is an artifact itself or something else
+    # It is an open question if the world state is an artifact itself or something else
     # For the artifact: uniform API for storing/loading data
     # Against the artifact:
     # - session data MUST be accessible only by Donna => no one should be able to read/write/list it
