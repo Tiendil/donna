@@ -44,14 +44,14 @@ class World(BaseWorld):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)
 
-    def read_state(self, name: str) -> bytes:
+    def read_state(self, name: str) -> bytes | None:
         if not self.session:
             raise NotImplementedError(f"World `{self.id}` does not support state storage")
 
         path = self.path / name
 
         if not path.exists():
-            raise NotImplementedError(f"State `{name}` does not exist in world `{self.id}`")
+            return None
 
         return path.read_bytes()
 

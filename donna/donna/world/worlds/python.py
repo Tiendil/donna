@@ -82,7 +82,34 @@ class Python(BaseWorld):
         return source_path.read_bytes()
 
     def update(self, namespace_id: NamespaceId, artifact_id: ArtifactId, content: bytes) -> None:
-        raise NotImplementedError(f"World `{self.id}` is read-only")
+        if self.readonly:
+            raise NotImplementedError(f"World `{self.id}` is read-only")
+
+        if namespace_id != NamespaceId("python"):
+            raise NotImplementedError(f"Namespace `{namespace_id}` is not supported by world `{self.id}`")
+
+        module_name = str(artifact_id)
+        spec = importlib.util.find_spec(module_name)
+
+        if spec is None:
+            raise NotImplementedError(f"Module `{module_name}` is not available")
+
+        origin = spec.origin
+
+        if origin in (None, "built-in"):
+            raise NotImplementedError(f"Module `{module_name}` does not have source")
+
+        assert origin is not None
+
+        path = pathlib.Path(origin)
+
+        if path.suffix == ".pyc":
+            source_path = path.with_suffix(".py")
+        else:
+            source_path = path
+
+        source_path.parent.mkdir(parents=True, exist_ok=True)
+        source_path.write_bytes(content)
 
     def list_artifacts(self, namespace_id: NamespaceId) -> list[ArtifactId]:
         if namespace_id != NamespaceId("python"):
@@ -103,11 +130,12 @@ class Python(BaseWorld):
     def get_modules(self) -> list[types.ModuleType]:
         return []
 
-    def read_state(self, name: str) -> bytes:
-        raise NotImplementedError("Python world does not support state storage")
+    # TODO: How can the state be represented in the Python world?
+    def read_state(self, name: str) -> bytes | None:
+        raise NotImplementedError(f"World `{self.id}` does not support state storage")
 
     def write_state(self, name: str, content: bytes) -> None:
-        raise NotImplementedError("Python world does not support state storage")
+        raise NotImplementedError(f"World `{self.id}` does not support state storage")
 
     def initialize(self, reset: bool = False) -> None:
         pass

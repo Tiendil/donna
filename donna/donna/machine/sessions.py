@@ -22,7 +22,12 @@ def _session() -> World:
 
 
 def _load_state() -> ConsistentState:
-    return ConsistentState.from_json(_session().read_state("state.json").decode("utf-8"))
+    content = _session().read_state("state.json")
+
+    if content is None:
+        raise NotImplementedError("Session state is not initialized")
+
+    return ConsistentState.from_json(content.decode("utf-8"))
 
 
 def _save_state(state: ConsistentState) -> None:

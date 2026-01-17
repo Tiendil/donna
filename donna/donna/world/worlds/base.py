@@ -36,7 +36,7 @@ class World(BaseEntity):
     # - session data will require an additonal kind(s) of artifact(s) just for that purpose
     # - session data may change more frequently than regular artifacts
 
-    def read_state(self, name: str) -> bytes:
+    def read_state(self, name: str) -> bytes | None:
         raise NotImplementedError("You must implement this method in subclasses")
 
     def write_state(self, name: str, content: bytes) -> None:

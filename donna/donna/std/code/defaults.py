@@ -1,9 +1,5 @@
-from donna.domain.ids import ArtifactSectionKindId
-from donna.machine.artifacts import ArtifactSectionTextKind
-
 from donna.domain.ids import ArtifactKindId, ArtifactSectionKindId, NamespaceId
-from donna.machine.artifacts import PythonArtifact, PythonModuleSectionKind
-
+from donna.machine.artifacts import ArtifactSectionTextKind, PythonArtifact, PythonModuleSectionKind
 
 text_section_kind = ArtifactSectionTextKind(
     id=ArtifactSectionKindId("text"),
