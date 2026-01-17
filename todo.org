@@ -56,6 +56,7 @@
 *** list_artifacts behaviour is weird, may be want to refactor it in pair with namespace
 *** What with the namespace? which one? maybe by the top-level package name of the artifact?
 *** get_modules behaviour is weird as well
+*** This is weired "Non-Python resources should be searched under the same `python.import.path.<namespace>` as the markdown files (like in filesystem world)"
 *** donna.std submodule as an artifact?
 *** split donna.machin.artifacts into submodules?
 *** PythonModuleSectionMeta.attribute_value -> PythonModuleSectionMeta.entity
