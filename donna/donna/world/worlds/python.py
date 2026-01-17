@@ -42,28 +42,34 @@ class Python(BaseWorld):
         resource_name = f"{artifact_id.replace('.', '/')}.md"
         return resource_root.joinpath(resource_name)
 
-    def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
-        if namespace_id == NamespaceId("python"):
-            module_name = self._artifact_module_name(artifact_id)
-            return importlib.util.find_spec(module_name) is not None
+    def _has_python(self, artifact_id: ArtifactId) -> bool:
+        module_name = self._artifact_module_name(artifact_id)
+        return importlib.util.find_spec(module_name) is not None
 
+    def _has_markdown(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
         resource_path = self._resource_path(namespace_id, artifact_id)
         return resource_path is not None and resource_path.is_file()
 
-    def fetch(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> Artifact:
-        full_id = FullArtifactId((self.id, namespace_id, artifact_id))
-
+    def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
         if namespace_id == NamespaceId("python"):
-            module_name = self._artifact_module_name(artifact_id)
-            module = importlib.import_module(module_name)
+            return self._has_python(artifact_id)
 
-            kind = register().get_artifact_kind_by_namespace(namespace_id)
+        return self._has_markdown(namespace_id, artifact_id)
 
-            if kind is None or not isinstance(kind, PythonArtifact):
-                raise NotImplementedError("Python artifact kind is not registered")
+    def _fetch_python(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> Artifact:
+        full_id = FullArtifactId((self.id, namespace_id, artifact_id))
+        module_name = self._artifact_module_name(artifact_id)
+        module = importlib.import_module(module_name)
 
-            return kind.construct_module(module, full_id)
+        kind = register().get_artifact_kind_by_namespace(namespace_id)
 
+        if kind is None or not isinstance(kind, PythonArtifact):
+            raise NotImplementedError("Python artifact kind is not registered")
+
+        return kind.construct_module(module, full_id)
+
+    def _fetch_markdown(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> Artifact:
+        full_id = FullArtifactId((self.id, namespace_id, artifact_id))
         resource_path = self._resource_path(namespace_id, artifact_id)
 
         if resource_path is None or not resource_path.is_file():
@@ -72,15 +78,21 @@ class Python(BaseWorld):
         content = resource_path.read_text(encoding="utf-8")
         return construct_artifact_from_content(full_id, content)
 
-    def fetch_source(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bytes:  # noqa: CCR001
-        if namespace_id != NamespaceId("python"):
-            resource_path = self._resource_path(namespace_id, artifact_id)
+    def fetch(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> Artifact:
+        if namespace_id == NamespaceId("python"):
+            return self._fetch_python(namespace_id, artifact_id)
 
-            if resource_path is None or not resource_path.is_file():
-                raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
+        return self._fetch_markdown(namespace_id, artifact_id)
 
-            return resource_path.read_bytes()
+    def _fetch_source_markdown(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bytes:
+        resource_path = self._resource_path(namespace_id, artifact_id)
 
+        if resource_path is None or not resource_path.is_file():
+            raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
+
+        return resource_path.read_bytes()
+
+    def _fetch_source_python(self, artifact_id: ArtifactId) -> bytes:  # noqa: CCR001
         module_name = self._artifact_module_name(artifact_id)
         spec = importlib.util.find_spec(module_name)
 
@@ -120,6 +132,12 @@ class Python(BaseWorld):
 
         return source_path.read_bytes()
 
+    def fetch_source(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bytes:  # noqa: CCR001
+        if namespace_id == NamespaceId("python"):
+            return self._fetch_source_python(artifact_id)
+
+        return self._fetch_source_markdown(namespace_id, artifact_id)
+
     def update(self, namespace_id: NamespaceId, artifact_id: ArtifactId, content: bytes) -> None:
         if self.readonly:
             raise NotImplementedError(f"World `{self.id}` is read-only")
@@ -150,25 +168,25 @@ class Python(BaseWorld):
         source_path.parent.mkdir(parents=True, exist_ok=True)
         source_path.write_bytes(content)
 
-    def list_artifacts(self, namespace_id: NamespaceId) -> list[ArtifactId]:  # noqa: CCR001
-        if namespace_id == NamespaceId("python"):
-            spec = importlib.util.find_spec(self.root)
+    def _list_artifacts_python(self) -> list[ArtifactId]:
+        spec = importlib.util.find_spec(self.root)
 
-            if spec is None or spec.submodule_search_locations is None:
-                return []
+        if spec is None or spec.submodule_search_locations is None:
+            return []
 
-            python_artifacts: list[ArtifactId] = []
+        python_artifacts: list[ArtifactId] = []
 
-            for module_info in pkgutil.iter_modules(spec.submodule_search_locations):
-                name = module_info.name
+        for module_info in pkgutil.iter_modules(spec.submodule_search_locations):
+            name = module_info.name
 
-                if not name.isidentifier():
-                    continue
+            if not name.isidentifier():
+                continue
 
-                python_artifacts.append(ArtifactId(name))
+            python_artifacts.append(ArtifactId(name))
 
-            return python_artifacts
+        return python_artifacts
 
+    def _list_artifacts_markdown(self, namespace_id: NamespaceId) -> list[ArtifactId]:  # noqa: CCR001
         resource_root = self._resource_root(namespace_id)
 
         if resource_root is None:
@@ -193,6 +211,12 @@ class Python(BaseWorld):
             resource_artifacts.append(ArtifactId(artifact_stem))
 
         return resource_artifacts
+
+    def list_artifacts(self, namespace_id: NamespaceId) -> list[ArtifactId]:  # noqa: CCR001
+        if namespace_id == NamespaceId("python"):
+            return self._list_artifacts_python()
+
+        return self._list_artifacts_markdown(namespace_id)
 
     def get_modules(self) -> list[types.ModuleType]:
         return []
