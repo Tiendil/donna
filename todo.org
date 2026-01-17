@@ -51,8 +51,13 @@
 * TODO WE CAN ASK DONNA TO MAKE A FSM FOR DONNA!!! WHICH WILL BE OUR PLAN OF WORK!!!
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Lazy import of primitives from Python artifacts
-** move worlds implementations into submodules
-** python world implementation
+** python world implementation TODOs
+*** `World.read(...) -> bytes` -> `World.fetch(...) -> Artifact` ?
+*** `World.write(...) -> None` -> `World.update(...) -> Artifact` ?
+*** `World.update(...)` must raise NotImplementedError in Python world
+*** `World.read_state(...)` and `World.write_state(...)` must raise NotImplementedError in Python world
+*** `World.get_modules()` may be removed, because modules in Python world are just artifacts?
+** python world implementation, WANTs
 *** world kinds are configured via python module imports (not artifact paths?) or somehow very smartly via artifact paths
 *** system python (i.e. donna's environment) can be a world also with predefined behavior
 **** so references to actual python modules should also work
