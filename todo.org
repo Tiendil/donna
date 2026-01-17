@@ -173,3 +173,4 @@
 *** "better" Markdown
 * TODO lock for donna operations on the project
 * TODO donna should be able to continue finished session (somewhow). I.e. when the developer ads new details to it.
+* TODO Spec-based workflow (like in OpenSpec?)
