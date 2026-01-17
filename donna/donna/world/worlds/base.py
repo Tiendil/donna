@@ -1,0 +1,52 @@
+import importlib.util
+import pathlib
+import shutil
+import tomllib
+import types
+
+import pydantic
+
+from donna.core import utils
+from donna.core.entities import BaseEntity
+from donna.domain.ids import ArtifactId, NamespaceId, WorldId
+
+
+class World(BaseEntity):
+    id: WorldId
+    readonly: bool = True
+    session: bool = False
+
+    def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
+        raise NotImplementedError("You must implement this method in subclasses")
+
+    def read(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bytes:
+        raise NotImplementedError("You must implement this method in subclasses")
+
+    def write(self, namespace_id: NamespaceId, artifact_id: ArtifactId, content: bytes) -> None:
+        raise NotImplementedError("You must implement this method in subclasses")
+
+    def list_artifacts(self, namespace_id: NamespaceId) -> list[ArtifactId]:
+        raise NotImplementedError("You must implement this method in subclasses")
+
+    def get_modules(self) -> list[types.ModuleType]:
+        raise NotImplementedError("You must implement this method in subclasses")
+
+    # These two methods are intended for storing world state (e.g., session data)
+    # It is an open question if the world state is an artifact itself or something else
+    # For the artifact: uniform API for storing/loading data
+    # Against the artifact:
+    # - session data MUST be accessible only by Donna => no one should be able to read/write/list it
+    # - session data will require an additonal kind(s) of artifact(s) just for that purpose
+    # - session data may change more frequently than regular artifacts
+
+    def read_state(self, name: str) -> bytes:
+        raise NotImplementedError("You must implement this method in subclasses")
+
+    def write_state(self, name: str, content: bytes) -> None:
+        raise NotImplementedError("You must implement this method in subclasses")
+
+    def initialize(self, reset: bool = False) -> None:
+        pass
+
+    def is_initialized(self) -> bool:
+        raise NotImplementedError("You must implement this method in subclasses")

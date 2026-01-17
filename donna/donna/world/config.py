@@ -9,160 +9,18 @@ import pydantic
 from donna.core import utils
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactId, NamespaceId, WorldId
+from donna.worlds.worlds.base import World as BaseWorld
+from donna.worlds.worlds.filesystem import World as WorldFilesystem
+
 
 DONNA_DIR_NAME = ".donna"
 DONNA_CONFIG_NAME = "donna.toml"
 DONNA_DESSION_DIR_NAME = "session"
 
-
-class World(BaseEntity):
-    id: WorldId
-    readonly: bool = True
-    session: bool = False
-
-    def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
-        raise NotImplementedError("You must implement this method in subclasses")
-
-    def read(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bytes:
-        raise NotImplementedError("You must implement this method in subclasses")
-
-    def write(self, namespace_id: NamespaceId, artifact_id: ArtifactId, content: bytes) -> None:
-        raise NotImplementedError("You must implement this method in subclasses")
-
-    def list_artifacts(self, namespace_id: NamespaceId) -> list[ArtifactId]:
-        raise NotImplementedError("You must implement this method in subclasses")
-
-    def get_modules(self) -> list[types.ModuleType]:
-        raise NotImplementedError("You must implement this method in subclasses")
-
-    # These two methods are intended for storing world state (e.g., session data)
-    # It is an open question if the world state is an artifact itself or something else
-    # For the artifact: uniform API for storing/loading data
-    # Against the artifact:
-    # - session data MUST be accessible only by Donna => no one should be able to read/write/list it
-    # - session data will require an additonal kind(s) of artifact(s) just for that purpose
-    # - session data may change more frequently than regular artifacts
-
-    def read_state(self, name: str) -> bytes:
-        raise NotImplementedError("You must implement this method in subclasses")
-
-    def write_state(self, name: str, content: bytes) -> None:
-        raise NotImplementedError("You must implement this method in subclasses")
-
-    def initialize(self, reset: bool = False) -> None:
-        pass
-
-    def is_initialized(self) -> bool:
-        raise NotImplementedError("You must implement this method in subclasses")
-
-
-class WorldFilesystem(World):
-    path: pathlib.Path
-
-    def _artifact_path(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> pathlib.Path:
-        return self.path / namespace_id / f"{artifact_id.replace('.', '/')}.md"
-
-    def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
-        return self._artifact_path(namespace_id, artifact_id).exists()
-
-    def read(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bytes:
-        path = self._artifact_path(namespace_id, artifact_id)
-
-        if not path.exists():
-            raise NotImplementedError(f"Artifact `{id}` does not exist in world `{self.id}`")
-
-        return path.read_bytes()
-
-    def write(self, namespace_id: NamespaceId, artifact_id: ArtifactId, content: bytes) -> None:
-        if self.readonly:
-            raise NotImplementedError(f"World `{self.id}` is read-only")
-
-        path = self._artifact_path(namespace_id, artifact_id)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(content)
-
-    def read_state(self, name: str) -> bytes:
-        if not self.session:
-            raise NotImplementedError(f"World `{self.id}` does not support state storage")
-
-        path = self.path / name
-
-        if not path.exists():
-            raise NotImplementedError(f"State `{name}` does not exist in world `{self.id}`")
-
-        return path.read_bytes()
-
-    def write_state(self, name: str, content: bytes) -> None:
-        if self.readonly:
-            raise NotImplementedError(f"World `{self.id}` is read-only")
-
-        if not self.session:
-            raise NotImplementedError(f"World `{self.id}` does not support state storage")
-
-        path = self.path / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(content)
-
-    def list_artifacts(self, namespace_id: NamespaceId) -> list[ArtifactId]:
-        path = self.path / namespace_id
-
-        if not path.exists() or not path.is_dir():
-            return []
-
-        artifacts: list[ArtifactId] = []
-
-        for artifact_file in path.iterdir():
-            if not artifact_file.is_file():
-                continue
-
-            if not artifact_file.suffix == ".md":
-                continue
-
-            artifacts.append(ArtifactId(artifact_file.stem))
-
-        return artifacts
-
-    def get_modules(self) -> list[types.ModuleType]:
-        # load only top-level .py files
-        # it is the responsibility of the developer to import submodules within those files
-        # if required
-
-        modules = []
-
-        code_path = self.path / "code"
-
-        for module_file in code_path.glob("*.py"):
-            relative_path = module_file.relative_to(self.path)
-            module_name = f"donna._world_code.{self.id}.{relative_path.stem}"
-            module_spec = importlib.util.spec_from_file_location(module_name, module_file)
-
-            if module_spec is None or module_spec.loader is None:
-                raise NotImplementedError(f"Cannot load workflow module from '{module_file}'")
-
-            module = importlib.util.module_from_spec(module_spec)
-            module_spec.loader.exec_module(module)
-
-            modules.append(module)
-
-        return modules
-
-    def initialize(self, reset: bool = False) -> None:
-        if self.readonly:
-            return
-
-        if self.path.exists() and reset:
-            shutil.rmtree(self.path)
-
-        self.path.mkdir(parents=True, exist_ok=True)
-
-    def is_initialized(self) -> bool:
-        return self.path.exists()
-
-
 # TODO: refactor donna to use importlib.resources and enable WorldPackage
 
 
-def _default_worlds() -> list["WorldFilesystem"]:
+def _default_worlds() -> list[BaseWorld]:
     _donna = DONNA_DIR_NAME
 
     project_dir = utils.discover_project_dir(_donna)
@@ -198,7 +56,7 @@ def _default_worlds() -> list["WorldFilesystem"]:
 class Config(BaseEntity):
     worlds: list[WorldFilesystem] = pydantic.Field(default_factory=_default_worlds)
 
-    def get_world(self, world_id: WorldId) -> World:
+    def get_world(self, world_id: WorldId) -> BaseWorld:
         for world in self.worlds:
             if world.id == world_id:
                 return world
