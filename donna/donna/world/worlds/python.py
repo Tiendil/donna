@@ -1,4 +1,5 @@
 import importlib
+import importlib.resources
 import importlib.util
 import pathlib
 import pkgutil
@@ -8,6 +9,7 @@ from typing import cast
 
 from donna.domain.ids import ArtifactId, FullArtifactId, NamespaceId, WorldId
 from donna.machine.artifacts import Artifact, PythonArtifact
+from donna.world.artifact_builder import construct_artifact_from_content
 from donna.world.primitives_register import register
 from donna.world.worlds.base import World as BaseWorld
 
@@ -16,33 +18,70 @@ class Python(BaseWorld):
     id: WorldId
     readonly: bool = True
     session: bool = False
+    root: str
+
+    def _artifact_module_name(self, artifact_id: ArtifactId) -> str:
+        return f"{self.root}.{artifact_id}"
+
+    def _resource_root(self, namespace_id: NamespaceId) -> importlib.resources.abc.Traversable | None:
+        package = f"{self.root}.{namespace_id}"
+
+        try:
+            return importlib.resources.files(package)
+        except ModuleNotFoundError:
+            return None
+
+    def _resource_path(
+        self, namespace_id: NamespaceId, artifact_id: ArtifactId
+    ) -> importlib.resources.abc.Traversable | None:
+        resource_root = self._resource_root(namespace_id)
+
+        if resource_root is None:
+            return None
+
+        resource_name = f"{artifact_id.replace('.', '/')}.md"
+        return resource_root.joinpath(resource_name)
 
     def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
-        if namespace_id != NamespaceId("python"):
-            return False
+        if namespace_id == NamespaceId("python"):
+            module_name = self._artifact_module_name(artifact_id)
+            return importlib.util.find_spec(module_name) is not None
 
-        return importlib.util.find_spec(str(artifact_id)) is not None
+        resource_path = self._resource_path(namespace_id, artifact_id)
+        return resource_path is not None and resource_path.is_file()
 
     def fetch(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> Artifact:
-        if namespace_id != NamespaceId("python"):
-            raise NotImplementedError(f"Namespace `{namespace_id}` is not supported by world `{self.id}`")
-
-        module_name = str(artifact_id)
-        module = importlib.import_module(module_name)
         full_id = FullArtifactId((self.id, namespace_id, artifact_id))
 
-        kind = register().get_artifact_kind_by_namespace(namespace_id)
+        if namespace_id == NamespaceId("python"):
+            module_name = self._artifact_module_name(artifact_id)
+            module = importlib.import_module(module_name)
 
-        if kind is None or not isinstance(kind, PythonArtifact):
-            raise NotImplementedError("Python artifact kind is not registered")
+            kind = register().get_artifact_kind_by_namespace(namespace_id)
 
-        return kind.construct_module(module, full_id)
+            if kind is None or not isinstance(kind, PythonArtifact):
+                raise NotImplementedError("Python artifact kind is not registered")
+
+            return kind.construct_module(module, full_id)
+
+        resource_path = self._resource_path(namespace_id, artifact_id)
+
+        if resource_path is None or not resource_path.is_file():
+            raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
+
+        content = resource_path.read_text(encoding="utf-8")
+        return construct_artifact_from_content(full_id, content)
 
     def fetch_source(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bytes:  # noqa: CCR001
         if namespace_id != NamespaceId("python"):
-            raise NotImplementedError(f"Namespace `{namespace_id}` is not supported by world `{self.id}`")
+            resource_path = self._resource_path(namespace_id, artifact_id)
 
-        module_name = str(artifact_id)
+            if resource_path is None or not resource_path.is_file():
+                raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
+
+            return resource_path.read_bytes()
+
+        module_name = self._artifact_module_name(artifact_id)
         spec = importlib.util.find_spec(module_name)
 
         if spec is None:
@@ -88,7 +127,7 @@ class Python(BaseWorld):
         if namespace_id != NamespaceId("python"):
             raise NotImplementedError(f"Namespace `{namespace_id}` is not supported by world `{self.id}`")
 
-        module_name = str(artifact_id)
+        module_name = self._artifact_module_name(artifact_id)
         spec = importlib.util.find_spec(module_name)
 
         if spec is None:
@@ -111,21 +150,49 @@ class Python(BaseWorld):
         source_path.parent.mkdir(parents=True, exist_ok=True)
         source_path.write_bytes(content)
 
-    def list_artifacts(self, namespace_id: NamespaceId) -> list[ArtifactId]:
-        if namespace_id != NamespaceId("python"):
+    def list_artifacts(self, namespace_id: NamespaceId) -> list[ArtifactId]:  # noqa: CCR001
+        if namespace_id == NamespaceId("python"):
+            spec = importlib.util.find_spec(self.root)
+
+            if spec is None or spec.submodule_search_locations is None:
+                return []
+
+            python_artifacts: list[ArtifactId] = []
+
+            for module_info in pkgutil.iter_modules(spec.submodule_search_locations):
+                name = module_info.name
+
+                if not name.isidentifier():
+                    continue
+
+                python_artifacts.append(ArtifactId(name))
+
+            return python_artifacts
+
+        resource_root = self._resource_root(namespace_id)
+
+        if resource_root is None:
             return []
 
-        artifacts: list[ArtifactId] = []
+        resource_artifacts: list[ArtifactId] = []
 
-        for module_info in pkgutil.iter_modules():
-            name = module_info.name
-
-            if not name.isidentifier():
+        for artifact_file in resource_root.iterdir():
+            if not artifact_file.is_file():
                 continue
 
-            artifacts.append(ArtifactId(name))
+            artifact_name = pathlib.PurePosixPath(artifact_file.name)
 
-        return artifacts
+            if artifact_name.suffix != ".md":
+                continue
+
+            artifact_stem = artifact_name.stem
+
+            if not artifact_stem.isidentifier():
+                continue
+
+            resource_artifacts.append(ArtifactId(artifact_stem))
+
+        return resource_artifacts
 
     def get_modules(self) -> list[types.ModuleType]:
         return []
