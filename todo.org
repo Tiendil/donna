@@ -155,3 +155,4 @@
 ** compare to https://github.com/Fission-AI/OpenSpec
 *** fsms instead of plain texts
 *** "better" Markdown
+* lock for donna operations on the project
