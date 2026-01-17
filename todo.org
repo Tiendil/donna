@@ -52,10 +52,6 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Lazy import of primitives from Python artifacts
 ** python world implementation TODOs
-*** `World.update(...)` must allow updating artifact source code in Python world if the world is writable
-*** `World.read_state(...)` must be allowed to return None if there is no state saved yet
-*** `World.read_state(...)` should work in Python world if the world is session-based
-*** `World.write_state(...)` should work in Python world if it is writable and session-based
 *** `World.get_modules()` may be removed, because modules in Python world are just artifacts?
 *** What with the namespace? which one? maybe by the top-level package name of the artifact?
 *** We need an option to prohibit loading artifact sources
