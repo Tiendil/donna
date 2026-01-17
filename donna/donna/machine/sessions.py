@@ -8,7 +8,8 @@ from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
 from donna.machine.workflows import WorkflowMeta
 from donna.world import artifacts
-from donna.world.config import World, config
+from donna.world.config import config
+from donna.world.worlds.base import World
 
 
 def _session() -> World:

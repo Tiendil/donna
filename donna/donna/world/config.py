@@ -9,8 +9,8 @@ import pydantic
 from donna.core import utils
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactId, NamespaceId, WorldId
-from donna.worlds.worlds.base import World as BaseWorld
-from donna.worlds.worlds.filesystem import World as WorldFilesystem
+from donna.world.worlds.base import World as BaseWorld
+from donna.world.worlds.filesystem import World as WorldFilesystem
 
 
 DONNA_DIR_NAME = ".donna"

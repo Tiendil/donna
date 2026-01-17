@@ -9,7 +9,7 @@ import pydantic
 from donna.core import utils
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactId, NamespaceId, WorldId
-from donna.worlds.worlds.base import World as BaseWorld
+from donna.world.worlds.base import World as BaseWorld
 
 
 class World(BaseWorld):
