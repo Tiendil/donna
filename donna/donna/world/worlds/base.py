@@ -2,6 +2,7 @@ import types
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactId, NamespaceId, WorldId
+from donna.machine.artifacts import Artifact
 
 
 class World(BaseEntity):
@@ -12,10 +13,13 @@ class World(BaseEntity):
     def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def read(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bytes:
+    def fetch(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> Artifact:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def write(self, namespace_id: NamespaceId, artifact_id: ArtifactId, content: bytes) -> None:
+    def fetch_source(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bytes:
+        raise NotImplementedError("You must implement this method in subclasses")
+
+    def update(self, namespace_id: NamespaceId, artifact_id: ArtifactId, content: bytes) -> None:
         raise NotImplementedError("You must implement this method in subclasses")
 
     def list_artifacts(self, namespace_id: NamespaceId) -> list[ArtifactId]:
