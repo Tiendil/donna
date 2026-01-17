@@ -129,6 +129,7 @@
 ** replace all NotImplementedError exceptions with custom exceptions and smart error handling
 ** exceptions must output cells?
 ** cleanup asserts — replace with real checks and exceptions
+** rust-style errors?
 * TODO Possible workflows
 ** bootstrap.bootstrap_all.
 ** bootstrap.donna.create_project
