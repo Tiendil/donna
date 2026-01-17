@@ -1,6 +1,5 @@
 import pathlib
 import tomllib
-from typing import cast
 
 import pydantic
 
