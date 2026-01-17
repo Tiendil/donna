@@ -1,17 +1,13 @@
-import importlib.util
 import pathlib
-import shutil
 import tomllib
-import types
 
 import pydantic
 
 from donna.core import utils
 from donna.core.entities import BaseEntity
-from donna.domain.ids import ArtifactId, NamespaceId, WorldId
+from donna.domain.ids import WorldId
 from donna.world.worlds.base import World as BaseWorld
 from donna.world.worlds.filesystem import World as WorldFilesystem
-
 
 DONNA_DIR_NAME = ".donna"
 DONNA_CONFIG_NAME = "donna.toml"
@@ -20,7 +16,7 @@ DONNA_DESSION_DIR_NAME = "session"
 # TODO: refactor donna to use importlib.resources and enable WorldPackage
 
 
-def _default_worlds() -> list[BaseWorld]:
+def _default_worlds() -> list[WorldFilesystem]:
     _donna = DONNA_DIR_NAME
 
     project_dir = utils.discover_project_dir(_donna)
