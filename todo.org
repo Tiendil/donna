@@ -54,6 +54,7 @@
 ** python world implementation TODOs
 *** `World.read(...) -> bytes` -> `World.fetch(...) -> Artifact` ?
 *** `World.write(...) -> None` -> `World.update(...) -> Artifact` ?
+*** Add `World.fetch_source(...) -> bytes` to get source code of the artifact in text form. Rollback  artifacts:fetch_artifact to fetch artifact source code.
 *** `World.update(...)` must raise NotImplementedError in Python world
 *** `World.read_state(...)` and `World.write_state(...)` must raise NotImplementedError in Python world
 *** `World.get_modules()` may be removed, because modules in Python world are just artifacts?
@@ -159,4 +160,5 @@
 ** compare to https://github.com/Fission-AI/OpenSpec
 *** fsms instead of plain texts
 *** "better" Markdown
-* lock for donna operations on the project
+* TODO lock for donna operations on the project
+* TODO donna should be able to continue finished session (somewhow). I.e. when the developer ads new details to it.
