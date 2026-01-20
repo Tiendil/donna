@@ -104,7 +104,7 @@ class Identifier(str):
         )
 
 
-class RendererKindId(Identifier):
+class DirectiveKindId(Identifier):
     __slots__ = ()
 
 

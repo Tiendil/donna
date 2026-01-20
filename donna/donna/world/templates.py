@@ -67,8 +67,8 @@ def env() -> jinja2.Environment:
         extensions=["jinja2.ext.do", "jinja2.ext.loopcontrols", "jinja2.ext.debug"],
     )
 
-    for renderer in register().renderers.values():
-        _ENVIRONMENT.globals[renderer.id] = renderer
+    for directive in register().directives.values():
+        _ENVIRONMENT.globals[directive.id] = directive
 
     return _ENVIRONMENT
 

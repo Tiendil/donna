@@ -4,11 +4,11 @@ import jinja2
 from jinja2.runtime import Context
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import RendererKindId
+from donna.domain.ids import DirectiveKindId
 
 
-class RendererKind(BaseEntity):
-    id: RendererKindId
+class DirectiveKind(BaseEntity):
+    id: DirectiveKindId
     name: str
     description: str
     example: str

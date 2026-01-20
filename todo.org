@@ -38,7 +38,7 @@
 * TODO Do we need counters as a separate entity/config?
 * TODO Records navigation + introspection
 ** TODO donna records ?extract? <kind*> <--property=>*
-*** add <display/renderer> as the global object that defines how to render the output
+*** add <display/directive> as the global object that defines how to render the output
 *** maybe display may be just jinja template?
 *** dow we really need display? Maybe cells will be ok for technical output?
 *** What we need:
@@ -52,9 +52,9 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Lazy import of primitives from Python artifacts
 ** Full paths to kinds
-*** Renderers, what to do with them?
+*** Directives, what to do with them?
 **** always import <world>.defaults?
-**** or always import <world>.renderers?
+**** or always import <world>.directives?
 **** config to autoload some modules?
 *** remove primitives registry?
 *** !we do not need list modules?
@@ -98,15 +98,15 @@
 ** action request also could be an artifact?
 ** We may want to allow donna render part of artifact only (by section id)
 ** World kind that acts as a proxy to another donna project?
-* unify code of different renderers? It is very similar
-** add validation for specificaiton existence in renderers
+* unify code of different directives? It is very similar
+** add validation for specificaiton existence in directives
 ** Spec rendere can be unified, since its cli command
 * Artifact improvements:
 ** We may want, by default load/upload artifacts in a custom donna-managed directory, so, no filenames are needed for agents. This also will help to add right extensions automatically => help agents to anderstand internal formats.
 ** When we start the workflow, should we output the head cells before the first operation?
 ** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
-** {{ edit(specification) }} renderer?
-** {{ run(workflow) }} renderer?
+** {{ edit(specification) }} directive?
+** {{ run(workflow) }} directive?
 ** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
 ** Declare explicit refining loop
 ** Add mini workflows to polish each kind of records?

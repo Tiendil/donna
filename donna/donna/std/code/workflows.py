@@ -3,11 +3,11 @@ from typing import Any
 import jinja2
 from jinja2.runtime import Context
 
-from donna.domain.ids import FullArtifactLocalId, RendererKindId
+from donna.domain.ids import DirectiveKindId, FullArtifactLocalId
 from donna.machine.artifacts import Artifact, ArtifactKindSection
 from donna.machine.cells import Cell
 from donna.machine.operations import FsmMode, OperationMeta
-from donna.machine.templates import RendererKind
+from donna.machine.templates import DirectiveKind
 from donna.machine.workflows import WorkflowMeta
 from donna.world.markdown import ArtifactSource
 from donna.world.templates import RenderMode
@@ -154,14 +154,14 @@ class WorkflowKind(ArtifactKindSection):
         ]
 
 
-class GoTo(RendererKind):
+class GoTo(DirectiveKind):
 
     @jinja2.pass_context
     def __call__(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
         render_mode: RenderMode = context["render_mode"]
 
         if argv is None or len(argv) != 1:
-            raise ValueError("GoTo renderer requires exactly one argument: next_operation_id")
+            raise ValueError("GoTo directive requires exactly one argument: next_operation_id")
 
         artifact_id = context["artifact_id"]
 
@@ -175,7 +175,7 @@ class GoTo(RendererKind):
                 return self.render_analyze(context, next_operation_id)
 
             case _:
-                raise NotImplementedError(f"Render mode {render_mode} not implemented in GoTo renderer.")
+                raise NotImplementedError(f"Render mode {render_mode} not implemented in GoTo directive.")
 
     def render_cli(self, context: Context, next_operation_id: FullArtifactLocalId) -> str:
         return f"donna sessions action-request-completed <action-request-id> '{next_operation_id}'"
@@ -184,8 +184,8 @@ class GoTo(RendererKind):
         return f"$$donna {self.id} {next_operation_id} donna$$"
 
 
-goto_renderer = GoTo(
-    id=RendererKindId("goto"),
+goto_directive = GoTo(
+    id=DirectiveKindId("goto"),
     name="Go To Operation",
     description="Instructs the agent to proceed to the specified operation in the workflow.",
     example="{{ goto('<operation_id>') }}",

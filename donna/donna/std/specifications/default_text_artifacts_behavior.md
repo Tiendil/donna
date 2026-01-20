@@ -32,7 +32,7 @@ When rendering the artifact, Donna processes the Jinja2 template with a predefin
 
 **Artifact source should not use Jinja2 inheretance features** like `{{ "{% extends %}" }}` and `{{ "{% block %}" }}`.
 
-Donna provides a set of special callbacks that can and MUST be used in the artifact source to enhance its behavior. Some of these callbacks are valid for all artifacts, some are valid only for specific artifact kinds.
+Donna provides a set of special directives that can and MUST be used in the artifact source to enhance its behavior. Some of these directives are valid for all artifacts, some are valid only for specific artifact kinds.
 
 Here are some examples:
 
@@ -155,7 +155,7 @@ Example of the instructions:
 Here may be any additional instructions, requirements, notes, references, etc.
 ```
 
-`goto` callback will be rendered in the direct instruction for agent of what to call after it completed the action.
+`goto` directive will be rendered in the direct instruction for agent of what to call after it completed the action.
 
 **The body of the operation MUST contain a neat strictly defined algorithm for the agent to follow.**
 
@@ -163,9 +163,9 @@ Here may be any additional instructions, requirements, notes, references, etc.
 
 Each possible path through the workflow MUST end with this operation kind.
 
-## Render Callbacks
+## Directives
 
-Donna provides multiple callbacks that MUST be used in the artifact source to enhance its behavior.
+Donna provides multiple directives that MUST be used in the artifact source to enhance its behavior.
 
 Here they are:
 
