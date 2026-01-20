@@ -3,15 +3,36 @@ from typing import TYPE_CHECKING, Iterator, Literal
 
 import pydantic
 
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId
+from donna.domain.ids import ArtifactId, ArtifactLocalId, FullArtifactId, FullArtifactLocalId, NamespaceId, WorldId
 from donna.machine.action_requests import ActionRequest
-from donna.machine.artifacts import ArtifactSection, ArtifactSectionKindId
+from donna.machine.artifacts import ArtifactSection, ArtifactSectionTextKind, PythonModuleSectionKind
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.markdown import SectionSource
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
+
+
+OPS_WORLD_ID = WorldId("donna")
+OPS_NAMESPACE_ID = NamespaceId("python")
+OPS_ARTIFACT_ID = ArtifactId("ops")
+
+
+def ops_section_id(local_id: str) -> FullArtifactLocalId:
+    return FullArtifactLocalId((OPS_WORLD_ID, OPS_NAMESPACE_ID, OPS_ARTIFACT_ID, ArtifactLocalId(local_id)))
+
+
+text_section_kind = ArtifactSectionTextKind(
+    id=ops_section_id("text"),
+    title="Text Section",
+)
+
+
+python_module_section_kind = PythonModuleSectionKind(
+    id=ops_section_id("python_module"),
+    title="Python module attribute",
+)
 
 
 ##########################
@@ -90,7 +111,7 @@ class RequestActionKind(OperationKind):
 
 
 request_action_kind = RequestActionKind(
-    id=ArtifactSectionKindId("request_action"),
+    id=ops_section_id("request_action"),
     title="Request Action",
 )
 
@@ -125,6 +146,6 @@ class FinishWorkflowKind(OperationKind):
 
 
 finish_workflow_kind = FinishWorkflowKind(
-    id=ArtifactSectionKindId("finish_workflow"),
+    id=ops_section_id("finish_workflow"),
     title="Finish Workflow",
 )

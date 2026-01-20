@@ -7,7 +7,6 @@ from donna.core.entities import BaseEntity
 from donna.domain.ids import (
     ArtifactKindId,
     ArtifactLocalId,
-    ArtifactSectionKindId,
     FullArtifactId,
     FullArtifactLocalId,
     NamespaceId,
@@ -24,7 +23,7 @@ class ArtifactKind(BaseEntity):
     id: ArtifactKindId
     description: str
     namespace_id: NamespaceId
-    default_section_kind: str = "text"
+    default_section_kind: FullArtifactLocalId = FullArtifactLocalId.parse("donna.python.ops:text")
 
     def cells(self) -> list[Cell]:
         return [
@@ -34,15 +33,18 @@ class ArtifactKind(BaseEntity):
         ]
 
     def construct_section(self, artifact_id: FullArtifactId, raw_section: SectionSource) -> "ArtifactSection":
-        from donna.world.primitives_register import register
-
         data = raw_section.merged_configs()
 
         if "kind" not in data:
             data["kind"] = self.default_section_kind
 
-        section_kind = register().sections.get(ArtifactSectionKindId(data["kind"]))
-        assert section_kind is not None
+        kind_value = data["kind"]
+        if isinstance(kind_value, str):
+            section_kind_id = FullArtifactLocalId.parse(kind_value)
+        else:
+            section_kind_id = kind_value
+
+        section_kind = resolve_section_kind(section_kind_id)
 
         section = section_kind.construct_section(artifact_id, raw_section)
 
@@ -63,7 +65,7 @@ class ArtifactKind(BaseEntity):
 
 class ArtifactSectionConfig(BaseEntity):
     id: ArtifactLocalId
-    kind: ArtifactSectionKindId
+    kind: FullArtifactLocalId
 
 
 class ArtifactSectionMeta(BaseEntity):
@@ -74,7 +76,7 @@ class ArtifactSectionMeta(BaseEntity):
 class ArtifactSection(BaseEntity):
     # some section may have no id and kind — it is ok for simple text sections
     id: FullArtifactLocalId | None
-    kind: ArtifactSectionKindId | None
+    kind: FullArtifactLocalId | None
     title: str
     description: str
 
@@ -146,7 +148,7 @@ class Artifact(BaseEntity):
 
 
 class ArtifactSectionKind(BaseEntity):
-    id: ArtifactSectionKindId
+    id: FullArtifactLocalId
     title: str
 
     def execute_section(self, task: Task, unit: WorkUnit, section: ArtifactSection) -> Iterable["Change"]:
@@ -156,14 +158,24 @@ class ArtifactSectionKind(BaseEntity):
         raise NotImplementedError("You MUST implement this method.")
 
     def cells(self) -> list[Cell]:
-        return [Cell.build_meta(kind="section_kind", id=self.id, title=self.title)]
+        return [Cell.build_meta(kind="section_kind", id=str(self.id), title=self.title)]
+
+
+class ArtifactSectionSectionKind(ArtifactSection, ArtifactSectionKind):
+    id: FullArtifactLocalId
+    kind: FullArtifactLocalId | None = None
+    description: str = ""
+    meta: ArtifactSectionMeta = ArtifactSectionMeta()
+
+
+ArtifactSectionKindSection = ArtifactSectionSectionKind
 
 
 class TextConfig(ArtifactSectionConfig):
     pass
 
 
-class ArtifactSectionTextKind(ArtifactSectionKind):
+class ArtifactSectionTextKind(ArtifactSectionSectionKind):
 
     def execute_section(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("Text sections cannot be executed.")
@@ -204,7 +216,7 @@ class PythonModuleSectionMeta(ArtifactSectionMeta):
         return {"attribute_value": repr(self.attribute_value)}
 
 
-class PythonModuleSectionKind(ArtifactSectionKind):
+class PythonModuleSectionKind(ArtifactSectionSectionKind):
 
     def execute_section(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("Python module sections cannot be executed.")
@@ -230,14 +242,8 @@ class PythonArtifact(ArtifactKind):
         raise NotImplementedError("Python artifacts are constructed from modules, not markdown sources.")
 
     def construct_module(self, module: types.ModuleType, artifact_id: FullArtifactId) -> "Artifact":  # noqa: CCR001
-        from donna.world.primitives_register import register
-
         description = inspect.getdoc(module) or ""
         title = module.__name__
-        section_kind = register().sections.get(ArtifactSectionKindId(self.default_section_kind))
-
-        if section_kind is None or not isinstance(section_kind, PythonModuleSectionKind):
-            raise NotImplementedError("Python module section kind is not registered")
 
         sections: list[ArtifactSection] = []
 
@@ -248,7 +254,18 @@ class PythonArtifact(ArtifactKind):
             if name.startswith("_"):
                 continue
 
-            sections.append(section_kind.build_section(artifact_id, name, value))
+            if isinstance(value, ArtifactSectionKind):
+                if not isinstance(value, ArtifactSection):
+                    raise NotImplementedError(
+                        f"Section kind '{name}' must be an ArtifactSection to be included in python artifacts."
+                    )
+
+                if value.id is None or value.id.full_artifact_id != artifact_id:
+                    raise NotImplementedError(
+                        f"Section kind '{name}' must belong to artifact '{artifact_id}' to be included."
+                    )
+
+                sections.append(value)
 
         return Artifact(
             id=artifact_id,
@@ -258,3 +275,15 @@ class PythonArtifact(ArtifactKind):
             meta=ArtifactMeta(),
             sections=sections,
         )
+
+
+def resolve_section_kind(section_kind_id: FullArtifactLocalId) -> ArtifactSectionKind:
+    from donna.world import artifacts as world_artifacts
+
+    artifact = world_artifacts.load_artifact(section_kind_id.full_artifact_id)
+    section = artifact.get_section(section_kind_id)
+
+    if section is None or not isinstance(section, ArtifactSectionKind):
+        raise NotImplementedError(f"Section kind '{section_kind_id}' is not available")
+
+    return section

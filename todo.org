@@ -72,7 +72,7 @@
 *** system python (i.e. donna's environment) can be a world also with predefined behavior
 **** so references to actual python modules should also work
 *** move code.operations into submodules?
-*** In case we implemen python modules as artifacts, ArtifactSectionKindId should be full python module path to the kind definition.
+*** In case we implemen python modules as artifacts, section kind IDs should be full artifact-local IDs to the kind definition.
 ** introspection & discovery refactorings
 *** artifacts listing/search functionality goest to the worlds
 **** words should return standardized short info records about each artifact

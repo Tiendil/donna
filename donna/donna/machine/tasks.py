@@ -53,8 +53,8 @@ class WorkUnit(BaseEntity):
         return unit
 
     def run(self, task: Task) -> list["Change"]:
+        from donna.machine.artifacts import resolve_section_kind
         from donna.world import artifacts
-        from donna.world.primitives_register import register
 
         workflow = artifacts.load_artifact(self.operation_id.full_artifact_id)
 
@@ -65,9 +65,7 @@ class WorkUnit(BaseEntity):
 
         assert operation.kind is not None
 
-        operation_kind = register().sections.get(operation.kind)
-
-        assert operation_kind is not None
+        operation_kind = resolve_section_kind(operation.kind)
 
         cells = list(operation_kind.execute_section(task, self, operation))
 

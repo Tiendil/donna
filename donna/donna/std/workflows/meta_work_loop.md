@@ -6,7 +6,7 @@ General purpose work planning and execution workflow. Use it when you need to do
 
 ```toml donna
 id = "start"
-kind = "request_action"
+kind = "donna.python.ops:request_action"
 fsm_mode = "start"
 ```
 
@@ -20,7 +20,7 @@ fsm_mode = "start"
 
 ```toml donna
 id = "create_work_description"
-kind = "request_action"
+kind = "donna.python.ops:request_action"
 ```
 
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
@@ -33,7 +33,7 @@ kind = "request_action"
 
 ```toml donna
 id = "list_primary_goals"
-kind = "request_action"
+kind = "donna.python.ops:request_action"
 ```
 
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
@@ -46,7 +46,7 @@ kind = "request_action"
 
 ```toml donna
 id = "list_objectives"
-kind = "request_action"
+kind = "donna.python.ops:request_action"
 ```
 
 You MUST list objectives that need to be achieved to complete each goal.
@@ -61,7 +61,7 @@ You MUST list objectives that need to be achieved to complete each goal.
 
 ```toml donna
 id = "list_constraints"
-kind = "request_action"
+kind = "donna.python.ops:request_action"
 ```
 
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
@@ -74,7 +74,7 @@ kind = "request_action"
 
 ```toml donna
 id = "list_acceptance_criteria"
-kind = "request_action"
+kind = "donna.python.ops:request_action"
 ```
 
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
@@ -87,7 +87,7 @@ kind = "request_action"
 
 ```toml donna
 id = "list_deliverables"
-kind = "request_action"
+kind = "donna.python.ops:request_action"
 ```
 
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
@@ -100,7 +100,7 @@ kind = "request_action"
 
 ```toml donna
 id = "prepare_plan"
-kind = "request_action"
+kind = "donna.python.ops:request_action"
 ```
 
 1. Read the specification `{{ view("donna.specifications.planning") }}` if you haven't done it yet.
@@ -113,7 +113,7 @@ kind = "request_action"
 
 ```toml donna
 id = "execute_plan"
-kind = "request_action"
+kind = "donna.python.ops:request_action"
 ```
 
 1. Run workflow `session.workflows.work_execution` to execute the work according to the plan.
@@ -123,7 +123,7 @@ kind = "request_action"
 
 ```toml donna
 id = "groom_work"
-kind = "request_action"
+kind = "donna.python.ops:request_action"
 ```
 
 1. Run the grooming workflow to ensure that the result is polished, clean, and ready for review.
@@ -133,5 +133,5 @@ kind = "request_action"
 
 ```toml donna
 id = "finish"
-kind = "finish_workflow"
+kind = "donna.python.ops:finish_workflow"
 ```
