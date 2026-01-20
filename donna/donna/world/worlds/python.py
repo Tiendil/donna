@@ -219,7 +219,22 @@ class Python(BaseWorld):
         return self._list_artifacts_markdown(namespace_id)
 
     def get_modules(self) -> list[types.ModuleType]:
-        return []
+        # load only top-level .py files
+        # it is the responsibility of the developer to import submodules within those files
+        # if required
+
+        modules = []
+
+        module = importlib.import_module(f"{self.root}.code")
+
+        if not hasattr(module, "__path__"):
+            raise ValueError(f"{module.__name__} is not a package")
+
+        for modinfo in pkgutil.iter_modules(module.__path__, module.__name__ + "."):
+            module = importlib.import_module(modinfo.name)
+            modules.append(module)
+
+        return modules
 
     # TODO: How can the state be represented in the Python world?
     def read_state(self, name: str) -> bytes | None:

@@ -26,9 +26,9 @@ def _default_worlds() -> list[WorldConfig]:
     project_dir = utils.discover_project_dir(_donna)
 
     return [
-        WorldFilesystem(
+        WorldPython(
             id=WorldId("donna"),
-            path=pathlib.Path(__file__).parent.parent / "std",
+            root="donna.std",
             readonly=True,
             session=False,
         ),
