@@ -69,7 +69,6 @@ class ArtifactSectionConfig(BaseEntity):
 
 class ArtifactConfig(BaseEntity):
     kind: FullArtifactLocalId
-    model_config = BaseEntity.model_config | {"extra": "allow"}
 
 
 class ArtifactSectionMeta(BaseEntity):
