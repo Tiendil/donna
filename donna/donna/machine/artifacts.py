@@ -161,21 +161,18 @@ class ArtifactSectionKind(BaseEntity):
         return [Cell.build_meta(kind="section_kind", id=str(self.id), title=self.title)]
 
 
-class ArtifactSectionSectionKind(ArtifactSection, ArtifactSectionKind):
+class ArtifactSectionKindSection(ArtifactSection, ArtifactSectionKind):
     id: FullArtifactLocalId
     kind: FullArtifactLocalId | None = None
     description: str = ""
     meta: ArtifactSectionMeta = ArtifactSectionMeta()
 
 
-ArtifactSectionKindSection = ArtifactSectionSectionKind
-
-
 class TextConfig(ArtifactSectionConfig):
     pass
 
 
-class ArtifactSectionTextKind(ArtifactSectionSectionKind):
+class ArtifactSectionTextKind(ArtifactSectionKindSection):
 
     def execute_section(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("Text sections cannot be executed.")
@@ -216,7 +213,7 @@ class PythonModuleSectionMeta(ArtifactSectionMeta):
         return {"attribute_value": repr(self.attribute_value)}
 
 
-class PythonModuleSectionKind(ArtifactSectionSectionKind):
+class PythonModuleSectionKind(ArtifactSectionKindSection):
 
     def execute_section(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("Python module sections cannot be executed.")
