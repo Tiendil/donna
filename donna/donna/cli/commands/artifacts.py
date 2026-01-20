@@ -3,7 +3,7 @@ import pathlib
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import FullArtifactIdArgument, NamespaceIdArgument
+from donna.cli.types import ArtifactPrefixArgument, FullArtifactIdArgument
 from donna.cli.utils import output_cells
 from donna.machine.artifacts import resolve_artifact_kind
 from donna.world import artifacts as world_artifacts
@@ -12,8 +12,8 @@ artifacts_cli = typer.Typer()
 
 
 @artifacts_cli.command()
-def list(namespace: NamespaceIdArgument) -> None:
-    artifacts = world_artifacts.list_artifacts(namespace)
+def list(prefix: ArtifactPrefixArgument) -> None:
+    artifacts = world_artifacts.list_artifacts(prefix)
 
     for artifact in artifacts:
         output_cells(artifact.cells())
@@ -49,8 +49,8 @@ def validate(id: FullArtifactIdArgument) -> None:
 
 
 @artifacts_cli.command()
-def validate_all(namespace: NamespaceIdArgument) -> None:
-    artifacts = world_artifacts.list_artifacts(namespace)
+def validate_all(prefix: ArtifactPrefixArgument) -> None:
+    artifacts = world_artifacts.list_artifacts(prefix)
 
     for artifact in artifacts:
         artifact_kind = resolve_artifact_kind(artifact.kind)

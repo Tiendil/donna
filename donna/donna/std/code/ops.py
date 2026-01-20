@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Iterator, Literal
 
 import pydantic
 
-from donna.domain.ids import ArtifactId, ArtifactLocalId, FullArtifactId, FullArtifactLocalId, NamespaceId, WorldId
+from donna.domain.ids import ArtifactId, ArtifactLocalId, FullArtifactId, FullArtifactLocalId, WorldId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionTextKind, PythonModuleSectionKind
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
@@ -15,12 +15,11 @@ if TYPE_CHECKING:
 
 
 OPS_WORLD_ID = WorldId("donna")
-OPS_NAMESPACE_ID = NamespaceId("python")
 OPS_ARTIFACT_ID = ArtifactId("ops")
 
 
 def ops_section_id(local_id: str) -> FullArtifactLocalId:
-    return FullArtifactLocalId((OPS_WORLD_ID, OPS_NAMESPACE_ID, OPS_ARTIFACT_ID, ArtifactLocalId(local_id)))
+    return FullArtifactLocalId((OPS_WORLD_ID, OPS_ARTIFACT_ID, ArtifactLocalId(local_id)))
 
 
 text_section_kind = ArtifactSectionTextKind(

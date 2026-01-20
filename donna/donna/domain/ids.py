@@ -112,47 +112,73 @@ class WorldId(Identifier):
     __slots__ = ()
 
 
-class NamespaceId(Identifier):
+class ArtifactId(str):
     __slots__ = ()
 
+    def __new__(cls, value: str) -> "ArtifactId":
+        if not cls.validate(value):
+            raise NotImplementedError(f"Invalid ArtifactId: '{value}'")
 
-class ArtifactId(Identifier):
-    __slots__ = ()
+        return super().__new__(cls, value)
+
+    @classmethod
+    def validate(cls, value: str) -> bool:
+        if not isinstance(value, str) or not value:
+            return False
+
+        parts = value.split(".")
+        return all(part.isidentifier() for part in parts)
+
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
+
+        def validate(v: Any) -> "ArtifactId":
+            if isinstance(v, cls):
+                return v
+
+            if not isinstance(v, str):
+                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
+
+            if not cls.validate(v):
+                raise ValueError(f"Invalid {cls.__name__}: {v!r}")
+
+            return cls(v)
+
+        return core_schema.json_or_python_schema(
+            json_schema=core_schema.str_schema(),
+            python_schema=core_schema.no_info_plain_validator_function(validate),
+            serialization=core_schema.to_string_ser_schema(),
+        )
 
 
-class FullArtifactId(tuple[WorldId, NamespaceId, ArtifactId]):
+class FullArtifactId(tuple[WorldId, ArtifactId]):
     __slots__ = ()
 
     def __str__(self) -> str:
-        return f"{self.world_id}.{self.namespace_id}.{self.artifact_id}"
+        return f"{self.world_id}.{self.artifact_id}"
 
     @property
     def world_id(self) -> WorldId:
         return self[0]
 
     @property
-    def namespace_id(self) -> NamespaceId:
+    def artifact_id(self) -> ArtifactId:
         return self[1]
 
-    @property
-    def artifact_id(self) -> ArtifactId:
-        return self[2]
-
     def to_full_local(self, local_id: "ArtifactLocalId") -> "FullArtifactLocalId":
-        return FullArtifactLocalId((self.world_id, self.namespace_id, self.artifact_id, local_id))
+        return FullArtifactLocalId((self.world_id, self.artifact_id, local_id))
 
     @classmethod
     def parse(cls, text: str) -> "FullArtifactId":
-        parts = text.split(".", maxsplit=2)
+        parts = text.split(".", maxsplit=1)
 
-        if len(parts) != 3:
+        if len(parts) != 2:
             raise NotImplementedError(f"Invalid FullArtifactId format: '{text}'")
 
         world_id = WorldId(parts[0])
-        namespace_id = NamespaceId(parts[1])
-        artifact_id = ArtifactId(parts[2])
+        artifact_id = ArtifactId(parts[1])
 
-        return FullArtifactId((world_id, namespace_id, artifact_id))
+        return FullArtifactId((world_id, artifact_id))
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
@@ -186,31 +212,27 @@ class OperationId(ArtifactLocalId):
     __slots__ = ()
 
 
-class FullArtifactLocalId(tuple[WorldId, NamespaceId, ArtifactId, ArtifactLocalId]):
+class FullArtifactLocalId(tuple[WorldId, ArtifactId, ArtifactLocalId]):
     __slots__ = ()
 
     def __str__(self) -> str:
-        return f"{self.world_id}.{self.namespace_id}.{self.artifact_id}:{self.local_id}"
+        return f"{self.world_id}.{self.artifact_id}:{self.local_id}"
 
     @property
     def world_id(self) -> WorldId:
         return self[0]
 
     @property
-    def namespace_id(self) -> NamespaceId:
+    def artifact_id(self) -> ArtifactId:
         return self[1]
 
     @property
-    def artifact_id(self) -> ArtifactId:
-        return self[2]
-
-    @property
     def full_artifact_id(self) -> FullArtifactId:
-        return FullArtifactId((self.world_id, self.namespace_id, self.artifact_id))
+        return FullArtifactId((self.world_id, self.artifact_id))
 
     @property
     def local_id(self) -> ArtifactLocalId:
-        return self[3]
+        return self[2]
 
     @classmethod
     def parse(cls, text: str) -> "FullArtifactLocalId":
@@ -218,17 +240,16 @@ class FullArtifactLocalId(tuple[WorldId, NamespaceId, ArtifactId, ArtifactLocalI
             raise NotImplementedError(f"Invalid FullArtifactLocalId format: '{text}'")
 
         artifact_part, local_part = text.rsplit(":", maxsplit=1)
-        parts = artifact_part.split(".", maxsplit=2)
+        parts = artifact_part.split(".", maxsplit=1)
 
-        if len(parts) != 3:
+        if len(parts) != 2:
             raise NotImplementedError(f"Invalid FullArtifactLocalId format: '{text}'")
 
         world_id = WorldId(parts[0])
-        namespace_id = NamespaceId(parts[1])
-        artifact_id = ArtifactId(parts[2])
+        artifact_id = ArtifactId(parts[1])
         local_id = ArtifactLocalId(local_part)
 
-        return FullArtifactLocalId((world_id, namespace_id, artifact_id, local_id))
+        return FullArtifactLocalId((world_id, artifact_id, local_id))
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:

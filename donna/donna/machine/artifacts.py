@@ -4,12 +4,7 @@ import uuid
 from typing import TYPE_CHECKING, Any, Iterable
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import (
-    ArtifactLocalId,
-    FullArtifactId,
-    FullArtifactLocalId,
-    NamespaceId,
-)
+from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.markdown import ArtifactSource, SectionSource
@@ -21,15 +16,10 @@ if TYPE_CHECKING:
 class ArtifactKind(BaseEntity):
     id: FullArtifactLocalId
     description: str
-    namespace_id: NamespaceId
-    default_section_kind: FullArtifactLocalId = FullArtifactLocalId.parse("donna.python.ops:text")
+    default_section_kind: FullArtifactLocalId = FullArtifactLocalId.parse("donna.ops:text")
 
     def cells(self) -> list[Cell]:
-        return [
-            Cell.build_meta(
-                kind="artifact_kind", id=str(self.id), namespace_id=self.namespace_id, description=self.description
-            )
-        ]
+        return [Cell.build_meta(kind="artifact_kind", id=str(self.id), description=self.description)]
 
     def construct_section(self, artifact_id: FullArtifactId, raw_section: SectionSource) -> "ArtifactSection":
         data = raw_section.merged_configs()

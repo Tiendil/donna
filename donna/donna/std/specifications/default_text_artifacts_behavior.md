@@ -1,7 +1,7 @@
 # Default Text Artifacts Behavior
 
 ```toml donna
-kind = "donna.python.artifacts:specification"
+kind = "donna.artifacts:specification"
 ```
 
 This document describes the default format and behavior of Donna's text artifacts.
@@ -102,7 +102,7 @@ Header section MUST contain a config block with a `kind` property. The `kind` MU
 Example (`donna` keyword skipped for examples):
 
 ```toml
-kind = "donna.python.artifacts:specification"
+kind = "donna.artifacts:specification"
 ```
 
 Header section MUST also contain short human-readable description of the artifact outside of the config block.
@@ -127,7 +127,7 @@ Example (`donna` keyword skipped for examples):
 
 ```toml
 start_operation_id = "operation_id"
-kind = "donna.python.artifacts:workflow"
+kind = "donna.artifacts:workflow"
 ```
 
 Each tail section MUST contain config block with `id` and `kind` properties that specifies the identifier and kind of the operation.
@@ -136,12 +136,12 @@ Example (`donna` keyword skipped for examples):
 
 ```toml
 id = "operation_id"
-kind = "donna.python.ops:request_action"
+kind = "donna.ops:request_action"
 ```
 
 #### Kinds of Workflow Operations
 
-1. `donna.python.ops:request_action` operation kind indicates that Donna will request the agent to perform some action.
+1. `donna.ops:request_action` operation kind indicates that Donna will request the agent to perform some action.
 
 The content of the tail section is the text instructions for the agent on what to do.
 
@@ -159,7 +159,7 @@ Here may be any additional instructions, requirements, notes, references, etc.
 
 **The body of the operation MUST contain a neat strictly defined algorithm for the agent to follow.**
 
-2. `donna.python.ops:finish_workflow` operation kind indicates that the workflow is finished.
+2. `donna.ops:finish_workflow` operation kind indicates that the workflow is finished.
 
 Each possible path through the workflow MUST end with this operation kind.
 

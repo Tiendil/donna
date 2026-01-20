@@ -3,7 +3,7 @@ import pathlib
 import shutil
 import types
 
-from donna.domain.ids import ArtifactId, FullArtifactId, NamespaceId
+from donna.domain.ids import ArtifactId, FullArtifactId
 from donna.machine.artifacts import Artifact
 from donna.world.artifact_builder import construct_artifact_from_content
 from donna.world.worlds.base import World as BaseWorld
@@ -12,35 +12,35 @@ from donna.world.worlds.base import World as BaseWorld
 class World(BaseWorld):
     path: pathlib.Path
 
-    def _artifact_path(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> pathlib.Path:
-        return self.path / namespace_id / f"{artifact_id.replace('.', '/')}.md"
+    def _artifact_path(self, artifact_id: ArtifactId) -> pathlib.Path:
+        return self.path / f"{artifact_id.replace('.', '/')}.md"
 
-    def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
-        return self._artifact_path(namespace_id, artifact_id).exists()
+    def has(self, artifact_id: ArtifactId) -> bool:
+        return self._artifact_path(artifact_id).exists()
 
-    def fetch(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> Artifact:
-        path = self._artifact_path(namespace_id, artifact_id)
+    def fetch(self, artifact_id: ArtifactId) -> Artifact:
+        path = self._artifact_path(artifact_id)
 
         if not path.exists():
-            raise NotImplementedError(f"Artifact `{id}` does not exist in world `{self.id}`")
+            raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
         content = path.read_text(encoding="utf-8")
-        full_id = FullArtifactId((self.id, namespace_id, artifact_id))
+        full_id = FullArtifactId((self.id, artifact_id))
         return construct_artifact_from_content(full_id, content)
 
-    def fetch_source(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bytes:
-        path = self._artifact_path(namespace_id, artifact_id)
+    def fetch_source(self, artifact_id: ArtifactId) -> bytes:
+        path = self._artifact_path(artifact_id)
 
         if not path.exists():
-            raise NotImplementedError(f"Artifact `{id}` does not exist in world `{self.id}`")
+            raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
         return path.read_bytes()
 
-    def update(self, namespace_id: NamespaceId, artifact_id: ArtifactId, content: bytes) -> None:
+    def update(self, artifact_id: ArtifactId, content: bytes) -> None:
         if self.readonly:
             raise NotImplementedError(f"World `{self.id}` is read-only")
 
-        path = self._artifact_path(namespace_id, artifact_id)
+        path = self._artifact_path(artifact_id)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)
 
@@ -66,22 +66,28 @@ class World(BaseWorld):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)
 
-    def list_artifacts(self, namespace_id: NamespaceId) -> list[ArtifactId]:
-        path = self.path / namespace_id
-
-        if not path.exists() or not path.is_dir():
-            return []
-
+    def list_artifacts(self, artifact_prefix: ArtifactId) -> list[ArtifactId]:  # noqa: CCR001
         artifacts: list[ArtifactId] = []
 
-        for artifact_file in path.iterdir():
+        prefix_path = self.path / artifact_prefix.replace(".", "/")
+        artifact_path = prefix_path.with_suffix(".md")
+
+        if artifact_path.exists() and artifact_path.is_file():
+            return [artifact_prefix]
+
+        if not prefix_path.exists() or not prefix_path.is_dir():
+            return []
+
+        for artifact_file in prefix_path.rglob("*.md"):
             if not artifact_file.is_file():
                 continue
 
-            if not artifact_file.suffix == ".md":
+            rel_path = artifact_file.relative_to(self.path)
+            if rel_path.suffix != ".md":
                 continue
 
-            artifacts.append(ArtifactId(artifact_file.stem))
+            artifact_stem = rel_path.with_suffix("")
+            artifacts.append(ArtifactId(".".join(artifact_stem.parts)))
 
         return artifacts
 

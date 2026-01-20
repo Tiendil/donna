@@ -1,7 +1,7 @@
 import types
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import ArtifactId, NamespaceId, WorldId
+from donna.domain.ids import ArtifactId, WorldId
 from donna.machine.artifacts import Artifact
 
 
@@ -10,19 +10,19 @@ class World(BaseEntity):
     readonly: bool = True
     session: bool = False
 
-    def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
+    def has(self, artifact_id: ArtifactId) -> bool:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def fetch(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> Artifact:
+    def fetch(self, artifact_id: ArtifactId) -> Artifact:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def fetch_source(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bytes:
+    def fetch_source(self, artifact_id: ArtifactId) -> bytes:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def update(self, namespace_id: NamespaceId, artifact_id: ArtifactId, content: bytes) -> None:
+    def update(self, artifact_id: ArtifactId, content: bytes) -> None:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def list_artifacts(self, namespace_id: NamespaceId) -> list[ArtifactId]:
+    def list_artifacts(self, artifact_prefix: ArtifactId) -> list[ArtifactId]:
         raise NotImplementedError("You must implement this method in subclasses")
 
     def get_modules(self) -> list[types.ModuleType]:

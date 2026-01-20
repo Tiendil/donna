@@ -2,7 +2,7 @@ from typing import Annotated
 
 import typer
 
-from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactLocalId, NamespaceId
+from donna.domain.ids import ActionRequestId, ArtifactId, FullArtifactId, FullArtifactLocalId
 
 ActionRequestIdArgument = Annotated[
     ActionRequestId,
@@ -20,9 +20,9 @@ FullArtifactIdArgument = Annotated[
 ]
 
 
-NamespaceIdArgument = Annotated[
-    NamespaceId,
-    typer.Argument(parser=NamespaceId, help="The ID of the namespace"),
+ArtifactPrefixArgument = Annotated[
+    ArtifactId,
+    typer.Argument(parser=ArtifactId, help="The artifact prefix to list/validate"),
 ]
 
 

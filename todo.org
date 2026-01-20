@@ -54,6 +54,15 @@
 ** Full paths to kinds
 *** full artifact kind config for head section
 *** full operation kind config for operation sections
+*** donna.ops -> donna.operations?
+*** where to place operations/kinds classes?
+*** what with introspection?
+*** do smth with hardcoded id generators like `artifact_kind_id` and `ops_section_id`
+*** !filesystem list artifacts does not find .py (uses hardcoded .md)
+*** !we do not need list modules?
+*** !remove _MARKDOWN_ROOTS
+*** !list_artifact should be recursive?
+*** ignore "session" from the artifacts? I.e. it is world.
 ** python world implementation TODOs
 *** `World.get_modules()` may be removed, because modules in Python world are just artifacts?
 *** list_artifacts behaviour is weird, may be want to refactor it in pair with namespace
