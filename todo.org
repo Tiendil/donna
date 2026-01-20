@@ -53,6 +53,9 @@
 * TODO Lazy import of primitives from Python artifacts
 ** Full paths to kinds
 *** Renderers, what to do with them?
+**** always import <world>.defaults?
+**** or always import <world>.renderers?
+**** config to autoload some modules?
 *** remove primitives registry?
 *** !we do not need list modules?
 *** do smth with hardcoded id generators like `artifact_kind_id` and `ops_section_id`
