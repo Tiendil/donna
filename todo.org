@@ -56,6 +56,7 @@
 **** always import <world>.defaults?
 **** or always import <world>.directives?
 **** config to autoload some modules?
+**** `builtins`!!! also for kinds?
 *** remove primitives registry?
 *** !we do not need list modules?
 *** do smth with hardcoded id generators like `artifact_kind_id` and `ops_section_id`
