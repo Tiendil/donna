@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 class ArtifactKind(BaseEntity):
     id: FullArtifactLocalId
     description: str
-    default_section_kind: FullArtifactLocalId = FullArtifactLocalId.parse("donna.ops:text")
+    default_section_kind: FullArtifactLocalId = FullArtifactLocalId.parse("donna.operations:text")
 
     def cells(self) -> list[Cell]:
         return [Cell.build_meta(kind="artifact_kind", id=str(self.id), description=self.description)]

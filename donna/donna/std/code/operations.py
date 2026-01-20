@@ -14,22 +14,22 @@ if TYPE_CHECKING:
     from donna.machine.changes import Change
 
 
-OPS_WORLD_ID = WorldId("donna")
-OPS_ARTIFACT_ID = ArtifactId("ops")
+OPERATIONS_WORLD_ID = WorldId("donna")
+OPERATIONS_ARTIFACT_ID = ArtifactId("operations")
 
 
-def ops_section_id(local_id: str) -> FullArtifactLocalId:
-    return FullArtifactLocalId((OPS_WORLD_ID, OPS_ARTIFACT_ID, ArtifactLocalId(local_id)))
+def operations_section_id(local_id: str) -> FullArtifactLocalId:
+    return FullArtifactLocalId((OPERATIONS_WORLD_ID, OPERATIONS_ARTIFACT_ID, ArtifactLocalId(local_id)))
 
 
 text_section_kind = ArtifactSectionTextKind(
-    id=ops_section_id("text"),
+    id=operations_section_id("text"),
     title="Text Section",
 )
 
 
 python_module_section_kind = PythonModuleSectionKind(
-    id=ops_section_id("python_module"),
+    id=operations_section_id("python_module"),
     title="Python module attribute",
 )
 
@@ -110,7 +110,7 @@ class RequestActionKind(OperationKind):
 
 
 request_action_kind = RequestActionKind(
-    id=ops_section_id("request_action"),
+    id=operations_section_id("request_action"),
     title="Request Action",
 )
 
@@ -145,6 +145,6 @@ class FinishWorkflowKind(OperationKind):
 
 
 finish_workflow_kind = FinishWorkflowKind(
-    id=ops_section_id("finish_workflow"),
+    id=operations_section_id("finish_workflow"),
     title="Finish Workflow",
 )

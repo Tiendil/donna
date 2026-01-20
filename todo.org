@@ -52,7 +52,6 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Lazy import of primitives from Python artifacts
 ** Full paths to kinds
-*** donna.ops -> donna.operations?
 *** where to place operations/kinds classes?
 *** what with introspection?
 *** do smth with hardcoded id generators like `artifact_kind_id` and `ops_section_id`
@@ -61,6 +60,7 @@
 *** !remove _MARKDOWN_ROOTS
 *** !list_artifact should be recursive?
 *** ignore "session" from the artifacts? I.e. it is world.
+*** remove std/code/operations
 ** python world implementation TODOs
 *** `World.get_modules()` may be removed, because modules in Python world are just artifacts?
 *** list_artifacts behaviour is weird, may be want to refactor it in pair with namespace

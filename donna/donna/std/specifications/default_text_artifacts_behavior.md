@@ -136,12 +136,12 @@ Example (`donna` keyword skipped for examples):
 
 ```toml
 id = "operation_id"
-kind = "donna.ops:request_action"
+kind = "donna.operations:request_action"
 ```
 
 #### Kinds of Workflow Operations
 
-1. `donna.ops:request_action` operation kind indicates that Donna will request the agent to perform some action.
+1. `donna.operations:request_action` operation kind indicates that Donna will request the agent to perform some action.
 
 The content of the tail section is the text instructions for the agent on what to do.
 
@@ -159,7 +159,7 @@ Here may be any additional instructions, requirements, notes, references, etc.
 
 **The body of the operation MUST contain a neat strictly defined algorithm for the agent to follow.**
 
-2. `donna.ops:finish_workflow` operation kind indicates that the workflow is finished.
+2. `donna.operations:finish_workflow` operation kind indicates that the workflow is finished.
 
 Each possible path through the workflow MUST end with this operation kind.
 
