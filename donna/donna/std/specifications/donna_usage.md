@@ -1,5 +1,9 @@
 # Donna Usage Instructions
 
+```toml donna
+kind = "donna.python.artifacts:specification"
+```
+
 This document describes how agents MUST use Donna to manage and perform their workflows.
 
 **Agents MUST follow the instructions and guidelines outlined in this document precisely.**

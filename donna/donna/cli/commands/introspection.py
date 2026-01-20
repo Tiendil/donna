@@ -2,21 +2,16 @@ import typer
 
 from donna.cli.application import app
 from donna.cli.utils import output_cells
-from donna.domain.ids import ArtifactKindId
-from donna.world.primitives_register import register
+from donna.domain.ids import FullArtifactLocalId
+from donna.machine.artifacts import resolve_artifact_kind
 
 introspection_cli = typer.Typer()
 
 
 @introspection_cli.command()
 def show(id: str) -> None:
-    primitive_id = ArtifactKindId(id)
-    primitive = register().find_primitive(primitive_id)
-
-    if primitive is None:
-        typer.echo(f'Primitive with id "{id}" not found.', err=True)
-        raise typer.Exit(code=1)
-
+    primitive_id = FullArtifactLocalId.parse(id)
+    primitive = resolve_artifact_kind(primitive_id)
     output_cells(primitive.cells())
 
 

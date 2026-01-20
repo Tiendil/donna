@@ -3,13 +3,8 @@ from typing import Any
 import jinja2
 from jinja2.runtime import Context
 
-from donna.domain.ids import (
-    ArtifactKindId,
-    FullArtifactLocalId,
-    NamespaceId,
-    RendererKindId,
-)
-from donna.machine.artifacts import Artifact, ArtifactKind
+from donna.domain.ids import FullArtifactLocalId, RendererKindId
+from donna.machine.artifacts import Artifact, ArtifactKindSection
 from donna.machine.cells import Cell
 from donna.machine.operations import FsmMode, OperationMeta
 from donna.machine.templates import RendererKind
@@ -44,7 +39,7 @@ def find_not_reachable_operations(
     return all_operations - reachable
 
 
-class WorkflowKind(ArtifactKind):
+class WorkflowKind(ArtifactKindSection):
     def construct_artifact(self, source: ArtifactSource) -> "Artifact":
         title = source.head.title or str(source.id)
         description = source.head.as_original_markdown(with_title=False)
@@ -157,13 +152,6 @@ class WorkflowKind(ArtifactKind):
                 status="success",
             )
         ]
-
-
-workflow_kind = WorkflowKind(
-    id=ArtifactKindId("workflow"),
-    namespace_id=NamespaceId("workflows"),
-    description="A workflow that defines a state machine for the agent to follow.",
-)
 
 
 class GoTo(RendererKind):

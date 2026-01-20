@@ -104,10 +104,6 @@ class Identifier(str):
         )
 
 
-class ArtifactKindId(Identifier):
-    __slots__ = ()
-
-
 class RendererKindId(Identifier):
     __slots__ = ()
 

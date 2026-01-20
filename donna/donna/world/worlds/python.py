@@ -10,7 +10,6 @@ from typing import cast
 from donna.domain.ids import ArtifactId, FullArtifactId, NamespaceId, WorldId
 from donna.machine.artifacts import Artifact, PythonArtifact
 from donna.world.artifact_builder import construct_artifact_from_content
-from donna.world.primitives_register import register
 from donna.world.worlds.base import World as BaseWorld
 
 
@@ -60,11 +59,12 @@ class Python(BaseWorld):
         full_id = FullArtifactId((self.id, namespace_id, artifact_id))
         module_name = self._artifact_module_name(artifact_id)
         module = importlib.import_module(module_name)
+        from donna.std import artifacts as std_artifacts
 
-        kind = register().get_artifact_kind_by_namespace(namespace_id)
+        kind = std_artifacts.python_artifact_kind
 
-        if kind is None or not isinstance(kind, PythonArtifact):
-            raise NotImplementedError("Python artifact kind is not registered")
+        if not isinstance(kind, PythonArtifact):
+            raise NotImplementedError("Python artifact kind is not available")
 
         return kind.construct_module(module, full_id)
 

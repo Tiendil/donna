@@ -1,5 +1,9 @@
 # Grooming Workflow
 
+```toml donna
+kind = "donna.python.artifacts:workflow"
+```
+
 Initiate operations to groom and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc.
 
 ## Run Autoflake

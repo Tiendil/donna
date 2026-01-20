@@ -1,5 +1,9 @@
 # Session Planning Guidelines
 
+```toml donna
+kind = "donna.python.artifacts:specification"
+```
+
 This document describes how Donna MUST plan work on a session with the help of workflows. The
 document describes the process of planning, kinds of involved entities and requirements for them.
 

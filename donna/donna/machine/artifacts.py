@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Any, Iterable
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import (
-    ArtifactKindId,
     ArtifactLocalId,
     FullArtifactId,
     FullArtifactLocalId,
@@ -20,7 +19,7 @@ if TYPE_CHECKING:
 
 
 class ArtifactKind(BaseEntity):
-    id: ArtifactKindId
+    id: FullArtifactLocalId
     description: str
     namespace_id: NamespaceId
     default_section_kind: FullArtifactLocalId = FullArtifactLocalId.parse("donna.python.ops:text")
@@ -28,7 +27,7 @@ class ArtifactKind(BaseEntity):
     def cells(self) -> list[Cell]:
         return [
             Cell.build_meta(
-                kind="artifact_kind", id=self.id, namespace_id=self.namespace_id, description=self.description
+                kind="artifact_kind", id=str(self.id), namespace_id=self.namespace_id, description=self.description
             )
         ]
 
@@ -66,6 +65,11 @@ class ArtifactKind(BaseEntity):
 class ArtifactSectionConfig(BaseEntity):
     id: ArtifactLocalId
     kind: FullArtifactLocalId
+
+
+class ArtifactConfig(BaseEntity):
+    kind: FullArtifactLocalId
+    model_config = BaseEntity.model_config | {"extra": "allow"}
 
 
 class ArtifactSectionMeta(BaseEntity):
@@ -106,7 +110,7 @@ class ArtifactMeta(BaseEntity):
 
 class Artifact(BaseEntity):
     id: FullArtifactId
-    kind: ArtifactKindId
+    kind: FullArtifactLocalId
     title: str
     description: str
 
@@ -119,7 +123,7 @@ class Artifact(BaseEntity):
             Cell.build_meta(
                 kind="artifact_meta",
                 artifact_id=str(self.id),
-                artifact_kind=self.kind,
+                artifact_kind=str(self.kind),
                 artifact_title=self.title,
                 artifact_description=self.description,
                 **self.meta.cells_meta(),
@@ -162,6 +166,13 @@ class ArtifactSectionKind(BaseEntity):
 
 
 class ArtifactSectionKindSection(ArtifactSection, ArtifactSectionKind):
+    id: FullArtifactLocalId
+    kind: FullArtifactLocalId | None = None
+    description: str = ""
+    meta: ArtifactSectionMeta = ArtifactSectionMeta()
+
+
+class ArtifactKindSection(ArtifactSection, ArtifactKind):
     id: FullArtifactLocalId
     kind: FullArtifactLocalId | None = None
     description: str = ""
@@ -233,7 +244,7 @@ class PythonModuleSectionKind(ArtifactSectionKindSection):
         )
 
 
-class PythonArtifact(ArtifactKind):
+class PythonArtifact(ArtifactKindSection):
 
     def construct_artifact(self, source: ArtifactSource) -> "Artifact":
         raise NotImplementedError("Python artifacts are constructed from modules, not markdown sources.")
@@ -251,15 +262,15 @@ class PythonArtifact(ArtifactKind):
             if name.startswith("_"):
                 continue
 
-            if isinstance(value, ArtifactSectionKind):
-                if not isinstance(value, ArtifactSection):
+            if isinstance(value, ArtifactSection):
+                if not isinstance(value, (ArtifactSectionKind, ArtifactKind)):
                     raise NotImplementedError(
-                        f"Section kind '{name}' must be an ArtifactSection to be included in python artifacts."
+                        f"Section '{name}' must be an ArtifactSectionKind or ArtifactKind to be included."
                     )
 
                 if value.id is None or value.id.full_artifact_id != artifact_id:
                     raise NotImplementedError(
-                        f"Section kind '{name}' must belong to artifact '{artifact_id}' to be included."
+                        f"Section '{name}' must belong to artifact '{artifact_id}' to be included."
                     )
 
                 sections.append(value)
@@ -282,5 +293,17 @@ def resolve_section_kind(section_kind_id: FullArtifactLocalId) -> ArtifactSectio
 
     if section is None or not isinstance(section, ArtifactSectionKind):
         raise NotImplementedError(f"Section kind '{section_kind_id}' is not available")
+
+    return section
+
+
+def resolve_artifact_kind(artifact_kind_id: FullArtifactLocalId) -> ArtifactKind:
+    from donna.world import artifacts as world_artifacts
+
+    artifact = world_artifacts.load_artifact(artifact_kind_id.full_artifact_id)
+    section = artifact.get_section(artifact_kind_id)
+
+    if section is None or not isinstance(section, ArtifactKind):
+        raise NotImplementedError(f"Artifact kind '{artifact_kind_id}' is not available")
 
     return section

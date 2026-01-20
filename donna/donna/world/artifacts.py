@@ -1,7 +1,7 @@
 import pathlib
 
 from donna.domain.ids import FullArtifactId, NamespaceId
-from donna.machine.artifacts import Artifact
+from donna.machine.artifacts import Artifact, resolve_artifact_kind
 from donna.world.artifact_builder import construct_artifact_from_content
 from donna.world.config import config
 from donna.world.primitives_register import register
@@ -31,10 +31,7 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> None:
 
     assert test_artifact.kind is not None
 
-    artifact_kind = register().artifacts.get(test_artifact.kind)
-
-    if artifact_kind is None:
-        raise NotImplementedError(f"Artifact kind `{test_artifact.kind}` is not registered")
+    artifact_kind = resolve_artifact_kind(test_artifact.kind)
 
     is_valid, _cells = artifact_kind.validate_artifact(test_artifact)
 

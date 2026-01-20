@@ -1,5 +1,9 @@
 # Show Workflow Spec + Schema
 
+```toml donna
+kind = "donna.python.artifacts:workflow"
+```
+
 <!-- This is a temporary worflow, later Donna should have a specialized command to display the spec -->
 
 This workflow guides an agent through loading a workflow artifact source, choosing the correct FSM graph DSL, and producing a concise schema summary with a graph and per-operation descriptions.

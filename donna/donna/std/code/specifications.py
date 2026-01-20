@@ -3,14 +3,14 @@ from typing import Any
 import jinja2
 from jinja2.runtime import Context
 
-from donna.domain.ids import ArtifactKindId, FullArtifactId, NamespaceId, RendererKindId
-from donna.machine.artifacts import Artifact, ArtifactKind, ArtifactMeta
+from donna.domain.ids import FullArtifactId, RendererKindId
+from donna.machine.artifacts import Artifact, ArtifactKindSection, ArtifactMeta
 from donna.machine.templates import RendererKind
 from donna.world.markdown import ArtifactSource
 from donna.world.templates import RenderMode
 
 
-class SpecificationKind(ArtifactKind):
+class SpecificationKind(ArtifactKindSection):
     def construct_artifact(self, source: ArtifactSource) -> "Artifact":
         title = source.head.title or str(source.id)
         description = source.head.as_original_markdown(with_title=False)
@@ -22,13 +22,6 @@ class SpecificationKind(ArtifactKind):
         )
 
         return spec
-
-
-specification_kind = SpecificationKind(
-    id=ArtifactKindId("specification"),
-    namespace_id=NamespaceId("specifications"),
-    description="A specification that define various aspects of the current project.",
-)
 
 
 class View(RendererKind):

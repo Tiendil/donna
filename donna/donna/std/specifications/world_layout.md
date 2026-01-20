@@ -1,5 +1,9 @@
 # Donna World Layout
 
+```toml donna
+kind = "donna.python.artifacts:specification"
+```
+
 This document describes how Donna discovers and manages its dynamic and/or external artifacts.
 Including specifications, workflows, operations, current work state and additional code.
 

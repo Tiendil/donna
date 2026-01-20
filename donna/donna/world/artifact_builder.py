@@ -1,7 +1,6 @@
 from donna.domain.ids import FullArtifactId
-from donna.machine.artifacts import Artifact
+from donna.machine.artifacts import Artifact, ArtifactConfig, resolve_artifact_kind
 from donna.world import markdown
-from donna.world.primitives_register import register
 from donna.world.templates import RenderMode, render, render_mode
 
 
@@ -41,9 +40,7 @@ def parse_artifact_source(full_id: FullArtifactId, text: str) -> markdown.Artifa
 def construct_artifact_from_content(full_id: FullArtifactId, content: str) -> Artifact:
     raw_artifact = parse_artifact_source(full_id, content)
 
-    kind = register().get_artifact_kind_by_namespace(full_id.namespace_id)
-
-    if kind is None:
-        raise NotImplementedError(f"Artifact kind for artifact `{full_id}` is not registered")
+    config = ArtifactConfig.parse_obj(raw_artifact.head.merged_configs())
+    kind = resolve_artifact_kind(config.kind)
 
     return kind.construct_artifact(raw_artifact)

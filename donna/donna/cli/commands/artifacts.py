@@ -5,8 +5,8 @@ import typer
 from donna.cli.application import app
 from donna.cli.types import FullArtifactIdArgument, NamespaceIdArgument
 from donna.cli.utils import output_cells
+from donna.machine.artifacts import resolve_artifact_kind
 from donna.world import artifacts as world_artifacts
-from donna.world.primitives_register import register
 
 artifacts_cli = typer.Typer()
 
@@ -41,9 +41,7 @@ def update(id: FullArtifactIdArgument, input: pathlib.Path) -> None:
 def validate(id: FullArtifactIdArgument) -> None:
     artifact = world_artifacts.load_artifact(id)
 
-    artifact_kind = register().artifacts.get(artifact.kind)
-
-    assert artifact_kind is not None
+    artifact_kind = resolve_artifact_kind(artifact.kind)
 
     _is_valid, cells = artifact_kind.validate_artifact(artifact)
 
@@ -55,9 +53,7 @@ def validate_all(namespace: NamespaceIdArgument) -> None:
     artifacts = world_artifacts.list_artifacts(namespace)
 
     for artifact in artifacts:
-        artifact_kind = register().artifacts.get(artifact.kind)
-
-        assert artifact_kind is not None
+        artifact_kind = resolve_artifact_kind(artifact.kind)
 
         _is_valid, cells = artifact_kind.validate_artifact(artifact)
 

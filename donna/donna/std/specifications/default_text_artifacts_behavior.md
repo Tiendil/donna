@@ -1,5 +1,9 @@
 # Default Text Artifacts Behavior
 
+```toml donna
+kind = "donna.python.artifacts:specification"
+```
+
 This document describes the default format and behavior of Donna's text artifacts.
 This format and behavior is what should be expected by default from an artifact if not specified otherwise.
 
@@ -93,12 +97,12 @@ When a section contains multiple configuration blocks, Donna merges them in docu
 
 ### Header section
 
-Header section MUST contain config block with `description` property set to a short text description of the artifact.
+Header section MUST contain a config block with a `kind` property. The `kind` MUST be a full artifact-local id pointing to the artifact kind section.
 
 Example (`donna` keyword skipped for examples):
 
 ```toml
-description = "Short description"
+kind = "donna.python.artifacts:specification"
 ```
 
 Header section MUST also contain short human-readable description of the artifact outside of the config block.
@@ -123,7 +127,7 @@ Example (`donna` keyword skipped for examples):
 
 ```toml
 start_operation_id = "operation_id"
-description = "A description of what the workflow does."
+kind = "donna.python.artifacts:workflow"
 ```
 
 Each tail section MUST contain config block with `id` and `kind` properties that specifies the identifier and kind of the operation.
