@@ -52,26 +52,22 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Lazy import of primitives from Python artifacts
 ** Full paths to kinds
+*** Renderers, what to do with them?
+*** remove primitives registry?
+*** !we do not need list modules?
+*** do smth with hardcoded id generators like `artifact_kind_id` and `ops_section_id`
 *** where to place operations/kinds classes?
 *** what with introspection?
-*** do smth with hardcoded id generators like `artifact_kind_id` and `ops_section_id`
-*** !filesystem list artifacts does not find .py (uses hardcoded .md)
-*** !we do not need list modules?
-*** !remove _MARKDOWN_ROOTS
-*** !list_artifact should be recursive?
-*** ignore "session" from the artifacts? I.e. it is world.
-*** remove std/code/operations
+**** !filesystem list artifacts does not find .py (uses hardcoded .md)
+**** !remove _MARKDOWN_ROOTS
+**** !list_artifact should be recursive?
+**** ignore "session" from the artifacts? I.e. it is world.
+**** remove std/code/*
 ** python world implementation TODOs
-*** `World.get_modules()` may be removed, because modules in Python world are just artifacts?
-*** list_artifacts behaviour is weird, may be want to refactor it in pair with namespace
-*** What with the namespace? which one? maybe by the top-level package name of the artifact?
-*** get_modules behaviour is weird as well
-*** This is weired "Non-Python resources should be searched under the same `python.import.path.<namespace>` as the markdown files (like in filesystem world)"
-*** donna.std submodule as an artifact?
 *** split donna.machin.artifacts into submodules?
 *** PythonModuleSectionMeta.attribute_value -> PythonModuleSectionMeta.entity
 *** PythonArtifact -> PythonModuleArtifact
-*** PythonModuleSectionKind.exectu_section should work
+*** PythonModuleSectionKind.execut_section should work
 *** Should we use PythonModuleSectionKind.construct_section to construct sections?
 *** Should we use PythonArtifact.construct_artifact to construct artifacts?
 ** python world implementation, WANTs
