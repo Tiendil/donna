@@ -52,8 +52,6 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Lazy import of primitives from Python artifacts
 ** Full paths to kinds
-*** full artifact kind config for head section
-*** full operation kind config for operation sections
 *** donna.ops -> donna.operations?
 *** where to place operations/kinds classes?
 *** what with introspection?
