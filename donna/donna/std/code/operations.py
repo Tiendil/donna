@@ -11,10 +11,10 @@ from donna.machine.artifacts import (
     ArtifactSectionTextKind,
     PythonModuleSectionKind,
     SectionConstructor,
+    SectionContent,
 )
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
 from donna.machine.tasks import Task, WorkUnit
-from donna.world.markdown import SectionSource
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -66,20 +66,18 @@ class RequestActionKind(OperationKind):
     def construct_section(
         self,
         artifact_id: FullArtifactId,
-        section: SectionSource,
+        section: SectionContent,
     ) -> "ArtifactSection":
-        config = RequestActionConfig.parse_obj(section.merged_configs())
-
-        title = section.title or ""
+        config = RequestActionConfig.parse_obj(section.config)
 
         return ArtifactSection(
             id=artifact_id.to_full_local(config.id),
             kind=config.kind,
-            title=title,
-            description=section.as_original_markdown(with_title=False),
+            title=section.title,
+            description=section.description,
             meta=OperationMeta(
                 fsm_mode=config.fsm_mode,
-                allowed_transtions=extract_transitions(section.as_analysis_markdown(with_title=True)),
+                allowed_transtions=extract_transitions(section.analysis),
             ),
         )
 
@@ -119,16 +117,14 @@ class FinishWorkflowKind(OperationKind):
 
         yield ChangeFinishTask(task_id=task.id)
 
-    def construct_section(self, artifact_id: FullArtifactId, section: SectionSource) -> ArtifactSection:
-        config = FinishWorkflowConfig.parse_obj(section.merged_configs())
-
-        title = section.title or ""
+    def construct_section(self, artifact_id: FullArtifactId, section: SectionContent) -> ArtifactSection:
+        config = FinishWorkflowConfig.parse_obj(section.config)
 
         return ArtifactSection(
             id=artifact_id.to_full_local(config.id),
             kind=config.kind,
-            title=title,
-            description=section.as_original_markdown(with_title=False),
+            title=section.title,
+            description=section.description,
             meta=OperationMeta(fsm_mode=config.fsm_mode, allowed_transtions=set()),
         )
 

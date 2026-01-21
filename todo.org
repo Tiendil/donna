@@ -52,10 +52,7 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Lazy import of primitives from Python artifacts
 ** Full paths to kinds
-*** do smth with hardcoded id generators like `artifact_kind_id` and `ops_section_id`
 *** where to place operations/kinds classes?
-*** part of sections is referenced as `<world>.<artifact>:<section>` and part as `<world>.<artifact>.<section>`. Should we unify that?
-*** if world does not know its name/path before initialization, how can it encode the full paths to its artifacts?
 *** section constructor has a weired toml operations, we must remove them
 ** introspection
 *** !filesystem list artifacts does not find .py (uses hardcoded .md)

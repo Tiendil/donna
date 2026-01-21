@@ -20,15 +20,12 @@ class DirectiveConfig(ArtifactSectionConfig):
 
 class DirectiveSectionMeta(ArtifactSectionMeta):
     analyze_id: str
-    attribute_value: Any | None = None
+    directive: DirectiveKind
+
+    model_config = BaseEntity.model_config | {"arbitrary_types_allowed": True}
 
     def cells_meta(self) -> dict[str, Any]:
-        meta = {"analyze_id": self.analyze_id}
-
-        if self.attribute_value is not None:
-            meta["attribute_value"] = repr(self.attribute_value)
-
-        return meta
+        return {"analyze_id": self.analyze_id, "directive": repr(self.directive)}
 
 
 def load_directive_section(directive_kind_id: FullArtifactLocalId) -> "ArtifactSection":
@@ -37,11 +34,14 @@ def load_directive_section(directive_kind_id: FullArtifactLocalId) -> "ArtifactS
     artifact = world_artifacts.load_artifact(directive_kind_id.full_artifact_id)
     section = artifact.get_section(directive_kind_id)
 
-    if section is None or section.entity is None or not isinstance(section.entity, DirectiveKind):
+    if section is None or not isinstance(section.meta, DirectiveSectionMeta):
         raise NotImplementedError(f"Directive kind '{directive_kind_id}' is not available")
 
     return section
 
 
 def resolve_directive_kind(directive_kind_id: FullArtifactLocalId) -> DirectiveKind:
-    return load_directive_section(directive_kind_id).entity  # type: ignore[return-value]
+    section = load_directive_section(directive_kind_id)
+
+    assert isinstance(section.meta, DirectiveSectionMeta)
+    return section.meta.directive

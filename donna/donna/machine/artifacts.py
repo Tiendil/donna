@@ -1,17 +1,14 @@
-import enum
 import inspect
 import types
 import uuid
 from typing import TYPE_CHECKING, Any, Iterable
 
 import pydantic
-from markdown_it import MarkdownIt
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
-from donna.world.markdown import ArtifactSource, CodeSource, SectionLevel, SectionSource
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -23,10 +20,10 @@ class ArtifactKind(BaseEntity):
     def construct_section(
         self,
         artifact_id: FullArtifactId,
-        raw_section: SectionSource,
+        section: "SectionContent",
         section_kind_overrides: dict[FullArtifactLocalId, "ArtifactSectionKind"] | None = None,
     ) -> "ArtifactSection":
-        data = raw_section.merged_configs()
+        data = dict(section.config)
 
         if "kind" not in data:
             data["kind"] = self.default_section_kind
@@ -37,20 +34,6 @@ class ArtifactKind(BaseEntity):
         else:
             section_kind_id = kind_value
 
-        if "kind" not in raw_section.merged_configs():
-            raw_section = raw_section.model_copy(
-                update={
-                    "configs": raw_section.configs
-                    + [
-                        CodeSource(
-                            format="toml",
-                            properties={"donna": True},
-                            content=f'kind = "{section_kind_id}"',
-                        )
-                    ]
-                }
-            )
-
         section_kind = None
         if section_kind_overrides is not None:
             section_kind = section_kind_overrides.get(section_kind_id)
@@ -58,11 +41,10 @@ class ArtifactKind(BaseEntity):
         if section_kind is None:
             section_kind = resolve_section_kind(section_kind_id)
 
-        section = section_kind.construct_section(artifact_id, raw_section)
+        section_content = section.replace(config=data)
+        return section_kind.construct_section(artifact_id, section_content)
 
-        return section
-
-    def construct_artifact(self, source: ArtifactSource) -> "Artifact":
+    def construct_artifact(self, source: "ArtifactContent") -> "Artifact":
         raise NotImplementedError("You must implement this method in subclasses")
 
     def validate_artifact(self, artifact: "Artifact") -> tuple[bool, list[Cell]]:
@@ -91,6 +73,24 @@ class ArtifactSectionMeta(BaseEntity):
         return {}
 
 
+class ArtifactKindSectionMeta(ArtifactSectionMeta):
+    artifact_kind: "ArtifactKind"
+
+    model_config = BaseEntity.model_config | {"arbitrary_types_allowed": True}
+
+    def cells_meta(self) -> dict[str, Any]:
+        return {"artifact_kind": repr(self.artifact_kind)}
+
+
+class ArtifactSectionKindMeta(ArtifactSectionMeta):
+    section_kind: "ArtifactSectionKind"
+
+    model_config = BaseEntity.model_config | {"arbitrary_types_allowed": True}
+
+    def cells_meta(self) -> dict[str, Any]:
+        return {"section_kind": repr(self.section_kind)}
+
+
 class ArtifactSection(BaseEntity):
     # some section may have no id and kind — it is ok for simple text sections
     id: FullArtifactLocalId | None
@@ -99,7 +99,6 @@ class ArtifactSection(BaseEntity):
     description: str
 
     meta: ArtifactSectionMeta
-    entity: BaseEntity | None = None
 
     def cells(self) -> list[Cell]:
         return [
@@ -170,7 +169,7 @@ class ArtifactSectionKind(BaseEntity):
     def execute_section(self, task: Task, unit: WorkUnit, section: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("You MUST implement this method.")
 
-    def construct_section(self, artifact_id: FullArtifactId, raw_section: SectionSource) -> ArtifactSection:
+    def construct_section(self, artifact_id: FullArtifactId, section: "SectionContent") -> ArtifactSection:
         raise NotImplementedError("You MUST implement this method.")
 
 
@@ -187,8 +186,8 @@ class ArtifactSectionTextKind(ArtifactSectionKind):
     def execute_section(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("Text sections cannot be executed.")
 
-    def construct_section(self, artifact_id: FullArtifactId, raw_section: SectionSource) -> ArtifactSection:
-        data = raw_section.merged_configs()
+    def construct_section(self, artifact_id: FullArtifactId, section: "SectionContent") -> ArtifactSection:
+        data = dict(section.config)
 
         if "id" not in data:
             # TODO: we should replace this hack with a proper ID generator
@@ -200,24 +199,13 @@ class ArtifactSectionTextKind(ArtifactSectionKind):
 
         config = TextConfig.parse_obj(data)
 
-        title = raw_section.title or ""
-
         return ArtifactSection(
             id=artifact_id.to_full_local(config.id),
             kind=config.kind,
-            title=title,
-            description=raw_section.as_original_markdown(with_title=False),
+            title=section.title,
+            description=section.description,
             meta=ArtifactSectionMeta(),
         )
-
-
-class PythonModuleSectionMeta(ArtifactSectionMeta):
-    attribute_value: Any
-
-    model_config = BaseEntity.model_config | {"arbitrary_types_allowed": True}
-
-    def cells_meta(self) -> dict[str, Any]:
-        return {"attribute_value": repr(self.attribute_value)}
 
 
 class PythonModuleSectionKind(ArtifactSectionKind):
@@ -225,28 +213,26 @@ class PythonModuleSectionKind(ArtifactSectionKind):
     def execute_section(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("Python module sections cannot be executed.")
 
-    def construct_section(self, artifact_id: FullArtifactId, raw_section: SectionSource) -> ArtifactSection:
-        data = raw_section.merged_configs()
+    def construct_section(self, artifact_id: FullArtifactId, section: "SectionContent") -> ArtifactSection:
+        data = dict(section.config)
         config_data = {
             "id": data.get("id"),
             "kind": data.get("kind"),
         }
         config = PythonModuleSectionConfig.parse_obj(config_data)
 
-        title = raw_section.title or ""
-
         return ArtifactSection(
             id=artifact_id.to_full_local(config.id),
             kind=config.kind,
-            title=title,
-            description=raw_section.as_original_markdown(with_title=False),
+            title=section.title,
+            description=section.description,
             meta=ArtifactSectionMeta(),
         )
 
 
 class PythonArtifact(ArtifactKind):
 
-    def construct_artifact(self, source: ArtifactSource) -> "Artifact":
+    def construct_artifact(self, source: "ArtifactContent") -> "Artifact":
         raise NotImplementedError("Python artifacts are constructed from modules, not markdown sources.")
 
     def construct_module_artifact(  # noqa: CCR001
@@ -269,10 +255,9 @@ class PythonArtifact(ArtifactKind):
             description = inspect.getdoc(module) or ""
             artifact_kind_id = kind_id
         else:
-            head_section = artifact_constructor.construct_head()
-            title = head_section.title or module.__name__
-            description = head_section.as_original_markdown(with_title=False)
-            artifact_kind_id = ArtifactConfig.parse_obj(head_section.merged_configs()).kind
+            title = artifact_constructor.title
+            description = artifact_constructor.description
+            artifact_kind_id = artifact_constructor.config.kind
 
             if artifact_kind_id != kind_id:
                 raise NotImplementedError(
@@ -322,10 +307,10 @@ def resolve_section_kind(section_kind_id: FullArtifactLocalId) -> ArtifactSectio
     artifact = world_artifacts.load_artifact(section_kind_id.full_artifact_id)
     section = artifact.get_section(section_kind_id)
 
-    if section is None or section.entity is None or not isinstance(section.entity, ArtifactSectionKind):
+    if section is None or not isinstance(section.meta, ArtifactSectionKindMeta):
         raise NotImplementedError(f"Section kind '{section_kind_id}' is not available")
 
-    return section.entity
+    return section.meta.section_kind
 
 
 def resolve_artifact_kind(artifact_kind_id: FullArtifactLocalId) -> ArtifactKind:
@@ -334,41 +319,23 @@ def resolve_artifact_kind(artifact_kind_id: FullArtifactLocalId) -> ArtifactKind
     artifact = world_artifacts.load_artifact(artifact_kind_id.full_artifact_id)
     section = artifact.get_section(artifact_kind_id)
 
-    if section is None or section.entity is None or not isinstance(section.entity, ArtifactKind):
+    if section is None or not isinstance(section.meta, ArtifactKindSectionMeta):
         raise NotImplementedError(f"Artifact kind '{artifact_kind_id}' is not available")
 
-    return section.entity
+    return section.meta.artifact_kind
 
 
-def _markdown_tokens(text: str) -> list[Any]:
-    if not text:
-        return []
+class SectionContent(BaseEntity):
+    title: str
+    description: str
+    analysis: str
+    config: dict[str, Any]
 
-    md = MarkdownIt("commonmark")
-    return md.parse(text)
 
-
-def _serialize_toml_value(value: Any) -> str:  # noqa: CCR001
-    if isinstance(value, enum.Enum):
-        value = value.value
-
-    if isinstance(value, (ArtifactLocalId, FullArtifactId, FullArtifactLocalId)):
-        value = str(value)
-
-    if isinstance(value, str):
-        escaped = value.replace("\\", "\\\\").replace('"', '\\"')
-        return f'"{escaped}"'
-
-    if isinstance(value, bool):
-        return "true" if value else "false"
-
-    if isinstance(value, (int, float)):
-        return str(value)
-
-    if isinstance(value, (list, tuple, set)):
-        return "[" + ", ".join(_serialize_toml_value(item) for item in value) + "]"
-
-    raise NotImplementedError(f"Unsupported TOML value: {value!r}")
+class ArtifactContent(BaseEntity):
+    id: FullArtifactId
+    head: SectionContent
+    tail: list[SectionContent]
 
 
 class SectionConstructor(BaseEntity):
@@ -377,56 +344,47 @@ class SectionConstructor(BaseEntity):
     config: ArtifactSectionConfig
     entity: BaseEntity | None = None
 
-    def build_section(  # noqa: CCR001
+    def build_section(
         self,
         artifact_kind: ArtifactKind,
         artifact_id: FullArtifactId,
         section_kind_overrides: dict[FullArtifactLocalId, ArtifactSectionKind] | None = None,
     ) -> ArtifactSection:
-        config_data = self.config.model_dump(mode="json")
-
-        config_lines = []
-        for key in sorted(config_data.keys()):
-            config_lines.append(f"{key} = {_serialize_toml_value(config_data[key])}")
-
-        raw_section = SectionSource(
-            level=SectionLevel.h2,
-            title=self.title,
-            configs=[
-                CodeSource(
-                    format="toml",
-                    properties={"donna": True},
-                    content="\n".join(config_lines),
-                )
-            ],
-            original_tokens=_markdown_tokens(self.description),
-            analysis_tokens=_markdown_tokens(self.description),
-        )
+        config_data = self.config.model_dump(mode="python")
+        analysis = _analysis_text(self.title, self.description)
 
         section = artifact_kind.construct_section(
             artifact_id=artifact_id,
-            raw_section=raw_section,
+            section=SectionContent(
+                title=self.title,
+                description=self.description,
+                analysis=analysis,
+                config=config_data,
+            ),
             section_kind_overrides=section_kind_overrides,
         )
 
-        if self.entity is not None:
-            section = section.replace(entity=self.entity)
+        if self.entity is None:
+            return section
 
-        if self.entity is not None:
-            from donna.machine.templates import DirectiveConfig, DirectiveKind, DirectiveSectionMeta
+        from donna.machine.templates import DirectiveConfig, DirectiveKind, DirectiveSectionMeta
 
-            if isinstance(self.entity, DirectiveKind):
-                directive_config = DirectiveConfig.model_validate(config_data)
-                section = section.replace(
-                    meta=DirectiveSectionMeta(
-                        analyze_id=directive_config.analyze_id,
-                        attribute_value=self.entity,
-                    )
+        if isinstance(self.entity, DirectiveKind):
+            directive_config = DirectiveConfig.model_validate(config_data)
+            return section.replace(
+                meta=DirectiveSectionMeta(
+                    analyze_id=directive_config.analyze_id,
+                    directive=self.entity,
                 )
-            elif section.kind == FullArtifactLocalId.parse("donna.operations.python_module"):
-                section = section.replace(meta=PythonModuleSectionMeta(attribute_value=self.entity))
+            )
 
-        return section
+        if isinstance(self.entity, ArtifactKind):
+            return section.replace(meta=ArtifactKindSectionMeta(artifact_kind=self.entity))
+
+        if isinstance(self.entity, ArtifactSectionKind):
+            return section.replace(meta=ArtifactSectionKindMeta(section_kind=self.entity))
+
+        raise NotImplementedError(f"Unsupported section entity type: {type(self.entity).__name__}")
 
 
 class ArtifactConstructor(BaseEntity):
@@ -434,24 +392,8 @@ class ArtifactConstructor(BaseEntity):
     description: str
     config: ArtifactConfig
 
-    def construct_head(self) -> SectionSource:
-        config_data = self.config.model_dump(mode="json")
 
-        config_lines = []
-
-        for key in sorted(config_data.keys()):
-            config_lines.append(f"{key} = {_serialize_toml_value(config_data[key])}")
-
-        return SectionSource(
-            level=SectionLevel.h1,
-            title=self.title,
-            configs=[
-                CodeSource(
-                    format="toml",
-                    properties={"donna": True},
-                    content="\n".join(config_lines),
-                )
-            ],
-            original_tokens=_markdown_tokens(self.description),
-            analysis_tokens=_markdown_tokens(self.description),
-        )
+def _analysis_text(title: str, description: str) -> str:
+    if title:
+        return f"## {title}\n{description}"
+    return description
