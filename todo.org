@@ -52,12 +52,6 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Lazy import of primitives from Python artifacts
 ** Full paths to kinds
-*** Directives, what to do with them?
-**** always import <world>.defaults?
-**** or always import <world>.directives?
-**** config to autoload some modules?
-**** `builtins`!!! also for kinds? add parameter .builtins to the world?
-*** remove primitives registry?
 *** !we do not need list modules?
 *** do smth with hardcoded id generators like `artifact_kind_id` and `ops_section_id`
 *** where to place operations/kinds classes?
@@ -70,6 +64,11 @@
 ***** place project and session worlds on the same level with config.toml?
 ***** remove session world, add session directory to the project world?
 **** remove std/code/*
+** builtins
+*** sections from world.builtings should be accessible by their ids without prefixes?
+*** for directives
+*** for kind ids
+*** add `builtins: bool` into world config?
 ** python world implementation TODOs
 *** split donna.machin.artifacts into submodules?
 *** PythonModuleSectionMeta.attribute_value -> PythonModuleSectionMeta.entity
