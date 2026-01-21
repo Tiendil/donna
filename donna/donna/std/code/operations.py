@@ -9,7 +9,6 @@ from donna.machine.artifacts import (
     ArtifactSection,
     ArtifactSectionTextKind,
     PythonModuleSectionKind,
-    PythonModuleSectionMeta,
     SectionConstructor,
 )
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
@@ -141,7 +140,6 @@ text_section_kind = SectionConstructor(
     kind=PYTHON_MODULE_SECTION_KIND_ID,
     title="Text Section",
     description="",
-    meta=PythonModuleSectionMeta(attribute_value=text_section_kind_entity),
     entity=text_section_kind_entity,
 )
 
@@ -151,7 +149,6 @@ python_module_section_kind = SectionConstructor(
     kind=PYTHON_MODULE_SECTION_KIND_ID,
     title="Python module attribute",
     description="",
-    meta=PythonModuleSectionMeta(attribute_value=python_module_section_kind_entity),
     entity=python_module_section_kind_entity,
 )
 
@@ -161,7 +158,6 @@ request_action_kind = SectionConstructor(
     kind=PYTHON_MODULE_SECTION_KIND_ID,
     title="Request Action",
     description="",
-    meta=PythonModuleSectionMeta(attribute_value=request_action_kind_entity),
     entity=request_action_kind_entity,
 )
 
@@ -171,6 +167,5 @@ finish_workflow_kind = SectionConstructor(
     kind=PYTHON_MODULE_SECTION_KIND_ID,
     title="Finish Workflow",
     description="",
-    meta=PythonModuleSectionMeta(attribute_value=finish_workflow_kind_entity),
     entity=finish_workflow_kind_entity,
 )

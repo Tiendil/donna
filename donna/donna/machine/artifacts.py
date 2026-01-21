@@ -1,7 +1,7 @@
+import enum
 import inspect
 import types
 import uuid
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Iterable
 
 from markdown_it import MarkdownIt
@@ -35,6 +35,20 @@ class ArtifactKind(BaseEntity):
             section_kind_id = FullArtifactLocalId.parse(kind_value)
         else:
             section_kind_id = kind_value
+
+        if "kind" not in raw_section.merged_configs():
+            raw_section = raw_section.model_copy(
+                update={
+                    "configs": raw_section.configs
+                    + [
+                        CodeSource(
+                            format="toml",
+                            properties={"donna": True},
+                            content=f'kind = "{section_kind_id}"',
+                        )
+                    ]
+                }
+            )
 
         section_kind = None
         if section_kind_overrides is not None:
@@ -206,7 +220,11 @@ class PythonModuleSectionKind(ArtifactSectionKind):
 
     def construct_section(self, artifact_id: FullArtifactId, raw_section: SectionSource) -> ArtifactSection:
         data = raw_section.merged_configs()
-        config = ArtifactSectionConfig.parse_obj(data)
+
+        class PythonModuleSectionConfig(ArtifactSectionConfig):
+            model_config = BaseEntity.model_config | {"extra": "allow"}
+
+        config = PythonModuleSectionConfig.parse_obj(data)
 
         title = raw_section.title or ""
 
@@ -224,14 +242,35 @@ class PythonArtifact(ArtifactKind):
     def construct_artifact(self, source: ArtifactSource) -> "Artifact":
         raise NotImplementedError("Python artifacts are constructed from modules, not markdown sources.")
 
-    def construct_module(  # noqa: CCR001
+    def construct_module_artifact(  # noqa: CCR001
         self,
         module: types.ModuleType,
         artifact_id: FullArtifactId,
         kind_id: FullArtifactLocalId,
     ) -> "Artifact":
-        description = inspect.getdoc(module) or ""
-        title = module.__name__
+        artifact_constructor: ArtifactConstructor | None = None
+
+        for value in module.__dict__.values():
+            if isinstance(value, ArtifactConstructor):
+                if artifact_constructor is not None:
+                    raise NotImplementedError("Artifact module must define only one ArtifactConstructor.")
+
+                artifact_constructor = value
+
+        if artifact_constructor is None:
+            title = module.__name__
+            description = inspect.getdoc(module) or ""
+            artifact_kind_id = kind_id
+        else:
+            head_section = artifact_constructor.construct_head()
+            title = head_section.title or module.__name__
+            description = head_section.as_original_markdown(with_title=False)
+            artifact_kind_id = ArtifactConfig.parse_obj(head_section.merged_configs()).kind
+
+            if artifact_kind_id != kind_id:
+                raise NotImplementedError(
+                    f"Artifact kind mismatch: constructor uses '{artifact_kind_id}', but expected '{kind_id}'."
+                )
 
         sections: list[ArtifactSection] = []
 
@@ -253,7 +292,7 @@ class PythonArtifact(ArtifactKind):
                     section_kind_overrides[section_id] = value.entity
 
         for constructor in constructors:
-            section = constructor.construct(
+            section = constructor.build_section(
                 artifact_kind=self,
                 artifact_id=artifact_id,
                 section_kind_overrides=section_kind_overrides,
@@ -262,7 +301,7 @@ class PythonArtifact(ArtifactKind):
 
         return Artifact(
             id=artifact_id,
-            kind=kind_id,
+            kind=artifact_kind_id,
             title=title,
             description=description,
             meta=ArtifactMeta(),
@@ -302,25 +341,65 @@ def _markdown_tokens(text: str) -> list[Any]:
     return md.parse(text)
 
 
-@dataclass(frozen=True)
-class SectionConstructor:
+def _serialize_toml_value(value: Any) -> str:  # noqa: CCR001
+    if isinstance(value, enum.Enum):
+        value = value.value
+
+    if isinstance(value, (ArtifactLocalId, FullArtifactId, FullArtifactLocalId)):
+        value = str(value)
+
+    if isinstance(value, str):
+        escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+        return f'"{escaped}"'
+
+    if isinstance(value, bool):
+        return "true" if value else "false"
+
+    if isinstance(value, (int, float)):
+        return str(value)
+
+    if isinstance(value, (list, tuple, set)):
+        return "[" + ", ".join(_serialize_toml_value(item) for item in value) + "]"
+
+    raise NotImplementedError(f"Unsupported TOML value: {value!r}")
+
+
+def _normalize_config(config: BaseEntity | dict[str, Any] | None) -> dict[str, Any]:
+    if config is None:
+        return {}
+
+    if isinstance(config, BaseEntity):
+        return config.model_dump(mode="json")
+
+    return dict(config)
+
+
+class SectionConstructor(BaseEntity):
     id: ArtifactLocalId
     kind: FullArtifactLocalId
     title: str
     description: str
-    meta: ArtifactSectionMeta | None = None
+    config: BaseEntity | dict[str, Any] | None = None
     entity: BaseEntity | None = None
 
-    def construct(
+    def build_section(  # noqa: CCR001
         self,
         artifact_kind: ArtifactKind,
         artifact_id: FullArtifactId,
         section_kind_overrides: dict[FullArtifactLocalId, ArtifactSectionKind] | None = None,
     ) -> ArtifactSection:
+        config_data = _normalize_config(self.config)
+
+        if "id" in config_data or "kind" in config_data:
+            raise NotImplementedError("SectionConstructor config must not define 'id' or 'kind'.")
+
         config_lines = [
             f'id = "{self.id}"',
             f'kind = "{self.kind}"',
         ]
+
+        for key in sorted(config_data.keys()):
+            config_lines.append(f"{key} = {_serialize_toml_value(config_data[key])}")
 
         raw_section = SectionSource(
             level=SectionLevel.h2,
@@ -342,10 +421,54 @@ class SectionConstructor:
             section_kind_overrides=section_kind_overrides,
         )
 
-        if self.meta is not None:
-            section = section.replace(meta=self.meta)
-
         if self.entity is not None:
             section = section.replace(entity=self.entity)
 
+        if self.entity is not None:
+            from donna.machine.templates import DirectiveConfig, DirectiveKind, DirectiveSectionMeta
+
+            if isinstance(self.entity, DirectiveKind):
+                directive_config = DirectiveConfig.model_validate(config_data)
+                section = section.replace(
+                    meta=DirectiveSectionMeta(
+                        name=directive_config.name,
+                        example=directive_config.example,
+                        analyze_id=directive_config.analyze_id,
+                        attribute_value=self.entity,
+                    )
+                )
+            elif section.kind == FullArtifactLocalId.parse("donna.operations:python_module"):
+                section = section.replace(meta=PythonModuleSectionMeta(attribute_value=self.entity))
+
         return section
+
+
+class ArtifactConstructor(BaseEntity):
+    title: str
+    description: str
+    config: BaseEntity | dict[str, Any]
+
+    def construct_head(self) -> SectionSource:
+        config_data = _normalize_config(self.config)
+
+        if "kind" not in config_data:
+            raise NotImplementedError("ArtifactConstructor config must define 'kind'.")
+
+        config_lines = []
+
+        for key in sorted(config_data.keys()):
+            config_lines.append(f"{key} = {_serialize_toml_value(config_data[key])}")
+
+        return SectionSource(
+            level=SectionLevel.h1,
+            title=self.title,
+            configs=[
+                CodeSource(
+                    format="toml",
+                    properties={"donna": True},
+                    content="\n".join(config_lines),
+                )
+            ],
+            original_tokens=_markdown_tokens(self.description),
+            analysis_tokens=_markdown_tokens(self.description),
+        )

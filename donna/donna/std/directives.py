@@ -6,8 +6,8 @@ import jinja2
 from jinja2.runtime import Context
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
-from donna.machine.artifacts import SectionConstructor
-from donna.machine.templates import DirectiveKind, DirectiveSectionMeta
+from donna.machine.artifacts import ArtifactConfig, ArtifactConstructor, SectionConstructor
+from donna.machine.templates import DirectiveConfig, DirectiveKind
 from donna.world.templates import RenderMode
 
 
@@ -16,7 +16,7 @@ class View(DirectiveKind):
     @jinja2.pass_context
     def __call__(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
         render_mode: RenderMode = context["render_mode"]
-        directive_id = kwargs.get("directive_id")
+        analyze_id = kwargs.get("analyze_id")
 
         if argv is None or len(argv) != 1:
             raise ValueError("View directive requires exactly one argument: specificatin_id")
@@ -28,7 +28,7 @@ class View(DirectiveKind):
                 return self.render_cli(context, artifact_id)
 
             case RenderMode.analysis:
-                return self.render_analyze(context, artifact_id, directive_id)
+                return self.render_analyze(context, artifact_id, analyze_id)
 
             case _:
                 raise NotImplementedError(f"Render mode {render_mode} not implemented in View directive.")
@@ -40,12 +40,12 @@ class View(DirectiveKind):
         self,
         context: Context,
         specification_id: FullArtifactId,
-        directive_id: FullArtifactLocalId | None,
+        analyze_id: str | None,
     ) -> str:
-        if directive_id is None:
-            raise ValueError("Directive id is required to render analysis for View directive.")
+        if analyze_id is None:
+            raise ValueError("Analyze id is required to render analysis for View directive.")
 
-        return f"$$donna {directive_id} {specification_id} donna$$"
+        return f"$$donna {analyze_id} {specification_id} donna$$"
 
 
 class GoTo(DirectiveKind):
@@ -53,6 +53,7 @@ class GoTo(DirectiveKind):
     @jinja2.pass_context
     def __call__(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
         render_mode: RenderMode = context["render_mode"]
+        analyze_id = kwargs.get("analyze_id")
 
         if argv is None or len(argv) != 1:
             raise ValueError("GoTo directive requires exactly one argument: next_operation_id")
@@ -66,7 +67,7 @@ class GoTo(DirectiveKind):
                 return self.render_cli(context, next_operation_id)
 
             case RenderMode.analysis:
-                return self.render_analyze(context, next_operation_id)
+                return self.render_analyze(context, next_operation_id, analyze_id)
 
             case _:
                 raise NotImplementedError(f"Render mode {render_mode} not implemented in GoTo directive.")
@@ -74,8 +75,11 @@ class GoTo(DirectiveKind):
     def render_cli(self, context: Context, next_operation_id: FullArtifactLocalId) -> str:
         return f"donna sessions action-request-completed <action-request-id> '{next_operation_id}'"
 
-    def render_analyze(self, context: Context, next_operation_id: FullArtifactLocalId) -> str:
-        return f"$$donna goto {next_operation_id} donna$$"
+    def render_analyze(self, context: Context, next_operation_id: FullArtifactLocalId, analyze_id: str | None) -> str:
+        if analyze_id is None:
+            raise ValueError("Analyze id is required to render analysis for GoTo directive.")
+
+        return f"$$donna {analyze_id} {next_operation_id} donna$$"
 
 
 PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations:python_module")
@@ -83,14 +87,21 @@ PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations:pyth
 view_directive_entity = View()
 goto_directive_entity = GoTo()
 
+artifact = ArtifactConstructor(
+    title="Directive Kinds",
+    description="Definitions for directive kinds exposed as Python module sections.",
+    config=ArtifactConfig(kind=FullArtifactLocalId.parse("donna.artifacts:python")),
+)
+
 view_directive = SectionConstructor(
     id=ArtifactLocalId("view"),
     kind=PYTHON_MODULE_SECTION_KIND_ID,
     title="View",
     description="Instructs the agent how to view a specification.",
-    meta=DirectiveSectionMeta(
+    config=DirectiveConfig(
         name="Specification reference",
         example="{{ donna.directives.view('<specification_id>') }}",
+        analyze_id="donna.directives:view",
     ),
     entity=view_directive_entity,
 )
@@ -100,9 +111,10 @@ goto_directive = SectionConstructor(
     kind=PYTHON_MODULE_SECTION_KIND_ID,
     title="Go To",
     description="Instructs the agent to proceed to the specified operation in the workflow.",
-    meta=DirectiveSectionMeta(
+    config=DirectiveConfig(
         name="Go To Operation",
         example="{{ donna.directives.goto('<operation_id>') }}",
+        analyze_id="goto",
     ),
     entity=goto_directive_entity,
 )
@@ -111,6 +123,7 @@ goto_directive = SectionConstructor(
 __all__ = [
     "GoTo",
     "View",
+    "artifact",
     "goto_directive",
     "view_directive",
 ]

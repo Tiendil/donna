@@ -6,7 +6,7 @@ from typing import Iterator
 import jinja2
 
 from donna.domain.ids import ArtifactId, ArtifactLocalId, FullArtifactId, FullArtifactLocalId, WorldId
-from donna.machine.templates import resolve_directive_kind
+from donna.machine.templates import DirectiveKind, DirectiveSectionMeta, load_directive_section
 
 
 class RenderMode(enum.Enum):
@@ -75,9 +75,19 @@ class DirectivePathBuilder:
         local_id = ArtifactLocalId(self._parts[-1])
 
         directive_id = FullArtifactLocalId((world_id, artifact_id, local_id))
-        directive = resolve_directive_kind(directive_id)
+        section = load_directive_section(directive_id)
+        directive = section.entity
 
-        return directive(context, *argv, directive_id=directive_id, **kwargs)
+        if directive is None:
+            raise NotImplementedError(f"Directive '{directive_id}' is not available")
+
+        if not isinstance(directive, DirectiveKind):
+            raise NotImplementedError(f"Directive '{directive_id}' is not available")
+
+        if not isinstance(section.meta, DirectiveSectionMeta):
+            raise NotImplementedError(f"Directive '{directive_id}' does not have directive metadata")
+
+        return directive(context, *argv, analyze_id=section.meta.analyze_id, **kwargs)
 
 
 class DirectivePathUndefined(jinja2.Undefined):
