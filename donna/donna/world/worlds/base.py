@@ -1,5 +1,3 @@
-import types
-
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactId, WorldId
 from donna.machine.artifacts import Artifact
@@ -23,9 +21,6 @@ class World(BaseEntity):
         raise NotImplementedError("You must implement this method in subclasses")
 
     def list_artifacts(self, artifact_prefix: ArtifactId) -> list[ArtifactId]:
-        raise NotImplementedError("You must implement this method in subclasses")
-
-    def get_modules(self) -> list[types.ModuleType]:
         raise NotImplementedError("You must implement this method in subclasses")
 
     # These two methods are intended for storing world state (e.g., session data)

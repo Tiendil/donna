@@ -1,7 +1,5 @@
-import importlib.util
 import pathlib
 import shutil
-import types
 
 from donna.domain.ids import ArtifactId, FullArtifactId
 from donna.machine.artifacts import Artifact
@@ -90,30 +88,6 @@ class World(BaseWorld):
             artifacts.append(ArtifactId(".".join(artifact_stem.parts)))
 
         return artifacts
-
-    def get_modules(self) -> list[types.ModuleType]:
-        # load only top-level .py files
-        # it is the responsibility of the developer to import submodules within those files
-        # if required
-
-        modules = []
-
-        code_path = self.path / "code"
-
-        for module_file in code_path.glob("*.py"):
-            relative_path = module_file.relative_to(self.path)
-            module_name = f"donna._world_code.{self.id}.{relative_path.stem}"
-            module_spec = importlib.util.spec_from_file_location(module_name, module_file)
-
-            if module_spec is None or module_spec.loader is None:
-                raise NotImplementedError(f"Cannot load workflow module from '{module_file}'")
-
-            module = importlib.util.module_from_spec(module_spec)
-            module_spec.loader.exec_module(module)
-
-            modules.append(module)
-
-        return modules
 
     def initialize(self, reset: bool = False) -> None:
         if self.readonly:

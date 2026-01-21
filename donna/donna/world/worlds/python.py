@@ -3,7 +3,6 @@ import importlib.resources
 import importlib.util
 import pathlib
 import pkgutil
-import types
 from collections.abc import Callable
 from typing import cast
 
@@ -259,24 +258,6 @@ class Python(BaseWorld):
             for artifact in self._list_artifacts_python()
             if str(artifact) == prefix_str or str(artifact).startswith(prefix_with_dot)
         ]
-
-    def get_modules(self) -> list[types.ModuleType]:
-        # load only top-level .py files
-        # it is the responsibility of the developer to import submodules within those files
-        # if required
-
-        modules = []
-
-        module = importlib.import_module(f"{self.root}.code")
-
-        if not hasattr(module, "__path__"):
-            raise ValueError(f"{module.__name__} is not a package")
-
-        for modinfo in pkgutil.iter_modules(module.__path__, module.__name__ + "."):
-            module = importlib.import_module(modinfo.name)
-            modules.append(module)
-
-        return modules
 
     # TODO: How can the state be represented in the Python world?
     def read_state(self, name: str) -> bytes | None:
