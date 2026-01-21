@@ -12,7 +12,7 @@ from donna.std.code.operations import (  # noqa: F401
 artifact = ArtifactConstructor(
     title="Operation Section Kinds",
     description="Definitions for operation-related section kinds exposed as Python module sections.",
-    config=ArtifactConfig(kind=FullArtifactLocalId.parse("donna.artifacts:python")),
+    config=ArtifactConfig(kind=FullArtifactLocalId.parse("donna.artifacts.python")),
 )
 
 __all__ = [

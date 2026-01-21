@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from donna.machine.changes import Change
 
 
-PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations:python_module")
+PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations.python_module")
 
 text_section_kind_entity = ArtifactSectionTextKind()
 python_module_section_kind_entity = PythonModuleSectionKind()
@@ -39,7 +39,7 @@ def extract_transitions(text: str) -> set[FullArtifactLocalId]:
     $$donna goto <full_artifact_local_id> donna$$
     ```
     """
-    pattern = r"\$\$donna\s+goto\s+([a-zA-Z0-9_\-.:/]+)\s+donna\$\$"
+    pattern = r"\$\$donna\s+goto\s+([a-zA-Z0-9_\-./]+)\s+donna\$\$"
     matches = re.findall(pattern, text)
 
     transitions: set[FullArtifactLocalId] = set()

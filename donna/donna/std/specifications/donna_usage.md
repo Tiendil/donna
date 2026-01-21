@@ -1,7 +1,7 @@
 # Donna Usage Instructions
 
 ```toml donna
-kind = "donna.artifacts:specification"
+kind = "donna.artifacts.specification"
 ```
 
 This document describes how agents MUST use Donna to manage and perform their workflows.
@@ -51,7 +51,7 @@ All work in the context of session/story is managed by the `donna` tool.
   4. Start working by calling `<DONNA_CMD> sessions run <workflow-id>`.
   5. The `donna` tool will output descriptions of all operations it performs to complete the story.
   6. The `donna` tool will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
-- When you done doing your part, you call `<DONNA_CMD> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report that you completed the action request. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>.<artifact>:<operation-id>`.
+- When you done doing your part, you call `<DONNA_CMD> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report that you completed the action request. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>.<artifact>.<operation-id>`.
 - After you report the result:
   1. The `donna` tool will output what you need to do next.
   2. You repeat the process until the story is completed.

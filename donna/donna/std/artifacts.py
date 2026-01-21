@@ -11,7 +11,7 @@ from donna.machine.artifacts import (
 from donna.std.code.specifications import SpecificationKind
 from donna.std.code.workflows import WorkflowKind
 
-PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations:python_module")
+PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations.python_module")
 
 specification_kind_entity = SpecificationKind()
 workflow_kind_entity = WorkflowKind()
@@ -20,7 +20,7 @@ python_artifact_kind = PythonArtifact()
 artifact = ArtifactConstructor(
     title="Artifact Kinds",
     description="Definitions for artifact kinds exposed as Python module sections.",
-    config=ArtifactConfig(kind=FullArtifactLocalId.parse("donna.artifacts:python")),
+    config=ArtifactConfig(kind=FullArtifactLocalId.parse("donna.artifacts.python")),
 )
 
 specification_kind = SectionConstructor(

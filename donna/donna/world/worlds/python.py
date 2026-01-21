@@ -78,7 +78,7 @@ class Python(BaseWorld):
         if not isinstance(kind, PythonArtifact):
             raise NotImplementedError("Python artifact kind is not available")
 
-        python_kind_id = FullArtifactLocalId.parse("donna.artifacts:python")
+        python_kind_id = FullArtifactLocalId.parse("donna.artifacts.python")
         return kind.construct_module_artifact(module, full_id, python_kind_id)
 
     def _fetch_markdown(self, artifact_id: ArtifactId) -> Artifact:

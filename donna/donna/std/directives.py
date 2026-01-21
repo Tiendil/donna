@@ -87,7 +87,7 @@ class GoTo(DirectiveKind):
         return f"$$donna {meta.analyze_id} {next_operation_id} donna$$"
 
 
-PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations:python_module")
+PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations.python_module")
 
 view_directive_entity = View()
 goto_directive_entity = GoTo()
@@ -95,7 +95,7 @@ goto_directive_entity = GoTo()
 artifact = ArtifactConstructor(
     title="Directive Kinds",
     description="Definitions for directive kinds exposed as Python module sections.",
-    config=ArtifactConfig(kind=FullArtifactLocalId.parse("donna.artifacts:python")),
+    config=ArtifactConfig(kind=FullArtifactLocalId.parse("donna.artifacts.python")),
 )
 
 view_directive = SectionConstructor(
@@ -108,7 +108,7 @@ view_directive = SectionConstructor(
     config=DirectiveConfig(
         id=ArtifactLocalId("view"),
         kind=PYTHON_MODULE_SECTION_KIND_ID,
-        analyze_id="donna.directives:view",
+        analyze_id="donna.directives.view",
     ),
     entity=view_directive_entity,
 )

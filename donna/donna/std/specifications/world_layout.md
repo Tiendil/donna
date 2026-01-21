@@ -1,7 +1,7 @@
 # Donna World Layout
 
 ```toml donna
-kind = "donna.artifacts:specification"
+kind = "donna.artifacts.specification"
 ```
 
 This document describes how Donna discovers and manages its dynamic and/or external artifacts.

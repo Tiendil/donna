@@ -1,7 +1,7 @@
 # Session Planning Guidelines
 
 ```toml donna
-kind = "donna.artifacts:specification"
+kind = "donna.artifacts.specification"
 ```
 
 This document describes how Donna MUST plan work on a session with the help of workflows. The

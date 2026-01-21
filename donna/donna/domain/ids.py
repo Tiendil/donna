@@ -216,7 +216,7 @@ class FullArtifactLocalId(tuple[WorldId, ArtifactId, ArtifactLocalId]):
     __slots__ = ()
 
     def __str__(self) -> str:
-        return f"{self.world_id}.{self.artifact_id}:{self.local_id}"
+        return f"{self.world_id}.{self.artifact_id}.{self.local_id}"
 
     @property
     def world_id(self) -> WorldId:
@@ -236,20 +236,16 @@ class FullArtifactLocalId(tuple[WorldId, ArtifactId, ArtifactLocalId]):
 
     @classmethod
     def parse(cls, text: str) -> "FullArtifactLocalId":
-        if text.count(":") != 1:
-            raise NotImplementedError(f"Invalid FullArtifactLocalId format: '{text}'")
+        try:
+            artifact_part, local_part = text.rsplit(".", maxsplit=1)
+        except ValueError as exc:
+            raise NotImplementedError(f"Invalid FullArtifactLocalId format: '{text}'") from exc
 
-        artifact_part, local_part = text.rsplit(":", maxsplit=1)
-        parts = artifact_part.split(".", maxsplit=1)
+        full_artifact_id = FullArtifactId.parse(artifact_part)
 
-        if len(parts) != 2:
-            raise NotImplementedError(f"Invalid FullArtifactLocalId format: '{text}'")
-
-        world_id = WorldId(parts[0])
-        artifact_id = ArtifactId(parts[1])
-        local_id = ArtifactLocalId(local_part)
-
-        return FullArtifactLocalId((world_id, artifact_id, local_id))
+        return FullArtifactLocalId(
+            (full_artifact_id.world_id, full_artifact_id.artifact_id, ArtifactLocalId(local_part))
+        )
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:

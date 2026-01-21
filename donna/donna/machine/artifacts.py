@@ -4,6 +4,7 @@ import types
 import uuid
 from typing import TYPE_CHECKING, Any, Iterable
 
+import pydantic
 from markdown_it import MarkdownIt
 
 from donna.core.entities import BaseEntity
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
 
 
 class ArtifactKind(BaseEntity):
-    default_section_kind: FullArtifactLocalId = FullArtifactLocalId.parse("donna.operations:text")
+    default_section_kind: FullArtifactLocalId = FullArtifactLocalId.parse("donna.operations.text")
 
     def construct_section(
         self,
@@ -80,6 +81,8 @@ class ArtifactSectionConfig(BaseEntity):
 
 
 class ArtifactConfig(BaseEntity):
+    model_config = pydantic.ConfigDict(extra="ignore")
+
     kind: FullArtifactLocalId
 
 
@@ -420,7 +423,7 @@ class SectionConstructor(BaseEntity):
                         attribute_value=self.entity,
                     )
                 )
-            elif section.kind == FullArtifactLocalId.parse("donna.operations:python_module"):
+            elif section.kind == FullArtifactLocalId.parse("donna.operations.python_module"):
                 section = section.replace(meta=PythonModuleSectionMeta(attribute_value=self.entity))
 
         return section
