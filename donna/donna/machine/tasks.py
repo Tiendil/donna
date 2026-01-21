@@ -53,7 +53,7 @@ class WorkUnit(BaseEntity):
         return unit
 
     def run(self, task: Task) -> list["Change"]:
-        from donna.machine.artifacts import resolve_section_kind
+        from donna.machine.artifacts import ArtifactSectionKindMeta, resolve
         from donna.world import artifacts
 
         workflow = artifacts.load_artifact(self.operation_id.full_artifact_id)
@@ -65,7 +65,10 @@ class WorkUnit(BaseEntity):
 
         assert operation.kind is not None
 
-        operation_kind = resolve_section_kind(operation.kind)
+        section = resolve(operation.kind)
+        if not isinstance(section.meta, ArtifactSectionKindMeta):
+            raise NotImplementedError(f"Operation kind '{operation.kind}' is not available")
+        operation_kind = section.meta.section_kind
 
         cells = list(operation_kind.execute_section(task, self, operation))
 

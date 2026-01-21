@@ -5,7 +5,7 @@ from jinja2.runtime import Context
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import FullArtifactLocalId
-from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
+from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta, resolve
 
 
 class DirectiveKind(BaseEntity):
@@ -29,19 +29,17 @@ class DirectiveSectionMeta(ArtifactSectionMeta):
 
 
 def load_directive_section(directive_kind_id: FullArtifactLocalId) -> "ArtifactSection":
-    from donna.world import artifacts as world_artifacts
+    section = resolve(directive_kind_id)
 
-    artifact = world_artifacts.load_artifact(directive_kind_id.full_artifact_id)
-    section = artifact.get_section(directive_kind_id)
-
-    if section is None or not isinstance(section.meta, DirectiveSectionMeta):
+    if not isinstance(section.meta, DirectiveSectionMeta):
         raise NotImplementedError(f"Directive kind '{directive_kind_id}' is not available")
 
     return section
 
 
-def resolve_directive_kind(directive_kind_id: FullArtifactLocalId) -> DirectiveKind:
-    section = load_directive_section(directive_kind_id)
-
-    assert isinstance(section.meta, DirectiveSectionMeta)
-    return section.meta.directive
+__all__ = [
+    "DirectiveConfig",
+    "DirectiveKind",
+    "DirectiveSectionMeta",
+    "load_directive_section",
+]

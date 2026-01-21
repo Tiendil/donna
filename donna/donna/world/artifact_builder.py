@@ -1,5 +1,12 @@
 from donna.domain.ids import FullArtifactId
-from donna.machine.artifacts import Artifact, ArtifactConfig, ArtifactContent, SectionContent, resolve_artifact_kind
+from donna.machine.artifacts import (
+    Artifact,
+    ArtifactConfig,
+    ArtifactContent,
+    ArtifactKindSectionMeta,
+    SectionContent,
+    resolve,
+)
 from donna.world import markdown
 from donna.world.templates import RenderMode, render, render_mode
 
@@ -39,7 +46,10 @@ def construct_artifact_from_content(full_id: FullArtifactId, content: str) -> Ar
     raw_artifact = parse_artifact_content(full_id, content)
 
     config = ArtifactConfig.parse_obj(raw_artifact.head.config)
-    kind = resolve_artifact_kind(config.kind)
+    section = resolve(config.kind)
+    if not isinstance(section.meta, ArtifactKindSectionMeta):
+        raise NotImplementedError(f"Artifact kind '{config.kind}' is not available")
+    kind = section.meta.artifact_kind
 
     return kind.construct_artifact(raw_artifact)
 

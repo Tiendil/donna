@@ -1,4 +1,3 @@
-import inspect
 import types
 import uuid
 from typing import TYPE_CHECKING, Any, Iterable
@@ -39,7 +38,10 @@ class ArtifactKind(BaseEntity):
             section_kind = section_kind_overrides.get(section_kind_id)
 
         if section_kind is None:
-            section_kind = resolve_section_kind(section_kind_id)
+            resolved_section = resolve(section_kind_id)
+            if not isinstance(resolved_section.meta, ArtifactSectionKindMeta):
+                raise NotImplementedError(f"Section kind '{section_kind_id}' is not available")
+            section_kind = resolved_section.meta.section_kind
 
         section_content = section.replace(config=data)
         return section_kind.construct_section(artifact_id, section_content)
@@ -240,7 +242,7 @@ class PythonArtifact(ArtifactKind):
         module: types.ModuleType,
         artifact_id: FullArtifactId,
         kind_id: FullArtifactLocalId,
-    ) -> "Artifact":
+    ) -> "Artifact | None":
         artifact_constructor: ArtifactConstructor | None = None
 
         for value in module.__dict__.values():
@@ -251,18 +253,16 @@ class PythonArtifact(ArtifactKind):
                 artifact_constructor = value
 
         if artifact_constructor is None:
-            title = module.__name__
-            description = inspect.getdoc(module) or ""
-            artifact_kind_id = kind_id
-        else:
-            title = artifact_constructor.title
-            description = artifact_constructor.description
-            artifact_kind_id = artifact_constructor.config.kind
+            return None
 
-            if artifact_kind_id != kind_id:
-                raise NotImplementedError(
-                    f"Artifact kind mismatch: constructor uses '{artifact_kind_id}', but expected '{kind_id}'."
-                )
+        title = artifact_constructor.title
+        description = artifact_constructor.description
+        artifact_kind_id = artifact_constructor.config.kind
+
+        if artifact_kind_id != kind_id:
+            raise NotImplementedError(
+                f"Artifact kind mismatch: constructor uses '{artifact_kind_id}', but expected '{kind_id}'."
+            )
 
         sections: list[ArtifactSection] = []
 
@@ -301,28 +301,16 @@ class PythonArtifact(ArtifactKind):
         )
 
 
-def resolve_section_kind(section_kind_id: FullArtifactLocalId) -> ArtifactSectionKind:
+def resolve(target_id: FullArtifactLocalId) -> ArtifactSection:
     from donna.world import artifacts as world_artifacts
 
-    artifact = world_artifacts.load_artifact(section_kind_id.full_artifact_id)
-    section = artifact.get_section(section_kind_id)
+    artifact = world_artifacts.load_artifact(target_id.full_artifact_id)
+    section = artifact.get_section(target_id)
 
-    if section is None or not isinstance(section.meta, ArtifactSectionKindMeta):
-        raise NotImplementedError(f"Section kind '{section_kind_id}' is not available")
+    if section is None:
+        raise NotImplementedError(f"Section '{target_id}' is not available")
 
-    return section.meta.section_kind
-
-
-def resolve_artifact_kind(artifact_kind_id: FullArtifactLocalId) -> ArtifactKind:
-    from donna.world import artifacts as world_artifacts
-
-    artifact = world_artifacts.load_artifact(artifact_kind_id.full_artifact_id)
-    section = artifact.get_section(artifact_kind_id)
-
-    if section is None or not isinstance(section.meta, ArtifactKindSectionMeta):
-        raise NotImplementedError(f"Artifact kind '{artifact_kind_id}' is not available")
-
-    return section.meta.artifact_kind
+    return section
 
 
 class SectionContent(BaseEntity):

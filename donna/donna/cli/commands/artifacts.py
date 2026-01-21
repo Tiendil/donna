@@ -5,7 +5,7 @@ import typer
 from donna.cli.application import app
 from donna.cli.types import ArtifactPrefixArgument, FullArtifactIdArgument
 from donna.cli.utils import output_cells
-from donna.machine.artifacts import resolve_artifact_kind
+from donna.machine.artifacts import ArtifactKindSectionMeta, resolve
 from donna.world import artifacts as world_artifacts
 
 artifacts_cli = typer.Typer()
@@ -41,7 +41,10 @@ def update(id: FullArtifactIdArgument, input: pathlib.Path) -> None:
 def validate(id: FullArtifactIdArgument) -> None:
     artifact = world_artifacts.load_artifact(id)
 
-    artifact_kind = resolve_artifact_kind(artifact.kind)
+    section = resolve(artifact.kind)
+    if not isinstance(section.meta, ArtifactKindSectionMeta):
+        raise NotImplementedError(f"Artifact kind '{artifact.kind}' is not available")
+    artifact_kind = section.meta.artifact_kind
 
     _is_valid, cells = artifact_kind.validate_artifact(artifact)
 
@@ -53,7 +56,10 @@ def validate_all(prefix: ArtifactPrefixArgument) -> None:
     artifacts = world_artifacts.list_artifacts(prefix)
 
     for artifact in artifacts:
-        artifact_kind = resolve_artifact_kind(artifact.kind)
+        section = resolve(artifact.kind)
+        if not isinstance(section.meta, ArtifactKindSectionMeta):
+            raise NotImplementedError(f"Artifact kind '{artifact.kind}' is not available")
+        artifact_kind = section.meta.artifact_kind
 
         _is_valid, cells = artifact_kind.validate_artifact(artifact)
 
