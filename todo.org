@@ -61,6 +61,7 @@
 *** !we do not need list modules?
 *** do smth with hardcoded id generators like `artifact_kind_id` and `ops_section_id`
 *** where to place operations/kinds classes?
+*** part of sections is referenced as `<world>.<artifact>:<section>` and part as `<world>.<artifact>.<section>`. Should we unify that?
 *** what with introspection?
 **** !filesystem list artifacts does not find .py (uses hardcoded .md)
 **** !remove _MARKDOWN_ROOTS
@@ -76,6 +77,7 @@
 *** PythonModuleSectionKind.execut_section should work
 *** Should we use PythonModuleSectionKind.construct_section to construct sections?
 *** Should we use PythonArtifact.construct_artifact to construct artifacts?
+*** refactor `PythonArtifact.construct_module`
 ** python world implementation, WANTs
 *** world kinds are configured via python module imports (not artifact paths?) or somehow very smartly via artifact paths
 *** system python (i.e. donna's environment) can be a world also with predefined behavior

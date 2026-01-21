@@ -22,7 +22,7 @@ To get information from the artifact, developers, agents and Donna view one of i
 
 **If you need an information from the artifact, you MUST view its representation**. Artifact sources are only for editing.
 
-Read the specification `{{ view("donna.specifications.donna_usage") }}` to learn how to work with artifacts via Donna CLI.
+Read the specification `{{ donna.directives.view("donna.specifications.donna_usage") }}` to learn how to work with artifacts via Donna CLI.
 
 ## Source Format and Rendering
 
@@ -36,8 +36,8 @@ Donna provides a set of special directives that can and MUST be used in the arti
 
 Here are some examples:
 
-- `{{ "{{ view(<artifact-id>) }}" }}` — references another artifact. Depending of the rendering mode can be: exect CLI command to view the artifact, specially formatted reference link to the artifact to easier track dependencies.
-- `{{ "{{ goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. Depending of the rendering mode can be: exect CLI command to push workflow forward, specially formatted reference link to the operation to enable FSM validation of the workflow.
+- `{{ "{{ donna.directives.view(<artifact-id>) }}" }}` — references another artifact. Depending of the rendering mode can be: exect CLI command to view the artifact, specially formatted reference link to the artifact to easier track dependencies.
+- `{{ "{{ donna.directives.goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. Depending of the rendering mode can be: exect CLI command to push workflow forward, specially formatted reference link to the operation to enable FSM validation of the workflow.
 
 ## Structure of a Text Artifact
 
@@ -149,13 +149,13 @@ Example of the instructions:
 
 ```
 1. Run `some cli command` to do something.
-2. If no errors encountered `{{ '{{ goto("next_operation") }}' }}`
-3. If errors encountered `{{ '{{ goto("error_handling_operation") }}' }}`
+2. If no errors encountered `{{ '{{ donna.directives.goto("next_operation") }}' }}`
+3. If errors encountered `{{ '{{ donna.directives.goto("error_handling_operation") }}' }}`
 
 Here may be any additional instructions, requirements, notes, references, etc.
 ```
 
-`goto` directive will be rendered in the direct instruction for agent of what to call after it completed the action.
+`donna.directives.goto` directive will be rendered in the direct instruction for agent of what to call after it completed the action.
 
 **The body of the operation MUST contain a neat strictly defined algorithm for the agent to follow.**
 
@@ -169,5 +169,5 @@ Donna provides multiple directives that MUST be used in the artifact source to e
 
 Here they are:
 
-1. `{{ "{{ view(<full-artifact-id>) }}" }}` — references another artifact. Depending of the rendering mode can be: exect CLI command to view the artifact, specially formatted reference link to the artifact to easier track dependencies.
-2. `{{ "{{ goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. Depending of the rendering mode can be: exect CLI command to push workflow forward, specially formatted reference link to the operation to enable FSM validation of the workflow.
+1. `{{ "{{ donna.directives.view(<full-artifact-id>) }}" }}` — references another artifact. Depending of the rendering mode can be: exect CLI command to view the artifact, specially formatted reference link to the artifact to easier track dependencies.
+2. `{{ "{{ donna.directives.goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. Depending of the rendering mode can be: exect CLI command to push workflow forward, specially formatted reference link to the operation to enable FSM validation of the workflow.

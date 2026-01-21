@@ -23,8 +23,8 @@ fsm_mode = "start"
 4. Read the fetched source to capture:
    - Workflow name (H1 title) and short description.
    - `start_operation_id` from the head config.
-   - Each operation `id`, `kind`, and any {% raw %}`{{ goto(...) }}`{% endraw %} transitions in its body.
-5. Continue to {{ goto("select_fsm_dsl") }}.
+   - Each operation `id`, `kind`, and any {% raw %}`{{ donna.directives.goto(...) }}`{% endraw %} transitions in its body.
+5. Continue to {{ donna.directives.goto("select_fsm_dsl") }}.
 
 ## Select FSM graph DSL
 
@@ -36,7 +36,7 @@ kind = "donna.operations:request_action"
 1. Determine whether the developer requested a specific FSM graph DSL (from the original request or provided inputs).
 2. If a DSL is specified, record it verbatim for rendering.
 3. If no DSL is specified, select Mermaid DSL.
-4. Continue to {{ goto("render_schema") }}.
+4. Continue to {{ donna.directives.goto("render_schema") }}.
 
 ## Render short schema
 
@@ -60,7 +60,7 @@ kind = "donna.operations:request_action"
 2. Ensure the FSM graph includes all operations and transitions, and clearly marks the start and finish operations.
 3. For Mermaid, use a `stateDiagram-v2` or `flowchart` representation and keep node ids aligned with operation ids.
 4. For each operation list entry, write a single concise sentence that is clean, complete, and faithful to the operation body.
-5. Continue to {{ goto("refine_schema") }}.
+5. Continue to {{ donna.directives.goto("refine_schema") }}.
 
 ## Refine schema output
 
@@ -72,7 +72,7 @@ kind = "donna.operations:request_action"
 1. Re-read the produced schema and improve clarity and correctness without changing the required format.
 2. Tighten wording to keep each description to a single clean sentence while still being thorough and accurate.
 3. Ensure the DSL selection rule is reflected in the graph and described output.
-4. Continue to {{ goto("validate_schema") }}.
+4. Continue to {{ donna.directives.goto("validate_schema") }}.
 
 ## Validate schema output
 
@@ -84,8 +84,8 @@ kind = "donna.operations:request_action"
 1. Verify the output contains the title, one-sentence description, FSM graph, and operation list in the required order.
 2. Confirm the chosen DSL is correct (developer-specified or Mermaid by default).
 3. Confirm each operation description is a single sentence and matches the operation purpose.
-4. If any check fails, return to {{ goto("refine_schema") }}.
-5. If all checks pass, proceed to {{ goto("finish") }}.
+4. If any check fails, return to {{ donna.directives.goto("refine_schema") }}.
+5. If all checks pass, proceed to {{ donna.directives.goto("finish") }}.
 
 ## Finish
 

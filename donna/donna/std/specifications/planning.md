@@ -195,7 +195,7 @@ Source files as artifacts:
 
 The work execution workflow has a standard name `session.workflows.work_execution` and describes the step-by-step plan of work to be done in the context of the current session.
 
-The workflow MUST be an artifact of kind `workflow`, see details `{{ view("donna.specifications.default_text_artifacts_behavior") }}`. I.e. the final workflow must be a valid FSM that agent will execute with the help of `donna` tool.
+The workflow MUST be an artifact of kind `workflow`, see details `{{ donna.directives.view("donna.specifications.default_text_artifacts_behavior") }}`. I.e. the final workflow must be a valid FSM that agent will execute with the help of `donna` tool.
 
 Primary requirement:
 

@@ -1,7 +1,7 @@
 import inspect
 import types
 import uuid
-from typing import TYPE_CHECKING, Any, Iterable
+from typing import TYPE_CHECKING, Any, Iterable, cast
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
@@ -239,6 +239,8 @@ class PythonArtifact(ArtifactKindSection):
         raise NotImplementedError("Python artifacts are constructed from modules, not markdown sources.")
 
     def construct_module(self, module: types.ModuleType, artifact_id: FullArtifactId) -> "Artifact":  # noqa: CCR001
+        from donna.machine.templates import DirectiveKindSection
+
         description = inspect.getdoc(module) or ""
         title = module.__name__
 
@@ -252,9 +254,11 @@ class PythonArtifact(ArtifactKindSection):
                 continue
 
             if isinstance(value, ArtifactSection):
-                if not isinstance(value, (ArtifactSectionKind, ArtifactKind)):
+                # TODO: do we need this check here?
+                if not isinstance(value, (ArtifactSectionKind, ArtifactKind, DirectiveKindSection)):
                     raise NotImplementedError(
-                        f"Section '{name}' must be an ArtifactSectionKind or ArtifactKind to be included."
+                        f"Section '{name}' must be an ArtifactSectionKind, ArtifactKind, or DirectiveKindSection to"
+                        " be included."
                     )
 
                 if value.id is None or value.id.full_artifact_id != artifact_id:
@@ -262,7 +266,7 @@ class PythonArtifact(ArtifactKindSection):
                         f"Section '{name}' must belong to artifact '{artifact_id}' to be included."
                     )
 
-                sections.append(value)
+                sections.append(cast(ArtifactSection, value))
 
         return Artifact(
             id=artifact_id,

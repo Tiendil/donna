@@ -1,16 +1,9 @@
-from typing import Any
-
-import jinja2
-from jinja2.runtime import Context
-
-from donna.domain.ids import DirectiveKindId, FullArtifactLocalId
+from donna.domain.ids import FullArtifactLocalId
 from donna.machine.artifacts import Artifact, ArtifactKindSection
 from donna.machine.cells import Cell
 from donna.machine.operations import FsmMode, OperationMeta
-from donna.machine.templates import DirectiveKind
 from donna.machine.workflows import WorkflowMeta
 from donna.world.markdown import ArtifactSource
-from donna.world.templates import RenderMode
 
 
 def find_not_reachable_operations(
@@ -152,41 +145,3 @@ class WorkflowKind(ArtifactKindSection):
                 status="success",
             )
         ]
-
-
-class GoTo(DirectiveKind):
-
-    @jinja2.pass_context
-    def __call__(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
-        render_mode: RenderMode = context["render_mode"]
-
-        if argv is None or len(argv) != 1:
-            raise ValueError("GoTo directive requires exactly one argument: next_operation_id")
-
-        artifact_id = context["artifact_id"]
-
-        next_operation_id = artifact_id.to_full_local(argv[0])
-
-        match render_mode:
-            case RenderMode.cli:
-                return self.render_cli(context, next_operation_id)
-
-            case RenderMode.analysis:
-                return self.render_analyze(context, next_operation_id)
-
-            case _:
-                raise NotImplementedError(f"Render mode {render_mode} not implemented in GoTo directive.")
-
-    def render_cli(self, context: Context, next_operation_id: FullArtifactLocalId) -> str:
-        return f"donna sessions action-request-completed <action-request-id> '{next_operation_id}'"
-
-    def render_analyze(self, context: Context, next_operation_id: FullArtifactLocalId) -> str:
-        return f"$$donna {self.id} {next_operation_id} donna$$"
-
-
-goto_directive = GoTo(
-    id=DirectiveKindId("goto"),
-    name="Go To Operation",
-    description="Instructs the agent to proceed to the specified operation in the workflow.",
-    example="{{ goto('<operation_id>') }}",
-)

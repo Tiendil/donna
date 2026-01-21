@@ -15,7 +15,7 @@ fsm_mode = "start"
 ```
 
 1. Run `cd ./donna && poetry run autoflake .` to remove unused imports and variables in the codebase.
-2. `{{ goto("run_isort") }}`
+2. `{{ donna.directives.goto("run_isort") }}`
 
 ## Run isort
 
@@ -25,7 +25,7 @@ kind = "donna.operations:request_action"
 ```
 
 1. Run `cd ./donna && poetry run isort .` to sort imports in the codebase.
-2. `{{ goto("run_black") }}`
+2. `{{ donna.directives.goto("run_black") }}`
 
 ## Run Black
 
@@ -35,7 +35,7 @@ kind = "donna.operations:request_action"
 ```
 
 1. Run `cd ./donna && poetry run black .` to format the codebase.
-2. `{{ goto("run_flake8") }}`
+2. `{{ donna.directives.goto("run_flake8") }}`
 
 ## Run Flake8
 
@@ -46,8 +46,8 @@ kind = "donna.operations:request_action"
 
 1. Run `cd ./donna && poetry run flake8 .` to check the codebase for style issues.
 2. If any issues are found, fix them.
-3. If you made changes, do `{{ goto("run_autoflake") }}`.
-4. If no issues are found, do `{{ goto("run_mypy") }}`.
+3. If you made changes, do `{{ donna.directives.goto("run_autoflake") }}`.
+4. If no issues are found, do `{{ donna.directives.goto("run_mypy") }}`.
 
 Instructions on fixing special cases:
 
@@ -66,8 +66,8 @@ kind = "donna.operations:request_action"
 1. Run `cd ./donna && poetry run mypy ./donna` to check the codebase for type annotation issues.
 2. If there are issues found that you can fix, fix them.
 3. Ask developer to fix any remaining issues manually.
-4. If you made changes, do `{{ goto("run_autoflake") }}`.
-5. If no issues are found, do `{{ goto("finish") }}`.
+4. If you made changes, do `{{ donna.directives.goto("run_autoflake") }}`.
+5. If no issues are found, do `{{ donna.directives.goto("finish") }}`.
 
 Issues you are allowed to fix:
 

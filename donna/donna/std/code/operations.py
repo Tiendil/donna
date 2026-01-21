@@ -42,9 +42,9 @@ python_module_section_kind = PythonModuleSectionKind(
 def extract_transitions(text: str) -> set[FullArtifactLocalId]:
     """Extracts all transitions from the text of action request.
 
-    Transition is specified as render of `goto` command in the format:
+    Transition is specified as render of `goto` directive in the format:
     ```
-    $$donna todo <full_artifact_local_id> donna$$
+    $$donna goto <full_artifact_local_id> donna$$
     ```
     """
     pattern = r"\$\$donna\s+goto\s+([a-zA-Z0-9_\-.:/]+)\s+donna\$\$"

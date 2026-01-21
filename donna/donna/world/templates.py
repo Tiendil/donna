@@ -5,7 +5,8 @@ from typing import Iterator
 
 import jinja2
 
-from donna.domain.ids import FullArtifactId
+from donna.domain.ids import ArtifactId, ArtifactLocalId, FullArtifactId, FullArtifactLocalId, WorldId
+from donna.machine.templates import resolve_directive_kind
 
 
 class RenderMode(enum.Enum):
@@ -48,9 +49,46 @@ def set_default_render_mode(mode: RenderMode) -> None:
 _ENVIRONMENT = None
 
 
-def env() -> jinja2.Environment:
-    from donna.world.primitives_register import register
+def _known_world_ids() -> set[str]:
+    from donna.world.config import config
 
+    return {str(world.id) for world in config().worlds}
+
+
+class DirectivePathBuilder:
+    def __init__(self, parts: tuple[str, ...]) -> None:
+        self._parts = parts
+
+    def __getattr__(self, name: str) -> "DirectivePathBuilder":
+        return DirectivePathBuilder(self._parts + (name,))
+
+    def __getitem__(self, name: str) -> "DirectivePathBuilder":
+        return DirectivePathBuilder(self._parts + (name,))
+
+    @jinja2.pass_context
+    def __call__(self, context: jinja2.runtime.Context, *argv: object, **kwargs: object) -> object:
+        if len(self._parts) < 3:
+            raise NotImplementedError("Directive path must include world, artifact, and directive parts.")
+
+        world_id = WorldId(self._parts[0])
+        artifact_id = ArtifactId(".".join(self._parts[1:-1]))
+        local_id = ArtifactLocalId(self._parts[-1])
+
+        directive_id = FullArtifactLocalId((world_id, artifact_id, local_id))
+        directive = resolve_directive_kind(directive_id)
+
+        return directive(context, *argv, **kwargs)
+
+
+class DirectivePathUndefined(jinja2.Undefined):
+    def __getattr__(self, name: str) -> object:
+        if not self._undefined_name or self._undefined_name not in _known_world_ids():
+            return jinja2.Undefined(name=f"{self._undefined_name}.{name}")
+
+        return DirectivePathBuilder((self._undefined_name, name))
+
+
+def env() -> jinja2.Environment:
     global _ENVIRONMENT
 
     if _ENVIRONMENT is not None:
@@ -65,10 +103,8 @@ def env() -> jinja2.Environment:
         autoescape=jinja2.select_autoescape(default=False, default_for_string=False),
         auto_reload=False,
         extensions=["jinja2.ext.do", "jinja2.ext.loopcontrols", "jinja2.ext.debug"],
+        undefined=DirectivePathUndefined,
     )
-
-    for directive in register().directives.values():
-        _ENVIRONMENT.globals[directive.id] = directive
 
     return _ENVIRONMENT
 
