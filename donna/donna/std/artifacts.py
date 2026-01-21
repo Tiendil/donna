@@ -1,41 +1,46 @@
 """Python artifact that exposes artifact kind definitions."""
 
-from donna.domain.ids import ArtifactId, ArtifactLocalId, FullArtifactLocalId, WorldId
-from donna.machine.artifacts import PythonArtifact
+from donna.domain.ids import ArtifactLocalId, FullArtifactLocalId
+from donna.machine.artifacts import PythonArtifact, PythonModuleSectionMeta, SectionConstructor
 from donna.std.code.specifications import SpecificationKind
 from donna.std.code.workflows import WorkflowKind
 
-ARTIFACTS_WORLD_ID = WorldId("donna")
-ARTIFACTS_ARTIFACT_ID = ArtifactId("artifacts")
+PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations:python_module")
 
+specification_kind_entity = SpecificationKind()
+workflow_kind_entity = WorkflowKind()
+python_artifact_kind = PythonArtifact()
 
-def artifact_kind_id(local_id: str) -> FullArtifactLocalId:
-    return FullArtifactLocalId((ARTIFACTS_WORLD_ID, ARTIFACTS_ARTIFACT_ID, ArtifactLocalId(local_id)))
-
-
-specification_kind = SpecificationKind(
-    id=artifact_kind_id("specification"),
+specification_kind = SectionConstructor(
+    id=ArtifactLocalId("specification"),
+    kind=PYTHON_MODULE_SECTION_KIND_ID,
     title="Specification",
     description="A specification that define various aspects of the current project.",
+    meta=PythonModuleSectionMeta(attribute_value=specification_kind_entity),
+    entity=specification_kind_entity,
 )
 
-
-workflow_kind = WorkflowKind(
-    id=artifact_kind_id("workflow"),
+workflow_kind = SectionConstructor(
+    id=ArtifactLocalId("workflow"),
+    kind=PYTHON_MODULE_SECTION_KIND_ID,
     title="Workflow",
     description="A workflow that defines a state machine for the agent to follow.",
+    meta=PythonModuleSectionMeta(attribute_value=workflow_kind_entity),
+    entity=workflow_kind_entity,
 )
 
-
-python_artifact_kind = PythonArtifact(
-    id=artifact_kind_id("python"),
+python_artifact_kind_section = SectionConstructor(
+    id=ArtifactLocalId("python"),
+    kind=PYTHON_MODULE_SECTION_KIND_ID,
     title="Python Artifact",
     description="A Python module artifact.",
+    meta=PythonModuleSectionMeta(attribute_value=python_artifact_kind),
+    entity=python_artifact_kind,
 )
 
 __all__ = [
-    "artifact_kind_id",
     "python_artifact_kind",
+    "python_artifact_kind_section",
     "specification_kind",
     "workflow_kind",
 ]

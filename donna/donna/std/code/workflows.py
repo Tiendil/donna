@@ -1,5 +1,5 @@
 from donna.domain.ids import FullArtifactLocalId
-from donna.machine.artifacts import Artifact, ArtifactKindSection
+from donna.machine.artifacts import Artifact, ArtifactConfig, ArtifactKind
 from donna.machine.cells import Cell
 from donna.machine.operations import FsmMode, OperationMeta
 from donna.machine.workflows import WorkflowMeta
@@ -32,10 +32,11 @@ def find_not_reachable_operations(
     return all_operations - reachable
 
 
-class WorkflowKind(ArtifactKindSection):
+class WorkflowKind(ArtifactKind):
     def construct_artifact(self, source: ArtifactSource) -> "Artifact":
         title = source.head.title or str(source.id)
         description = source.head.as_original_markdown(with_title=False)
+        kind_id = ArtifactConfig.parse_obj(source.head.merged_configs()).kind
 
         sections = [self.construct_section(source.id, section) for section in source.tail]
 
@@ -53,7 +54,7 @@ class WorkflowKind(ArtifactKindSection):
 
         spec = Artifact(
             id=source.id,
-            kind=self.id,
+            kind=kind_id,
             title=title,
             description=description,
             meta=WorkflowMeta(start_operation_id=start_operation_id),

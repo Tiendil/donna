@@ -6,7 +6,7 @@ import pkgutil
 from collections.abc import Callable
 from typing import cast
 
-from donna.domain.ids import ArtifactId, FullArtifactId, WorldId
+from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactLocalId, WorldId
 from donna.machine.artifacts import Artifact, PythonArtifact
 from donna.world.artifact_builder import construct_artifact_from_content
 from donna.world.worlds.base import World as BaseWorld
@@ -78,7 +78,8 @@ class Python(BaseWorld):
         if not isinstance(kind, PythonArtifact):
             raise NotImplementedError("Python artifact kind is not available")
 
-        return kind.construct_module(module, full_id)
+        python_kind_id = FullArtifactLocalId.parse("donna.artifacts:python")
+        return kind.construct_module(module, full_id, python_kind_id)
 
     def _fetch_markdown(self, artifact_id: ArtifactId) -> Artifact:
         full_id = FullArtifactId((self.id, artifact_id))

@@ -3,9 +3,15 @@ from typing import TYPE_CHECKING, Iterator, Literal
 
 import pydantic
 
-from donna.domain.ids import ArtifactId, ArtifactLocalId, FullArtifactId, FullArtifactLocalId, WorldId
+from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
 from donna.machine.action_requests import ActionRequest
-from donna.machine.artifacts import ArtifactSection, ArtifactSectionTextKind, PythonModuleSectionKind
+from donna.machine.artifacts import (
+    ArtifactSection,
+    ArtifactSectionTextKind,
+    PythonModuleSectionKind,
+    PythonModuleSectionMeta,
+    SectionConstructor,
+)
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
 from donna.machine.tasks import Task, WorkUnit
 from donna.world.markdown import SectionSource
@@ -14,24 +20,10 @@ if TYPE_CHECKING:
     from donna.machine.changes import Change
 
 
-OPERATIONS_WORLD_ID = WorldId("donna")
-OPERATIONS_ARTIFACT_ID = ArtifactId("operations")
+PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations:python_module")
 
-
-def operations_section_id(local_id: str) -> FullArtifactLocalId:
-    return FullArtifactLocalId((OPERATIONS_WORLD_ID, OPERATIONS_ARTIFACT_ID, ArtifactLocalId(local_id)))
-
-
-text_section_kind = ArtifactSectionTextKind(
-    id=operations_section_id("text"),
-    title="Text Section",
-)
-
-
-python_module_section_kind = PythonModuleSectionKind(
-    id=operations_section_id("python_module"),
-    title="Python module attribute",
-)
+text_section_kind_entity = ArtifactSectionTextKind()
+python_module_section_kind_entity = PythonModuleSectionKind()
 
 
 ##########################
@@ -82,7 +74,7 @@ class RequestActionKind(OperationKind):
 
         return ArtifactSection(
             id=artifact_id.to_full_local(config.id),
-            kind=self.id,
+            kind=config.kind,
             title=title,
             description=section.as_original_markdown(with_title=False),
             meta=OperationMeta(
@@ -109,10 +101,7 @@ class RequestActionKind(OperationKind):
         yield ChangeAddActionRequest(action_request=request)
 
 
-request_action_kind = RequestActionKind(
-    id=operations_section_id("request_action"),
-    title="Request Action",
-)
+request_action_kind_entity = RequestActionKind()
 
 
 ##################
@@ -137,14 +126,51 @@ class FinishWorkflowKind(OperationKind):
 
         return ArtifactSection(
             id=artifact_id.to_full_local(config.id),
-            kind=self.id,
+            kind=config.kind,
             title=title,
             description=section.as_original_markdown(with_title=False),
             meta=OperationMeta(fsm_mode=config.fsm_mode, allowed_transtions=set()),
         )
 
 
-finish_workflow_kind = FinishWorkflowKind(
-    id=operations_section_id("finish_workflow"),
+finish_workflow_kind_entity = FinishWorkflowKind()
+
+
+text_section_kind = SectionConstructor(
+    id=ArtifactLocalId("text"),
+    kind=PYTHON_MODULE_SECTION_KIND_ID,
+    title="Text Section",
+    description="",
+    meta=PythonModuleSectionMeta(attribute_value=text_section_kind_entity),
+    entity=text_section_kind_entity,
+)
+
+
+python_module_section_kind = SectionConstructor(
+    id=ArtifactLocalId("python_module"),
+    kind=PYTHON_MODULE_SECTION_KIND_ID,
+    title="Python module attribute",
+    description="",
+    meta=PythonModuleSectionMeta(attribute_value=python_module_section_kind_entity),
+    entity=python_module_section_kind_entity,
+)
+
+
+request_action_kind = SectionConstructor(
+    id=ArtifactLocalId("request_action"),
+    kind=PYTHON_MODULE_SECTION_KIND_ID,
+    title="Request Action",
+    description="",
+    meta=PythonModuleSectionMeta(attribute_value=request_action_kind_entity),
+    entity=request_action_kind_entity,
+)
+
+
+finish_workflow_kind = SectionConstructor(
+    id=ArtifactLocalId("finish_workflow"),
+    kind=PYTHON_MODULE_SECTION_KIND_ID,
     title="Finish Workflow",
+    description="",
+    meta=PythonModuleSectionMeta(attribute_value=finish_workflow_kind_entity),
+    entity=finish_workflow_kind_entity,
 )

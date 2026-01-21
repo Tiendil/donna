@@ -77,7 +77,7 @@ class DirectivePathBuilder:
         directive_id = FullArtifactLocalId((world_id, artifact_id, local_id))
         directive = resolve_directive_kind(directive_id)
 
-        return directive(context, *argv, **kwargs)
+        return directive(context, *argv, directive_id=directive_id, **kwargs)
 
 
 class DirectivePathUndefined(jinja2.Undefined):

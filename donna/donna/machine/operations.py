@@ -2,7 +2,7 @@ import enum
 from typing import TYPE_CHECKING, Any
 
 from donna.domain.ids import FullArtifactLocalId
-from donna.machine.artifacts import ArtifactSectionConfig, ArtifactSectionKindSection, ArtifactSectionMeta
+from donna.machine.artifacts import ArtifactSectionConfig, ArtifactSectionKind, ArtifactSectionMeta
 
 if TYPE_CHECKING:
     pass
@@ -14,7 +14,7 @@ class FsmMode(enum.Enum):
     final = "final"
 
 
-class OperationKind(ArtifactSectionKindSection):
+class OperationKind(ArtifactSectionKind):
     pass
 
 
