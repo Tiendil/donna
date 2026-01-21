@@ -62,6 +62,7 @@
 **** place project and session worlds on the same level with config.toml?
 **** remove session world, add session directory to the project world?
 ** builtins
+*** analogue of `__init__.py` for donna world for shorter ids/paths?
 *** sections from world.builtings should be accessible by their ids without prefixes?
 *** for directives
 *** for kind ids
