@@ -175,6 +175,10 @@ class TextConfig(ArtifactSectionConfig):
     pass
 
 
+class PythonModuleSectionConfig(ArtifactSectionConfig):
+    pass
+
+
 class ArtifactSectionTextKind(ArtifactSectionKind):
 
     def execute_section(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterable["Change"]:
@@ -220,11 +224,11 @@ class PythonModuleSectionKind(ArtifactSectionKind):
 
     def construct_section(self, artifact_id: FullArtifactId, raw_section: SectionSource) -> ArtifactSection:
         data = raw_section.merged_configs()
-
-        class PythonModuleSectionConfig(ArtifactSectionConfig):
-            model_config = BaseEntity.model_config | {"extra": "allow"}
-
-        config = PythonModuleSectionConfig.parse_obj(data)
+        config_data = {
+            "id": data.get("id"),
+            "kind": data.get("kind"),
+        }
+        config = PythonModuleSectionConfig.parse_obj(config_data)
 
         title = raw_section.title or ""
 
@@ -288,7 +292,7 @@ class PythonArtifact(ArtifactKind):
                 constructors.append(value)
 
                 if value.entity is not None and isinstance(value.entity, ArtifactSectionKind):
-                    section_id = artifact_id.to_full_local(value.id)
+                    section_id = artifact_id.to_full_local(value.config.id)
                     section_kind_overrides[section_id] = value.entity
 
         for constructor in constructors:
@@ -364,22 +368,10 @@ def _serialize_toml_value(value: Any) -> str:  # noqa: CCR001
     raise NotImplementedError(f"Unsupported TOML value: {value!r}")
 
 
-def _normalize_config(config: BaseEntity | dict[str, Any] | None) -> dict[str, Any]:
-    if config is None:
-        return {}
-
-    if isinstance(config, BaseEntity):
-        return config.model_dump(mode="json")
-
-    return dict(config)
-
-
 class SectionConstructor(BaseEntity):
-    id: ArtifactLocalId
-    kind: FullArtifactLocalId
     title: str
     description: str
-    config: BaseEntity | dict[str, Any] | None = None
+    config: ArtifactSectionConfig
     entity: BaseEntity | None = None
 
     def build_section(  # noqa: CCR001
@@ -388,16 +380,9 @@ class SectionConstructor(BaseEntity):
         artifact_id: FullArtifactId,
         section_kind_overrides: dict[FullArtifactLocalId, ArtifactSectionKind] | None = None,
     ) -> ArtifactSection:
-        config_data = _normalize_config(self.config)
+        config_data = self.config.model_dump(mode="json")
 
-        if "id" in config_data or "kind" in config_data:
-            raise NotImplementedError("SectionConstructor config must not define 'id' or 'kind'.")
-
-        config_lines = [
-            f'id = "{self.id}"',
-            f'kind = "{self.kind}"',
-        ]
-
+        config_lines = []
         for key in sorted(config_data.keys()):
             config_lines.append(f"{key} = {_serialize_toml_value(config_data[key])}")
 
@@ -431,8 +416,6 @@ class SectionConstructor(BaseEntity):
                 directive_config = DirectiveConfig.model_validate(config_data)
                 section = section.replace(
                     meta=DirectiveSectionMeta(
-                        name=directive_config.name,
-                        example=directive_config.example,
                         analyze_id=directive_config.analyze_id,
                         attribute_value=self.entity,
                     )
@@ -446,13 +429,10 @@ class SectionConstructor(BaseEntity):
 class ArtifactConstructor(BaseEntity):
     title: str
     description: str
-    config: BaseEntity | dict[str, Any]
+    config: ArtifactConfig
 
     def construct_head(self) -> SectionSource:
-        config_data = _normalize_config(self.config)
-
-        if "kind" not in config_data:
-            raise NotImplementedError("ArtifactConstructor config must define 'kind'.")
+        config_data = self.config.model_dump(mode="json")
 
         config_lines = []
 

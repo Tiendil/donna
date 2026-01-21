@@ -7,6 +7,7 @@ from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalI
 from donna.machine.action_requests import ActionRequest
 from donna.machine.artifacts import (
     ArtifactSection,
+    ArtifactSectionConfig,
     ArtifactSectionTextKind,
     PythonModuleSectionKind,
     SectionConstructor,
@@ -136,36 +137,44 @@ finish_workflow_kind_entity = FinishWorkflowKind()
 
 
 text_section_kind = SectionConstructor(
-    id=ArtifactLocalId("text"),
-    kind=PYTHON_MODULE_SECTION_KIND_ID,
     title="Text Section",
     description="",
+    config=ArtifactSectionConfig(
+        id=ArtifactLocalId("text"),
+        kind=PYTHON_MODULE_SECTION_KIND_ID,
+    ),
     entity=text_section_kind_entity,
 )
 
 
 python_module_section_kind = SectionConstructor(
-    id=ArtifactLocalId("python_module"),
-    kind=PYTHON_MODULE_SECTION_KIND_ID,
     title="Python module attribute",
     description="",
+    config=ArtifactSectionConfig(
+        id=ArtifactLocalId("python_module"),
+        kind=PYTHON_MODULE_SECTION_KIND_ID,
+    ),
     entity=python_module_section_kind_entity,
 )
 
 
 request_action_kind = SectionConstructor(
-    id=ArtifactLocalId("request_action"),
-    kind=PYTHON_MODULE_SECTION_KIND_ID,
     title="Request Action",
     description="",
+    config=ArtifactSectionConfig(
+        id=ArtifactLocalId("request_action"),
+        kind=PYTHON_MODULE_SECTION_KIND_ID,
+    ),
     entity=request_action_kind_entity,
 )
 
 
 finish_workflow_kind = SectionConstructor(
-    id=ArtifactLocalId("finish_workflow"),
-    kind=PYTHON_MODULE_SECTION_KIND_ID,
     title="Finish Workflow",
     description="",
+    config=ArtifactSectionConfig(
+        id=ArtifactLocalId("finish_workflow"),
+        kind=PYTHON_MODULE_SECTION_KIND_ID,
+    ),
     entity=finish_workflow_kind_entity,
 )

@@ -87,7 +87,7 @@ class DirectivePathBuilder:
         if not isinstance(section.meta, DirectiveSectionMeta):
             raise NotImplementedError(f"Directive '{directive_id}' does not have directive metadata")
 
-        return directive(context, *argv, analyze_id=section.meta.analyze_id, **kwargs)
+        return directive(context, *argv, meta=section.meta, **kwargs)
 
 
 class DirectivePathUndefined(jinja2.Undefined):

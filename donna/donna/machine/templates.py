@@ -5,7 +5,7 @@ from jinja2.runtime import Context
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import FullArtifactLocalId
-from donna.machine.artifacts import ArtifactSection, ArtifactSectionMeta
+from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 
 
 class DirectiveKind(BaseEntity):
@@ -14,24 +14,16 @@ class DirectiveKind(BaseEntity):
         raise NotImplementedError("You MUST implement this method.")
 
 
-class DirectiveConfig(BaseEntity):
-    name: str
-    example: str
+class DirectiveConfig(ArtifactSectionConfig):
     analyze_id: str
 
 
 class DirectiveSectionMeta(ArtifactSectionMeta):
-    name: str
-    example: str
     analyze_id: str
     attribute_value: Any | None = None
 
     def cells_meta(self) -> dict[str, Any]:
-        meta = {
-            "name": self.name,
-            "example": self.example,
-            "analyze_id": self.analyze_id,
-        }
+        meta = {"analyze_id": self.analyze_id}
 
         if self.attribute_value is not None:
             meta["attribute_value"] = repr(self.attribute_value)

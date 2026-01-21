@@ -1,7 +1,13 @@
 """Python artifact that exposes artifact kind definitions."""
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactLocalId
-from donna.machine.artifacts import ArtifactConfig, ArtifactConstructor, PythonArtifact, SectionConstructor
+from donna.machine.artifacts import (
+    ArtifactConfig,
+    ArtifactConstructor,
+    ArtifactSectionConfig,
+    PythonArtifact,
+    SectionConstructor,
+)
 from donna.std.code.specifications import SpecificationKind
 from donna.std.code.workflows import WorkflowKind
 
@@ -18,26 +24,32 @@ artifact = ArtifactConstructor(
 )
 
 specification_kind = SectionConstructor(
-    id=ArtifactLocalId("specification"),
-    kind=PYTHON_MODULE_SECTION_KIND_ID,
     title="Specification",
     description="A specification that define various aspects of the current project.",
+    config=ArtifactSectionConfig(
+        id=ArtifactLocalId("specification"),
+        kind=PYTHON_MODULE_SECTION_KIND_ID,
+    ),
     entity=specification_kind_entity,
 )
 
 workflow_kind = SectionConstructor(
-    id=ArtifactLocalId("workflow"),
-    kind=PYTHON_MODULE_SECTION_KIND_ID,
     title="Workflow",
     description="A workflow that defines a state machine for the agent to follow.",
+    config=ArtifactSectionConfig(
+        id=ArtifactLocalId("workflow"),
+        kind=PYTHON_MODULE_SECTION_KIND_ID,
+    ),
     entity=workflow_kind_entity,
 )
 
 python_artifact_kind_section = SectionConstructor(
-    id=ArtifactLocalId("python"),
-    kind=PYTHON_MODULE_SECTION_KIND_ID,
     title="Python Artifact",
     description="A Python module artifact.",
+    config=ArtifactSectionConfig(
+        id=ArtifactLocalId("python"),
+        kind=PYTHON_MODULE_SECTION_KIND_ID,
+    ),
     entity=python_artifact_kind,
 )
 
