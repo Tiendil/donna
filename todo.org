@@ -53,6 +53,7 @@
 * TODO Lazy import of primitives from Python artifacts
 ** Full paths to kinds
 *** where to place operations/kinds classes?
+*** remove std/code/*
 ** introspection
 *** !filesystem list artifacts does not find .py (uses hardcoded .md)
 *** !remove _MARKDOWN_ROOTS
@@ -60,7 +61,6 @@
 *** ignore "session" from the artifacts? I.e. it is world.
 **** place project and session worlds on the same level with config.toml?
 **** remove session world, add session directory to the project world?
-*** remove std/code/*
 ** builtins
 *** sections from world.builtings should be accessible by their ids without prefixes?
 *** for directives
