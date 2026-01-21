@@ -53,7 +53,6 @@
 * TODO Lazy import of primitives from Python artifacts
 ** Full paths to kinds
 *** where to place operations/kinds classes?
-*** section constructor has a weired toml operations, we must remove them
 ** introspection
 *** !filesystem list artifacts does not find .py (uses hardcoded .md)
 *** !remove _MARKDOWN_ROOTS
