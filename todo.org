@@ -51,8 +51,6 @@
 * TODO WE CAN ASK DONNA TO MAKE A FSM FOR DONNA!!! WHICH WILL BE OUR PLAN OF WORK!!!
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Lazy import of primitives from Python artifacts
-** Full paths to kinds
-*** python artifacts should not be in primitives submodule
 ** introspection
 *** !filesystem list artifacts does not find .py (uses hardcoded .md)
 *** !remove _MARKDOWN_ROOTS
