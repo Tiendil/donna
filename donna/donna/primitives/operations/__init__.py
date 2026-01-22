@@ -3,32 +3,14 @@ from typing import TYPE_CHECKING, Iterator, Literal
 
 import pydantic
 
-from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
+from donna.domain.ids import FullArtifactId, FullArtifactLocalId
 from donna.machine.action_requests import ActionRequest
-from donna.machine.artifacts import (
-    ArtifactSection,
-    ArtifactSectionConfig,
-    ArtifactSectionTextKind,
-    PythonModuleSectionKind,
-    SectionConstructor,
-    SectionContent,
-)
+from donna.machine.artifacts import ArtifactSection, SectionContent
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
-from donna.machine.tasks import Task, WorkUnit
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
-
-
-PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations.python_module")
-
-text_section_kind_entity = ArtifactSectionTextKind()
-python_module_section_kind_entity = PythonModuleSectionKind()
-
-
-##########################
-# Request Action Operation
-##########################
+    from donna.machine.tasks import Task, WorkUnit
 
 
 def extract_transitions(text: str) -> set[FullArtifactLocalId]:
@@ -51,7 +33,6 @@ def extract_transitions(text: str) -> set[FullArtifactLocalId]:
 
 
 class RequestActionConfig(OperationConfig):
-
     @pydantic.field_validator("fsm_mode", mode="after")
     @classmethod
     def validate_fsm_mode(cls, v: FsmMode) -> FsmMode:
@@ -62,12 +43,11 @@ class RequestActionConfig(OperationConfig):
 
 
 class RequestActionKind(OperationKind):
-
     def construct_section(
         self,
         artifact_id: FullArtifactId,
         section: SectionContent,
-    ) -> "ArtifactSection":
+    ) -> ArtifactSection:
         config = RequestActionConfig.parse_obj(section.config)
 
         return ArtifactSection(
@@ -81,7 +61,7 @@ class RequestActionKind(OperationKind):
             ),
         )
 
-    def execute_section(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterator["Change"]:
+    def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterator["Change"]:
         from donna.machine.changes import ChangeAddActionRequest
 
         context: dict[str, object] = {
@@ -99,20 +79,12 @@ class RequestActionKind(OperationKind):
         yield ChangeAddActionRequest(action_request=request)
 
 
-request_action_kind_entity = RequestActionKind()
-
-
-##################
-# Finish Operation
-##################
-
-
 class FinishWorkflowConfig(OperationConfig):
     fsm_mode: Literal[FsmMode.final] = FsmMode.final
 
 
 class FinishWorkflowKind(OperationKind):
-    def execute_section(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterator["Change"]:
+    def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterator["Change"]:
         from donna.machine.changes import ChangeFinishTask
 
         yield ChangeFinishTask(task_id=task.id)
@@ -129,48 +101,10 @@ class FinishWorkflowKind(OperationKind):
         )
 
 
-finish_workflow_kind_entity = FinishWorkflowKind()
-
-
-text_section_kind = SectionConstructor(
-    title="Text Section",
-    description="",
-    config=ArtifactSectionConfig(
-        id=ArtifactLocalId("text"),
-        kind=PYTHON_MODULE_SECTION_KIND_ID,
-    ),
-    entity=text_section_kind_entity,
-)
-
-
-python_module_section_kind = SectionConstructor(
-    title="Python module attribute",
-    description="",
-    config=ArtifactSectionConfig(
-        id=ArtifactLocalId("python_module"),
-        kind=PYTHON_MODULE_SECTION_KIND_ID,
-    ),
-    entity=python_module_section_kind_entity,
-)
-
-
-request_action_kind = SectionConstructor(
-    title="Request Action",
-    description="",
-    config=ArtifactSectionConfig(
-        id=ArtifactLocalId("request_action"),
-        kind=PYTHON_MODULE_SECTION_KIND_ID,
-    ),
-    entity=request_action_kind_entity,
-)
-
-
-finish_workflow_kind = SectionConstructor(
-    title="Finish Workflow",
-    description="",
-    config=ArtifactSectionConfig(
-        id=ArtifactLocalId("finish_workflow"),
-        kind=PYTHON_MODULE_SECTION_KIND_ID,
-    ),
-    entity=finish_workflow_kind_entity,
-)
+__all__ = [
+    "FinishWorkflowKind",
+    "RequestActionKind",
+    "RequestActionConfig",
+    "FinishWorkflowConfig",
+    "extract_transitions",
+]

@@ -1,15 +1,8 @@
 """Python artifact that exposes artifact kind definitions."""
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactLocalId
-from donna.machine.artifacts import (
-    ArtifactConfig,
-    ArtifactConstructor,
-    ArtifactSectionConfig,
-    PythonArtifact,
-    SectionConstructor,
-)
-from donna.std.code.specifications import SpecificationKind
-from donna.std.code.workflows import WorkflowKind
+from donna.machine.artifacts import ArtifactConfig, ArtifactConstructor, ArtifactSectionConfig, SectionConstructor
+from donna.primitives.artifacts import PythonArtifact, SpecificationKind, WorkflowKind
 
 PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations.python_module")
 

@@ -7,7 +7,8 @@ from collections.abc import Callable
 from typing import cast
 
 from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactLocalId, WorldId
-from donna.machine.artifacts import Artifact, PythonArtifact
+from donna.machine.artifacts import Artifact
+from donna.primitives.artifacts import PythonArtifact
 from donna.world.artifact_builder import construct_artifact_from_content
 from donna.world.worlds.base import World as BaseWorld
 
