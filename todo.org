@@ -56,6 +56,7 @@
 *** => smth like PythonArtifact (and related classes) should be an intemediate representation for .py files
 *** => and we should have smth like MarkdownArtifact for .md files
 *** both should implement allow construction of artifact kinds (specification, workflow) in generic way
+** Do we need artifact kinds? Maybe sections will be enough?
 ** introspection
 *** !filesystem list artifacts does not find .py (uses hardcoded .md)
 *** !remove _MARKDOWN_ROOTS
