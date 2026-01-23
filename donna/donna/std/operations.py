@@ -2,8 +2,10 @@
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactLocalId
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionKindMeta, ArtifactSectionMeta
-from donna.primitives.artifacts import ArtifactSectionTextKind, PythonModuleSectionKind
-from donna.primitives.operations import FinishWorkflowKind, RequestActionKind
+from donna.primitives.artifacts.python import PythonModuleSectionKind
+from donna.primitives.artifacts.specification import ArtifactSectionTextKind
+from donna.primitives.operations.finish_workflow import FinishWorkflowKind
+from donna.primitives.operations.request_action import RequestActionKind
 
 PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations.python_module")
 PYTHON_ARTIFACT_KIND_ID = FullArtifactLocalId.parse("donna.artifacts.python")
@@ -54,11 +56,3 @@ finish_workflow_kind = ArtifactSection(
     kind=PYTHON_MODULE_SECTION_KIND_ID,
     meta=ArtifactSectionKindMeta(section_kind=finish_workflow_kind_entity),
 )
-
-__all__ = [
-    "finish_workflow_kind",
-    "primary_section",
-    "python_module_section_kind",
-    "request_action_kind",
-    "text_section_kind",
-]

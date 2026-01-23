@@ -3,7 +3,8 @@
 from donna.domain.ids import ArtifactLocalId, FullArtifactLocalId
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionMeta
 from donna.machine.templates import DirectiveSectionMeta
-from donna.primitives.directives import GoTo, View
+from donna.primitives.directives.goto import GoTo
+from donna.primitives.directives.view import View
 
 PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations.python_module")
 PYTHON_ARTIFACT_KIND_ID = FullArtifactLocalId.parse("donna.artifacts.python")
@@ -50,12 +51,3 @@ goto_directive = ArtifactSection(
         directive=goto_directive_entity,
     ),
 )
-
-
-__all__ = [
-    "GoTo",
-    "View",
-    "goto_directive",
-    "primary_section",
-    "view_directive",
-]

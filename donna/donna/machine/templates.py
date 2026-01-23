@@ -35,11 +35,3 @@ def load_directive_section(directive_kind_id: FullArtifactLocalId) -> "ArtifactS
         raise NotImplementedError(f"Directive kind '{directive_kind_id}' is not available")
 
     return section
-
-
-__all__ = [
-    "DirectiveConfig",
-    "DirectiveKind",
-    "DirectiveSectionMeta",
-    "load_directive_section",
-]
