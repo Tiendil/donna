@@ -76,11 +76,53 @@ class Artifact(BaseEntity):
     meta: ArtifactMeta
     sections: list[ArtifactSection]
 
+    def _primary_sections(self) -> list[ArtifactSection]:
+        return [section for section in self.sections if section.primary]
+
     def primary_section(self) -> ArtifactSection:
-        for section in self.sections:
-            if section.primary:
-                return section
-        raise NotImplementedError(f"Artifact '{self.id}' does not have a primary section")
+        primary_sections = self._primary_sections()
+        if len(primary_sections) != 1:
+            raise NotImplementedError(
+                f"Artifact '{self.id}' must have exactly one primary section, found {len(primary_sections)}."
+            )
+        return primary_sections[0]
+
+    def validate(self) -> tuple[bool, list[Cell]]:  # type: ignore[override]
+        primary_sections = self._primary_sections()
+        if len(primary_sections) != 1:
+            return False, [
+                Cell.build_meta(
+                    kind="artifact_kind_validation",
+                    id=str(self.id),
+                    status="failure",
+                    message=f"Artifact must have exactly one primary section, found {len(primary_sections)}.",
+                )
+            ]
+
+        primary_section = primary_sections[0]
+        if primary_section.kind is None:
+            return False, [
+                Cell.build_meta(
+                    kind="artifact_kind_validation",
+                    id=str(self.id),
+                    status="failure",
+                    message="Primary section is missing a kind.",
+                )
+            ]
+
+        section = resolve(primary_section.kind)
+        if not isinstance(section.meta, ArtifactSectionKindMeta):
+            return False, [
+                Cell.build_meta(
+                    kind="artifact_kind_validation",
+                    id=str(self.id),
+                    status="failure",
+                    message=f"Primary section kind '{primary_section.kind}' is not available.",
+                )
+            ]
+
+        primary_section_kind = section.meta.section_kind
+        return primary_section_kind.validate_artifact(self)
 
     # TODO: should we attach section cells here as well?
     def cells(self) -> list[Cell]:

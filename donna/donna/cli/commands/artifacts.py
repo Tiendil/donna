@@ -5,7 +5,6 @@ import typer
 from donna.cli.application import app
 from donna.cli.types import ArtifactPrefixArgument, FullArtifactIdArgument
 from donna.cli.utils import output_cells
-from donna.machine.artifacts import ArtifactSectionKindMeta, resolve
 from donna.world import artifacts as world_artifacts
 
 artifacts_cli = typer.Typer()
@@ -41,16 +40,7 @@ def update(id: FullArtifactIdArgument, input: pathlib.Path) -> None:
 def validate(id: FullArtifactIdArgument) -> None:
     artifact = world_artifacts.load_artifact(id)
 
-    primary_section = artifact.primary_section()
-    if primary_section.kind is None:
-        raise NotImplementedError(f"Artifact '{artifact.id}' does not define a primary section kind")
-
-    section = resolve(primary_section.kind)
-    if not isinstance(section.meta, ArtifactSectionKindMeta):
-        raise NotImplementedError(f"Primary section kind '{primary_section.kind}' is not available")
-    primary_section_kind = section.meta.section_kind
-
-    _is_valid, cells = primary_section_kind.validate_artifact(artifact)
+    _is_valid, cells = artifact.validate()
 
     output_cells(cells)
 
@@ -60,16 +50,7 @@ def validate_all(prefix: ArtifactPrefixArgument) -> None:
     artifacts = world_artifacts.list_artifacts(prefix)
 
     for artifact in artifacts:
-        primary_section = artifact.primary_section()
-        if primary_section.kind is None:
-            raise NotImplementedError(f"Artifact '{artifact.id}' does not define a primary section kind")
-
-        section = resolve(primary_section.kind)
-        if not isinstance(section.meta, ArtifactSectionKindMeta):
-            raise NotImplementedError(f"Primary section kind '{primary_section.kind}' is not available")
-        primary_section_kind = section.meta.section_kind
-
-        _is_valid, cells = primary_section_kind.validate_artifact(artifact)
+        _is_valid, cells = artifact.validate()
 
         output_cells(cells)
 

@@ -70,7 +70,8 @@ class WorkflowKind(ArtifactPrimarySectionKind):
         transitions = {}
 
         for section in artifact.sections:
-            assert isinstance(section.meta, OperationMeta)
+            if not isinstance(section.meta, OperationMeta):
+                continue
             section_full_id = artifact.id.to_full_local(section.id) if section.id is not None else None
 
             if section.meta.fsm_mode == FsmMode.final and section.meta.allowed_transtions:
