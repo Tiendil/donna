@@ -1,11 +1,8 @@
-import types
 from typing import TYPE_CHECKING, Iterable
 
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId
+from donna.domain.ids import FullArtifactId
 from donna.machine.artifacts import (
-    Artifact,
-    ArtifactContent,
-    ArtifactKind,
+    ArtifactPrimarySectionKind,
     ArtifactSection,
     ArtifactSectionConfig,
     ArtifactSectionKind,
@@ -30,18 +27,10 @@ class PythonModuleSectionKind(ArtifactSectionKind):
         artifact_id: FullArtifactId,
         source: markdown.SectionSource,
         config: dict[str, object],
+        primary: bool = False,
     ) -> ArtifactSection:
         raise NotImplementedError("Python module sections cannot be constructed from markdown.")
 
 
-class PythonArtifact(ArtifactKind):
-    def construct_artifact(self, source: ArtifactContent, sections: list[ArtifactSection]) -> Artifact:
-        raise NotImplementedError("Python artifacts are constructed from modules, not markdown sources.")
-
-    def construct_module_artifact(  # noqa: CCR001
-        self,
-        module: types.ModuleType,
-        artifact_id: FullArtifactId,
-        kind_id: FullArtifactLocalId,
-    ) -> Artifact | None:
-        raise NotImplementedError("Python artifacts are constructed via the python source module.")
+class PythonArtifact(ArtifactPrimarySectionKind):
+    pass

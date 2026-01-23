@@ -5,7 +5,6 @@ from donna.machine.artifacts import (
     Artifact,
     ArtifactConfig,
     ArtifactContent,
-    ArtifactKindSectionMeta,
     ArtifactSection,
     ArtifactSectionKind,
     ArtifactSectionKindMeta,
@@ -22,6 +21,7 @@ class MarkdownSectionConstructor(Protocol):
         artifact_id: FullArtifactId,
         source: markdown.SectionSource,
         config: dict[str, Any],
+        primary: bool = False,
     ) -> ArtifactSection:
         pass
 
@@ -63,17 +63,33 @@ def construct_artifact_from_markdown_source(full_id: FullArtifactId, content: st
 
     config = ArtifactConfig.parse_obj(raw_artifact.head.config)
     section = resolve(config.kind)
-    if not isinstance(section.meta, ArtifactKindSectionMeta):
-        raise NotImplementedError(f"Artifact kind '{config.kind}' is not available")
-    kind = section.meta.artifact_kind
+    if not isinstance(section.meta, ArtifactSectionKindMeta):
+        raise NotImplementedError(f"Primary section kind '{config.kind}' is not available")
+    primary_section_kind = section.meta.section_kind
 
-    sections = construct_sections_from_markdown(
+    primary_section = primary_section_kind.from_markdown_section(
         artifact_id=full_id,
-        sections=original_sections[1:],
-        default_section_kind=kind.default_section_kind,
+        source=original_sections[0],
+        config=raw_artifact.head.config,
+        primary=True,
     )
 
-    return kind.construct_artifact(raw_artifact, sections)
+    sections = [primary_section]
+    sections.extend(
+        construct_sections_from_markdown(
+            artifact_id=full_id,
+            sections=original_sections[1:],
+            default_section_kind=primary_section_kind.default_section_kind,
+        )
+    )
+
+    meta = primary_section_kind.build_artifact_meta(full_id, sections)
+
+    return Artifact(
+        id=full_id,
+        meta=meta,
+        sections=sections,
+    )
 
 
 def construct_sections_from_markdown(  # noqa: CCR001
@@ -98,7 +114,7 @@ def construct_sections_from_markdown(  # noqa: CCR001
 
         section_kind = _resolve_section_kind(section_kind_id, section_kind_overrides)
 
-        constructed.append(section_kind.from_markdown_section(artifact_id, section, data))
+        constructed.append(section_kind.from_markdown_section(artifact_id, section, data, primary=False))
 
     return constructed
 

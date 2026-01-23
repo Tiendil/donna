@@ -32,7 +32,7 @@ When rendering the artifact, Donna processes the Jinja2 template with a predefin
 
 **Artifact source should not use Jinja2 inheretance features** like `{{ "{% extends %}" }}` and `{{ "{% block %}" }}`.
 
-Donna provides a set of special directives that can and MUST be used in the artifact source to enhance its behavior. Some of these directives are valid for all artifacts, some are valid only for specific artifact kinds.
+Donna provides a set of special directives that can and MUST be used in the artifact source to enhance its behavior. Some of these directives are valid for all artifacts, some are valid only for specific section kinds.
 
 Here are some examples:
 
@@ -52,15 +52,15 @@ Artifact is devided into multiple sections:
 - H1 header and all text till the first H2 header is considered the `head section` of the artifact.
 - Each H2 header and all text till the next H2 header (or end of document) is considered a `tail section` of the artifact.
 
-Head section provides a description of the artifact and its purpose and MUST contain a configuration block of the artifact. Also, header section is used when Donna needs to show a brief summary of the artifact, for example, when listing artifacts.
+Head section provides a description of the artifact and its purpose and MUST contain a configuration block of the artifact. The head section is also the artifact's `primary section` and is used when Donna needs to show a brief summary of the artifact, for example, when listing artifacts or when an operation targets the artifact without specifying a section.
 
 Tail sections describes one of the components of the artifact and CAN contain configuration blocks as well. Configuration blocks placed in subsections (h3 and below) count as part of the parent tail section.
 
 The content of the header (text after `#` or `##`) is considered the section title.
 
-Donna always interprets the head section as a general description of the artifact.
+Donna always interprets the head section as a general description of the artifact and treats it as the primary section.
 
-Donna interprets a tail section according to the artifact kind and configuration blocks in that section.
+Donna interprets a tail section according to the primary section kind and configuration blocks in that section.
 
 ### Configuration Blocks
 
@@ -93,11 +93,11 @@ When a section contains multiple configuration blocks, Donna merges them in docu
 - The merge is shallow: if a key maps to a nested object, a later block replaces the whole value (there is no deep merge).
 - Config blocks in subsections (H3 and below) belong to their parent H2 tail section and are merged into that section's configuration.
 
-## Artifact Kinds, Their Formats and Behaviors
+## Section Kinds, Their Formats and Behaviors
 
 ### Header section
 
-Header section MUST contain a config block with a `kind` property. The `kind` MUST be a full artifact-local id pointing to the artifact kind section.
+Header section MUST contain a config block with a `kind` property. The `kind` MUST be a full artifact-local id pointing to the primary section kind section.
 
 Example (`donna` keyword skipped for examples):
 
@@ -121,12 +121,11 @@ Workflow is a Finite State Machine (FSM) where each tail section describes one o
 
 Donna do additional work to validate that FSM is correct and that there are no unreachable operations, no dead ends, etc. In case of problems Donna notifies the agent about the issues.
 
-Workflow head config MUST contain `start_operation_id` property that specifies the identifier of the operation where the workflow starts.
+Workflow start operation MUST be defined by a tail section whose configuration sets `fsm_mode = "start"`.
 
 Example (`donna` keyword skipped for examples):
 
 ```toml
-start_operation_id = "operation_id"
 kind = "donna.artifacts.workflow"
 ```
 

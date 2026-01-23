@@ -22,7 +22,7 @@ fsm_mode = "start"
    - `./bin/donna.sh artifacts fetch '<workflow-id>' /tmp/workflow_source.md`
 4. Read the fetched source to capture:
    - Workflow name (H1 title) and short description.
-   - `start_operation_id` from the head config.
+   - The start operation (the first tail section with `fsm_mode = "start"` in its config).
    - Each operation `id`, `kind`, and any {% raw %}`{{ donna.directives.goto(...) }}`{% endraw %} transitions in its body.
 5. Continue to {{ donna.directives.goto("select_fsm_dsl") }}.
 

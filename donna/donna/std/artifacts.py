@@ -1,25 +1,32 @@
-"""Python artifact that exposes artifact kind definitions."""
+"""Python artifact that exposes artifact section kind definitions."""
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactLocalId
-from donna.machine.artifacts import ArtifactKindSectionMeta, ArtifactSection
+from donna.machine.artifacts import ArtifactSection, ArtifactSectionKindMeta, ArtifactSectionMeta
 from donna.primitives.artifacts import PythonArtifact, SpecificationKind, WorkflowKind
 
 PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations.python_module")
+PYTHON_ARTIFACT_KIND_ID = FullArtifactLocalId.parse("donna.artifacts.python")
+PRIMARY_SECTION_ID = ArtifactLocalId("primary")
 
 specification_kind_entity = SpecificationKind()
 workflow_kind_entity = WorkflowKind()
 python_artifact_kind = PythonArtifact()
 
-artifact_title = "Artifact Kinds"
-artifact_description = "Definitions for artifact kinds exposed as Python module sections."
-artifact_kind = FullArtifactLocalId.parse("donna.artifacts.python")
+primary_section = ArtifactSection(
+    title="Artifact Section Kinds",
+    description="Definitions for artifact section kinds exposed as Python module sections.",
+    id=PRIMARY_SECTION_ID,
+    kind=PYTHON_ARTIFACT_KIND_ID,
+    primary=True,
+    meta=ArtifactSectionMeta(),
+)
 
 specification_kind = ArtifactSection(
     title="Specification",
     description="A specification that define various aspects of the current project.",
     id=ArtifactLocalId("specification"),
     kind=PYTHON_MODULE_SECTION_KIND_ID,
-    meta=ArtifactKindSectionMeta(artifact_kind=specification_kind_entity),
+    meta=ArtifactSectionKindMeta(section_kind=specification_kind_entity),
 )
 
 workflow_kind = ArtifactSection(
@@ -27,7 +34,7 @@ workflow_kind = ArtifactSection(
     description="A workflow that defines a state machine for the agent to follow.",
     id=ArtifactLocalId("workflow"),
     kind=PYTHON_MODULE_SECTION_KIND_ID,
-    meta=ArtifactKindSectionMeta(artifact_kind=workflow_kind_entity),
+    meta=ArtifactSectionKindMeta(section_kind=workflow_kind_entity),
 )
 
 python_artifact_kind_section = ArtifactSection(
@@ -35,13 +42,11 @@ python_artifact_kind_section = ArtifactSection(
     description="A Python module artifact.",
     id=ArtifactLocalId("python"),
     kind=PYTHON_MODULE_SECTION_KIND_ID,
-    meta=ArtifactKindSectionMeta(artifact_kind=python_artifact_kind),
+    meta=ArtifactSectionKindMeta(section_kind=python_artifact_kind),
 )
 
 __all__ = [
-    "artifact_description",
-    "artifact_kind",
-    "artifact_title",
+    "primary_section",
     "python_artifact_kind",
     "python_artifact_kind_section",
     "specification_kind",

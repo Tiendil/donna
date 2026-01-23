@@ -49,6 +49,7 @@ class RequestActionKind(OperationKind):
         artifact_id: FullArtifactId,
         source: markdown.SectionSource,
         config: dict[str, object],
+        primary: bool = False,
     ) -> ArtifactSection:
         section_config = RequestActionConfig.parse_obj(config)
         description = source.as_original_markdown(with_title=False)
@@ -59,6 +60,7 @@ class RequestActionKind(OperationKind):
             kind=section_config.kind,
             title=source.title or "",
             description=description,
+            primary=primary,
             meta=OperationMeta(
                 fsm_mode=section_config.fsm_mode,
                 allowed_transtions=extract_transitions(analysis),

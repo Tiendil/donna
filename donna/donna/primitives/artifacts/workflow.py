@@ -1,5 +1,5 @@
-from donna.domain.ids import FullArtifactLocalId
-from donna.machine.artifacts import Artifact, ArtifactConfig, ArtifactContent, ArtifactKind, ArtifactSection
+from donna.domain.ids import FullArtifactId, FullArtifactLocalId
+from donna.machine.artifacts import Artifact, ArtifactPrimarySectionKind, ArtifactSection
 from donna.machine.cells import Cell
 from donna.machine.operations import FsmMode, OperationMeta
 from donna.machine.workflows import WorkflowMeta
@@ -31,34 +31,26 @@ def find_not_reachable_operations(
     return all_operations - reachable
 
 
-class WorkflowKind(ArtifactKind):
-    def construct_artifact(self, source: ArtifactContent, sections: list[ArtifactSection]) -> Artifact:  # noqa: CCR001
-        title = source.head.title or str(source.id)
-        description = source.head.description
-        kind_id = ArtifactConfig.parse_obj(source.head.config).kind
-
+class WorkflowKind(ArtifactPrimarySectionKind):
+    def build_artifact_meta(  # noqa: CCR001
+        self, artifact_id: FullArtifactId, sections: list[ArtifactSection]
+    ) -> WorkflowMeta:
         start_operation_id: FullArtifactLocalId | None = None
 
         for section in sections:
-            assert isinstance(section.meta, OperationMeta)
+            if not isinstance(section.meta, OperationMeta):
+                continue
             if section.meta.fsm_mode == FsmMode.start:
                 if section.id is None:
-                    raise NotImplementedError(f"Workflow '{source.id}' has a start operation without an id.")
-                start_operation_id = source.id.to_full_local(section.id)
+                    raise NotImplementedError(f"Workflow '{artifact_id}' has a start operation without an id.")
+                start_operation_id = artifact_id.to_full_local(section.id)
                 break
         else:
-            raise NotImplementedError(f"Workflow '{source.id}' does not have a start operation.")
+            raise NotImplementedError(f"Workflow '{artifact_id}' does not have a start operation.")
 
         assert start_operation_id is not None
 
-        return Artifact(
-            id=source.id,
-            kind=kind_id,
-            title=title,
-            description=description,
-            meta=WorkflowMeta(start_operation_id=start_operation_id),
-            sections=sections,
-        )
+        return WorkflowMeta(start_operation_id=start_operation_id)
 
     def validate_artifact(self, artifact: Artifact) -> tuple[bool, list[Cell]]:  # noqa: CCR001
         assert isinstance(artifact.meta, WorkflowMeta)

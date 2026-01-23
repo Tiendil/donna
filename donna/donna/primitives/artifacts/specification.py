@@ -3,11 +3,7 @@ from typing import TYPE_CHECKING, Iterable
 
 from donna.domain.ids import FullArtifactId
 from donna.machine.artifacts import (
-    Artifact,
-    ArtifactConfig,
-    ArtifactContent,
-    ArtifactKind,
-    ArtifactMeta,
+    ArtifactPrimarySectionKind,
     ArtifactSection,
     ArtifactSectionConfig,
     ArtifactSectionKind,
@@ -33,6 +29,7 @@ class ArtifactSectionTextKind(ArtifactSectionKind):
         artifact_id: FullArtifactId,
         source: markdown.SectionSource,
         config: dict[str, object],
+        primary: bool = False,
     ) -> ArtifactSection:
         data = dict(config)
 
@@ -51,21 +48,10 @@ class ArtifactSectionTextKind(ArtifactSectionKind):
             kind=parsed_config.kind,
             title=source.title or "",
             description=source.as_original_markdown(with_title=False),
+            primary=primary,
             meta=ArtifactSectionMeta(),
         )
 
 
-class SpecificationKind(ArtifactKind):
-    def construct_artifact(self, source: ArtifactContent, sections: list[ArtifactSection]) -> Artifact:
-        title = source.head.title or str(source.id)
-        description = source.head.description
-        kind_id = ArtifactConfig.parse_obj(source.head.config).kind
-
-        return Artifact(
-            id=source.id,
-            kind=kind_id,
-            title=title,
-            description=description,
-            meta=ArtifactMeta(),
-            sections=sections,
-        )
+class SpecificationKind(ArtifactPrimarySectionKind):
+    pass

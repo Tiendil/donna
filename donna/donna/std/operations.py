@@ -1,20 +1,27 @@
 """Python artifact that exposes section kind definitions."""
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactLocalId
-from donna.machine.artifacts import ArtifactSection, ArtifactSectionKindMeta
+from donna.machine.artifacts import ArtifactSection, ArtifactSectionKindMeta, ArtifactSectionMeta
 from donna.primitives.artifacts import ArtifactSectionTextKind, PythonModuleSectionKind
 from donna.primitives.operations import FinishWorkflowKind, RequestActionKind
 
 PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations.python_module")
+PYTHON_ARTIFACT_KIND_ID = FullArtifactLocalId.parse("donna.artifacts.python")
+PRIMARY_SECTION_ID = ArtifactLocalId("primary")
 
 text_section_kind_entity = ArtifactSectionTextKind()
 python_module_section_kind_entity = PythonModuleSectionKind()
 request_action_kind_entity = RequestActionKind()
 finish_workflow_kind_entity = FinishWorkflowKind()
 
-artifact_title = "Operation Section Kinds"
-artifact_description = "Definitions for operation-related section kinds exposed as Python module sections."
-artifact_kind = FullArtifactLocalId.parse("donna.artifacts.python")
+primary_section = ArtifactSection(
+    title="Operation Section Kinds",
+    description="Definitions for operation-related section kinds exposed as Python module sections.",
+    id=PRIMARY_SECTION_ID,
+    kind=PYTHON_ARTIFACT_KIND_ID,
+    primary=True,
+    meta=ArtifactSectionMeta(),
+)
 
 text_section_kind = ArtifactSection(
     title="Text Section",
@@ -49,10 +56,8 @@ finish_workflow_kind = ArtifactSection(
 )
 
 __all__ = [
-    "artifact_description",
-    "artifact_kind",
-    "artifact_title",
     "finish_workflow_kind",
+    "primary_section",
     "python_module_section_kind",
     "request_action_kind",
     "text_section_kind",

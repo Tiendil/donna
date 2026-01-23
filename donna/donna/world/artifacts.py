@@ -1,7 +1,7 @@
 import pathlib
 
 from donna.domain.ids import ArtifactId, FullArtifactId
-from donna.machine.artifacts import Artifact, ArtifactKindSectionMeta, resolve
+from donna.machine.artifacts import Artifact, ArtifactSectionKindMeta, resolve
 from donna.world.config import config
 from donna.world.sources.markdown import construct_artifact_from_markdown_source
 
@@ -28,14 +28,16 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> None:
 
     test_artifact = construct_artifact_from_markdown_source(full_id, content)
 
-    assert test_artifact.kind is not None
+    primary_section = test_artifact.primary_section()
+    if primary_section.kind is None:
+        raise NotImplementedError(f"Artifact '{full_id}' does not define a primary section kind")
 
-    section = resolve(test_artifact.kind)
-    if not isinstance(section.meta, ArtifactKindSectionMeta):
-        raise NotImplementedError(f"Artifact kind '{test_artifact.kind}' is not available")
-    artifact_kind = section.meta.artifact_kind
+    section = resolve(primary_section.kind)
+    if not isinstance(section.meta, ArtifactSectionKindMeta):
+        raise NotImplementedError(f"Primary section kind '{primary_section.kind}' is not available")
+    primary_section_kind = section.meta.section_kind
 
-    is_valid, _cells = artifact_kind.validate_artifact(test_artifact)
+    is_valid, _cells = primary_section_kind.validate_artifact(test_artifact)
 
     if not is_valid:
         raise NotImplementedError(f"Artifact `{full_id}` is not valid and cannot be updated")

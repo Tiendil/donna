@@ -25,6 +25,7 @@ class FinishWorkflowKind(OperationKind):
         artifact_id: FullArtifactId,
         source: markdown.SectionSource,
         config: dict[str, object],
+        primary: bool = False,
     ) -> ArtifactSection:
         section_config = FinishWorkflowConfig.parse_obj(config)
         description = source.as_original_markdown(with_title=False)
@@ -34,5 +35,6 @@ class FinishWorkflowKind(OperationKind):
             kind=section_config.kind,
             title=source.title or "",
             description=description,
+            primary=primary,
             meta=OperationMeta(fsm_mode=section_config.fsm_mode, allowed_transtions=set()),
         )
