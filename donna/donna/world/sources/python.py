@@ -19,7 +19,7 @@ class PythonSectionConstructor(Protocol):
         module: ModuleType,
         section: SectionConstructor,
     ) -> ArtifactSection:
-        ...
+        pass
 
 
 def construct_artifact_from_module(module: ModuleType, full_id: FullArtifactId) -> Artifact:  # noqa: CCR001

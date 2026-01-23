@@ -65,7 +65,7 @@ class ArtifactSectionKindMeta(ArtifactSectionMeta):
 
 class ArtifactSection(BaseEntity):
     # some section may have no id and kind — it is ok for simple text sections
-    id: FullArtifactLocalId | None
+    id: ArtifactLocalId | None
     kind: FullArtifactLocalId | None
     title: str
     description: str
@@ -122,7 +122,7 @@ class Artifact(BaseEntity):
 
         return cells
 
-    def get_section(self, section_id: FullArtifactLocalId) -> ArtifactSection | None:
+    def get_section(self, section_id: ArtifactLocalId) -> ArtifactSection | None:
         for section in self.sections:
             if section.id == section_id:
                 return section
@@ -162,7 +162,7 @@ def resolve(target_id: FullArtifactLocalId) -> ArtifactSection:
     from donna.world import artifacts as world_artifacts
 
     artifact = world_artifacts.load_artifact(target_id.full_artifact_id)
-    section = artifact.get_section(target_id)
+    section = artifact.get_section(target_id.local_id)
 
     if section is None:
         raise NotImplementedError(f"Section '{target_id}' is not available")

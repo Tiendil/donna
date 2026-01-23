@@ -23,7 +23,7 @@ class MarkdownSectionConstructor(Protocol):
         source: markdown.SectionSource,
         config: dict[str, Any],
     ) -> ArtifactSection:
-        ...
+        pass
 
 
 def parse_artifact_content(full_id: FullArtifactId, text: str) -> tuple[ArtifactContent, list[markdown.SectionSource]]:
