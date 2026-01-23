@@ -1,5 +1,4 @@
 import uuid
-from types import ModuleType
 from typing import TYPE_CHECKING, Iterable
 
 from donna.domain.ids import FullArtifactId
@@ -13,7 +12,6 @@ from donna.machine.artifacts import (
     ArtifactSectionConfig,
     ArtifactSectionKind,
     ArtifactSectionMeta,
-    Section,
 )
 from donna.world import markdown
 
@@ -53,29 +51,6 @@ class ArtifactSectionTextKind(ArtifactSectionKind):
             kind=parsed_config.kind,
             title=source.title or "",
             description=source.as_original_markdown(with_title=False),
-            meta=ArtifactSectionMeta(),
-        )
-
-    def from_python_section(
-        self,
-        artifact_id: FullArtifactId,
-        module: ModuleType,
-        section: Section,
-    ) -> ArtifactSection:
-        data = section.config.model_dump(mode="python")
-
-        if "id" not in data:
-            data["id"] = "text" + uuid.uuid4().hex.replace("-", "")
-
-        config = TextConfig.parse_obj(data)
-        description = section.description
-        title = section.title
-
-        return ArtifactSection(
-            id=config.id,
-            kind=config.kind,
-            title=title,
-            description=description,
             meta=ArtifactSectionMeta(),
         )
 

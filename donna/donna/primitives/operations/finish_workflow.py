@@ -1,8 +1,7 @@
-from types import ModuleType
 from typing import TYPE_CHECKING, Iterator, Literal
 
 from donna.domain.ids import FullArtifactId
-from donna.machine.artifacts import ArtifactSection, Section
+from donna.machine.artifacts import ArtifactSection
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
 from donna.world import markdown
 
@@ -36,23 +35,4 @@ class FinishWorkflowKind(OperationKind):
             title=source.title or "",
             description=description,
             meta=OperationMeta(fsm_mode=section_config.fsm_mode, allowed_transtions=set()),
-        )
-
-    def from_python_section(
-        self,
-        artifact_id: FullArtifactId,
-        module: ModuleType,
-        section: Section,
-    ) -> ArtifactSection:
-        config_data = section.config.model_dump(mode="python")
-        config = FinishWorkflowConfig.parse_obj(config_data)
-        description = section.description
-        title = section.title
-
-        return ArtifactSection(
-            id=config.id,
-            kind=config.kind,
-            title=title,
-            description=description,
-            meta=OperationMeta(fsm_mode=config.fsm_mode, allowed_transtions=set()),
         )

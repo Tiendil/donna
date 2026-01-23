@@ -1,12 +1,11 @@
 import re
-from types import ModuleType
 from typing import TYPE_CHECKING, Iterator
 
 import pydantic
 
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId
 from donna.machine.action_requests import ActionRequest
-from donna.machine.artifacts import ArtifactSection, Section
+from donna.machine.artifacts import ArtifactSection
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
 from donna.world import markdown
 
@@ -62,29 +61,6 @@ class RequestActionKind(OperationKind):
             description=description,
             meta=OperationMeta(
                 fsm_mode=section_config.fsm_mode,
-                allowed_transtions=extract_transitions(analysis),
-            ),
-        )
-
-    def from_python_section(
-        self,
-        artifact_id: FullArtifactId,
-        module: ModuleType,
-        section: Section,
-    ) -> ArtifactSection:
-        config_data = section.config.model_dump(mode="python")
-        config = RequestActionConfig.parse_obj(config_data)
-        description = section.description
-        title = section.title
-        analysis = f"## {title}\n{description}" if title else description
-
-        return ArtifactSection(
-            id=config.id,
-            kind=config.kind,
-            title=title,
-            description=description,
-            meta=OperationMeta(
-                fsm_mode=config.fsm_mode,
                 allowed_transtions=extract_transitions(analysis),
             ),
         )

@@ -9,8 +9,6 @@ from donna.machine.artifacts import (
     ArtifactSection,
     ArtifactSectionConfig,
     ArtifactSectionKind,
-    ArtifactSectionMeta,
-    Section,
 )
 from donna.world import markdown
 
@@ -34,27 +32,6 @@ class PythonModuleSectionKind(ArtifactSectionKind):
         config: dict[str, object],
     ) -> ArtifactSection:
         raise NotImplementedError("Python module sections cannot be constructed from markdown.")
-
-    def from_python_section(
-        self,
-        artifact_id: FullArtifactId,
-        module: types.ModuleType,
-        section: Section,
-    ) -> ArtifactSection:
-        data = section.config.model_dump(mode="python")
-        config_data = {
-            "id": data.get("id"),
-            "kind": data.get("kind"),
-        }
-        config = PythonModuleSectionConfig.parse_obj(config_data)
-
-        return ArtifactSection(
-            id=config.id,
-            kind=config.kind,
-            title=section.title,
-            description=section.description,
-            meta=ArtifactSectionMeta(),
-        )
 
 
 class PythonArtifact(ArtifactKind):

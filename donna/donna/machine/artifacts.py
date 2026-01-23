@@ -1,4 +1,3 @@
-from types import ModuleType
 from typing import TYPE_CHECKING, Any, Iterable
 
 import pydantic
@@ -149,14 +148,6 @@ class ArtifactSectionKind(BaseEntity):
     ) -> ArtifactSection:
         raise NotImplementedError("You MUST implement this method.")
 
-    def from_python_section(
-        self,
-        artifact_id: FullArtifactId,
-        module: ModuleType,
-        section: "Section",
-    ) -> ArtifactSection:
-        raise NotImplementedError("You MUST implement this method.")
-
 
 def resolve(target_id: FullArtifactLocalId) -> ArtifactSection:
     from donna.world import artifacts as world_artifacts
@@ -181,13 +172,6 @@ class ArtifactContent(BaseEntity):
     id: FullArtifactId
     head: SectionContent
     tail: list[SectionContent]
-
-
-class Section(BaseEntity):
-    title: str
-    description: str
-    config: ArtifactSectionConfig
-    entity: BaseEntity | None = None
 
 
 class ArtifactConstructor(BaseEntity):

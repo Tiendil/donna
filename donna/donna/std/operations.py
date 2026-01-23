@@ -1,7 +1,7 @@
 """Python artifact that exposes section kind definitions."""
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactLocalId
-from donna.machine.artifacts import ArtifactSectionConfig, Section
+from donna.machine.artifacts import ArtifactSection, ArtifactSectionKindMeta
 from donna.primitives.artifacts import ArtifactSectionTextKind, PythonModuleSectionKind
 from donna.primitives.operations import FinishWorkflowKind, RequestActionKind
 
@@ -16,44 +16,36 @@ artifact_title = "Operation Section Kinds"
 artifact_description = "Definitions for operation-related section kinds exposed as Python module sections."
 artifact_kind = FullArtifactLocalId.parse("donna.artifacts.python")
 
-text_section_kind = Section(
+text_section_kind = ArtifactSection(
     title="Text Section",
     description="",
-    config=ArtifactSectionConfig(
-        id=ArtifactLocalId("text"),
-        kind=PYTHON_MODULE_SECTION_KIND_ID,
-    ),
-    entity=text_section_kind_entity,
+    id=ArtifactLocalId("text"),
+    kind=PYTHON_MODULE_SECTION_KIND_ID,
+    meta=ArtifactSectionKindMeta(section_kind=text_section_kind_entity),
 )
 
-python_module_section_kind = Section(
+python_module_section_kind = ArtifactSection(
     title="Python module attribute",
     description="",
-    config=ArtifactSectionConfig(
-        id=ArtifactLocalId("python_module"),
-        kind=PYTHON_MODULE_SECTION_KIND_ID,
-    ),
-    entity=python_module_section_kind_entity,
+    id=ArtifactLocalId("python_module"),
+    kind=PYTHON_MODULE_SECTION_KIND_ID,
+    meta=ArtifactSectionKindMeta(section_kind=python_module_section_kind_entity),
 )
 
-request_action_kind = Section(
+request_action_kind = ArtifactSection(
     title="Request Action",
     description="",
-    config=ArtifactSectionConfig(
-        id=ArtifactLocalId("request_action"),
-        kind=PYTHON_MODULE_SECTION_KIND_ID,
-    ),
-    entity=request_action_kind_entity,
+    id=ArtifactLocalId("request_action"),
+    kind=PYTHON_MODULE_SECTION_KIND_ID,
+    meta=ArtifactSectionKindMeta(section_kind=request_action_kind_entity),
 )
 
-finish_workflow_kind = Section(
+finish_workflow_kind = ArtifactSection(
     title="Finish Workflow",
     description="",
-    config=ArtifactSectionConfig(
-        id=ArtifactLocalId("finish_workflow"),
-        kind=PYTHON_MODULE_SECTION_KIND_ID,
-    ),
-    entity=finish_workflow_kind_entity,
+    id=ArtifactLocalId("finish_workflow"),
+    kind=PYTHON_MODULE_SECTION_KIND_ID,
+    meta=ArtifactSectionKindMeta(section_kind=finish_workflow_kind_entity),
 )
 
 __all__ = [
