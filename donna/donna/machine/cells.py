@@ -1,10 +1,7 @@
 import base64
-import json
 import uuid
-from typing import Any
 
 import pydantic
-from pydantic_core import to_jsonable_python
 
 from donna.core.entities import BaseEntity
 
@@ -37,18 +34,8 @@ class Cell(BaseEntity):
         return cls.build(kind=kind, media_type=None, content="", **meta)
 
     @classmethod
-    def build_text(cls, kind: str, content: str, **meta: MetaValue) -> "Cell":
-        return cls.build(kind=kind, media_type="text/plain", content=content, **meta)
-
-    @classmethod
     def build_markdown(cls, kind: str, content: str, **meta: MetaValue) -> "Cell":
         return cls.build(kind=kind, media_type="text/markdown", content=content, **meta)
-
-    @classmethod
-    def build_json(cls, kind: str, content: Any, **meta: MetaValue) -> "Cell":
-        # TODO: we may want make indent configurable
-        formated_content = json.dumps(to_jsonable_python(content), indent=2)
-        return cls.build(kind=kind, media_type="application/json", content=formated_content, **meta)
 
     # TODO: refactor to base62 (without `_` and `-` characters)
     def short_id(self) -> str:

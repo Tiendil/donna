@@ -8,10 +8,6 @@ ActionRequestIdArgument = Annotated[
     ActionRequestId,
     typer.Argument(parser=ActionRequestId, help="The ID of the action request"),
 ]
-ActionRequestIdOption = Annotated[
-    ActionRequestId,
-    typer.Option(parser=ActionRequestId, help="The ID of the action request"),
-]
 
 
 FullArtifactIdArgument = Annotated[
