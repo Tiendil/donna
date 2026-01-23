@@ -51,12 +51,10 @@
 * TODO WE CAN ASK DONNA TO MAKE A FSM FOR DONNA!!! WHICH WILL BE OUR PLAN OF WORK!!!
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Lazy import of primitives from Python artifacts
-** PythonArtifact is a part of donna.world.worlds.python?
-*** it should be possible to construct Workflow and Specification from the python artifact as well as from markdown artifact
-*** => smth like PythonArtifact (and related classes) should be an intemediate representation for .py files
-*** => and we should have smth like MarkdownArtifact for .md files
-*** both should implement allow construction of artifact kinds (specification, workflow) in generic way
-** Do we need artifact kinds? Maybe sections will be enough?
+** do we need `python_artifact_kind_section`?
+** do we need a PrimarySection(ArtifactSection) class to simplify promary sections handling?
+** review primitives module and std/*.py modules
+** replace artifact sections with primitives in the std/*.py modules?
 ** introspection
 *** !filesystem list artifacts does not find .py (uses hardcoded .md)
 *** !remove _MARKDOWN_ROOTS
