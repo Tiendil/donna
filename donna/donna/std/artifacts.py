@@ -1,7 +1,7 @@
 """Python artifact that exposes artifact kind definitions."""
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactLocalId
-from donna.machine.artifacts import ArtifactConfig, ArtifactConstructor, ArtifactSectionConfig, SectionConstructor
+from donna.machine.artifacts import ArtifactSectionConfig, Section
 from donna.primitives.artifacts import PythonArtifact, SpecificationKind, WorkflowKind
 
 PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations.python_module")
@@ -10,13 +10,11 @@ specification_kind_entity = SpecificationKind()
 workflow_kind_entity = WorkflowKind()
 python_artifact_kind = PythonArtifact()
 
-artifact = ArtifactConstructor(
-    title="Artifact Kinds",
-    description="Definitions for artifact kinds exposed as Python module sections.",
-    config=ArtifactConfig(kind=FullArtifactLocalId.parse("donna.artifacts.python")),
-)
+artifact_title = "Artifact Kinds"
+artifact_description = "Definitions for artifact kinds exposed as Python module sections."
+artifact_kind = FullArtifactLocalId.parse("donna.artifacts.python")
 
-specification_kind = SectionConstructor(
+specification_kind = Section(
     title="Specification",
     description="A specification that define various aspects of the current project.",
     config=ArtifactSectionConfig(
@@ -26,7 +24,7 @@ specification_kind = SectionConstructor(
     entity=specification_kind_entity,
 )
 
-workflow_kind = SectionConstructor(
+workflow_kind = Section(
     title="Workflow",
     description="A workflow that defines a state machine for the agent to follow.",
     config=ArtifactSectionConfig(
@@ -36,7 +34,7 @@ workflow_kind = SectionConstructor(
     entity=workflow_kind_entity,
 )
 
-python_artifact_kind_section = SectionConstructor(
+python_artifact_kind_section = Section(
     title="Python Artifact",
     description="A Python module artifact.",
     config=ArtifactSectionConfig(
@@ -47,9 +45,11 @@ python_artifact_kind_section = SectionConstructor(
 )
 
 __all__ = [
+    "artifact_description",
+    "artifact_kind",
+    "artifact_title",
     "python_artifact_kind",
     "python_artifact_kind_section",
     "specification_kind",
     "workflow_kind",
-    "artifact",
 ]

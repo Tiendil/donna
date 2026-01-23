@@ -1,7 +1,7 @@
 """Python artifact that exposes section kind definitions."""
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactLocalId
-from donna.machine.artifacts import ArtifactConfig, ArtifactConstructor, ArtifactSectionConfig, SectionConstructor
+from donna.machine.artifacts import ArtifactSectionConfig, Section
 from donna.primitives.artifacts import ArtifactSectionTextKind, PythonModuleSectionKind
 from donna.primitives.operations import FinishWorkflowKind, RequestActionKind
 
@@ -12,13 +12,11 @@ python_module_section_kind_entity = PythonModuleSectionKind()
 request_action_kind_entity = RequestActionKind()
 finish_workflow_kind_entity = FinishWorkflowKind()
 
-artifact = ArtifactConstructor(
-    title="Operation Section Kinds",
-    description="Definitions for operation-related section kinds exposed as Python module sections.",
-    config=ArtifactConfig(kind=FullArtifactLocalId.parse("donna.artifacts.python")),
-)
+artifact_title = "Operation Section Kinds"
+artifact_description = "Definitions for operation-related section kinds exposed as Python module sections."
+artifact_kind = FullArtifactLocalId.parse("donna.artifacts.python")
 
-text_section_kind = SectionConstructor(
+text_section_kind = Section(
     title="Text Section",
     description="",
     config=ArtifactSectionConfig(
@@ -28,7 +26,7 @@ text_section_kind = SectionConstructor(
     entity=text_section_kind_entity,
 )
 
-python_module_section_kind = SectionConstructor(
+python_module_section_kind = Section(
     title="Python module attribute",
     description="",
     config=ArtifactSectionConfig(
@@ -38,7 +36,7 @@ python_module_section_kind = SectionConstructor(
     entity=python_module_section_kind_entity,
 )
 
-request_action_kind = SectionConstructor(
+request_action_kind = Section(
     title="Request Action",
     description="",
     config=ArtifactSectionConfig(
@@ -48,7 +46,7 @@ request_action_kind = SectionConstructor(
     entity=request_action_kind_entity,
 )
 
-finish_workflow_kind = SectionConstructor(
+finish_workflow_kind = Section(
     title="Finish Workflow",
     description="",
     config=ArtifactSectionConfig(
@@ -59,7 +57,9 @@ finish_workflow_kind = SectionConstructor(
 )
 
 __all__ = [
-    "artifact",
+    "artifact_description",
+    "artifact_kind",
+    "artifact_title",
     "finish_workflow_kind",
     "python_module_section_kind",
     "request_action_kind",

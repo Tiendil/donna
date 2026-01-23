@@ -153,7 +153,7 @@ class ArtifactSectionKind(BaseEntity):
         self,
         artifact_id: FullArtifactId,
         module: ModuleType,
-        section: "SectionConstructor",
+        section: "Section",
     ) -> ArtifactSection:
         raise NotImplementedError("You MUST implement this method.")
 
@@ -183,58 +183,11 @@ class ArtifactContent(BaseEntity):
     tail: list[SectionContent]
 
 
-class SectionConstructor(BaseEntity):
+class Section(BaseEntity):
     title: str
     description: str
     config: ArtifactSectionConfig
     entity: BaseEntity | None = None
-
-    def build_section(  # noqa: CCR001
-        self,
-        artifact_id: FullArtifactId,
-        module: ModuleType,
-        section_kind_overrides: dict[FullArtifactLocalId, ArtifactSectionKind] | None = None,
-    ) -> ArtifactSection:
-        section_kind_id = self.config.kind
-        section_kind = None
-
-        if section_kind_overrides is not None:
-            section_id = artifact_id.to_full_local(self.config.id)
-            section_kind = section_kind_overrides.get(section_id) or section_kind_overrides.get(section_kind_id)
-
-        if section_kind is None:
-            resolved_section = resolve(section_kind_id)
-            if not isinstance(resolved_section.meta, ArtifactSectionKindMeta):
-                raise NotImplementedError(f"Section kind '{section_kind_id}' is not available")
-            section_kind = resolved_section.meta.section_kind
-
-        section = section_kind.from_python_section(
-            artifact_id=artifact_id,
-            module=module,
-            section=self,
-        )
-
-        if self.entity is None:
-            return section
-
-        from donna.machine.templates import DirectiveConfig, DirectiveKind, DirectiveSectionMeta
-
-        if isinstance(self.entity, DirectiveKind):
-            directive_config = DirectiveConfig.model_validate(self.config.model_dump(mode="python"))
-            return section.replace(
-                meta=DirectiveSectionMeta(
-                    analyze_id=directive_config.analyze_id,
-                    directive=self.entity,
-                )
-            )
-
-        if isinstance(self.entity, ArtifactKind):
-            return section.replace(meta=ArtifactKindSectionMeta(artifact_kind=self.entity))
-
-        if isinstance(self.entity, ArtifactSectionKind):
-            return section.replace(meta=ArtifactSectionKindMeta(section_kind=self.entity))
-
-        raise NotImplementedError(f"Unsupported section entity type: {type(self.entity).__name__}")
 
 
 class ArtifactConstructor(BaseEntity):

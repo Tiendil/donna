@@ -13,7 +13,7 @@ from donna.machine.artifacts import (
     ArtifactSectionConfig,
     ArtifactSectionKind,
     ArtifactSectionMeta,
-    SectionConstructor,
+    Section,
 )
 from donna.world import markdown
 
@@ -60,7 +60,7 @@ class ArtifactSectionTextKind(ArtifactSectionKind):
         self,
         artifact_id: FullArtifactId,
         module: ModuleType,
-        section: SectionConstructor,
+        section: Section,
     ) -> ArtifactSection:
         data = section.config.model_dump(mode="python")
 

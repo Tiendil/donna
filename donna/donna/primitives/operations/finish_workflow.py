@@ -2,7 +2,7 @@ from types import ModuleType
 from typing import TYPE_CHECKING, Iterator, Literal
 
 from donna.domain.ids import FullArtifactId
-from donna.machine.artifacts import ArtifactSection, SectionConstructor
+from donna.machine.artifacts import ArtifactSection, Section
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
 from donna.world import markdown
 
@@ -42,7 +42,7 @@ class FinishWorkflowKind(OperationKind):
         self,
         artifact_id: FullArtifactId,
         module: ModuleType,
-        section: SectionConstructor,
+        section: Section,
     ) -> ArtifactSection:
         config_data = section.config.model_dump(mode="python")
         config = FinishWorkflowConfig.parse_obj(config_data)
