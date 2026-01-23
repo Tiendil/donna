@@ -56,7 +56,7 @@ class RequestActionKind(OperationKind):
         analysis = source.as_analysis_markdown(with_title=True)
 
         return ArtifactSection(
-            id=artifact_id.to_full_local(section_config.id),
+            id=section_config.id,
             kind=section_config.kind,
             title=source.title or "",
             description=description,
@@ -79,7 +79,7 @@ class RequestActionKind(OperationKind):
         analysis = f"## {title}\n{description}" if title else description
 
         return ArtifactSection(
-            id=artifact_id.to_full_local(config.id),
+            id=config.id,
             kind=config.kind,
             title=title,
             description=description,
@@ -100,8 +100,10 @@ class RequestActionKind(OperationKind):
 
         request_text = operation.description.format(**context)
 
+        full_operation_id = unit.operation_id
         assert operation.id is not None
+        assert operation.id == full_operation_id.local_id
 
-        request = ActionRequest.build(request_text, operation.id)
+        request = ActionRequest.build(request_text, full_operation_id)
 
         yield ChangeAddActionRequest(action_request=request)

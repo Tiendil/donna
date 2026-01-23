@@ -31,7 +31,7 @@ class FinishWorkflowKind(OperationKind):
         description = source.as_original_markdown(with_title=False)
 
         return ArtifactSection(
-            id=artifact_id.to_full_local(section_config.id),
+            id=section_config.id,
             kind=section_config.kind,
             title=source.title or "",
             description=description,
@@ -50,7 +50,7 @@ class FinishWorkflowKind(OperationKind):
         title = section.title
 
         return ArtifactSection(
-            id=artifact_id.to_full_local(config.id),
+            id=config.id,
             kind=config.kind,
             title=title,
             description=description,

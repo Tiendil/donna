@@ -49,7 +49,7 @@ class ArtifactSectionTextKind(ArtifactSectionKind):
         parsed_config = TextConfig.parse_obj(data)
 
         return ArtifactSection(
-            id=artifact_id.to_full_local(parsed_config.id),
+            id=parsed_config.id,
             kind=parsed_config.kind,
             title=source.title or "",
             description=source.as_original_markdown(with_title=False),
@@ -72,7 +72,7 @@ class ArtifactSectionTextKind(ArtifactSectionKind):
         title = section.title
 
         return ArtifactSection(
-            id=artifact_id.to_full_local(config.id),
+            id=config.id,
             kind=config.kind,
             title=title,
             description=description,

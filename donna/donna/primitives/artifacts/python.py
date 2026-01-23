@@ -49,7 +49,7 @@ class PythonModuleSectionKind(ArtifactSectionKind):
         config = PythonModuleSectionConfig.parse_obj(config_data)
 
         return ArtifactSection(
-            id=artifact_id.to_full_local(config.id),
+            id=config.id,
             kind=config.kind,
             title=section.title,
             description=section.description,

@@ -125,7 +125,7 @@ def _validate_operation_transition(
 
     workflow = artifacts.load_artifact(operation_id.full_artifact_id)
 
-    operation = workflow.get_section(operation_id)
+    operation = workflow.get_section(operation_id.local_id)
     assert operation is not None
 
     assert isinstance(operation.meta, OperationMeta)

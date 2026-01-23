@@ -32,17 +32,19 @@ def find_not_reachable_operations(
 
 
 class WorkflowKind(ArtifactKind):
-    def construct_artifact(self, source: ArtifactContent, sections: list[ArtifactSection]) -> Artifact:
+    def construct_artifact(self, source: ArtifactContent, sections: list[ArtifactSection]) -> Artifact:  # noqa: CCR001
         title = source.head.title or str(source.id)
         description = source.head.description
         kind_id = ArtifactConfig.parse_obj(source.head.config).kind
 
-        start_operation_id = None
+        start_operation_id: FullArtifactLocalId | None = None
 
         for section in sections:
             assert isinstance(section.meta, OperationMeta)
             if section.meta.fsm_mode == FsmMode.start:
-                start_operation_id = section.id
+                if section.id is None:
+                    raise NotImplementedError(f"Workflow '{source.id}' has a start operation without an id.")
+                start_operation_id = source.id.to_full_local(section.id)
                 break
         else:
             raise NotImplementedError(f"Workflow '{source.id}' does not have a start operation.")
@@ -63,7 +65,7 @@ class WorkflowKind(ArtifactKind):
 
         start_operation_id: FullArtifactLocalId = artifact.meta.start_operation_id
 
-        if artifact.get_section(start_operation_id) is None:
+        if artifact.get_section(start_operation_id.local_id) is None:
             return False, [
                 Cell.build_meta(
                     kind="artifact_kind_validation",
@@ -77,6 +79,7 @@ class WorkflowKind(ArtifactKind):
 
         for section in artifact.sections:
             assert isinstance(section.meta, OperationMeta)
+            section_full_id = artifact.id.to_full_local(section.id) if section.id is not None else None
 
             if section.meta.fsm_mode == FsmMode.final and section.meta.allowed_transtions:
                 return False, [
@@ -84,18 +87,18 @@ class WorkflowKind(ArtifactKind):
                         kind="artifact_kind_validation",
                         id=str(artifact.id),
                         status="failure",
-                        message=f"Final operation '{section.id}' should not have outgoing transitions.",
+                        message=f"Final operation '{section_full_id}' should not have outgoing transitions.",
                     )
                 ]
 
-            if section.meta.fsm_mode == FsmMode.start and section.id != start_operation_id:
+            if section.meta.fsm_mode == FsmMode.start and section_full_id != start_operation_id:
                 return False, [
                     Cell.build_meta(
                         kind="artifact_kind_validation",
                         id=str(artifact.id),
                         status="failure",
                         message=(
-                            f"Operation '{section.id}' is marked as start but does not match the workflow's start"
+                            f"Operation '{section_full_id}' is marked as start but does not match the workflow's start"
                             f" operation ID '{start_operation_id}'."
                         ),
                     )
@@ -108,14 +111,14 @@ class WorkflowKind(ArtifactKind):
                         id=str(artifact.id),
                         status="failure",
                         message=(
-                            f"Operation '{section.id}' must have at least one allowed transition or be marked as"
+                            f"Operation '{section_full_id}' must have at least one allowed transition or be marked as"
                             " final."
                         ),
                     )
                 ]
 
-            assert section.id is not None
-            transitions[section.id] = set(section.meta.allowed_transtions)
+            assert section_full_id is not None
+            transitions[section_full_id] = set(section.meta.allowed_transtions)
 
         not_reachable_operations = find_not_reachable_operations(
             start_id=start_operation_id,

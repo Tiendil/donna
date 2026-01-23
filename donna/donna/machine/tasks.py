@@ -58,7 +58,7 @@ class WorkUnit(BaseEntity):
 
         workflow = artifacts.load_artifact(self.operation_id.full_artifact_id)
 
-        operation = workflow.get_section(self.operation_id)
+        operation = workflow.get_section(self.operation_id.local_id)
 
         if not operation:
             raise NotImplementedError(f"Operation with id '{self.operation_id.local_id}' not found")

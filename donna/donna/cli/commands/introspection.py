@@ -12,7 +12,7 @@ introspection_cli = typer.Typer()
 def show(id: str) -> None:
     primitive_id = FullArtifactLocalId.parse(id)
     artifact = world_artifacts.load_artifact(primitive_id.full_artifact_id)
-    section = artifact.get_section(primitive_id)
+    section = artifact.get_section(primitive_id.local_id)
 
     if section is None:
         raise NotImplementedError(f"Primitive '{primitive_id}' is not available")
