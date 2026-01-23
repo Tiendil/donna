@@ -2,8 +2,8 @@ import pathlib
 
 from donna.domain.ids import ArtifactId, FullArtifactId
 from donna.machine.artifacts import Artifact, ArtifactKindSectionMeta, resolve
-from donna.world.artifact_builder import construct_artifact_from_content
 from donna.world.config import config
+from donna.world.sources.markdown import construct_artifact_from_markdown_source
 
 
 def fetch_artifact(full_id: FullArtifactId, output: pathlib.Path) -> None:
@@ -26,7 +26,7 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> None:
 
     content = input.read_text(encoding="utf-8")
 
-    test_artifact = construct_artifact_from_content(full_id, content)
+    test_artifact = construct_artifact_from_markdown_source(full_id, content)
 
     assert test_artifact.kind is not None
 

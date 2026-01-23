@@ -6,10 +6,10 @@ import pkgutil
 from collections.abc import Callable
 from typing import cast
 
-from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactLocalId, WorldId
+from donna.domain.ids import ArtifactId, FullArtifactId, WorldId
 from donna.machine.artifacts import Artifact
-from donna.primitives.artifacts import PythonArtifact
-from donna.world.artifact_builder import construct_artifact_from_content
+from donna.world.sources.markdown import construct_artifact_from_markdown_source
+from donna.world.sources.python import construct_artifact_from_module
 from donna.world.worlds.base import World as BaseWorld
 
 
@@ -72,20 +72,7 @@ class Python(BaseWorld):
         full_id = FullArtifactId((self.id, artifact_id))
         module_name = self._artifact_module_name(artifact_id)
         module = importlib.import_module(module_name)
-        from donna.std import artifacts as std_artifacts
-
-        kind = std_artifacts.python_artifact_kind
-
-        if not isinstance(kind, PythonArtifact):
-            raise NotImplementedError("Python artifact kind is not available")
-
-        python_kind_id = FullArtifactLocalId.parse("donna.artifacts.python")
-        artifact = kind.construct_module_artifact(module, full_id, python_kind_id)
-
-        if artifact is None:
-            raise NotImplementedError(f"Module `{module_name}` is not an artifact")
-
-        return artifact
+        return construct_artifact_from_module(module, full_id)
 
     def _fetch_markdown(self, artifact_id: ArtifactId) -> Artifact:
         full_id = FullArtifactId((self.id, artifact_id))
@@ -95,7 +82,7 @@ class Python(BaseWorld):
             raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
         content = resource_path.read_text(encoding="utf-8")
-        return construct_artifact_from_content(full_id, content)
+        return construct_artifact_from_markdown_source(full_id, content)
 
     def fetch(self, artifact_id: ArtifactId) -> Artifact:
         if self._has_markdown(artifact_id):
