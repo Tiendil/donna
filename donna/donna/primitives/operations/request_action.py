@@ -1,12 +1,14 @@
 import re
+from types import ModuleType
 from typing import TYPE_CHECKING, Iterator
 
 import pydantic
 
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId
 from donna.machine.action_requests import ActionRequest
-from donna.machine.artifacts import ArtifactSection, SectionContent
+from donna.machine.artifacts import ArtifactSection, SectionConstructor
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
+from donna.world import markdown
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -43,21 +45,47 @@ class RequestActionConfig(OperationConfig):
 
 
 class RequestActionKind(OperationKind):
-    def construct_section(
+    def from_markdown_section(
         self,
         artifact_id: FullArtifactId,
-        section: SectionContent,
+        source: markdown.SectionSource,
+        config: dict[str, object],
     ) -> ArtifactSection:
-        config = RequestActionConfig.parse_obj(section.config)
+        section_config = RequestActionConfig.parse_obj(config)
+        description = source.as_original_markdown(with_title=False)
+        analysis = source.as_analysis_markdown(with_title=True)
+
+        return ArtifactSection(
+            id=artifact_id.to_full_local(section_config.id),
+            kind=section_config.kind,
+            title=source.title or "",
+            description=description,
+            meta=OperationMeta(
+                fsm_mode=section_config.fsm_mode,
+                allowed_transtions=extract_transitions(analysis),
+            ),
+        )
+
+    def from_python_section(
+        self,
+        artifact_id: FullArtifactId,
+        module: ModuleType,
+        section: SectionConstructor,
+    ) -> ArtifactSection:
+        config_data = section.config.model_dump(mode="python")
+        config = RequestActionConfig.parse_obj(config_data)
+        description = section.description
+        title = section.title
+        analysis = f"## {title}\n{description}" if title else description
 
         return ArtifactSection(
             id=artifact_id.to_full_local(config.id),
             kind=config.kind,
-            title=section.title,
-            description=section.description,
+            title=title,
+            description=description,
             meta=OperationMeta(
                 fsm_mode=config.fsm_mode,
-                allowed_transtions=extract_transitions(section.analysis),
+                allowed_transtions=extract_transitions(analysis),
             ),
         )
 

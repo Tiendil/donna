@@ -1,3 +1,4 @@
+from types import ModuleType
 from typing import TYPE_CHECKING, Any, Iterable
 
 import pydantic
@@ -9,42 +10,13 @@ from donna.machine.tasks import Task, WorkUnit
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
+    from donna.world import markdown
 
 
 class ArtifactKind(BaseEntity):
     default_section_kind: FullArtifactLocalId = FullArtifactLocalId.parse("donna.operations.text")
 
-    def construct_section(
-        self,
-        artifact_id: FullArtifactId,
-        section: "SectionContent",
-        section_kind_overrides: dict[FullArtifactLocalId, "ArtifactSectionKind"] | None = None,
-    ) -> "ArtifactSection":
-        data = dict(section.config)
-
-        if "kind" not in data:
-            data["kind"] = self.default_section_kind
-
-        kind_value = data["kind"]
-        if isinstance(kind_value, str):
-            section_kind_id = FullArtifactLocalId.parse(kind_value)
-        else:
-            section_kind_id = kind_value
-
-        section_kind = None
-        if section_kind_overrides is not None:
-            section_kind = section_kind_overrides.get(section_kind_id)
-
-        if section_kind is None:
-            resolved_section = resolve(section_kind_id)
-            if not isinstance(resolved_section.meta, ArtifactSectionKindMeta):
-                raise NotImplementedError(f"Section kind '{section_kind_id}' is not available")
-            section_kind = resolved_section.meta.section_kind
-
-        section_content = section.replace(config=data)
-        return section_kind.construct_section(artifact_id, section_content)
-
-    def construct_artifact(self, source: "ArtifactContent") -> "Artifact":
+    def construct_artifact(self, source: "ArtifactContent", sections: list["ArtifactSection"]) -> "Artifact":
         raise NotImplementedError("You must implement this method in subclasses")
 
     def validate_artifact(self, artifact: "Artifact") -> tuple[bool, list[Cell]]:
@@ -169,7 +141,20 @@ class ArtifactSectionKind(BaseEntity):
     def execute_section(self, task: Task, unit: WorkUnit, section: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("You MUST implement this method.")
 
-    def construct_section(self, artifact_id: FullArtifactId, section: "SectionContent") -> ArtifactSection:
+    def from_markdown_section(
+        self,
+        artifact_id: FullArtifactId,
+        source: "markdown.SectionSource",
+        config: dict[str, Any],
+    ) -> ArtifactSection:
+        raise NotImplementedError("You MUST implement this method.")
+
+    def from_python_section(
+        self,
+        artifact_id: FullArtifactId,
+        module: ModuleType,
+        section: "SectionConstructor",
+    ) -> ArtifactSection:
         raise NotImplementedError("You MUST implement this method.")
 
 
@@ -204,24 +189,29 @@ class SectionConstructor(BaseEntity):
     config: ArtifactSectionConfig
     entity: BaseEntity | None = None
 
-    def build_section(
+    def build_section(  # noqa: CCR001
         self,
-        artifact_kind: ArtifactKind,
         artifact_id: FullArtifactId,
+        module: ModuleType,
         section_kind_overrides: dict[FullArtifactLocalId, ArtifactSectionKind] | None = None,
     ) -> ArtifactSection:
-        config_data = self.config.model_dump(mode="python")
-        analysis = _analysis_text(self.title, self.description)
+        section_kind_id = self.config.kind
+        section_kind = None
 
-        section = artifact_kind.construct_section(
+        if section_kind_overrides is not None:
+            section_id = artifact_id.to_full_local(self.config.id)
+            section_kind = section_kind_overrides.get(section_id) or section_kind_overrides.get(section_kind_id)
+
+        if section_kind is None:
+            resolved_section = resolve(section_kind_id)
+            if not isinstance(resolved_section.meta, ArtifactSectionKindMeta):
+                raise NotImplementedError(f"Section kind '{section_kind_id}' is not available")
+            section_kind = resolved_section.meta.section_kind
+
+        section = section_kind.from_python_section(
             artifact_id=artifact_id,
-            section=SectionContent(
-                title=self.title,
-                description=self.description,
-                analysis=analysis,
-                config=config_data,
-            ),
-            section_kind_overrides=section_kind_overrides,
+            module=module,
+            section=self,
         )
 
         if self.entity is None:
@@ -230,7 +220,7 @@ class SectionConstructor(BaseEntity):
         from donna.machine.templates import DirectiveConfig, DirectiveKind, DirectiveSectionMeta
 
         if isinstance(self.entity, DirectiveKind):
-            directive_config = DirectiveConfig.model_validate(config_data)
+            directive_config = DirectiveConfig.model_validate(self.config.model_dump(mode="python"))
             return section.replace(
                 meta=DirectiveSectionMeta(
                     analyze_id=directive_config.analyze_id,

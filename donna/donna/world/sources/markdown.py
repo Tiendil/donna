@@ -1,9 +1,14 @@
-from donna.domain.ids import FullArtifactId
+from typing import Any, Protocol
+
+from donna.domain.ids import FullArtifactId, FullArtifactLocalId
 from donna.machine.artifacts import (
     Artifact,
     ArtifactConfig,
     ArtifactContent,
     ArtifactKindSectionMeta,
+    ArtifactSection,
+    ArtifactSectionKind,
+    ArtifactSectionKindMeta,
     SectionContent,
     resolve,
 )
@@ -11,7 +16,17 @@ from donna.world import markdown
 from donna.world.templates import RenderMode, render, render_mode
 
 
-def parse_artifact_content(full_id: FullArtifactId, text: str) -> ArtifactContent:
+class MarkdownSectionConstructor(Protocol):
+    def from_markdown_section(
+        self,
+        artifact_id: FullArtifactId,
+        source: markdown.SectionSource,
+        config: dict[str, Any],
+    ) -> ArtifactSection:
+        ...
+
+
+def parse_artifact_content(full_id: FullArtifactId, text: str) -> tuple[ArtifactContent, list[markdown.SectionSource]]:
     # Parsing an artifact two times is not ideal, but it is straightforward approach that works for now.
     # We should consider optimizing this in the future if performance or stability becomes an issue.
     # For now let's wait till we have more artifact analysis logic and till more use cases emerge.
@@ -35,15 +50,16 @@ def parse_artifact_content(full_id: FullArtifactId, text: str) -> ArtifactConten
     head_source = original_sections[0]
     tail_sources = original_sections[1:]
 
-    return ArtifactContent(
+    content = ArtifactContent(
         id=full_id,
         head=_section_content_from_source(head_source),
         tail=[_section_content_from_source(section) for section in tail_sources],
     )
+    return content, original_sections
 
 
 def construct_artifact_from_markdown_source(full_id: FullArtifactId, content: str) -> Artifact:
-    raw_artifact = parse_artifact_content(full_id, content)
+    raw_artifact, original_sections = parse_artifact_content(full_id, content)
 
     config = ArtifactConfig.parse_obj(raw_artifact.head.config)
     section = resolve(config.kind)
@@ -51,7 +67,53 @@ def construct_artifact_from_markdown_source(full_id: FullArtifactId, content: st
         raise NotImplementedError(f"Artifact kind '{config.kind}' is not available")
     kind = section.meta.artifact_kind
 
-    return kind.construct_artifact(raw_artifact)
+    sections = construct_sections_from_markdown(
+        artifact_id=full_id,
+        sections=original_sections[1:],
+        default_section_kind=kind.default_section_kind,
+    )
+
+    return kind.construct_artifact(raw_artifact, sections)
+
+
+def construct_sections_from_markdown(  # noqa: CCR001
+    artifact_id: FullArtifactId,
+    sections: list[markdown.SectionSource],
+    default_section_kind: FullArtifactLocalId,
+    section_kind_overrides: dict[FullArtifactLocalId, ArtifactSectionKind] | None = None,
+) -> list[ArtifactSection]:
+    constructed: list[ArtifactSection] = []
+
+    for section in sections:
+        data = dict(section.merged_configs())
+
+        if "kind" not in data:
+            data["kind"] = default_section_kind
+
+        kind_value = data["kind"]
+        if isinstance(kind_value, str):
+            section_kind_id = FullArtifactLocalId.parse(kind_value)
+        else:
+            section_kind_id = kind_value
+
+        section_kind = _resolve_section_kind(section_kind_id, section_kind_overrides)
+
+        constructed.append(section_kind.from_markdown_section(artifact_id, section, data))
+
+    return constructed
+
+
+def _resolve_section_kind(
+    section_kind_id: FullArtifactLocalId,
+    section_kind_overrides: dict[FullArtifactLocalId, ArtifactSectionKind] | None = None,
+) -> ArtifactSectionKind:
+    if section_kind_overrides is not None and section_kind_id in section_kind_overrides:
+        return section_kind_overrides[section_kind_id]
+
+    resolved_section = resolve(section_kind_id)
+    if not isinstance(resolved_section.meta, ArtifactSectionKindMeta):
+        raise NotImplementedError(f"Section kind '{section_kind_id}' is not available")
+    return resolved_section.meta.section_kind
 
 
 def _section_content_from_source(section: markdown.SectionSource) -> SectionContent:

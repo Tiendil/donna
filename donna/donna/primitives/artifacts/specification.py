@@ -1,4 +1,5 @@
 import uuid
+from types import ModuleType
 from typing import TYPE_CHECKING, Iterable
 
 from donna.domain.ids import FullArtifactId
@@ -12,8 +13,9 @@ from donna.machine.artifacts import (
     ArtifactSectionConfig,
     ArtifactSectionKind,
     ArtifactSectionMeta,
-    SectionContent,
+    SectionConstructor,
 )
+from donna.world import markdown
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -28,8 +30,13 @@ class ArtifactSectionTextKind(ArtifactSectionKind):
     def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("Text sections cannot be executed.")
 
-    def construct_section(self, artifact_id: FullArtifactId, section: SectionContent) -> ArtifactSection:
-        data = dict(section.config)
+    def from_markdown_section(
+        self,
+        artifact_id: FullArtifactId,
+        source: markdown.SectionSource,
+        config: dict[str, object],
+    ) -> ArtifactSection:
+        data = dict(config)
 
         if "id" not in data:
             # TODO: we should replace this hack with a proper ID generator
@@ -39,24 +46,45 @@ class ArtifactSectionTextKind(ArtifactSectionKind):
             #       - a sequential ID generator per artifact
             data["id"] = "text" + uuid.uuid4().hex.replace("-", "")
 
+        parsed_config = TextConfig.parse_obj(data)
+
+        return ArtifactSection(
+            id=artifact_id.to_full_local(parsed_config.id),
+            kind=parsed_config.kind,
+            title=source.title or "",
+            description=source.as_original_markdown(with_title=False),
+            meta=ArtifactSectionMeta(),
+        )
+
+    def from_python_section(
+        self,
+        artifact_id: FullArtifactId,
+        module: ModuleType,
+        section: SectionConstructor,
+    ) -> ArtifactSection:
+        data = section.config.model_dump(mode="python")
+
+        if "id" not in data:
+            data["id"] = "text" + uuid.uuid4().hex.replace("-", "")
+
         config = TextConfig.parse_obj(data)
+        description = section.description
+        title = section.title
 
         return ArtifactSection(
             id=artifact_id.to_full_local(config.id),
             kind=config.kind,
-            title=section.title,
-            description=section.description,
+            title=title,
+            description=description,
             meta=ArtifactSectionMeta(),
         )
 
 
 class SpecificationKind(ArtifactKind):
-    def construct_artifact(self, source: ArtifactContent) -> Artifact:
+    def construct_artifact(self, source: ArtifactContent, sections: list[ArtifactSection]) -> Artifact:
         title = source.head.title or str(source.id)
         description = source.head.description
         kind_id = ArtifactConfig.parse_obj(source.head.config).kind
-
-        sections = [self.construct_section(source.id, section) for section in source.tail]
 
         return Artifact(
             id=source.id,

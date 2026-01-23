@@ -1,8 +1,10 @@
+from types import ModuleType
 from typing import TYPE_CHECKING, Iterator, Literal
 
 from donna.domain.ids import FullArtifactId
-from donna.machine.artifacts import ArtifactSection, SectionContent
+from donna.machine.artifacts import ArtifactSection, SectionConstructor
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
+from donna.world import markdown
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -19,13 +21,38 @@ class FinishWorkflowKind(OperationKind):
 
         yield ChangeFinishTask(task_id=task.id)
 
-    def construct_section(self, artifact_id: FullArtifactId, section: SectionContent) -> ArtifactSection:
-        config = FinishWorkflowConfig.parse_obj(section.config)
+    def from_markdown_section(
+        self,
+        artifact_id: FullArtifactId,
+        source: markdown.SectionSource,
+        config: dict[str, object],
+    ) -> ArtifactSection:
+        section_config = FinishWorkflowConfig.parse_obj(config)
+        description = source.as_original_markdown(with_title=False)
+
+        return ArtifactSection(
+            id=artifact_id.to_full_local(section_config.id),
+            kind=section_config.kind,
+            title=source.title or "",
+            description=description,
+            meta=OperationMeta(fsm_mode=section_config.fsm_mode, allowed_transtions=set()),
+        )
+
+    def from_python_section(
+        self,
+        artifact_id: FullArtifactId,
+        module: ModuleType,
+        section: SectionConstructor,
+    ) -> ArtifactSection:
+        config_data = section.config.model_dump(mode="python")
+        config = FinishWorkflowConfig.parse_obj(config_data)
+        description = section.description
+        title = section.title
 
         return ArtifactSection(
             id=artifact_id.to_full_local(config.id),
             kind=config.kind,
-            title=section.title,
-            description=section.description,
+            title=title,
+            description=description,
             meta=OperationMeta(fsm_mode=config.fsm_mode, allowed_transtions=set()),
         )
