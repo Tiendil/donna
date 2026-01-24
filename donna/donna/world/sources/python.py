@@ -1,4 +1,5 @@
 from types import ModuleType
+from typing import Literal
 
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId
 from donna.machine.artifacts import Artifact, ArtifactSection
@@ -6,7 +7,7 @@ from donna.world.sources.base import SourceConfig
 
 
 class Config(SourceConfig):
-    pass
+    kind: Literal["python"] = "python"
 
 
 def construct_artifact_from_module(module: ModuleType, full_id: FullArtifactId) -> Artifact:  # noqa: CCR001

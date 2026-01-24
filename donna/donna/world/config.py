@@ -1,6 +1,5 @@
 import pathlib
 import tomllib
-from typing import TypeVar
 
 import pydantic
 
@@ -23,7 +22,6 @@ DONNA_DESSION_DIR_NAME = "session"
 
 WorldConfig = WorldFilesystem | WorldPython
 SourceConfigValue = SourceConfig
-SOURCE_CONFIG = TypeVar("SOURCE_CONFIG", bound=SourceConfig)
 
 
 def _default_sources() -> list[SourceConfigValue]:
@@ -77,12 +75,12 @@ class Config(BaseEntity):
 
         raise NotImplementedError(f"World with id '{world_id}' is not configured")
 
-    def get_source_config(self, source_config_type: type[SOURCE_CONFIG]) -> SOURCE_CONFIG:
+    def get_source_config(self, kind: str) -> SourceConfigValue:
         for source in self.sources:
-            if isinstance(source, source_config_type):
+            if source.kind == kind:
                 return source
 
-        raise NotImplementedError(f"Source config '{source_config_type.__name__}' is not configured")
+        raise NotImplementedError(f"Source config '{kind}' is not configured")
 
 
 _CONFIG: Config | None = None

@@ -1,4 +1,4 @@
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionKind, ArtifactSectionKindMeta, resolve
@@ -19,6 +19,7 @@ class MarkdownSectionConstructor(Protocol):
 
 
 class Config(SourceConfig):
+    kind: Literal["markdown"] = "markdown"
     default_section_kind: FullArtifactLocalId = FullArtifactLocalId.parse("donna.operations.text")
     default_primary_section_id: ArtifactLocalId = ArtifactLocalId("primary")
 

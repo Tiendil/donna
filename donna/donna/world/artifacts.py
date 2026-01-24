@@ -1,4 +1,5 @@
 import pathlib
+from typing import cast
 
 from donna.domain.ids import ArtifactId, FullArtifactId
 from donna.machine.artifacts import Artifact
@@ -26,11 +27,8 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> None:
 
     content = input.read_text(encoding="utf-8")
 
-    test_artifact = markdown_source.construct_artifact_from_markdown_source(
-        full_id,
-        content,
-        markdown_source.Config(),
-    )
+    source_config = cast(markdown_source.Config, config().get_source_config("markdown"))
+    test_artifact = markdown_source.construct_artifact_from_markdown_source(full_id, content, source_config)
 
     is_valid, _cells = test_artifact.validate()
 

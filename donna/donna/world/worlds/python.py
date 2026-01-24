@@ -82,10 +82,13 @@ class Python(BaseWorld):
             raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
         content = resource_path.read_text(encoding="utf-8")
+        from donna.world.config import config
+
+        source_config = cast(markdown_source.Config, config().get_source_config("markdown"))
         return markdown_source.construct_artifact_from_markdown_source(
             full_id,
             content,
-            markdown_source.Config(),
+            source_config,
         )
 
     def fetch(self, artifact_id: ArtifactId) -> Artifact:

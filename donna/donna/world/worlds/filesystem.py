@@ -2,6 +2,7 @@ import importlib.util
 import pathlib
 import shutil
 from types import ModuleType
+from typing import cast
 
 from donna.domain.ids import ArtifactId, FullArtifactId
 from donna.machine.artifacts import Artifact
@@ -29,10 +30,13 @@ class World(BaseWorld):
         if markdown_path.exists():
             content = markdown_path.read_text(encoding="utf-8")
             full_id = FullArtifactId((self.id, artifact_id))
+            from donna.world.config import config
+
+            source_config = cast(markdown_source.Config, config().get_source_config("markdown"))
             return markdown_source.construct_artifact_from_markdown_source(
                 full_id,
                 content,
-                markdown_source.Config(),
+                source_config,
             )
 
         if python_path.exists():

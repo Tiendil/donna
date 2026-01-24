@@ -1,3 +1,4 @@
+import uuid
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable
 
 from donna.core.entities import BaseEntity
@@ -157,13 +158,13 @@ class Artifact(BaseEntity):
 class MarkdownSectionMixin:
     config_class: ClassVar[type[ArtifactSectionConfig]]
 
-    def markdown_default_section_id(
+    def get_primary_section_id(
         self,
         artifact_id: FullArtifactId,
         source: "markdown.SectionSource",
         primary: bool = False,
     ) -> ArtifactLocalId | None:
-        return None
+        return ArtifactLocalId("markdown" + uuid.uuid4().hex.replace("-", ""))
 
     def markdown_build_title(
         self,
@@ -203,13 +204,12 @@ class MarkdownSectionMixin:
         data = dict(config)
 
         if "id" not in data or data["id"] is None:
-            default_id = self.markdown_default_section_id(
-                artifact_id=artifact_id,
-                source=source,
-                primary=primary,
-            )
-            if default_id is not None:
-                data["id"] = default_id
+            if primary:
+                data["id"] = self.get_primary_section_id(
+                    artifact_id=artifact_id,
+                    source=source,
+                    primary=primary,
+                )
 
         if "kind" not in data or data["kind"] is None:
             if primary:
@@ -294,14 +294,6 @@ class ArtifactSectionKind(MarkdownSectionMixin, BaseEntity):
 class ArtifactPrimarySectionKind(ArtifactSectionKind):
     def execute_section(self, task: Task, unit: WorkUnit, section: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("Primary sections cannot be executed.")
-
-    def markdown_default_section_id(
-        self,
-        artifact_id: FullArtifactId,
-        source: "markdown.SectionSource",
-        primary: bool = False,
-    ) -> ArtifactLocalId | None:
-        return None
 
     def markdown_build_title(
         self,

@@ -5,11 +5,10 @@ from donna.machine.artifacts import ArtifactSection, ArtifactSectionMeta
 from donna.machine.templates import DirectiveSectionMeta
 from donna.primitives.directives.goto import GoTo
 from donna.primitives.directives.view import View
-from donna.world.sources.markdown import Config as MarkdownSourceConfig
 
 PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations.python_module")
 PYTHON_ARTIFACT_KIND_ID = FullArtifactLocalId.parse("donna.artifacts.python")
-PRIMARY_SECTION_ID = MarkdownSourceConfig().default_primary_section_id
+PRIMARY_SECTION_ID = ArtifactLocalId("primary")
 
 view_directive_entity = View()
 goto_directive_entity = GoTo()
