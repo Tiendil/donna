@@ -57,12 +57,6 @@ class ArtifactSection(BaseEntity):
         return [f"## {self.title}", self.description]
 
 
-class ArtifactMeta(BaseEntity):
-
-    def cells_meta(self) -> dict[str, Any]:
-        return {}
-
-
 class Artifact(BaseEntity):
     id: FullArtifactId
 
