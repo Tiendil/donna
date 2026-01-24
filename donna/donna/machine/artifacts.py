@@ -325,16 +325,3 @@ def resolve(target_id: FullArtifactLocalId) -> ArtifactSection:
         raise NotImplementedError(f"Section '{target_id}' is not available")
 
     return section
-
-
-class SectionContent(BaseEntity):
-    title: str
-    description: str
-    analysis: str
-    config: dict[str, Any]
-
-
-class ArtifactContent(BaseEntity):
-    id: FullArtifactId
-    head: SectionContent
-    tail: list[SectionContent]
