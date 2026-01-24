@@ -21,9 +21,8 @@ class ArtifactSectionMeta(BaseEntity):
 
 
 class ArtifactSection(BaseEntity):
-    # some section may have no id and kind — it is ok for simple text sections
-    id: ArtifactLocalId | None
-    kind: FullArtifactLocalId | None
+    id: ArtifactLocalId
+    kind: FullArtifactLocalId
     title: str
     description: str
     primary: bool = False
