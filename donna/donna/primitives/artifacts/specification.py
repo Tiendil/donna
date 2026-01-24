@@ -1,11 +1,6 @@
 from typing import TYPE_CHECKING, ClassVar, Iterable
 
-from donna.machine.artifacts import (
-    ArtifactPrimarySectionKind,
-    ArtifactSection,
-    ArtifactSectionConfig,
-    ArtifactSectionKind,
-)
+from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionKind
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -23,5 +18,5 @@ class ArtifactSectionTextKind(ArtifactSectionKind):
         raise NotImplementedError("Text sections cannot be executed.")
 
 
-class SpecificationKind(ArtifactPrimarySectionKind):
+class SpecificationKind(ArtifactSectionKind):
     pass

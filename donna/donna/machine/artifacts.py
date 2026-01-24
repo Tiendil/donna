@@ -234,11 +234,6 @@ class ArtifactSectionKind(MarkdownSectionMixin, BaseEntity):
         ]
 
 
-class ArtifactPrimarySectionKind(ArtifactSectionKind):
-    def execute_section(self, task: Task, unit: WorkUnit, section: ArtifactSection) -> Iterable["Change"]:
-        raise NotImplementedError("Primary sections cannot be executed.")
-
-
 def resolve(target_id: FullArtifactLocalId) -> ArtifactSection:
     from donna.world import artifacts as world_artifacts
 

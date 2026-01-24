@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING, ClassVar, Iterable, cast
 from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
 from donna.machine.artifacts import (
     Artifact,
-    ArtifactPrimarySectionKind,
     ArtifactSection,
     ArtifactSectionConfig,
+    ArtifactSectionKind,
     ArtifactSectionMeta,
 )
 from donna.machine.cells import Cell
@@ -54,7 +54,7 @@ class WorkflowMeta(ArtifactSectionMeta):
         return {"start_operation_id": str(self.start_operation_id)}
 
 
-class WorkflowKind(ArtifactPrimarySectionKind):
+class WorkflowKind(ArtifactSectionKind):
     config_class: ClassVar[type[WorkflowConfig]] = WorkflowConfig
 
     def markdown_construct_meta(

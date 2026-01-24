@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING, Iterable
 
 from donna.domain.ids import FullArtifactId
 from donna.machine.artifacts import (
-    ArtifactPrimarySectionKind,
     ArtifactSection,
     ArtifactSectionConfig,
     ArtifactSectionKind,
@@ -32,5 +31,5 @@ class PythonModuleSectionKind(ArtifactSectionKind):
         raise NotImplementedError("Python module sections cannot be constructed from markdown.")
 
 
-class PythonArtifact(ArtifactPrimarySectionKind):
+class PythonArtifact(ArtifactSectionKind):
     pass
