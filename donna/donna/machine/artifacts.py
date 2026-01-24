@@ -1,7 +1,5 @@
 from typing import TYPE_CHECKING, Any, Iterable
 
-import pydantic
-
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
 from donna.machine.cells import Cell

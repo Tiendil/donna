@@ -60,7 +60,7 @@ def parse_artifact_content(full_id: FullArtifactId, text: str) -> tuple[Artifact
 def construct_artifact_from_markdown_source(full_id: FullArtifactId, content: str) -> Artifact:
     raw_artifact, original_sections = parse_artifact_content(full_id, content)
 
-    head_kind = raw_artifact.head.config["kind"]
+    head_kind = FullArtifactLocalId.parse(raw_artifact.head.config["kind"])
 
     section = resolve(head_kind)
 
