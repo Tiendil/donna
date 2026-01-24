@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Iterable
+from typing import TYPE_CHECKING, Any, ClassVar, Iterable
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
@@ -156,9 +156,83 @@ class Artifact(BaseEntity):
 
 class ArtifactSectionKind(BaseEntity):
     default_section_kind: FullArtifactLocalId = FullArtifactLocalId.parse("donna.operations.text")
+    config_class: ClassVar[type[ArtifactSectionConfig]] = ArtifactSectionConfig
 
     def execute_section(self, task: Task, unit: WorkUnit, section: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("You MUST implement this method.")
+
+    def default_section_id(
+        self,
+        artifact_id: FullArtifactId,
+        source: "markdown.SectionSource",
+        primary: bool = False,
+    ) -> ArtifactLocalId | None:
+        return None
+
+    def build_title(
+        self,
+        artifact_id: FullArtifactId,
+        source: "markdown.SectionSource",
+        section_config: ArtifactSectionConfig,
+        primary: bool = False,
+    ) -> str:
+        return source.title or ""
+
+    def build_description(
+        self,
+        artifact_id: FullArtifactId,
+        source: "markdown.SectionSource",
+        section_config: ArtifactSectionConfig,
+        primary: bool = False,
+    ) -> str:
+        return source.as_original_markdown(with_title=False)
+
+    def construct_meta(
+        self,
+        artifact_id: FullArtifactId,
+        source: "markdown.SectionSource",
+        section_config: ArtifactSectionConfig,
+        description: str,
+        primary: bool = False,
+    ) -> ArtifactSectionMeta:
+        return ArtifactSectionMeta()
+
+    def _prepare_config(
+        self,
+        artifact_id: FullArtifactId,
+        source: "markdown.SectionSource",
+        config: dict[str, Any],
+        primary: bool,
+    ) -> dict[str, Any]:
+        data = dict(config)
+
+        if "id" not in data or data["id"] is None:
+            default_id = self.default_section_id(artifact_id=artifact_id, source=source, primary=primary)
+            if default_id is not None:
+                data["id"] = default_id
+
+        if "kind" not in data or data["kind"] is None:
+            if primary:
+                raise NotImplementedError(f"Primary section for artifact '{artifact_id}' is missing a valid kind")
+            data["kind"] = self.default_section_kind
+
+        raw_id = data.get("id")
+        if isinstance(raw_id, str):
+            data["id"] = ArtifactLocalId(raw_id)
+        elif raw_id is None or isinstance(raw_id, ArtifactLocalId):
+            pass
+        else:
+            raise NotImplementedError(f"Invalid section id for artifact '{artifact_id}': {raw_id!r}")
+
+        kind_value = data.get("kind")
+        if isinstance(kind_value, str):
+            data["kind"] = FullArtifactLocalId.parse(kind_value)
+        elif isinstance(kind_value, FullArtifactLocalId):
+            pass
+        else:
+            raise NotImplementedError(f"Invalid section kind for artifact '{artifact_id}': {kind_value!r}")
+
+        return data
 
     def from_markdown_section(  # noqa: CCR001
         self,
@@ -167,7 +241,38 @@ class ArtifactSectionKind(BaseEntity):
         config: dict[str, Any],
         primary: bool = False,
     ) -> ArtifactSection:
-        raise NotImplementedError("You MUST implement this method.")
+        data = self._prepare_config(artifact_id=artifact_id, source=source, config=config, primary=primary)
+
+        section_config = self.config_class.parse_obj(data)
+
+        title = self.build_title(
+            artifact_id=artifact_id,
+            source=source,
+            section_config=section_config,
+            primary=primary,
+        )
+        description = self.build_description(
+            artifact_id=artifact_id,
+            source=source,
+            section_config=section_config,
+            primary=primary,
+        )
+        meta = self.construct_meta(
+            artifact_id=artifact_id,
+            source=source,
+            section_config=section_config,
+            description=description,
+            primary=primary,
+        )
+
+        return ArtifactSection(
+            id=section_config.id,
+            kind=section_config.kind,
+            title=title,
+            description=description,
+            primary=primary,
+            meta=meta,
+        )
 
     def validate_artifact(self, artifact: "Artifact") -> tuple[bool, list[Cell]]:
         return True, [
@@ -183,46 +288,22 @@ class ArtifactPrimarySectionKind(ArtifactSectionKind):
     def execute_section(self, task: Task, unit: WorkUnit, section: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("Primary sections cannot be executed.")
 
-    def from_markdown_section(  # noqa: CCR001
+    def default_section_id(
         self,
         artifact_id: FullArtifactId,
         source: "markdown.SectionSource",
-        config: dict[str, Any],
         primary: bool = False,
-    ) -> ArtifactSection:
-        data = dict(config)
+    ) -> ArtifactLocalId | None:
+        return ArtifactLocalId("primary")
 
-        if "id" not in data:
-            data["id"] = "primary"
-
-        raw_id = data.get("id")
-        if isinstance(raw_id, str):
-            section_id = ArtifactLocalId(raw_id)
-        elif isinstance(raw_id, ArtifactLocalId):
-            section_id = raw_id
-        elif raw_id is None:
-            section_id = ArtifactLocalId("primary")
-        else:
-            raise NotImplementedError(f"Invalid primary section id for artifact '{artifact_id}': {raw_id!r}")
-
-        kind_value = data.get("kind")
-        if isinstance(kind_value, str):
-            section_kind_id = FullArtifactLocalId.parse(kind_value)
-        elif isinstance(kind_value, FullArtifactLocalId):
-            section_kind_id = kind_value
-        else:
-            raise NotImplementedError(f"Primary section for artifact '{artifact_id}' is missing a valid kind")
-
-        title = source.title or str(artifact_id)
-
-        return ArtifactSection(
-            id=section_id,
-            kind=section_kind_id,
-            title=title,
-            description=source.as_original_markdown(with_title=False),
-            primary=primary,
-            meta=ArtifactSectionMeta(),
-        )
+    def build_title(
+        self,
+        artifact_id: FullArtifactId,
+        source: "markdown.SectionSource",
+        section_config: ArtifactSectionConfig,
+        primary: bool = False,
+    ) -> str:
+        return source.title or str(artifact_id)
 
 
 def resolve(target_id: FullArtifactLocalId) -> ArtifactSection:

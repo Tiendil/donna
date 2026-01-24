@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, ClassVar, Iterable
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
 from donna.machine.artifacts import (
@@ -43,29 +43,29 @@ def find_not_reachable_operations(
     return all_operations - reachable
 
 
+class WorkflowConfig(ArtifactSectionConfig):
+    start_operation_id: ArtifactLocalId
+
+
+class WorkflowMeta(ArtifactSectionMeta):
+    start_operation_id: FullArtifactLocalId
+
+    def cells_meta(self) -> dict[str, object]:
+        return {"start_operation_id": str(self.start_operation_id)}
+
+
 class WorkflowKind(ArtifactPrimarySectionKind):
-    def from_markdown_section(
+    config_class: ClassVar[type[WorkflowConfig]] = WorkflowConfig
+
+    def construct_meta(
         self,
         artifact_id: FullArtifactId,
         source: markdown.SectionSource,
-        config: dict[str, object],
+        section_config: WorkflowConfig,
+        description: str,
         primary: bool = False,
-    ) -> ArtifactSection:
-        data = dict(config)
-
-        if "id" not in data:
-            data["id"] = "primary"
-
-        section_config = WorkflowConfig.parse_obj(data)
-
-        return ArtifactSection(
-            id=section_config.id,
-            kind=section_config.kind,
-            title=source.title or str(artifact_id),
-            description=source.as_original_markdown(with_title=False),
-            primary=primary,
-            meta=WorkflowMeta(start_operation_id=artifact_id.to_full_local(section_config.start_operation_id)),
-        )
+    ) -> ArtifactSectionMeta:
+        return WorkflowMeta(start_operation_id=artifact_id.to_full_local(section_config.start_operation_id))
 
     def execute_section(self, task: "Task", unit: "WorkUnit", section: ArtifactSection) -> Iterable["Change"]:
         from donna.machine.changes import ChangeAddWorkUnit
@@ -161,14 +161,3 @@ class WorkflowKind(ArtifactPrimarySectionKind):
                 status="success",
             )
         ]
-
-
-class WorkflowConfig(ArtifactSectionConfig):
-    start_operation_id: ArtifactLocalId
-
-
-class WorkflowMeta(ArtifactSectionMeta):
-    start_operation_id: FullArtifactLocalId
-
-    def cells_meta(self) -> dict[str, object]:
-        return {"start_operation_id": str(self.start_operation_id)}

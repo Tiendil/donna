@@ -1,11 +1,11 @@
 import re
-from typing import TYPE_CHECKING, Iterator
+from typing import TYPE_CHECKING, ClassVar, Iterator
 
 import pydantic
 
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId
+from donna.domain.ids import FullArtifactLocalId
 from donna.machine.action_requests import ActionRequest
-from donna.machine.artifacts import ArtifactSection
+from donna.machine.artifacts import ArtifactSection, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
 from donna.world import markdown
 
@@ -44,27 +44,21 @@ class RequestActionConfig(OperationConfig):
 
 
 class RequestActionKind(OperationKind):
-    def from_markdown_section(
+    config_class: ClassVar[type[RequestActionConfig]] = RequestActionConfig
+
+    def construct_meta(
         self,
-        artifact_id: FullArtifactId,
+        artifact_id: "FullArtifactId",
         source: markdown.SectionSource,
-        config: dict[str, object],
+        section_config: RequestActionConfig,
+        description: str,
         primary: bool = False,
-    ) -> ArtifactSection:
-        section_config = RequestActionConfig.parse_obj(config)
-        description = source.as_original_markdown(with_title=False)
+    ) -> ArtifactSectionMeta:
         analysis = source.as_analysis_markdown(with_title=True)
 
-        return ArtifactSection(
-            id=section_config.id,
-            kind=section_config.kind,
-            title=source.title or "",
-            description=description,
-            primary=primary,
-            meta=OperationMeta(
-                fsm_mode=section_config.fsm_mode,
-                allowed_transtions=extract_transitions(analysis),
-            ),
+        return OperationMeta(
+            fsm_mode=section_config.fsm_mode,
+            allowed_transtions=extract_transitions(analysis),
         )
 
     def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterator["Change"]:
