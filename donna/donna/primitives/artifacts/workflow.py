@@ -76,12 +76,10 @@ class WorkflowKind(ArtifactSectionKind):
 
         yield ChangeAddWorkUnit(task_id=task.id, operation_id=section.meta.start_operation_id)
 
-    def validate_artifact(self, artifact: Artifact) -> tuple[bool, list[Cell]]:  # noqa: CCR001
-        primary_section = artifact.primary_section()
-        if not isinstance(primary_section.meta, WorkflowMeta):
-            raise NotImplementedError("Workflow primary section is missing workflow metadata.")
+    def validate_section(self, artifact: Artifact, section_id: ArtifactLocalId) -> tuple[bool, list[Cell]]:  # noqa: CCR001
+        section = artifact.get_section(section_id)
 
-        start_operation_id = primary_section.meta.start_operation_id
+        start_operation_id = section.meta.start_operation_id
 
         if artifact.get_section(start_operation_id.local_id) is None:
             return False, [
@@ -97,7 +95,15 @@ class WorkflowKind(ArtifactSectionKind):
 
         for section in artifact.sections:
             if not isinstance(section.meta, OperationMeta):
-                continue
+                return False, [
+                    Cell.build_meta(
+                        kind="artifact_kind_validation",
+                        id=str(artifact.id),
+                        status="failure",
+                        message=f"Section '{section.id}' is not an operation and cannot be part of the workflow.",
+                    )
+                ]
+
             section_full_id = artifact.id.to_full_local(section.id) if section.id is not None else None
 
             if section.meta.fsm_mode == FsmMode.final and section.meta.allowed_transtions:

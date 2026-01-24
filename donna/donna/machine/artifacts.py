@@ -65,6 +65,7 @@ class Artifact(BaseEntity):
 
     def validate(self) -> tuple[bool, list[Cell]]:  # type: ignore[override]
         primary_sections = self._primary_sections()
+
         if len(primary_sections) != 1:
             return False, [
                 Cell.build_meta(
@@ -75,30 +76,26 @@ class Artifact(BaseEntity):
                 )
             ]
 
-        primary_section = primary_sections[0]
-        if primary_section.kind is None:
-            return False, [
-                Cell.build_meta(
-                    kind="artifact_kind_validation",
-                    id=str(self.id),
-                    status="failure",
-                    message="Primary section is missing a kind.",
-                )
-            ]
+        for section in self.sections:
+            if section.kind is None:
+                continue
+            resolved_section = resolve(section.kind)
+            if not isinstance(resolved_section.meta, ArtifactSectionKindMeta):
+                return False, [
+                    Cell.build_meta(
+                        kind="artifact_kind_validation",
+                        id=str(self.id),
+                        status="failure",
+                        message=f"Section kind '{section.kind}' is not available.",
+                    )
+                ]
 
-        section = resolve(primary_section.kind)
-        if not isinstance(section.meta, ArtifactSectionKindMeta):
-            return False, [
-                Cell.build_meta(
-                    kind="artifact_kind_validation",
-                    id=str(self.id),
-                    status="failure",
-                    message=f"Primary section kind '{primary_section.kind}' is not available.",
-                )
-            ]
+            is_valid, cells = resolved_section.meta.section_kind.validate_section(self, section.id)
 
-        primary_section_kind = section.meta.section_kind
-        return primary_section_kind.validate_artifact(self)
+            if not is_valid:
+                return is_valid, cells
+
+        return True, []
 
     # TODO: should we attach section cells here as well?
     def cells(self) -> list[Cell]:
@@ -224,14 +221,8 @@ class ArtifactSectionKind(MarkdownSectionMixin, BaseEntity):
     def execute_section(self, task: Task, unit: WorkUnit, section: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("You MUST implement this method.")
 
-    def validate_artifact(self, artifact: "Artifact") -> tuple[bool, list[Cell]]:
-        return True, [
-            Cell.build_meta(
-                kind="artifact_kind_validation",
-                id=str(artifact.id),
-                status="success",
-            )
-        ]
+    def validate_section(self, artifact: "Artifact", section_id: ArtifactLocalId) -> tuple[bool, list[Cell]]:
+        return True, []
 
 
 def resolve(target_id: FullArtifactLocalId) -> ArtifactSection:
