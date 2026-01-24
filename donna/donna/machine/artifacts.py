@@ -63,7 +63,7 @@ class Artifact(BaseEntity):
             )
         return primary_sections[0]
 
-    def validate(self) -> tuple[bool, list[Cell]]:  # type: ignore[override]
+    def validate(self) -> tuple[bool, list[Cell]]:  # type: ignore[override]  # noqa: CCR001
         primary_sections = self._primary_sections()
 
         if len(primary_sections) != 1:
@@ -87,6 +87,16 @@ class Artifact(BaseEntity):
                         id=str(self.id),
                         status="failure",
                         message=f"Section kind '{section.kind}' is not available.",
+                    )
+                ]
+
+            if section.id is None:
+                return False, [
+                    Cell.build_meta(
+                        kind="artifact_kind_validation",
+                        id=str(self.id),
+                        status="failure",
+                        message="Section ID is missing.",
                     )
                 ]
 

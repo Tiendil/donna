@@ -76,8 +76,23 @@ class WorkflowKind(ArtifactSectionKind):
 
         yield ChangeAddWorkUnit(task_id=task.id, operation_id=section.meta.start_operation_id)
 
-    def validate_section(self, artifact: Artifact, section_id: ArtifactLocalId) -> tuple[bool, list[Cell]]:  # noqa: CCR001
+    def validate_section(  # noqa: CCR001, CFQ001
+        self, artifact: Artifact, section_id: ArtifactLocalId
+    ) -> tuple[bool, list[Cell]]:
         section = artifact.get_section(section_id)
+
+        if section is None:
+            raise NotImplementedError("Trying to validate an section that does not exist in the artifact.")
+
+        if not isinstance(section.meta, WorkflowMeta):
+            return False, [
+                Cell.build_meta(
+                    kind="artifact_kind_validation",
+                    id=str(artifact.id),
+                    status="failure",
+                    message=f"Section '{section_id}' does not have workflow metadata.",
+                )
+            ]
 
         start_operation_id = section.meta.start_operation_id
 
