@@ -121,12 +121,14 @@ Workflow is a Finite State Machine (FSM) where each tail section describes one o
 
 Donna do additional work to validate that FSM is correct and that there are no unreachable operations, no dead ends, etc. In case of problems Donna notifies the agent about the issues.
 
-Workflow start operation MUST be defined by a tail section whose configuration sets `fsm_mode = "start"`.
+Workflow start operation MUST be declared in the workflow head-section config via `start_operation_id`
+and MUST reference a tail section whose configuration sets `fsm_mode = "start"`.
 
 Example (`donna` keyword skipped for examples):
 
 ```toml
 kind = "donna.artifacts.workflow"
+start_operation_id = "start_operation"
 ```
 
 Each tail section MUST contain config block with `id` and `kind` properties that specifies the identifier and kind of the operation.

@@ -2,6 +2,7 @@
 
 ```toml donna
 kind = "donna.artifacts.workflow"
+start_operation_id = "run_autoflake"
 ```
 
 Initiate operations to groom and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc.

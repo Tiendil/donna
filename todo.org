@@ -192,3 +192,4 @@
 * TODO donna should be able to continue finished session (somewhow). I.e. when the developer ads new details to it.
 * TODO Spec-based workflow (like in OpenSpec?)
 * TODO add depenedency graph validation to the grooming (there are some python packages for that)
+* TODO Request Action: agent has not always use the correctly specified branch, may be we should separate operation with next operation selection?

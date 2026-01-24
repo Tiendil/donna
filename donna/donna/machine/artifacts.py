@@ -195,6 +195,9 @@ class ArtifactPrimarySectionKind(ArtifactSectionKind):
     ) -> ArtifactSection:
         data = dict(config)
 
+        if "id" not in data:
+            data["id"] = "primary"
+
         raw_id = data.get("id")
         if isinstance(raw_id, str):
             section_id = ArtifactLocalId(raw_id)
