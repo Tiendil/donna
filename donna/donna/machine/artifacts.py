@@ -7,7 +7,6 @@ from donna.machine.tasks import Task, WorkUnit
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
-    from donna.world import markdown
 
 
 class ArtifactSectionConfig(BaseEntity):
@@ -133,76 +132,6 @@ class Artifact(BaseEntity):
         return blocks
 
 
-class MarkdownSectionMixin:
-    config_class: ClassVar[type[ArtifactSectionConfig]]
-
-    def markdown_build_title(
-        self,
-        artifact_id: FullArtifactId,
-        source: "markdown.SectionSource",
-        section_config: ArtifactSectionConfig,
-        primary: bool = False,
-    ) -> str:
-        return source.title or ""
-
-    def markdown_build_description(
-        self,
-        artifact_id: FullArtifactId,
-        source: "markdown.SectionSource",
-        section_config: ArtifactSectionConfig,
-        primary: bool = False,
-    ) -> str:
-        return source.as_original_markdown(with_title=False)
-
-    def markdown_construct_meta(
-        self,
-        artifact_id: FullArtifactId,
-        source: "markdown.SectionSource",
-        section_config: ArtifactSectionConfig,
-        description: str,
-        primary: bool = False,
-    ) -> ArtifactSectionMeta:
-        return ArtifactSectionMeta()
-
-    def markdown_construct_section(  # noqa: CCR001
-        self,
-        artifact_id: FullArtifactId,
-        source: "markdown.SectionSource",
-        config: dict[str, Any],
-        primary: bool = False,
-    ) -> ArtifactSection:
-        section_config = self.config_class.parse_obj(config)
-
-        title = self.markdown_build_title(
-            artifact_id=artifact_id,
-            source=source,
-            section_config=section_config,
-            primary=primary,
-        )
-        description = self.markdown_build_description(
-            artifact_id=artifact_id,
-            source=source,
-            section_config=section_config,
-            primary=primary,
-        )
-        meta = self.markdown_construct_meta(
-            artifact_id=artifact_id,
-            source=source,
-            section_config=section_config,
-            description=description,
-            primary=primary,
-        )
-
-        return ArtifactSection(
-            id=section_config.id,
-            kind=section_config.kind,
-            title=title,
-            description=description,
-            primary=primary,
-            meta=meta,
-        )
-
-
 class ArtifactSectionKindMeta(ArtifactSectionMeta):
     section_kind: "ArtifactSectionKind"
 
@@ -212,7 +141,7 @@ class ArtifactSectionKindMeta(ArtifactSectionMeta):
         return {"section_kind": repr(self.section_kind)}
 
 
-class ArtifactSectionKind(MarkdownSectionMixin, BaseEntity):
+class ArtifactSectionKind(BaseEntity):
     config_class: ClassVar[type[ArtifactSectionConfig]] = ArtifactSectionConfig
 
     def execute_section(self, task: Task, unit: WorkUnit, section: ArtifactSection) -> Iterable["Change"]:

@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Any
 
 from donna.domain.ids import FullArtifactLocalId
 from donna.machine.artifacts import ArtifactSectionConfig, ArtifactSectionKind, ArtifactSectionMeta
+from donna.world.sources.markdown import MarkdownSectionMixin
 
 if TYPE_CHECKING:
     pass
@@ -14,7 +15,7 @@ class FsmMode(enum.Enum):
     final = "final"
 
 
-class OperationKind(ArtifactSectionKind):
+class OperationKind(MarkdownSectionMixin, ArtifactSectionKind):
     pass
 
 

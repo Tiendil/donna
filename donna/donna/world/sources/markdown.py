@@ -1,8 +1,16 @@
 import uuid
-from typing import Any, Literal, Protocol
+from typing import Any, ClassVar, Literal, Protocol, cast
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
-from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionKind, ArtifactSectionKindMeta, resolve
+from donna.machine.artifacts import (
+    Artifact,
+    ArtifactSection,
+    ArtifactSectionConfig,
+    ArtifactSectionKind,
+    ArtifactSectionKindMeta,
+    ArtifactSectionMeta,
+    resolve,
+)
 from donna.world import markdown
 from donna.world.sources.base import SourceConfig
 from donna.world.templates import RenderMode, render, render_mode
@@ -23,6 +31,76 @@ class Config(SourceConfig):
     kind: Literal["markdown"] = "markdown"
     default_section_kind: FullArtifactLocalId = FullArtifactLocalId.parse("donna.operations.text")
     default_primary_section_id: ArtifactLocalId = ArtifactLocalId("primary")
+
+
+class MarkdownSectionMixin:
+    config_class: ClassVar[type[ArtifactSectionConfig]]
+
+    def markdown_build_title(
+        self,
+        artifact_id: FullArtifactId,
+        source: markdown.SectionSource,
+        section_config: ArtifactSectionConfig,
+        primary: bool = False,
+    ) -> str:
+        return source.title or ""
+
+    def markdown_build_description(
+        self,
+        artifact_id: FullArtifactId,
+        source: markdown.SectionSource,
+        section_config: ArtifactSectionConfig,
+        primary: bool = False,
+    ) -> str:
+        return source.as_original_markdown(with_title=False)
+
+    def markdown_construct_meta(
+        self,
+        artifact_id: FullArtifactId,
+        source: markdown.SectionSource,
+        section_config: ArtifactSectionConfig,
+        description: str,
+        primary: bool = False,
+    ) -> ArtifactSectionMeta:
+        return ArtifactSectionMeta()
+
+    def markdown_construct_section(  # noqa: CCR001
+        self,
+        artifact_id: FullArtifactId,
+        source: markdown.SectionSource,
+        config: dict[str, Any],
+        primary: bool = False,
+    ) -> ArtifactSection:
+        section_config = self.config_class.parse_obj(config)
+
+        title = self.markdown_build_title(
+            artifact_id=artifact_id,
+            source=source,
+            section_config=section_config,
+            primary=primary,
+        )
+        description = self.markdown_build_description(
+            artifact_id=artifact_id,
+            source=source,
+            section_config=section_config,
+            primary=primary,
+        )
+        meta = self.markdown_construct_meta(
+            artifact_id=artifact_id,
+            source=source,
+            section_config=section_config,
+            description=description,
+            primary=primary,
+        )
+
+        return ArtifactSection(
+            id=section_config.id,
+            kind=section_config.kind,
+            title=title,
+            description=description,
+            primary=primary,
+            meta=meta,
+        )
 
 
 def parse_artifact_content(full_id: FullArtifactId, text: str) -> list[markdown.SectionSource]:
@@ -72,8 +150,10 @@ def construct_artifact_from_markdown_source(full_id: FullArtifactId, content: st
         raise NotImplementedError(f"Primary section kind '{head_kind}' is not available")
 
     primary_section_kind = section.meta.section_kind
+    _ensure_markdown_constructible(primary_section_kind, head_kind)
+    markdown_primary_kind = cast(MarkdownSectionMixin, primary_section_kind)
 
-    primary_section = primary_section_kind.markdown_construct_section(
+    primary_section = markdown_primary_kind.markdown_construct_section(
         artifact_id=full_id,
         source=original_sections[0],
         config=head_config,
@@ -119,8 +199,10 @@ def construct_sections_from_markdown(  # noqa: CCR001
             section_kind_id = kind_value
 
         section_kind = _resolve_section_kind(section_kind_id, section_kind_overrides)
+        _ensure_markdown_constructible(section_kind, section_kind_id)
+        markdown_section_kind = cast(MarkdownSectionMixin, section_kind)
 
-        constructed.append(section_kind.markdown_construct_section(artifact_id, section, data, primary=False))
+        constructed.append(markdown_section_kind.markdown_construct_section(artifact_id, section, data, primary=False))
 
     return constructed
 
@@ -136,3 +218,14 @@ def _resolve_section_kind(
     if not isinstance(resolved_section.meta, ArtifactSectionKindMeta):
         raise NotImplementedError(f"Section kind '{section_kind_id}' is not available")
     return resolved_section.meta.section_kind
+
+
+def _ensure_markdown_constructible(
+    section_kind: ArtifactSectionKind,
+    section_kind_id: FullArtifactLocalId | None = None,
+) -> None:
+    if isinstance(section_kind, MarkdownSectionMixin):
+        return
+
+    kind_label = f"'{section_kind_id}'" if section_kind_id is not None else repr(section_kind)
+    raise NotImplementedError(f"Section kind {kind_label} cannot be constructed from markdown sources.")
