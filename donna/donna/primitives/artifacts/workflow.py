@@ -1,8 +1,20 @@
-from donna.domain.ids import FullArtifactLocalId
-from donna.machine.artifacts import Artifact, ArtifactPrimarySectionKind
+from typing import TYPE_CHECKING, Iterable
+
+from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
+from donna.machine.artifacts import (
+    Artifact,
+    ArtifactPrimarySectionKind,
+    ArtifactSection,
+    ArtifactSectionConfig,
+    ArtifactSectionMeta,
+)
 from donna.machine.cells import Cell
 from donna.machine.operations import FsmMode, OperationMeta
-from donna.machine.workflows import find_start_operation_id
+from donna.world import markdown
+
+if TYPE_CHECKING:
+    from donna.machine.changes import Change
+    from donna.machine.tasks import Task, WorkUnit
 
 
 def find_not_reachable_operations(
@@ -32,8 +44,43 @@ def find_not_reachable_operations(
 
 
 class WorkflowKind(ArtifactPrimarySectionKind):
+    def from_markdown_section(
+        self,
+        artifact_id: FullArtifactId,
+        source: markdown.SectionSource,
+        config: dict[str, object],
+        primary: bool = False,
+    ) -> ArtifactSection:
+        data = dict(config)
+
+        if "id" not in data:
+            data["id"] = "primary"
+
+        section_config = WorkflowConfig.parse_obj(data)
+
+        return ArtifactSection(
+            id=section_config.id,
+            kind=section_config.kind,
+            title=source.title or str(artifact_id),
+            description=source.as_original_markdown(with_title=False),
+            primary=primary,
+            meta=WorkflowMeta(start_operation_id=artifact_id.to_full_local(section_config.start_operation_id)),
+        )
+
+    def execute_section(self, task: "Task", unit: "WorkUnit", section: ArtifactSection) -> Iterable["Change"]:
+        from donna.machine.changes import ChangeAddWorkUnit
+
+        if not isinstance(section.meta, WorkflowMeta):
+            raise NotImplementedError("Workflow section is missing workflow metadata.")
+
+        yield ChangeAddWorkUnit(task_id=task.id, operation_id=section.meta.start_operation_id)
+
     def validate_artifact(self, artifact: Artifact) -> tuple[bool, list[Cell]]:  # noqa: CCR001
-        start_operation_id = find_start_operation_id(artifact)
+        primary_section = artifact.primary_section()
+        if not isinstance(primary_section.meta, WorkflowMeta):
+            raise NotImplementedError("Workflow primary section is missing workflow metadata.")
+
+        start_operation_id = primary_section.meta.start_operation_id
 
         if artifact.get_section(start_operation_id.local_id) is None:
             return False, [
@@ -114,3 +161,14 @@ class WorkflowKind(ArtifactPrimarySectionKind):
                 status="success",
             )
         ]
+
+
+class WorkflowConfig(ArtifactSectionConfig):
+    start_operation_id: ArtifactLocalId
+
+
+class WorkflowMeta(ArtifactSectionMeta):
+    start_operation_id: FullArtifactLocalId
+
+    def cells_meta(self) -> dict[str, object]:
+        return {"start_operation_id": str(self.start_operation_id)}

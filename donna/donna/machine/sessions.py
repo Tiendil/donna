@@ -6,7 +6,6 @@ from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactLocalI
 from donna.machine.cells import Cell, cell_donna_message
 from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
-from donna.machine.workflows import find_start_operation_id
 from donna.world import artifacts
 from donna.world.config import config
 from donna.world.worlds.base import World
@@ -108,10 +107,12 @@ def status() -> list[Cell]:
 @_session_required
 def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
     workflow = artifacts.load_artifact(artifact_id)
+    primary_section = workflow.primary_section()
+    if primary_section.id is None:
+        raise NotImplementedError(f"Workflow '{artifact_id}' primary section is missing an id.")
 
     with _state_mutator() as mutator:
-        start_operation_id = find_start_operation_id(workflow)
-        mutator.start_workflow(start_operation_id)
+        mutator.start_workflow(workflow.id.to_full_local(primary_section.id))
         _save_state(mutator.freeze())
         _state_run(mutator)
 
