@@ -63,8 +63,6 @@ class WorkUnit(BaseEntity):
         if not operation:
             raise NotImplementedError(f"Operation with id '{self.operation_id.local_id}' not found")
 
-        assert operation.kind is not None
-
         section = resolve(operation.kind)
         if not isinstance(section.meta, ArtifactSectionKindMeta):
             raise NotImplementedError(f"Operation kind '{operation.kind}' is not available")

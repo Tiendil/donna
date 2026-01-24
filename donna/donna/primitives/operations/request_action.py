@@ -74,7 +74,6 @@ class RequestActionKind(OperationKind):
         request_text = operation.description.format(**context)
 
         full_operation_id = unit.operation_id
-        assert operation.id is not None
         assert operation.id == full_operation_id.local_id
 
         request = ActionRequest.build(request_text, full_operation_id)

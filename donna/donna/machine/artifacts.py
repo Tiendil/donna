@@ -76,8 +76,6 @@ class Artifact(BaseEntity):
             ]
 
         for section in self.sections:
-            if section.kind is None:
-                continue
             resolved_section = resolve(section.kind)
             if not isinstance(resolved_section.meta, ArtifactSectionKindMeta):
                 return False, [
@@ -86,16 +84,6 @@ class Artifact(BaseEntity):
                         id=str(self.id),
                         status="failure",
                         message=f"Section kind '{section.kind}' is not available.",
-                    )
-                ]
-
-            if section.id is None:
-                return False, [
-                    Cell.build_meta(
-                        kind="artifact_kind_validation",
-                        id=str(self.id),
-                        status="failure",
-                        message="Section ID is missing.",
                     )
                 ]
 
@@ -113,7 +101,7 @@ class Artifact(BaseEntity):
             Cell.build_meta(
                 kind="artifact_meta",
                 artifact_id=str(self.id),
-                artifact_kind=str(primary_section.kind) if primary_section.kind else None,
+                artifact_kind=str(primary_section.kind),
                 artifact_title=primary_section.title,
                 artifact_description=primary_section.description,
             )

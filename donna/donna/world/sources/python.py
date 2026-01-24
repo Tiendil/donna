@@ -29,8 +29,6 @@ def construct_artifact_from_module(module: ModuleType, full_id: FullArtifactId) 
             continue
 
         if isinstance(value, ArtifactSection):
-            if value.id is None or value.kind is None:
-                raise NotImplementedError(f"Module `{module.__name__}` defines section '{name}' without id/kind.")
             sections.append(value)
 
     primary_sections = [section for section in sections if section.primary]
@@ -40,8 +38,6 @@ def construct_artifact_from_module(module: ModuleType, full_id: FullArtifactId) 
         )
 
     primary_section = primary_sections[0]
-    if primary_section.kind is None:
-        raise NotImplementedError(f"Module `{module.__name__}` defines a primary section without a kind.")
 
     if isinstance(primary_section.kind, str):
         primary_kind = FullArtifactLocalId.parse(primary_section.kind)

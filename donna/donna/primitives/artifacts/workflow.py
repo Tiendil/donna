@@ -109,6 +109,8 @@ class WorkflowKind(ArtifactSectionKind):
         transitions = {}
 
         for section in artifact.sections:
+            if isinstance(section.meta, WorkflowMeta):
+                continue
             if not isinstance(section.meta, OperationMeta):
                 return False, [
                     Cell.build_meta(
@@ -119,7 +121,7 @@ class WorkflowKind(ArtifactSectionKind):
                     )
                 ]
 
-            section_full_id = artifact.id.to_full_local(section.id) if section.id is not None else None
+            section_full_id = artifact.id.to_full_local(section.id)
 
             if section.meta.fsm_mode == FsmMode.final and section.meta.allowed_transtions:
                 return False, [
@@ -157,7 +159,6 @@ class WorkflowKind(ArtifactSectionKind):
                     )
                 ]
 
-            assert section_full_id is not None
             transitions[section_full_id] = set(section.meta.allowed_transtions)
 
         not_reachable_operations = find_not_reachable_operations(

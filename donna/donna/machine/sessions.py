@@ -108,8 +108,6 @@ def status() -> list[Cell]:
 def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
     workflow = artifacts.load_artifact(artifact_id)
     primary_section = workflow.primary_section()
-    if primary_section.id is None:
-        raise NotImplementedError(f"Workflow '{artifact_id}' primary section is missing an id.")
 
     with _state_mutator() as mutator:
         mutator.start_workflow(workflow.id.to_full_local(primary_section.id))
