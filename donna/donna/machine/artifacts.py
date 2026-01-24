@@ -169,9 +169,6 @@ class ArtifactSectionKind(BaseEntity):
     ) -> ArtifactSection:
         raise NotImplementedError("You MUST implement this method.")
 
-    def build_artifact_meta(self, artifact_id: FullArtifactId, sections: list[ArtifactSection]) -> ArtifactMeta:
-        return ArtifactMeta()
-
     def validate_artifact(self, artifact: "Artifact") -> tuple[bool, list[Cell]]:
         return True, [
             Cell.build_meta(
