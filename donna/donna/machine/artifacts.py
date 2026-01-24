@@ -204,12 +204,11 @@ class MarkdownSectionMixin:
         data = dict(config)
 
         if "id" not in data or data["id"] is None:
-            if primary:
-                data["id"] = self.get_primary_section_id(
-                    artifact_id=artifact_id,
-                    source=source,
-                    primary=primary,
-                )
+            data["id"] = self.get_primary_section_id(
+                artifact_id=artifact_id,
+                source=source,
+                primary=primary,
+            )
 
         if "kind" not in data or data["kind"] is None:
             if primary:

@@ -5,6 +5,7 @@ from donna.domain.ids import ArtifactId, FullArtifactId
 from donna.machine.artifacts import Artifact
 from donna.world.config import config
 from donna.world.sources import markdown as markdown_source
+from donna.world.sources import python as python_source
 
 
 def fetch_artifact(full_id: FullArtifactId, output: pathlib.Path) -> None:
@@ -25,17 +26,23 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> None:
     if world.readonly:
         raise NotImplementedError(f"World `{world.id}` is read-only")
 
-    content = input.read_text(encoding="utf-8")
+    source_suffix = input.suffix.lower()
+    content_bytes = input.read_bytes()
 
-    source_config = cast(markdown_source.Config, config().get_source_config("markdown"))
-    test_artifact = markdown_source.construct_artifact_from_markdown_source(full_id, content, source_config)
+    if source_suffix == ".md":
+        source_config = cast(markdown_source.Config, config().get_source_config("markdown"))
+        test_artifact = markdown_source.construct_artifact_from_bytes(full_id, content_bytes, source_config)
+    elif source_suffix == ".py":
+        test_artifact = python_source.construct_artifact_from_bytes(full_id, content_bytes)
+    else:
+        raise NotImplementedError(f"Unsupported artifact source extension '{input.suffix}'")
 
     is_valid, _cells = test_artifact.validate()
 
     if not is_valid:
         raise NotImplementedError(f"Artifact `{full_id}` is not valid and cannot be updated")
 
-    world.update(full_id.artifact_id, content.encode("utf-8"))
+    world.update(full_id.artifact_id, content_bytes)
 
 
 def load_artifact(full_id: FullArtifactId) -> Artifact:

@@ -48,6 +48,10 @@ def parse_artifact_content(full_id: FullArtifactId, text: str) -> list[markdown.
     return original_sections
 
 
+def construct_artifact_from_bytes(full_id: FullArtifactId, content: bytes, config: Config) -> Artifact:
+    return construct_artifact_from_markdown_source(full_id, content.decode("utf-8"), config)
+
+
 def construct_artifact_from_markdown_source(full_id: FullArtifactId, content: str, config: Config) -> Artifact:
     original_sections = parse_artifact_content(full_id, content)
 
