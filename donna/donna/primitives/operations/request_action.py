@@ -8,6 +8,7 @@ from donna.machine.action_requests import ActionRequest
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
 from donna.world import markdown
+from donna.world.sources.markdown import MarkdownSectionMixin
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -43,7 +44,7 @@ class RequestActionConfig(OperationConfig):
         return v
 
 
-class RequestActionKind(OperationKind):
+class RequestActionKind(MarkdownSectionMixin, OperationKind):
     config_class: ClassVar[type[RequestActionConfig]] = RequestActionConfig
 
     def markdown_construct_meta(

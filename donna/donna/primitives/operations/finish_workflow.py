@@ -4,6 +4,7 @@ from donna.domain.ids import FullArtifactId
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
 from donna.world import markdown
+from donna.world.sources.markdown import MarkdownSectionMixin
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -14,7 +15,7 @@ class FinishWorkflowConfig(OperationConfig):
     fsm_mode: Literal[FsmMode.final] = FsmMode.final
 
 
-class FinishWorkflowKind(OperationKind):
+class FinishWorkflowKind(MarkdownSectionMixin, OperationKind):
     def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterator["Change"]:
         from donna.machine.changes import ChangeFinishTask
 
