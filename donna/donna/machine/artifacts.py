@@ -20,15 +20,6 @@ class ArtifactSectionMeta(BaseEntity):
         return {}
 
 
-class ArtifactSectionKindMeta(ArtifactSectionMeta):
-    section_kind: "ArtifactSectionKind"
-
-    model_config = BaseEntity.model_config | {"arbitrary_types_allowed": True}
-
-    def cells_meta(self) -> dict[str, Any]:
-        return {"section_kind": repr(self.section_kind)}
-
-
 class ArtifactSection(BaseEntity):
     # some section may have no id and kind — it is ok for simple text sections
     id: ArtifactLocalId | None
@@ -216,6 +207,15 @@ class MarkdownSectionMixin:
             primary=primary,
             meta=meta,
         )
+
+
+class ArtifactSectionKindMeta(ArtifactSectionMeta):
+    section_kind: "ArtifactSectionKind"
+
+    model_config = BaseEntity.model_config | {"arbitrary_types_allowed": True}
+
+    def cells_meta(self) -> dict[str, Any]:
+        return {"section_kind": repr(self.section_kind)}
 
 
 class ArtifactSectionKind(MarkdownSectionMixin, BaseEntity):
