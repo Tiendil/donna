@@ -1,11 +1,15 @@
 import pathlib
 import tomllib
+from typing import TypeVar
 
 import pydantic
 
 from donna.core import utils
 from donna.core.entities import BaseEntity
 from donna.domain.ids import WorldId
+from donna.world.sources import markdown as markdown_source
+from donna.world.sources import python as python_source
+from donna.world.sources.base import SourceConfig
 from donna.world.worlds.base import World as BaseWorld
 from donna.world.worlds.filesystem import World as WorldFilesystem
 from donna.world.worlds.python import Python as WorldPython
@@ -18,6 +22,15 @@ DONNA_DESSION_DIR_NAME = "session"
 
 
 WorldConfig = WorldFilesystem | WorldPython
+SourceConfigValue = SourceConfig
+SOURCE_CONFIG = TypeVar("SOURCE_CONFIG", bound=SourceConfig)
+
+
+def _default_sources() -> list[SourceConfigValue]:
+    return [
+        markdown_source.Config(),
+        python_source.Config(),
+    ]
 
 
 def _default_worlds() -> list[WorldConfig]:
@@ -55,6 +68,7 @@ def _default_worlds() -> list[WorldConfig]:
 
 class Config(BaseEntity):
     worlds: list[WorldConfig] = pydantic.Field(default_factory=_default_worlds)
+    sources: list[SourceConfigValue] = pydantic.Field(default_factory=_default_sources)
 
     def get_world(self, world_id: WorldId) -> BaseWorld:
         for world in self.worlds:
@@ -62,6 +76,13 @@ class Config(BaseEntity):
                 return world
 
         raise NotImplementedError(f"World with id '{world_id}' is not configured")
+
+    def get_source_config(self, source_config_type: type[SOURCE_CONFIG]) -> SOURCE_CONFIG:
+        for source in self.sources:
+            if isinstance(source, source_config_type):
+                return source
+
+        raise NotImplementedError(f"Source config '{source_config_type.__name__}' is not configured")
 
 
 _CONFIG: Config | None = None

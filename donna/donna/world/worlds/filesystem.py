@@ -5,8 +5,8 @@ from types import ModuleType
 
 from donna.domain.ids import ArtifactId, FullArtifactId
 from donna.machine.artifacts import Artifact
-from donna.world.sources.markdown import construct_artifact_from_markdown_source
-from donna.world.sources.python import construct_artifact_from_module
+from donna.world.sources import markdown as markdown_source
+from donna.world.sources import python as python_source
 from donna.world.worlds.base import World as BaseWorld
 
 
@@ -29,12 +29,16 @@ class World(BaseWorld):
         if markdown_path.exists():
             content = markdown_path.read_text(encoding="utf-8")
             full_id = FullArtifactId((self.id, artifact_id))
-            return construct_artifact_from_markdown_source(full_id, content)
+            return markdown_source.construct_artifact_from_markdown_source(
+                full_id,
+                content,
+                markdown_source.Config(),
+            )
 
         if python_path.exists():
             module = self._load_module_from_path(artifact_id, python_path)
             full_id = FullArtifactId((self.id, artifact_id))
-            return construct_artifact_from_module(module, full_id)
+            return python_source.construct_artifact_from_module(module, full_id)
 
         raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 

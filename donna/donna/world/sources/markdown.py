@@ -1,8 +1,9 @@
 from typing import Any, Protocol
 
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId
+from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionKind, ArtifactSectionKindMeta, resolve
 from donna.world import markdown
+from donna.world.sources.base import SourceConfig
 from donna.world.templates import RenderMode, render, render_mode
 
 
@@ -15,6 +16,11 @@ class MarkdownSectionConstructor(Protocol):
         primary: bool = False,
     ) -> ArtifactSection:
         pass
+
+
+class Config(SourceConfig):
+    default_section_kind: FullArtifactLocalId = FullArtifactLocalId.parse("donna.operations.text")
+    default_primary_section_id: ArtifactLocalId = ArtifactLocalId("primary")
 
 
 def parse_artifact_content(full_id: FullArtifactId, text: str) -> list[markdown.SectionSource]:
@@ -41,15 +47,18 @@ def parse_artifact_content(full_id: FullArtifactId, text: str) -> list[markdown.
     return original_sections
 
 
-def construct_artifact_from_markdown_source(full_id: FullArtifactId, content: str) -> Artifact:
+def construct_artifact_from_markdown_source(full_id: FullArtifactId, content: str, config: Config) -> Artifact:
     original_sections = parse_artifact_content(full_id, content)
 
-    head_config = original_sections[0].merged_configs()
+    head_config = dict(original_sections[0].merged_configs())
     head_kind_value = head_config["kind"]
     if isinstance(head_kind_value, FullArtifactLocalId):
         head_kind = head_kind_value
     else:
         head_kind = FullArtifactLocalId.parse(head_kind_value)
+
+    if "id" not in head_config or head_config["id"] is None:
+        head_config["id"] = config.default_primary_section_id
 
     section = resolve(head_kind)
 
@@ -70,7 +79,7 @@ def construct_artifact_from_markdown_source(full_id: FullArtifactId, content: st
         construct_sections_from_markdown(
             artifact_id=full_id,
             sections=original_sections[1:],
-            default_section_kind=primary_section_kind.default_section_kind,
+            default_section_kind=config.default_section_kind,
         )
     )
 

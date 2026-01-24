@@ -155,7 +155,6 @@ class Artifact(BaseEntity):
 
 
 class MarkdownSectionMixin:
-    default_section_kind: FullArtifactLocalId
     config_class: ClassVar[type[ArtifactSectionConfig]]
 
     def markdown_default_section_id(
@@ -215,7 +214,7 @@ class MarkdownSectionMixin:
         if "kind" not in data or data["kind"] is None:
             if primary:
                 raise NotImplementedError(f"Primary section for artifact '{artifact_id}' is missing a valid kind")
-            data["kind"] = self.default_section_kind
+            raise NotImplementedError(f"Section for artifact '{artifact_id}' is missing a valid kind")
 
         raw_id = data.get("id")
         if isinstance(raw_id, str):
@@ -277,7 +276,6 @@ class MarkdownSectionMixin:
 
 
 class ArtifactSectionKind(MarkdownSectionMixin, BaseEntity):
-    default_section_kind: FullArtifactLocalId = FullArtifactLocalId.parse("donna.operations.text")
     config_class: ClassVar[type[ArtifactSectionConfig]] = ArtifactSectionConfig
 
     def execute_section(self, task: Task, unit: WorkUnit, section: ArtifactSection) -> Iterable["Change"]:
@@ -303,7 +301,7 @@ class ArtifactPrimarySectionKind(ArtifactSectionKind):
         source: "markdown.SectionSource",
         primary: bool = False,
     ) -> ArtifactLocalId | None:
-        return ArtifactLocalId("primary")
+        return None
 
     def markdown_build_title(
         self,

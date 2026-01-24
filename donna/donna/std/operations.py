@@ -6,10 +6,11 @@ from donna.primitives.artifacts.python import PythonModuleSectionKind
 from donna.primitives.artifacts.specification import ArtifactSectionTextKind
 from donna.primitives.operations.finish_workflow import FinishWorkflowKind
 from donna.primitives.operations.request_action import RequestActionKind
+from donna.world.sources.markdown import Config as MarkdownSourceConfig
 
 PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations.python_module")
 PYTHON_ARTIFACT_KIND_ID = FullArtifactLocalId.parse("donna.artifacts.python")
-PRIMARY_SECTION_ID = ArtifactLocalId("primary")
+PRIMARY_SECTION_ID = MarkdownSourceConfig().default_primary_section_id
 
 text_section_kind_entity = ArtifactSectionTextKind()
 python_module_section_kind_entity = PythonModuleSectionKind()

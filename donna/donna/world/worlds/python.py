@@ -8,8 +8,8 @@ from typing import cast
 
 from donna.domain.ids import ArtifactId, FullArtifactId, WorldId
 from donna.machine.artifacts import Artifact
-from donna.world.sources.markdown import construct_artifact_from_markdown_source
-from donna.world.sources.python import construct_artifact_from_module
+from donna.world.sources import markdown as markdown_source
+from donna.world.sources import python as python_source
 from donna.world.worlds.base import World as BaseWorld
 
 
@@ -72,7 +72,7 @@ class Python(BaseWorld):
         full_id = FullArtifactId((self.id, artifact_id))
         module_name = self._artifact_module_name(artifact_id)
         module = importlib.import_module(module_name)
-        return construct_artifact_from_module(module, full_id)
+        return python_source.construct_artifact_from_module(module, full_id)
 
     def _fetch_markdown(self, artifact_id: ArtifactId) -> Artifact:
         full_id = FullArtifactId((self.id, artifact_id))
@@ -82,7 +82,11 @@ class Python(BaseWorld):
             raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
         content = resource_path.read_text(encoding="utf-8")
-        return construct_artifact_from_markdown_source(full_id, content)
+        return markdown_source.construct_artifact_from_markdown_source(
+            full_id,
+            content,
+            markdown_source.Config(),
+        )
 
     def fetch(self, artifact_id: ArtifactId) -> Artifact:
         if self._has_markdown(artifact_id):
