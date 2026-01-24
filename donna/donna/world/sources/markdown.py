@@ -1,3 +1,4 @@
+import uuid
 from typing import Any, Literal, Protocol
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
@@ -104,6 +105,9 @@ def construct_sections_from_markdown(  # noqa: CCR001
 
     for section in sections:
         data = dict(section.merged_configs())
+
+        if "id" not in data or data["id"] is None:
+            data["id"] = ArtifactLocalId("markdown" + uuid.uuid4().hex.replace("-", ""))
 
         if "kind" not in data:
             data["kind"] = default_section_kind

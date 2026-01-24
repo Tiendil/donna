@@ -1,4 +1,3 @@
-import uuid
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable
 
 from donna.core.entities import BaseEntity
@@ -152,14 +151,6 @@ class Artifact(BaseEntity):
 class MarkdownSectionMixin:
     config_class: ClassVar[type[ArtifactSectionConfig]]
 
-    def get_primary_section_id(
-        self,
-        artifact_id: FullArtifactId,
-        source: "markdown.SectionSource",
-        primary: bool = False,
-    ) -> ArtifactLocalId | None:
-        return ArtifactLocalId("markdown" + uuid.uuid4().hex.replace("-", ""))
-
     def markdown_build_title(
         self,
         artifact_id: FullArtifactId,
@@ -188,45 +179,6 @@ class MarkdownSectionMixin:
     ) -> ArtifactSectionMeta:
         return ArtifactSectionMeta()
 
-    def markdown_prepare_config(  # noqa: CCR001
-        self,
-        artifact_id: FullArtifactId,
-        source: "markdown.SectionSource",
-        config: dict[str, Any],
-        primary: bool,
-    ) -> dict[str, Any]:
-        data = dict(config)
-
-        if "id" not in data or data["id"] is None:
-            data["id"] = self.get_primary_section_id(
-                artifact_id=artifact_id,
-                source=source,
-                primary=primary,
-            )
-
-        if "kind" not in data or data["kind"] is None:
-            if primary:
-                raise NotImplementedError(f"Primary section for artifact '{artifact_id}' is missing a valid kind")
-            raise NotImplementedError(f"Section for artifact '{artifact_id}' is missing a valid kind")
-
-        raw_id = data.get("id")
-        if isinstance(raw_id, str):
-            data["id"] = ArtifactLocalId(raw_id)
-        elif raw_id is None or isinstance(raw_id, ArtifactLocalId):
-            pass
-        else:
-            raise NotImplementedError(f"Invalid section id for artifact '{artifact_id}': {raw_id!r}")
-
-        kind_value = data.get("kind")
-        if isinstance(kind_value, str):
-            data["kind"] = FullArtifactLocalId.parse(kind_value)
-        elif isinstance(kind_value, FullArtifactLocalId):
-            pass
-        else:
-            raise NotImplementedError(f"Invalid section kind for artifact '{artifact_id}': {kind_value!r}")
-
-        return data
-
     def markdown_construct_section(  # noqa: CCR001
         self,
         artifact_id: FullArtifactId,
@@ -234,9 +186,7 @@ class MarkdownSectionMixin:
         config: dict[str, Any],
         primary: bool = False,
     ) -> ArtifactSection:
-        data = self.markdown_prepare_config(artifact_id=artifact_id, source=source, config=config, primary=primary)
-
-        section_config = self.config_class.parse_obj(data)
+        section_config = self.config_class.parse_obj(config)
 
         title = self.markdown_build_title(
             artifact_id=artifact_id,
