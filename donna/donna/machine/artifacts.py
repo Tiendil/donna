@@ -238,15 +238,6 @@ class ArtifactPrimarySectionKind(ArtifactSectionKind):
     def execute_section(self, task: Task, unit: WorkUnit, section: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("Primary sections cannot be executed.")
 
-    def markdown_build_title(
-        self,
-        artifact_id: FullArtifactId,
-        source: "markdown.SectionSource",
-        section_config: ArtifactSectionConfig,
-        primary: bool = False,
-    ) -> str:
-        return source.title or str(artifact_id)
-
 
 def resolve(target_id: FullArtifactLocalId) -> ArtifactSection:
     from donna.world import artifacts as world_artifacts
