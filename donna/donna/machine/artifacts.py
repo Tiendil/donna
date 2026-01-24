@@ -250,9 +250,3 @@ class ArtifactContent(BaseEntity):
     id: FullArtifactId
     head: SectionContent
     tail: list[SectionContent]
-
-
-def _analysis_text(title: str, description: str) -> str:
-    if title:
-        return f"## {title}\n{description}"
-    return description
