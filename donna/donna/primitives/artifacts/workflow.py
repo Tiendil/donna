@@ -1,8 +1,8 @@
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId
-from donna.machine.artifacts import Artifact, ArtifactPrimarySectionKind, ArtifactSection
+from donna.domain.ids import FullArtifactLocalId
+from donna.machine.artifacts import Artifact, ArtifactPrimarySectionKind
 from donna.machine.cells import Cell
 from donna.machine.operations import FsmMode, OperationMeta
-from donna.machine.workflows import WorkflowMeta
+from donna.machine.workflows import find_start_operation_id
 
 
 def find_not_reachable_operations(
@@ -32,30 +32,8 @@ def find_not_reachable_operations(
 
 
 class WorkflowKind(ArtifactPrimarySectionKind):
-    def build_artifact_meta(  # noqa: CCR001
-        self, artifact_id: FullArtifactId, sections: list[ArtifactSection]
-    ) -> WorkflowMeta:
-        start_operation_id: FullArtifactLocalId | None = None
-
-        for section in sections:
-            if not isinstance(section.meta, OperationMeta):
-                continue
-            if section.meta.fsm_mode == FsmMode.start:
-                if section.id is None:
-                    raise NotImplementedError(f"Workflow '{artifact_id}' has a start operation without an id.")
-                start_operation_id = artifact_id.to_full_local(section.id)
-                break
-        else:
-            raise NotImplementedError(f"Workflow '{artifact_id}' does not have a start operation.")
-
-        assert start_operation_id is not None
-
-        return WorkflowMeta(start_operation_id=start_operation_id)
-
     def validate_artifact(self, artifact: Artifact) -> tuple[bool, list[Cell]]:  # noqa: CCR001
-        assert isinstance(artifact.meta, WorkflowMeta)
-
-        start_operation_id: FullArtifactLocalId = artifact.meta.start_operation_id
+        start_operation_id = find_start_operation_id(artifact)
 
         if artifact.get_section(start_operation_id.local_id) is None:
             return False, [

@@ -6,7 +6,7 @@ from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactLocalI
 from donna.machine.cells import Cell, cell_donna_message
 from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
-from donna.machine.workflows import WorkflowMeta
+from donna.machine.workflows import find_start_operation_id
 from donna.world import artifacts
 from donna.world.config import config
 from donna.world.worlds.base import World
@@ -110,8 +110,8 @@ def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
     workflow = artifacts.load_artifact(artifact_id)
 
     with _state_mutator() as mutator:
-        assert isinstance(workflow.meta, WorkflowMeta)
-        mutator.start_workflow(workflow.meta.start_operation_id)
+        start_operation_id = find_start_operation_id(workflow)
+        mutator.start_workflow(start_operation_id)
         _save_state(mutator.freeze())
         _state_run(mutator)
 

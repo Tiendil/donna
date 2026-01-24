@@ -1,7 +1,7 @@
 from types import ModuleType
 
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId
-from donna.machine.artifacts import Artifact, ArtifactMeta, ArtifactSection, ArtifactSectionKindMeta, resolve
+from donna.machine.artifacts import Artifact, ArtifactSection
 
 
 def construct_artifact_from_module(module: ModuleType, full_id: FullArtifactId) -> Artifact:  # noqa: CCR001
@@ -39,17 +39,7 @@ def construct_artifact_from_module(module: ModuleType, full_id: FullArtifactId) 
             f"Primary section kind mismatch: module uses '{primary_section.kind}', but expected '{expected_kind_id}'."
         )
 
-    if primary_section.kind.full_artifact_id == full_id:
-        meta = ArtifactMeta()
-    else:
-        kind_section = resolve(primary_section.kind)
-        if not isinstance(kind_section.meta, ArtifactSectionKindMeta):
-            raise NotImplementedError(f"Primary section kind '{primary_section.kind}' is not available")
-        primary_section_kind = kind_section.meta.section_kind
-        meta = primary_section_kind.build_artifact_meta(full_id, sections)
-
     return Artifact(
         id=full_id,
-        meta=meta,
         sections=sections,
     )

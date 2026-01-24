@@ -85,11 +85,8 @@ def construct_artifact_from_markdown_source(full_id: FullArtifactId, content: st
         )
     )
 
-    meta = primary_section_kind.build_artifact_meta(full_id, sections)
-
     return Artifact(
         id=full_id,
-        meta=meta,
         sections=sections,
     )
 

@@ -65,7 +65,6 @@ class ArtifactMeta(BaseEntity):
 class Artifact(BaseEntity):
     id: FullArtifactId
 
-    meta: ArtifactMeta
     sections: list[ArtifactSection]
 
     def _primary_sections(self) -> list[ArtifactSection]:
@@ -126,7 +125,6 @@ class Artifact(BaseEntity):
                 artifact_kind=str(primary_section.kind) if primary_section.kind else None,
                 artifact_title=primary_section.title,
                 artifact_description=primary_section.description,
-                **self.meta.cells_meta(),
             )
         ]
 
