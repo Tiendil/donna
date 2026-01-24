@@ -25,7 +25,7 @@ class ArtifactSectionTextKind(ArtifactSectionKind):
     def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("Text sections cannot be executed.")
 
-    def default_section_id(
+    def markdown_default_section_id(
         self,
         artifact_id: FullArtifactId,
         source: markdown.SectionSource,

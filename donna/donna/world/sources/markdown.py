@@ -15,7 +15,7 @@ from donna.world.templates import RenderMode, render, render_mode
 
 
 class MarkdownSectionConstructor(Protocol):
-    def from_markdown_section(
+    def markdown_construct_section(
         self,
         artifact_id: FullArtifactId,
         source: markdown.SectionSource,
@@ -69,7 +69,7 @@ def construct_artifact_from_markdown_source(full_id: FullArtifactId, content: st
 
     primary_section_kind = section.meta.section_kind
 
-    primary_section = primary_section_kind.from_markdown_section(
+    primary_section = primary_section_kind.markdown_construct_section(
         artifact_id=full_id,
         source=original_sections[0],
         config=raw_artifact.head.config,
@@ -113,7 +113,7 @@ def construct_sections_from_markdown(  # noqa: CCR001
 
         section_kind = _resolve_section_kind(section_kind_id, section_kind_overrides)
 
-        constructed.append(section_kind.from_markdown_section(artifact_id, section, data, primary=False))
+        constructed.append(section_kind.markdown_construct_section(artifact_id, section, data, primary=False))
 
     return constructed
 

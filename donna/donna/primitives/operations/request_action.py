@@ -1,11 +1,11 @@
 import re
-from typing import TYPE_CHECKING, ClassVar, Iterator
+from typing import TYPE_CHECKING, ClassVar, Iterator, cast
 
 import pydantic
 
-from donna.domain.ids import FullArtifactLocalId
+from donna.domain.ids import FullArtifactId, FullArtifactLocalId
 from donna.machine.action_requests import ActionRequest
-from donna.machine.artifacts import ArtifactSection, ArtifactSectionMeta
+from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
 from donna.world import markdown
 
@@ -46,18 +46,19 @@ class RequestActionConfig(OperationConfig):
 class RequestActionKind(OperationKind):
     config_class: ClassVar[type[RequestActionConfig]] = RequestActionConfig
 
-    def construct_meta(
+    def markdown_construct_meta(
         self,
         artifact_id: "FullArtifactId",
         source: markdown.SectionSource,
-        section_config: RequestActionConfig,
+        section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
     ) -> ArtifactSectionMeta:
+        request_config = cast(RequestActionConfig, section_config)
         analysis = source.as_analysis_markdown(with_title=True)
 
         return OperationMeta(
-            fsm_mode=section_config.fsm_mode,
+            fsm_mode=request_config.fsm_mode,
             allowed_transtions=extract_transitions(analysis),
         )
 

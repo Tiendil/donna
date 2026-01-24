@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, ClassVar, Iterable
+from typing import TYPE_CHECKING, ClassVar, Iterable, cast
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
 from donna.machine.artifacts import (
@@ -57,15 +57,16 @@ class WorkflowMeta(ArtifactSectionMeta):
 class WorkflowKind(ArtifactPrimarySectionKind):
     config_class: ClassVar[type[WorkflowConfig]] = WorkflowConfig
 
-    def construct_meta(
+    def markdown_construct_meta(
         self,
         artifact_id: FullArtifactId,
         source: markdown.SectionSource,
-        section_config: WorkflowConfig,
+        section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
     ) -> ArtifactSectionMeta:
-        return WorkflowMeta(start_operation_id=artifact_id.to_full_local(section_config.start_operation_id))
+        workflow_config = cast(WorkflowConfig, section_config)
+        return WorkflowMeta(start_operation_id=artifact_id.to_full_local(workflow_config.start_operation_id))
 
     def execute_section(self, task: "Task", unit: "WorkUnit", section: ArtifactSection) -> Iterable["Change"]:
         from donna.machine.changes import ChangeAddWorkUnit

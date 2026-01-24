@@ -22,7 +22,7 @@ class PythonModuleSectionKind(ArtifactSectionKind):
     def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("Python module sections cannot be executed.")
 
-    def from_markdown_section(  # noqa: D401
+    def markdown_construct_section(  # noqa: D401
         self,
         artifact_id: FullArtifactId,
         source: markdown.SectionSource,

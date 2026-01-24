@@ -1,6 +1,7 @@
-from typing import TYPE_CHECKING, ClassVar, Iterator, Literal
+from typing import TYPE_CHECKING, ClassVar, Iterator, Literal, cast
 
-from donna.machine.artifacts import ArtifactSection, ArtifactSectionMeta
+from donna.domain.ids import FullArtifactId
+from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
 from donna.world import markdown
 
@@ -21,12 +22,13 @@ class FinishWorkflowKind(OperationKind):
 
     config_class: ClassVar[type[FinishWorkflowConfig]] = FinishWorkflowConfig
 
-    def construct_meta(
+    def markdown_construct_meta(
         self,
         artifact_id: "FullArtifactId",
         source: markdown.SectionSource,
-        section_config: FinishWorkflowConfig,
+        section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
     ) -> ArtifactSectionMeta:
-        return OperationMeta(fsm_mode=section_config.fsm_mode, allowed_transtions=set())
+        finish_config = cast(FinishWorkflowConfig, section_config)
+        return OperationMeta(fsm_mode=finish_config.fsm_mode, allowed_transtions=set())
