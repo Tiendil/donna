@@ -56,6 +56,7 @@
 *** donna.machine.artifacts
 *** donna.world.worlds
 *** donna.world.sources
+*** remove artifact content classes from the world?
 ** replace artifact sections with primitives in the std/*.py modules?
 *** primitive is semantically the same as artifact section, it just contains some meta info
 *** this meta info is strongy coupled with the primitive instance

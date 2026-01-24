@@ -17,12 +17,6 @@ class ArtifactSectionConfig(BaseEntity):
     kind: FullArtifactLocalId
 
 
-class ArtifactConfig(BaseEntity):
-    model_config = pydantic.ConfigDict(extra="ignore")
-
-    kind: FullArtifactLocalId
-
-
 class ArtifactSectionMeta(BaseEntity):
     def cells_meta(self) -> dict[str, Any]:
         return {}
@@ -258,12 +252,6 @@ class ArtifactContent(BaseEntity):
     id: FullArtifactId
     head: SectionContent
     tail: list[SectionContent]
-
-
-class ArtifactConstructor(BaseEntity):
-    title: str
-    description: str
-    config: ArtifactConfig
 
 
 def _analysis_text(title: str, description: str) -> str:

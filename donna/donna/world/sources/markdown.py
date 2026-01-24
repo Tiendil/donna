@@ -3,7 +3,6 @@ from typing import Any, Protocol
 from donna.domain.ids import FullArtifactId, FullArtifactLocalId
 from donna.machine.artifacts import (
     Artifact,
-    ArtifactConfig,
     ArtifactContent,
     ArtifactSection,
     ArtifactSectionKind,
@@ -61,10 +60,13 @@ def parse_artifact_content(full_id: FullArtifactId, text: str) -> tuple[Artifact
 def construct_artifact_from_markdown_source(full_id: FullArtifactId, content: str) -> Artifact:
     raw_artifact, original_sections = parse_artifact_content(full_id, content)
 
-    config = ArtifactConfig.parse_obj(raw_artifact.head.config)
-    section = resolve(config.kind)
+    head_kind = raw_artifact.head.config["kind"]
+
+    section = resolve(head_kind)
+
     if not isinstance(section.meta, ArtifactSectionKindMeta):
-        raise NotImplementedError(f"Primary section kind '{config.kind}' is not available")
+        raise NotImplementedError(f"Primary section kind '{head_kind}' is not available")
+
     primary_section_kind = section.meta.section_kind
 
     primary_section = primary_section_kind.from_markdown_section(
