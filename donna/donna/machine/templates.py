@@ -14,10 +14,6 @@ class DirectiveKind(BaseEntity):
         raise NotImplementedError("You MUST implement this method.")
 
 
-class DirectiveConfig(ArtifactSectionConfig):
-    analyze_id: str
-
-
 class DirectiveSectionMeta(ArtifactSectionMeta):
     analyze_id: str
     directive: DirectiveKind
