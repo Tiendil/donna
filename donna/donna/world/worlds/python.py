@@ -1,3 +1,4 @@
+import importlib
 import importlib.resources
 from typing import TYPE_CHECKING, cast
 
@@ -15,12 +16,13 @@ class Python(BaseWorld):
     id: WorldId
     readonly: bool = True
     session: bool = False
-    root: str
+    package: str
+    artifacts_root: str
 
-    _MARKDOWN_ROOTS = {"specifications", "workflows"}
+    _MARKDOWN_ROOTS = {"usage", "work"}
 
     def _resource_root(self, root_name: str) -> importlib.resources.abc.Traversable | None:
-        package = f"{self.root}.{root_name}"
+        package = f"{self.artifacts_root}.{root_name}"
 
         try:
             return importlib.resources.files(package)
@@ -163,14 +165,24 @@ class Python(BaseWorld):
 
 class PythonWorldConstructor(WorldConstructor):
     def construct_world(self, config: "WorldConfig") -> Python:
-        root = getattr(config, "root", None)
+        package = getattr(config, "package", None)
 
-        if root is None:
-            raise NotImplementedError(f"World config '{config.id}' does not define a python root")
+        if package is None:
+            raise NotImplementedError(f"World config '{config.id}' does not define a python package")
+
+        module = importlib.import_module(str(package))
+        artifacts_root = getattr(module, "donna_artifacts_root", None)
+
+        if artifacts_root is None:
+            raise NotImplementedError(f"Package '{package}' does not define donna_artifacts_root")
+
+        if not isinstance(artifacts_root, str):
+            raise NotImplementedError(f"Package '{package}' defines invalid donna_artifacts_root")
 
         return Python(
             id=config.id,
-            root=str(root),
+            package=str(package),
+            artifacts_root=artifacts_root,
             readonly=config.readonly,
             session=config.session,
         )

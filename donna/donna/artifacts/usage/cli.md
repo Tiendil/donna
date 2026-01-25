@@ -46,7 +46,7 @@ All work in the context of session/story is managed by the `donna` tool.
 
 - Yoy start session by calling `<DONNA_CMD> sessions start`.
 - After you started a session:
-  2. List all possible workflows with command `<DONNA_CMD> artifacts list workflows`.
+  2. List all possible workflows with command `<DONNA_CMD> artifacts list work`.
   3. Choose the most appropriate workflow for the story you are going to work on or ask the developer if you are not sure which workflow to choose.
   4. Start working by calling `<DONNA_CMD> sessions run <workflow-id>`.
   5. The `donna` tool will output descriptions of all operations it performs to complete the story.
@@ -79,8 +79,8 @@ Use the next commands to work with artifacts
 
 Artifact path prefixes:
 
-- `specifications` — documents describing requirements, designs, constraints, or other important information related to the project.
-- `workflows` — documents describing predefined workflows that the `donna` tool can execute to manage the work of agents.
+- `usage` — documents describing requirements, designs, constraints, or other important information related to the project.
+- `work` — documents describing predefined workflows that the `donna` tool can execute to manage the work of agents.
 
 ### Introspection
 
@@ -105,9 +105,9 @@ When to use introspection:
 
 Examples:
 
-- `<DONNA_CMD>  artifacts list specifications` -> `./bin/donna.sh artifacts list specifications` when `<DONNA_CMD>` is `./bin/donna.sh`
-- `<DONNA_CMD>  artifacts list specifications` -> `poetry run donna artifacts list specifications` when `<DONNA_CMD>` is `poetry run donna`
-- `<DONNA_CMD>  artifacts list specifications` -> `donna artifacts list specifications` when `<DONNA_CMD>` is `donna`.
+- `<DONNA_CMD>  artifacts list usage` -> `./bin/donna.sh artifacts list usage` when `<DONNA_CMD>` is `./bin/donna.sh`
+- `<DONNA_CMD>  artifacts list usage` -> `poetry run donna artifacts list usage` when `<DONNA_CMD>` is `poetry run donna`
+- `<DONNA_CMD>  artifacts list usage` -> `donna artifacts list usage` when `<DONNA_CMD>` is `donna`.
 
 **STRICTLY FOLLOW DESCRIBED COMMAND SYNTAX**
 

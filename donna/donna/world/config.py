@@ -57,7 +57,7 @@ def _default_worlds() -> list[WorldConfig]:
                 "kind": PythonImportPath.parse("donna.lib.worlds.python"),
                 "readonly": True,
                 "session": False,
-                "root": "donna.std",
+                "package": "donna",
             }
         ),
         WorldConfig.model_validate(
