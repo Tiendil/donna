@@ -61,6 +61,7 @@
 *** establish correct world layout
 *** establish correct project world layout
 *** loadable and extensible worlds configs list
+*** loadable and extensible worlds sources list
 *** batch of custom configs DonnaWorld, HomeWorld, ProjectWorld, SessionWorld to simplify configuration?
 ** review
 *** primitives module and std/*.py modules
