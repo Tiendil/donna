@@ -54,6 +54,7 @@
 ** simplifying python part
 *** ArtifactSectionKind — move out of machine.artifacts? rename?
 *** primitives vs kinds
+*** each kind/primitive must has reference to specification section that explains it
 *** remove donna.std
 *** where to move specs/workflows from donna.std?
 *** do we need to pass root to the worldpyhton config?
