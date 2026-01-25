@@ -56,6 +56,7 @@
 *** filesystem world uses hardcoded extensions instead of list of sources
 *** sync world implementations with source implementations — there are a lot of hardcode there.
 *** remove _MARKDOWN_ROOTS
+*** `artifacts list` output the whole artifacts bodies — we need only standardized short info records about each artifact
 *** list_artifact should be recursive (search in subdirectories as well)
 *** artifacts listing/search functionality goest to the worlds
 **** words should return standardized short info records about each artifact
