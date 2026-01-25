@@ -1,7 +1,7 @@
 """Python artifact that exposes artifact section kind definitions."""
 
+import donna.lib as lib
 from donna.domain.ids import ArtifactLocalId, FullArtifactLocalId
-from donna.lib import python_artifact_kind, specification_kind_entity, workflow_kind_entity
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionKindMeta, ArtifactSectionMeta
 
 PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations.python_module")
@@ -22,7 +22,7 @@ specification_kind = ArtifactSection(
     description="A specification that define various aspects of the current project.",
     id=ArtifactLocalId("specification"),
     kind=PYTHON_MODULE_SECTION_KIND_ID,
-    meta=ArtifactSectionKindMeta(section_kind=specification_kind_entity),
+    meta=ArtifactSectionKindMeta(section_kind=lib.specification),
 )
 
 workflow_kind = ArtifactSection(
@@ -30,7 +30,7 @@ workflow_kind = ArtifactSection(
     description="A workflow that defines a state machine for the agent to follow.",
     id=ArtifactLocalId("workflow"),
     kind=PYTHON_MODULE_SECTION_KIND_ID,
-    meta=ArtifactSectionKindMeta(section_kind=workflow_kind_entity),
+    meta=ArtifactSectionKindMeta(section_kind=lib.workflow),
 )
 
 python_artifact_kind_section = ArtifactSection(
@@ -38,5 +38,5 @@ python_artifact_kind_section = ArtifactSection(
     description="A Python module artifact.",
     id=ArtifactLocalId("python"),
     kind=PYTHON_MODULE_SECTION_KIND_ID,
-    meta=ArtifactSectionKindMeta(section_kind=python_artifact_kind),
+    meta=ArtifactSectionKindMeta(section_kind=lib.python_artifact),
 )
