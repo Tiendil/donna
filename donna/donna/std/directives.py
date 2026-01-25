@@ -1,17 +1,13 @@
 """Python artifact that exposes directive kind definitions."""
 
+import donna.lib as lib
 from donna.domain.ids import ArtifactLocalId, FullArtifactLocalId
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionMeta
 from donna.machine.templates import DirectiveSectionMeta
-from donna.primitives.directives.goto import GoTo
-from donna.primitives.directives.view import View
 
 PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations.python_module")
 PYTHON_ARTIFACT_KIND_ID = FullArtifactLocalId.parse("donna.artifacts.python")
 PRIMARY_SECTION_ID = ArtifactLocalId("primary")
-
-view_directive_entity = View()
-goto_directive_entity = GoTo()
 
 primary_section = ArtifactSection(
     title="Directive Kinds",
@@ -33,7 +29,7 @@ view_directive = ArtifactSection(
     kind=PYTHON_MODULE_SECTION_KIND_ID,
     meta=DirectiveSectionMeta(
         analyze_id="donna.directives.view",
-        directive=view_directive_entity,
+        directive=lib.view,
     ),
 )
 
@@ -48,6 +44,6 @@ goto_directive = ArtifactSection(
     kind=PYTHON_MODULE_SECTION_KIND_ID,
     meta=DirectiveSectionMeta(
         analyze_id="goto",
-        directive=goto_directive_entity,
+        directive=lib.goto,
     ),
 )
