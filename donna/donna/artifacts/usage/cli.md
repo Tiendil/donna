@@ -75,7 +75,7 @@ Use the next commands to work with artifacts
 - `<DONNA_CMD> artifacts fetch <world>:<artifact>` — download the original source of the artifact content, outputs the file path to the artifact you can change. Use this command when you need to change the content of the artifact.
 - `<DONNA_CMD> artifacts update <world>:<artifact> <file-path>` — upload the given file as the artifact. Use this command when you finished changing the content of the artifact.
 - `<DONNA_CMD> artifacts validate <world>:<artifact>` — check the artifact for validity according to its kind.
-- `<DONNA_CMD> artifacts validate-all <artifact-prefix>` — check all artifacts under the given prefix for validity according to their kinds.
+- `<DONNA_CMD> artifacts validate-all [--pattern <artifact-pattern>]` — check all artifacts corresponding to the given pattern for validity according to their kinds.
 
 The format of `<artifact-pattern>` is as follows:
 
