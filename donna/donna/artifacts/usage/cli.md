@@ -72,7 +72,7 @@ Use the next commands to work with artifacts
 
 - `<DONNA_CMD> artifacts list <artifact-prefix>` — list all artifacts under the given prefix
 - `<DONNA_CMD> artifacts view <world>:<artifact>` — get the meaningful (rendered) content of the artifact. This command shows the rendered information about the artifact. Use this command when you need to read the artifact content.
-- `<DONNA_CMD> artifacts fetch <world>:<artifact> <file-path>` — download the original source of the artifact content to the given file path. Use this command when you need to change the content of the artifact.
+- `<DONNA_CMD> artifacts fetch <world>:<artifact>` — download the original source of the artifact content, outputs the file path to the artifact you can change. Use this command when you need to change the content of the artifact.
 - `<DONNA_CMD> artifacts update <world>:<artifact> <file-path>` — upload the given file as the artifact. Use this command when you finished changing the content of the artifact.
 - `<DONNA_CMD> artifacts validate <world>:<artifact>` — check the artifact for validity according to its kind.
 - `<DONNA_CMD> artifacts validate-all <artifact-prefix>` — check all artifacts under the given prefix for validity according to their kinds.

@@ -1,0 +1,31 @@
+import pathlib
+import shutil
+import time
+from donna.world.config import config, config_dir
+from donna.cli.types import FullArtifactIdArgument
+
+
+def tmp_dir() -> pathlib.Path:
+    cfg = config()
+    tmp_path = cfg.tmp_dir
+
+    if not cfg.tmp_dir.is_absolute():
+        tmp_path = config_dir() / tmp_path
+
+    tmp_path.mkdir(parents=True, exist_ok=True)
+
+    return tmp_path
+
+
+def tmp_file_for_artifact(artifact_id: FullArtifactIdArgument) -> pathlib.Path:
+    directory = tmp_dir()
+
+    directory.mkdir(parents=True, exist_ok=True)
+
+    artifact_file_name = f"{str(artifact_id).replace('/', '.')}.{int(time.time() * 1000)}.tmp"
+
+    return directory / artifact_file_name
+
+
+def tmp_clear() -> None:
+    shutil.rmtree(tmp_dir())

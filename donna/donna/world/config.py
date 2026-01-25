@@ -15,7 +15,9 @@ from donna.world.worlds.base import WorldConstructor
 
 DONNA_DIR_NAME = ".donna"
 DONNA_CONFIG_NAME = "config.toml"
-DONNA_DESSION_DIR_NAME = "session"
+DONNA_WORLD_SESSION_DIR_NAME = "session"
+DONNA_WORLD_PROJECT_DIR_NAME = "project"
+DONNA_WORLD_HOME_DIR_NAME = "home"
 
 
 class WorldConfig(BaseEntity):
@@ -64,7 +66,7 @@ def _default_worlds() -> list[WorldConfig]:
                 "kind": PythonImportPath.parse("donna.lib.worlds.filesystem"),
                 "readonly": True,
                 "session": False,
-                "path": pathlib.Path.home() / _donna,
+                "path": pathlib.Path.home() / _donna / DONNA_WORLD_HOME_DIR_NAME,
             }
         ),
         WorldConfig.model_validate(
@@ -73,7 +75,7 @@ def _default_worlds() -> list[WorldConfig]:
                 "kind": PythonImportPath.parse("donna.lib.worlds.filesystem"),
                 "readonly": False,
                 "session": False,
-                "path": project_dir / _donna,
+                "path": project_dir / _donna / DONNA_WORLD_PROJECT_DIR_NAME,
             }
         ),
         WorldConfig.model_validate(
@@ -82,7 +84,7 @@ def _default_worlds() -> list[WorldConfig]:
                 "kind": PythonImportPath.parse("donna.lib.worlds.filesystem"),
                 "readonly": False,
                 "session": True,
-                "path": project_dir / _donna / DONNA_DESSION_DIR_NAME,
+                "path": project_dir / _donna / DONNA_WORLD_SESSION_DIR_NAME,
             }
         ),
     ]
@@ -93,6 +95,8 @@ class Config(BaseEntity):
     sources: list[SourceConfig] = pydantic.Field(default_factory=_default_sources)
     _worlds_instances: list[BaseWorld] = pydantic.PrivateAttr(default_factory=list)
     _sources_instances: list[SourceConfigValue] = pydantic.PrivateAttr(default_factory=list)
+
+    tmp_dir: pathlib.Path = "./tmp"
 
     def model_post_init(self, __context: Any) -> None:
         worlds: list[BaseWorld] = []
@@ -140,7 +144,19 @@ class Config(BaseEntity):
         raise NotImplementedError(f"Source config '{kind}' is not configured")
 
 
+_CONFIG_DIR: pathlib.Path | None = None
 _CONFIG: Config | None = None
+
+
+def config_dir() -> pathlib.Path:
+    global _CONFIG_DIR
+
+    if _CONFIG_DIR:
+        return _CONFIG_DIR
+
+    _CONFIG_DIR = utils.discover_project_dir(DONNA_DIR_NAME) / DONNA_DIR_NAME
+
+    return _CONFIG_DIR
 
 
 def config() -> Config:
@@ -149,7 +165,7 @@ def config() -> Config:
     if _CONFIG:
         return _CONFIG
 
-    config_path = utils.discover_project_dir(DONNA_DIR_NAME) / DONNA_CONFIG_NAME
+    config_path = config_dir() / DONNA_CONFIG_NAME
 
     if config_path.exists():
         _CONFIG = Config.model_validate(tomllib.loads(config_path.read_text()))

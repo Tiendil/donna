@@ -22,7 +22,7 @@ s3 buckets, git repositories, databases, etc.
 Default worlds and there locations are:
 
 - `donna` — `donna.artifacts` — the subpackage with artifacts provided by Donna itself.
-- `home` — `~/.donna` — the user-level donna artifacts, i.e. those that should be visible to all projects on this machine.
+- `home` — `~/.donna/home` — the user-level donna artifacts, i.e. those that should be visible to all projects on this machine.
 - `project` — `<project-root>/.donna/project` — the project-level donna artifacts, i.e. those that are specific to this project.
 - `session` — `<project-root>/.donna/session` — the session world that contains the current state of work performed by Donna.
 

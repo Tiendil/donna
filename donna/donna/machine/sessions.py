@@ -9,6 +9,7 @@ from donna.machine.state import ConsistentState, MutableState
 from donna.world import artifacts
 from donna.world.config import config
 from donna.world.worlds.base import World
+from donna.world import utils as world_utils
 
 
 def _session() -> World:
@@ -80,12 +81,14 @@ def _session_required(func: Callable[P, list[Cell]]) -> Callable[P, list[Cell]]:
 
 
 def start() -> list[Cell]:
+    world_utils.tmp_clear()
     _session().initialize(reset=True)
     _save_state(MutableState.build().freeze())
     return [cell_donna_message("Started new session.")]
 
 
 def clear() -> list[Cell]:
+    world_utils.tmp_clear()
     _session().initialize(reset=True)
     return [cell_donna_message("Cleared session.")]
 
