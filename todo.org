@@ -51,21 +51,7 @@
 * TODO WE CAN ASK DONNA TO MAKE A FSM FOR DONNA!!! WHICH WILL BE OUR PLAN OF WORK!!!
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Lazy import of primitives from Python artifacts
-** simplifying python part
-*** each kind/primitive must has reference to specification section that explains it
-*** establish correct world layout
-*** establish correct project world layout
-*** batch of custom configs DonnaWorld, HomeWorld, ProjectWorld, SessionWorld to simplify configuration?
-** review
-*** primitives module and std/*.py modules
-*** donna.world.worlds
-*** donna.world.sources
-** replace artifact sections with primitives in the std/*.py modules?
-*** primitive is semantically the same as artifact section, it just contains some meta info
-*** this meta info is strongy coupled with the primitive instance
-*** generally artifact section is 1:1 mapped to the primitive instance
-** do we need `python_artifact_kind_section`?
-** do we need a PrimarySection(ArtifactSection) class to simplify promary sections handling?
+** !Artifact listing is broken because there is no separation of artifact kinds
 ** introspection
 *** !filesystem list artifacts does not find .py (uses hardcoded .md)
 *** !remove _MARKDOWN_ROOTS
@@ -74,27 +60,6 @@
 *** ignore "session" from the artifacts? I.e. it is world.
 **** place project and session worlds on the same level with config.toml?
 **** remove session world, add session directory to the project world?
-** replace donna imports with python imports?
-** builtins
-*** analogue of `__init__.py` for donna world for shorter ids/paths?
-*** sections from world.builtings should be accessible by their ids without prefixes?
-*** for directives
-*** for kind ids
-*** add `builtins: bool` into world config?
-** python world implementation TODOs
-*** split donna.machin.artifacts into submodules?
-*** PythonModuleSectionMeta.attribute_value -> PythonModuleSectionMeta.entity
-*** PythonArtifact -> PythonModuleArtifact
-*** PythonModuleSectionKind.execut_section should work
-*** Should we use PythonModuleSectionKind.construct_section to construct sections?
-*** Should we use PythonArtifact.construct_artifact to construct artifacts?
-*** refactor `PythonArtifact.construct_module`
-** python world implementation, WANTs
-*** world kinds are configured via python module imports (not artifact paths?) or somehow very smartly via artifact paths
-*** system python (i.e. donna's environment) can be a world also with predefined behavior
-**** so references to actual python modules should also work
-*** move code.operations into submodules?
-*** In case we implemen python modules as artifacts, section kind IDs should be full artifact-local IDs to the kind definition.
 ** introspection & discovery refactorings
 *** artifacts listing/search functionality goest to the worlds
 **** words should return standardized short info records about each artifact
@@ -110,15 +75,22 @@
 *** full ids for references to objects kinds
 **** that'll allow to remove register in the honor of search in worlds
 *** we may want to remove separation of artifacts by namespaces/directories
-** Remove primitives registry completely?
-** action request also could be an artifact?
+** each kind/primitive must has reference to specification section that explains it
+** review
+*** donna.world.worlds
+*** donna.world.sources
+*** reoganize donna.primitives submodules
+** builtins
+*** analogue of `__init__.py` for donna world for shorter ids/paths?
+*** sections from world.builtings should be accessible by their ids without prefixes?
+*** for directives
+*** for kind ids
+*** add `builtins: bool` into world config?
 ** We may want to allow donna render part of artifact only (by section id)
-** World kind that acts as a proxy to another donna project?
-* unify code of different directives? It is very similar
+* TODO unify code of different directives? It is very similar
 ** add validation for specificaiton existence in directives
 ** Spec rendere can be unified, since its cli command
-* Artifact improvements:
-** We may want, by default load/upload artifacts in a custom donna-managed directory, so, no filenames are needed for agents. This also will help to add right extensions automatically => help agents to anderstand internal formats.
+* TODO Artifact improvements:
 ** When we start the workflow, should we output the head cells before the first operation?
 ** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
 ** {{ edit(specification) }} directive?
@@ -126,7 +98,6 @@
 ** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
 ** Declare explicit refining loop
 ** Add mini workflows to polish each kind of records?
-** add tmp directory for intermediate artifacts? mayby in .donna/session/tmp/
 ** meta_work_loop.md contains a lot of repetitive commands to read specifications. We should optimize them somehow.
 *** Approach 1: move them to the head section text
 *** Approach 2: move them to the head section config
@@ -160,6 +131,7 @@
 ** simple_task — workflow for simple tasks to not bother with complex story workflows
 * TODO possible specifications
 ** how to prepare python package with artifacts for donna
+** `donna:usage:dictionary` — standard terms and their definitions
 * TODO initialization of donna for the new project
 ** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
 ** create a copy of the default config for the new project
