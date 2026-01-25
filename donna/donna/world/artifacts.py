@@ -1,7 +1,7 @@
 import pathlib
 from typing import cast
 
-from donna.domain.ids import ArtifactId, FullArtifactId
+from donna.domain.ids import FullArtifactId, FullArtifactIdPattern
 from donna.machine.artifacts import Artifact
 from donna.world.config import config
 from donna.world.sources import markdown as markdown_source
@@ -61,11 +61,11 @@ def load_artifact(full_id: FullArtifactId) -> Artifact:
     return world.fetch(full_id.artifact_id)
 
 
-def list_artifacts(artifact_prefix: ArtifactId) -> list[Artifact]:
+def list_artifacts(pattern: FullArtifactIdPattern) -> list[Artifact]:
     artifacts: list[Artifact] = []
 
     for world in reversed(config().worlds_instances):
-        for artifact_id in world.list_artifacts(artifact_prefix):
+        for artifact_id in world.list_artifacts(pattern):
             full_id = FullArtifactId((world.id, artifact_id))
             artifact = load_artifact(full_id)
             artifacts.append(artifact)

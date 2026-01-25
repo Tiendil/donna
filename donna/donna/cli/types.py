@@ -2,7 +2,7 @@ from typing import Annotated
 
 import typer
 
-from donna.domain.ids import ActionRequestId, ArtifactId, FullArtifactId, FullArtifactLocalId
+from donna.domain.ids import ActionRequestId, ArtifactId, FullArtifactId, FullArtifactIdPattern, FullArtifactLocalId
 
 ActionRequestIdArgument = Annotated[
     ActionRequestId,
@@ -19,6 +19,12 @@ FullArtifactIdArgument = Annotated[
 ArtifactPrefixArgument = Annotated[
     ArtifactId,
     typer.Argument(parser=ArtifactId, help="The artifact prefix to list/validate"),
+]
+
+
+FullArtifactIdPatternOption = Annotated[
+    FullArtifactIdPattern | None,
+    typer.Option(parser=FullArtifactIdPattern.parse, help="The full artifact pattern to list"),
 ]
 
 

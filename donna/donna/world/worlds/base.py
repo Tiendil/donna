@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import ArtifactId, WorldId
+from donna.domain.ids import ArtifactId, FullArtifactIdPattern, WorldId
 from donna.machine.artifacts import Artifact
 from donna.machine.primitives import Primitive
 
@@ -35,7 +35,7 @@ class World(BaseEntity):
         # TODO: remove that hardcoding
         return "md"
 
-    def list_artifacts(self, artifact_prefix: ArtifactId) -> list[ArtifactId]:
+    def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:
         raise NotImplementedError("You must implement this method in subclasses")
 
     # These two methods are intended for storing world state (e.g., session data)

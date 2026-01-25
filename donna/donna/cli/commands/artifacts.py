@@ -3,8 +3,9 @@ import pathlib
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import ArtifactPrefixArgument, FullArtifactIdArgument
+from donna.cli.types import ArtifactPrefixArgument, FullArtifactIdArgument, FullArtifactIdPatternOption
 from donna.cli.utils import output_cells
+from donna.domain.ids import FullArtifactIdPattern
 from donna.world import artifacts as world_artifacts
 from donna.world import utils as world_utils
 
@@ -12,8 +13,11 @@ artifacts_cli = typer.Typer()
 
 
 @artifacts_cli.command()
-def list(prefix: ArtifactPrefixArgument) -> None:
-    artifacts = world_artifacts.list_artifacts(prefix)
+def list(pattern: FullArtifactIdPatternOption = None) -> None:
+    if pattern is None:
+        pattern = FullArtifactIdPattern.parse("**")
+
+    artifacts = world_artifacts.list_artifacts(pattern)
 
     for artifact in artifacts:
         output_cells(artifact.cells_info())
@@ -51,7 +55,8 @@ def validate(id: FullArtifactIdArgument) -> None:
 
 @artifacts_cli.command()
 def validate_all(prefix: ArtifactPrefixArgument) -> None:
-    artifacts = world_artifacts.list_artifacts(prefix)
+    pattern = FullArtifactIdPattern.parse(f"*:{prefix}:**")
+    artifacts = world_artifacts.list_artifacts(pattern)
 
     for artifact in artifacts:
         _is_valid, cells = artifact.validate()

@@ -2,7 +2,7 @@ import pathlib
 import shutil
 from typing import TYPE_CHECKING, cast
 
-from donna.domain.ids import ArtifactId, FullArtifactId
+from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern
 from donna.machine.artifacts import Artifact
 from donna.world.sources import markdown as markdown_source
 from donna.world.worlds.base import World as BaseWorld
@@ -77,19 +77,16 @@ class World(BaseWorld):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)
 
-    def list_artifacts(self, artifact_prefix: ArtifactId) -> list[ArtifactId]:  # noqa: CCR001
+    def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
         artifacts: set[ArtifactId] = set()
 
-        prefix_path = self.path / artifact_prefix.replace(":", "/")
-        markdown_path = prefix_path.with_suffix(".md")
-
-        if markdown_path.exists() and markdown_path.is_file():
-            return [artifact_prefix]
-
-        if not prefix_path.exists() or not prefix_path.is_dir():
+        if pattern[0] not in {"*", "**"} and pattern[0] != str(self.id):
             return []
 
-        for artifact_file in prefix_path.rglob("*.md"):
+        if not self.path.exists():
+            return []
+
+        for artifact_file in self.path.rglob("*.md"):
             if not artifact_file.is_file():
                 continue
 
@@ -98,7 +95,11 @@ class World(BaseWorld):
                 continue
 
             artifact_stem = rel_path.with_suffix("")
-            artifacts.add(ArtifactId(":".join(artifact_stem.parts)))
+            artifact_id = ArtifactId(":".join(artifact_stem.parts))
+            full_id = FullArtifactId((self.id, artifact_id))
+
+            if pattern.matches_full_id(full_id):
+                artifacts.add(artifact_id)
 
         return sorted(artifacts, key=str)
 

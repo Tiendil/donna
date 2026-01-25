@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Sequence
 
 from pydantic_core import core_schema
 
@@ -18,6 +18,32 @@ def _id_crc(number: int) -> str:
 
     chars.reverse()
     return "".join(chars)
+
+
+def _match_pattern_parts(pattern_parts: Sequence[str], value_parts: Sequence[str]) -> bool:  # noqa: CCR001
+    def match_at(p_index: int, v_index: int) -> bool:  # noqa: CCR001
+        while True:
+            if p_index >= len(pattern_parts):
+                return v_index >= len(value_parts)
+
+            token = pattern_parts[p_index]
+
+            if token == "**":  # noqa: S105
+                for next_index in range(v_index, len(value_parts) + 1):
+                    if match_at(p_index + 1, next_index):
+                        return True
+                return False
+
+            if v_index >= len(value_parts):
+                return False
+
+            if token != "*" and token != value_parts[v_index]:  # noqa: S105
+                return False
+
+            p_index += 1
+            v_index += 1
+
+    return match_at(0, 0)
 
 
 class InternalId(str):
@@ -223,6 +249,58 @@ class FullArtifactId(tuple[WorldId, ArtifactId]):
     def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
 
         def validate(v: Any) -> "FullArtifactId":
+            if isinstance(v, cls):
+                return v
+
+            if not isinstance(v, str):
+                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
+
+            return cls.parse(v)
+
+        str_then_validate = core_schema.no_info_after_validator_function(
+            validate,
+            core_schema.str_schema(),
+        )
+
+        return core_schema.json_or_python_schema(
+            json_schema=str_then_validate,
+            python_schema=core_schema.no_info_plain_validator_function(validate),
+            serialization=core_schema.to_string_ser_schema(),
+        )
+
+
+class FullArtifactIdPattern(tuple[str, ...]):
+    __slots__ = ()
+
+    def __str__(self) -> str:
+        return ":".join(self)
+
+    @classmethod
+    def parse(cls, text: str) -> "FullArtifactIdPattern":  # noqa: CCR001
+        if not isinstance(text, str) or not text:
+            raise NotImplementedError(f"Invalid FullArtifactIdPattern: '{text}'")
+
+        parts = text.split(":")
+
+        if any(part == "" for part in parts):
+            raise NotImplementedError(f"Invalid FullArtifactIdPattern: '{text}'")
+
+        for part in parts:
+            if part in {"*", "**"}:
+                continue
+
+            if not part.isidentifier():
+                raise NotImplementedError(f"Invalid FullArtifactIdPattern: '{text}'")
+
+        return cls(parts)
+
+    def matches_full_id(self, full_id: "FullArtifactId") -> bool:
+        return _match_pattern_parts(self, str(full_id).split(":"))
+
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
+
+        def validate(v: Any) -> "FullArtifactIdPattern":
             if isinstance(v, cls):
                 return v
 

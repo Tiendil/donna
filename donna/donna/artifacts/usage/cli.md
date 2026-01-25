@@ -46,7 +46,7 @@ All work in the context of session/story is managed by the `donna` tool.
 
 - Yoy start session by calling `<DONNA_CMD> sessions start`.
 - After you started a session:
-  2. List all possible workflows with command `<DONNA_CMD> artifacts list work`.
+  2. List all possible workflows with command `<DONNA_CMD> artifacts list`.
   3. Choose the most appropriate workflow for the story you are going to work on or ask the developer if you are not sure which workflow to choose.
   4. Start working by calling `<DONNA_CMD> sessions run <workflow-id>`.
   5. The `donna` tool will output descriptions of all operations it performs to complete the story.
@@ -70,7 +70,7 @@ An artifact is a markdown document with some extra metadata stored in one of the
 
 Use the next commands to work with artifacts
 
-- `<DONNA_CMD> artifacts list [<artifact-pattern>]` — list all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, list all artifacts in all worlds. Use this command when you need to find an artifact or see what artifacts are available.
+- `<DONNA_CMD> artifacts list [--pattern <artifact-pattern>]` — list all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, list all artifacts in all worlds. Use this command when you need to find an artifact or see what artifacts are available.
 - `<DONNA_CMD> artifacts view <world>:<artifact>` — get the meaningful (rendered) content of the artifact. This command shows the rendered information about the artifact. Use this command when you need to read the artifact content.
 - `<DONNA_CMD> artifacts fetch <world>:<artifact>` — download the original source of the artifact content, outputs the file path to the artifact you can change. Use this command when you need to change the content of the artifact.
 - `<DONNA_CMD> artifacts update <world>:<artifact> <file-path>` — upload the given file as the artifact. Use this command when you finished changing the content of the artifact.
@@ -94,9 +94,9 @@ The format of `<artifact-pattern>` is as follows:
 
 Examples:
 
-- `<DONNA_CMD>  artifacts list usage` -> `./bin/donna.sh artifacts list usage` when `<DONNA_CMD>` is `./bin/donna.sh`
-- `<DONNA_CMD>  artifacts list usage` -> `poetry run donna artifacts list usage` when `<DONNA_CMD>` is `poetry run donna`
-- `<DONNA_CMD>  artifacts list usage` -> `donna artifacts list usage` when `<DONNA_CMD>` is `donna`.
+- `<DONNA_CMD>  artifacts list --pattern "*:usage:**"` -> `./bin/donna.sh artifacts list --pattern "*:usage:**"` when `<DONNA_CMD>` is `./bin/donna.sh`
+- `<DONNA_CMD>  artifacts list --pattern "*:usage:**"` -> `poetry run donna artifacts list --pattern "*:usage:**"` when `<DONNA_CMD>` is `poetry run donna`
+- `<DONNA_CMD>  artifacts list --pattern "*:usage:**"` -> `donna artifacts list --pattern "*:usage:**"` when `<DONNA_CMD>` is `donna`.
 
 **STRICTLY FOLLOW DESCRIBED COMMAND SYNTAX**
 

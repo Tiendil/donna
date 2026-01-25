@@ -2,7 +2,7 @@ import importlib
 import importlib.resources
 from typing import TYPE_CHECKING, cast
 
-from donna.domain.ids import ArtifactId, FullArtifactId, WorldId
+from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern, WorldId
 from donna.machine.artifacts import Artifact
 from donna.world.sources import markdown as markdown_source
 from donna.world.worlds.base import World as BaseWorld
@@ -95,39 +95,18 @@ class Python(BaseWorld):
 
         raise NotImplementedError(f"World `{self.id}` is read-only")
 
-    def _list_artifacts_markdown(self, artifact_prefix: ArtifactId) -> list[ArtifactId]:  # noqa: CCR001
-        prefix_parts = str(artifact_prefix).split(":")
-
-        if not prefix_parts or prefix_parts[0] not in self._MARKDOWN_ROOTS:
-            return []
-
-        resource_root = self._resource_root(prefix_parts[0])
-
-        if resource_root is None:
-            return []
-
+    def _list_artifacts_markdown(self) -> list[ArtifactId]:  # noqa: CCR001
         resource_artifacts: list[ArtifactId] = []
-
-        resource_path = self._resource_path(artifact_prefix)
-        if resource_path is not None and resource_path.is_file():
-            return [artifact_prefix]
-
-        if len(prefix_parts) == 1:
-            base_path = resource_root
-            base_parts = [prefix_parts[0]]
-        else:
-            base_path = resource_root
-            for part in prefix_parts[1:]:
-                base_path = base_path.joinpath(part)
-            base_parts = prefix_parts
+        roots = sorted(self._MARKDOWN_ROOTS)
 
         def walk(  # noqa: CCR001
             node: importlib.resources.abc.Traversable,
             parts: list[str],
+            base_parts: list[str],
         ) -> None:
             for entry in node.iterdir():
                 if entry.is_dir():
-                    walk(entry, parts + [entry.name])
+                    walk(entry, parts + [entry.name], base_parts)
                     continue
 
                 if not entry.is_file() or not entry.name.endswith(".md"):
@@ -138,16 +117,32 @@ class Python(BaseWorld):
                 if ArtifactId.validate(artifact_name):
                     resource_artifacts.append(ArtifactId(artifact_name))
 
-        if base_path.is_dir():
-            walk(base_path, [])
+        for root in roots:
+            resource_root = self._resource_root(root)
+            if resource_root is None:
+                continue
+
+            base_path = resource_root
+            base_parts = [root]
+
+            if base_path.is_dir():
+                walk(base_path, [], base_parts)
 
         return resource_artifacts
 
-    def list_artifacts(self, artifact_prefix: ArtifactId) -> list[ArtifactId]:  # noqa: CCR001
-        if str(artifact_prefix).split(":", maxsplit=1)[0] in self._MARKDOWN_ROOTS:
-            return self._list_artifacts_markdown(artifact_prefix)
+    def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
+        if pattern[0] not in {"*", "**"} and pattern[0] != str(self.id):
+            return []
 
-        return []
+        artifacts = self._list_artifacts_markdown()
+        matched: list[ArtifactId] = []
+
+        for artifact_id in artifacts:
+            full_id = FullArtifactId((self.id, artifact_id))
+            if pattern.matches_full_id(full_id):
+                matched.append(artifact_id)
+
+        return matched
 
     # TODO: How can the state be represented in the Python world?
     def read_state(self, name: str) -> bytes | None:
