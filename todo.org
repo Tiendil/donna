@@ -17,6 +17,7 @@
 ** each kind/primitive must has reference to specification section that explains it
 *** cli command to list primitives?
 *** cli command to show primitive specification?
+*** in case of errors primitives should return cell with reference to their specification section
 ** review
 *** donna.world.worlds
 *** donna.world.sources
