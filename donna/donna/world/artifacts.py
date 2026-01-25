@@ -9,7 +9,12 @@ from donna.world.sources import markdown as markdown_source
 
 def artifact_file_extension(full_id: FullArtifactId) -> str:
     world = config().get_world(full_id.world_id)
-    return world.file_extension_for(full_id.artifact_id)
+    extension = world.file_extension_for(full_id.artifact_id)
+
+    if extension is None:
+        raise NotImplementedError(f"Artifact `{full_id}` does not exist in world `{world.id}`")
+
+    return extension
 
 
 def fetch_artifact(full_id: FullArtifactId, output: pathlib.Path) -> None:

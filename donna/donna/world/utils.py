@@ -1,8 +1,9 @@
 import pathlib
 import shutil
 import time
-from donna.world.config import config, config_dir
+
 from donna.cli.types import FullArtifactIdArgument
+from donna.world.config import config, config_dir
 
 
 def tmp_dir() -> pathlib.Path:

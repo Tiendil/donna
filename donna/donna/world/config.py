@@ -96,7 +96,7 @@ class Config(BaseEntity):
     _worlds_instances: list[BaseWorld] = pydantic.PrivateAttr(default_factory=list)
     _sources_instances: list[SourceConfigValue] = pydantic.PrivateAttr(default_factory=list)
 
-    tmp_dir: pathlib.Path = "./tmp"
+    tmp_dir: pathlib.Path = pathlib.Path("./tmp")
 
     def model_post_init(self, __context: Any) -> None:
         worlds: list[BaseWorld] = []

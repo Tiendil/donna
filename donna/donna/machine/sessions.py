@@ -7,9 +7,9 @@ from donna.machine.cells import Cell, cell_donna_message
 from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
 from donna.world import artifacts
+from donna.world import utils as world_utils
 from donna.world.config import config
 from donna.world.worlds.base import World
-from donna.world import utils as world_utils
 
 
 def _session() -> World:

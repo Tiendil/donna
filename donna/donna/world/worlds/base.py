@@ -33,7 +33,7 @@ class World(BaseEntity):
             return None
 
         # TODO: remove that hardcoding
-        return 'md'
+        return "md"
 
     def list_artifacts(self, artifact_prefix: ArtifactId) -> list[ArtifactId]:
         raise NotImplementedError("You must implement this method in subclasses")
