@@ -164,6 +164,8 @@
 ** bootstrap.python.create_project
 ** morphologica_analysis — workflow for explicit morphological analysis
 ** simple_task — workflow for simple tasks to not bother with complex story workflows
+* TODO possible specifications
+** how to prepare python package with artifacts for donna
 * TODO initialization of donna for the new project
 ** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
 ** create a copy of the default config for the new project
