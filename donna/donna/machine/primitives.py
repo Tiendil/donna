@@ -12,19 +12,26 @@ if TYPE_CHECKING:
     from donna.machine.cells import Cell
     from donna.machine.changes import Change
     from donna.machine.tasks import Task, WorkUnit
+    from donna.world.config import WorldConfig
+    from donna.world.worlds.base import World
 
 
+# TODO: Currently is is a kind of God interface. It is convinient for now.
+#       However, in future we should move these methods into specific subclasses.
 class Primitive(BaseEntity):
     config_class: ClassVar[type[ArtifactSectionConfig]] = ArtifactSectionConfig
 
     def execute_section(self, task: "Task", unit: "WorkUnit", section: "ArtifactSection") -> Iterable["Change"]:
         raise NotImplementedError("You MUST implement this method.")
 
+    def validate_section(self, artifact: "Artifact", section_id: ArtifactLocalId) -> tuple[bool, list["Cell"]]:
+        return True, []
+
     def apply_directive(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
         raise NotImplementedError("You MUST implement this method.")
 
-    def validate_section(self, artifact: "Artifact", section_id: ArtifactLocalId) -> tuple[bool, list["Cell"]]:
-        return True, []
+    def construct_world(self, config: "WorldConfig") -> "World":
+        raise NotImplementedError("You MUST implement this method.")
 
 
 def resolve_primitive(primitive_id: PythonImportPath | str) -> Primitive:

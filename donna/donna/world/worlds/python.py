@@ -1,10 +1,14 @@
 import importlib.resources
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from donna.domain.ids import ArtifactId, FullArtifactId, WorldId
 from donna.machine.artifacts import Artifact
 from donna.world.sources import markdown as markdown_source
 from donna.world.worlds.base import World as BaseWorld
+from donna.world.worlds.base import WorldConstructor
+
+if TYPE_CHECKING:
+    from donna.world.config import WorldConfig
 
 
 class Python(BaseWorld):
@@ -155,3 +159,18 @@ class Python(BaseWorld):
 
     def is_initialized(self) -> bool:
         return True
+
+
+class PythonWorldConstructor(WorldConstructor):
+    def construct_world(self, config: "WorldConfig") -> Python:
+        root = getattr(config, "root", None)
+
+        if root is None:
+            raise NotImplementedError(f"World config '{config.id}' does not define a python root")
+
+        return Python(
+            id=config.id,
+            root=str(root),
+            readonly=config.readonly,
+            session=config.session,
+        )

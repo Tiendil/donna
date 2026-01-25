@@ -1,6 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactId, WorldId
 from donna.machine.artifacts import Artifact
+from donna.machine.primitives import Primitive
+
+if TYPE_CHECKING:
+    from donna.world.config import WorldConfig
 
 
 class World(BaseEntity):
@@ -41,4 +49,9 @@ class World(BaseEntity):
         pass
 
     def is_initialized(self) -> bool:
+        raise NotImplementedError("You must implement this method in subclasses")
+
+
+class WorldConstructor(Primitive):
+    def construct_world(self, config: WorldConfig) -> World:
         raise NotImplementedError("You must implement this method in subclasses")

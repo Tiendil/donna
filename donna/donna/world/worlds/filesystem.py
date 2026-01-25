@@ -1,11 +1,15 @@
 import pathlib
 import shutil
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from donna.domain.ids import ArtifactId, FullArtifactId
 from donna.machine.artifacts import Artifact
 from donna.world.sources import markdown as markdown_source
 from donna.world.worlds.base import World as BaseWorld
+from donna.world.worlds.base import WorldConstructor
+
+if TYPE_CHECKING:
+    from donna.world.config import WorldConfig
 
 
 class World(BaseWorld):
@@ -109,3 +113,18 @@ class World(BaseWorld):
 
     def is_initialized(self) -> bool:
         return self.path.exists()
+
+
+class FilesystemWorldConstructor(WorldConstructor):
+    def construct_world(self, config: "WorldConfig") -> World:
+        path_value = getattr(config, "path", None)
+
+        if path_value is None:
+            raise NotImplementedError(f"World config '{config.id}' does not define a filesystem path")
+
+        return World(
+            id=config.id,
+            path=pathlib.Path(path_value),
+            readonly=config.readonly,
+            session=config.session,
+        )

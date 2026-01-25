@@ -54,7 +54,7 @@ def load_artifact(full_id: FullArtifactId) -> Artifact:
 def list_artifacts(artifact_prefix: ArtifactId) -> list[Artifact]:
     artifacts: list[Artifact] = []
 
-    for world in reversed(config().worlds):
+    for world in reversed(config().worlds_instances):
         for artifact_id in world.list_artifacts(artifact_prefix):
             full_id = FullArtifactId((world.id, artifact_id))
             artifact = load_artifact(full_id)
