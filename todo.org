@@ -1,54 +1,12 @@
 
 * TODO freeze pydantic models which are possible
 * TODO codex should explain what it is doing, while executing requests from donna
-* TODO complex story workflow
-** TODO list based artifacts
-*** TODO LIST artifacts with operations add, remove, replace
-*** TODO iterate and groom over goals & objectives
-*** TODO iterate over risks
-*** TODO build plan from objectives and risks
-*** TODO execute the plan by taking actions from the plan
-** TODO graph-bases execution of the plan:
-*** TODO buiild things-to-do by iterating over it in the contexts of objectives and risjs
-*** TODO GRAPH(-LIST) artifacts with additiona operations to describe dependencies between list items
-*** TODO build plan on top of things-to-do list
-** TODO verify all risks are closed and rollback to planing if not
-** TODO verify all objectives are met and rollback to planing if not
-** TODO Split the whole worfklow into smaller scenarios/tasks?
-** TODO prepare a report after the story is finished
-** TODO custom command to run a specific subflow? Or whould we rest it to the agent? It look like agent can deside better, because otherwise we'll introduce a hard coupling between different flows.
-** TODO replace "here is the beginning of the story specification" with an introspection of the records?
-** TODO refactor records/kinds/items names, place them in order
 * TODO tests
 ** TODO basic / lowest unit tests for primitive operations
 ** TODO domain-level unit tests
 ** TODO intergration tests for workflows/stories/scenarios
 * TODO optimize imports by moving most used ones to \__init__.py files
-* TODO `behavior` can be something on top of workflows. Maybe it be a constructor of workflows. I.e. user define own workflow by parametrizing them via `behavior`.
-* TODO Objectives loop
-** TODO Full spec on planing activities
-** TODO Objectives grooming loop
-*** choose unprocessed objective
-*** groom objective
-*** maybe via a single action request operation? With customized code for searching next objective to process
-** TODO Goal-objective relations
-** TODO Iterate goals into objectives
-** TODO Full objective set grooming (may be moved into separate TODO list, since it may require planing)
-** TODO Goals grooming (may be moved into separate TODO list, since it may require planing)
-* TODO Do we need counters as a separate entity/config?
-* TODO Records navigation + introspection
-** TODO donna records ?extract? <kind*> <--property=>*
-*** add <display/directive> as the global object that defines how to render the output
-*** maybe display may be just jinja template?
-*** dow we really need display? Maybe cells will be ok for technical output?
-*** What we need:
-**** select by kinds (and display kinds in order?)
-**** filter by properties (better to have reach filtering syntax?)
-**** run graph opertions on top of the result set? Or maybe just different <sort> operations?
-** TODO replace partial description with new ?extract? command
-** TODO Maybe we do not need kinds separate from records?
 * TODO Consider using https://github.com/toon-format/toon for json formatting in cells
-* TODO WE CAN ASK DONNA TO MAKE A FSM FOR DONNA!!! WHICH WILL BE OUR PLAN OF WORK!!!
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Architecture stabilization
 ** Artifact view improvements
