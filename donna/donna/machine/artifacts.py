@@ -123,15 +123,6 @@ class Artifact(BaseEntity):
         return blocks
 
 
-class ArtifactSectionKindMeta(ArtifactSectionMeta):
-    section_kind: "ArtifactSectionKind"
-
-    model_config = BaseEntity.model_config | {"arbitrary_types_allowed": True}
-
-    def cells_meta(self) -> dict[str, Any]:
-        return {"section_kind": repr(self.section_kind)}
-
-
 class ArtifactSectionKind(BaseEntity):
     config_class: ClassVar[type[ArtifactSectionConfig]] = ArtifactSectionConfig
 
