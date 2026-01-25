@@ -23,7 +23,8 @@ def tmp_file_for_artifact(artifact_id: FullArtifactIdArgument, extention: str) -
 
     directory.mkdir(parents=True, exist_ok=True)
 
-    artifact_file_name = f"{str(artifact_id).replace('/', '.')}.{int(time.time() * 1000)}.{extention}"
+    normalized_extension = extention.lstrip(".")
+    artifact_file_name = f"{str(artifact_id).replace('/', '.')}.{int(time.time() * 1000)}.{normalized_extension}"
 
     return directory / artifact_file_name
 

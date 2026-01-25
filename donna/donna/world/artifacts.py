@@ -1,10 +1,8 @@
 import pathlib
-from typing import cast
 
 from donna.domain.ids import FullArtifactId, FullArtifactIdPattern
 from donna.machine.artifacts import Artifact
 from donna.world.config import config
-from donna.world.sources import markdown as markdown_source
 
 
 def artifact_file_extension(full_id: FullArtifactId) -> str:
@@ -14,7 +12,7 @@ def artifact_file_extension(full_id: FullArtifactId) -> str:
     if extension is None:
         raise NotImplementedError(f"Artifact `{full_id}` does not exist in world `{world.id}`")
 
-    return extension
+    return extension.lstrip(".")
 
 
 def fetch_artifact(full_id: FullArtifactId, output: pathlib.Path) -> None:
@@ -38,18 +36,21 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> None:
     source_suffix = input.suffix.lower()
     content_bytes = input.read_bytes()
 
-    if source_suffix != ".md":
+    if not source_suffix:
         raise NotImplementedError(f"Unsupported artifact source extension '{input.suffix}'")
 
-    source_config = cast(markdown_source.Config, config().get_source_config("markdown"))
-    test_artifact = markdown_source.construct_artifact_from_bytes(full_id, content_bytes, source_config)
+    source_config = config().find_source_for_extension(source_suffix)
+    if source_config is None:
+        raise NotImplementedError(f"Unsupported artifact source extension '{input.suffix}'")
+
+    test_artifact = source_config.construct_artifact_from_bytes(full_id, content_bytes)
 
     is_valid, _cells = test_artifact.validate()
 
     if not is_valid:
         raise NotImplementedError(f"Artifact `{full_id}` is not valid and cannot be updated")
 
-    world.update(full_id.artifact_id, content_bytes)
+    world.update(full_id.artifact_id, content_bytes, source_suffix)
 
 
 def load_artifact(full_id: FullArtifactId) -> Artifact:

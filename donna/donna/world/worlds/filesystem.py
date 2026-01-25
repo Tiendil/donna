@@ -1,10 +1,9 @@
 import pathlib
 import shutil
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern
 from donna.machine.artifacts import Artifact
-from donna.world.sources import markdown as markdown_source
 from donna.world.worlds.base import World as BaseWorld
 from donna.world.worlds.base import WorldConstructor
 
@@ -15,45 +14,80 @@ if TYPE_CHECKING:
 class World(BaseWorld):
     path: pathlib.Path
 
-    def _artifact_markdown_path(self, artifact_id: ArtifactId) -> pathlib.Path:
-        return self.path / f"{artifact_id.replace(':', '/')}.md"
+    def _artifact_path(self, artifact_id: ArtifactId, extension: str) -> pathlib.Path:
+        return self.path / f"{artifact_id.replace(':', '/')}{extension}"
+
+    def _extension_priorities(self) -> dict[str, int]:
+        from donna.world.config import config
+
+        priorities: dict[str, int] = {}
+        priority = 0
+
+        for source in config().sources_instances:
+            for extension in source.supported_extensions:
+                if extension not in priorities:
+                    priorities[extension] = priority
+                    priority += 1
+
+        return priorities
+
+    def _select_extension(self, artifact_id: ArtifactId) -> str | None:
+        from donna.world.config import config
+
+        for source in config().sources_instances:
+            for extension in source.supported_extensions:
+                if self._artifact_path(artifact_id, extension).exists():
+                    return extension
+
+        return None
 
     def has(self, artifact_id: ArtifactId) -> bool:
-        return self._artifact_markdown_path(artifact_id).exists()
+        return self._select_extension(artifact_id) is not None
 
     def fetch(self, artifact_id: ArtifactId) -> Artifact:
-        markdown_path = self._artifact_markdown_path(artifact_id)
+        extension = self._select_extension(artifact_id)
 
-        if markdown_path.exists():
-            content = markdown_path.read_text(encoding="utf-8")
-            full_id = FullArtifactId((self.id, artifact_id))
-            from donna.world.config import config
+        if extension is None:
+            raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
-            source_config = cast(markdown_source.Config, config().get_source_config("markdown"))
-            return markdown_source.construct_artifact_from_markdown_source(
-                full_id,
-                content,
-                source_config,
-            )
+        path = self._artifact_path(artifact_id, extension)
+        if not path.exists():
+            raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
-        raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
+        from donna.world.config import config
+
+        source_config = config().find_source_for_extension(extension)
+        if source_config is None:
+            raise NotImplementedError(f"Unsupported artifact source extension '{extension}'")
+
+        content_bytes = path.read_bytes()
+        full_id = FullArtifactId((self.id, artifact_id))
+
+        return source_config.construct_artifact_from_bytes(full_id, content_bytes)
 
     def fetch_source(self, artifact_id: ArtifactId) -> bytes:
-        markdown_path = self._artifact_markdown_path(artifact_id)
+        extension = self._select_extension(artifact_id)
 
-        if markdown_path.exists():
-            return markdown_path.read_bytes()
+        if extension is None:
+            raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
-        raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
+        path = self._artifact_path(artifact_id, extension)
+        if not path.exists():
+            raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
-    def update(self, artifact_id: ArtifactId, content: bytes) -> None:
+        return path.read_bytes()
+
+    def update(self, artifact_id: ArtifactId, content: bytes, extension: str) -> None:
         if self.readonly:
             raise NotImplementedError(f"World `{self.id}` is read-only")
 
-        path = self._artifact_markdown_path(artifact_id)
+        path = self._artifact_path(artifact_id, extension)
 
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)
+
+    def file_extension_for(self, artifact_id: ArtifactId) -> str | None:
+        return self._select_extension(artifact_id)
 
     def read_state(self, name: str) -> bytes | None:
         if not self.session:
@@ -78,7 +112,7 @@ class World(BaseWorld):
         path.write_bytes(content)
 
     def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
-        artifacts: set[ArtifactId] = set()
+        artifacts: dict[ArtifactId, int] = {}
 
         if pattern[0] not in {"*", "**"} and pattern[0] != str(self.id):
             return []
@@ -86,12 +120,15 @@ class World(BaseWorld):
         if not self.path.exists():
             return []
 
-        for artifact_file in self.path.rglob("*.md"):
+        priorities = self._extension_priorities()
+
+        for artifact_file in self.path.rglob("*"):
             if not artifact_file.is_file():
                 continue
 
             rel_path = artifact_file.relative_to(self.path)
-            if rel_path.suffix != ".md":
+            extension = rel_path.suffix.lower()
+            if extension not in priorities:
                 continue
 
             artifact_stem = rel_path.with_suffix("")
@@ -99,9 +136,11 @@ class World(BaseWorld):
             full_id = FullArtifactId((self.id, artifact_id))
 
             if pattern.matches_full_id(full_id):
-                artifacts.add(artifact_id)
+                priority = priorities[extension]
+                if artifact_id not in artifacts or priority < artifacts[artifact_id]:
+                    artifacts[artifact_id] = priority
 
-        return sorted(artifacts, key=str)
+        return sorted(artifacts.keys(), key=str)
 
     def initialize(self, reset: bool = False) -> None:
         if self.readonly:

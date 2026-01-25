@@ -1,10 +1,10 @@
 import importlib
 import importlib.resources
-from typing import TYPE_CHECKING, cast
+import pathlib
+from typing import TYPE_CHECKING
 
 from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern, WorldId
 from donna.machine.artifacts import Artifact
-from donna.world.sources import markdown as markdown_source
 from donna.world.worlds.base import World as BaseWorld
 from donna.world.worlds.base import WorldConstructor
 
@@ -27,7 +27,11 @@ class Python(BaseWorld):
         except ModuleNotFoundError:
             return None
 
-    def _resource_path(self, artifact_id: ArtifactId) -> importlib.resources.abc.Traversable | None:
+    def _resource_path(
+        self,
+        artifact_id: ArtifactId,
+        extension: str,
+    ) -> importlib.resources.abc.Traversable | None:
         parts = str(artifact_id).split(":")
 
         if not parts:
@@ -44,54 +48,79 @@ class Python(BaseWorld):
         for part in dirs:
             resource_path = resource_path.joinpath(part)
 
-        return resource_path.joinpath(f"{file_name}.md")
+        return resource_path.joinpath(f"{file_name}{extension}")
 
-    def _has_markdown(self, artifact_id: ArtifactId) -> bool:
-        resource_path = self._resource_path(artifact_id)
-        return resource_path is not None and resource_path.is_file()
+    def _extension_priorities(self) -> dict[str, int]:
+        from donna.world.config import config
+
+        priorities: dict[str, int] = {}
+        priority = 0
+
+        for source in config().sources_instances:
+            for extension in source.supported_extensions:
+                if extension not in priorities:
+                    priorities[extension] = priority
+                    priority += 1
+
+        return priorities
+
+    def _select_extension(self, artifact_id: ArtifactId) -> str | None:
+        from donna.world.config import config
+
+        for source in config().sources_instances:
+            for extension in source.supported_extensions:
+                resource_path = self._resource_path(artifact_id, extension)
+                if resource_path is not None and resource_path.is_file():
+                    return extension
+
+        return None
 
     def has(self, artifact_id: ArtifactId) -> bool:
-        return self._has_markdown(artifact_id)
+        return self._select_extension(artifact_id) is not None
 
-    def _fetch_markdown(self, artifact_id: ArtifactId) -> Artifact:
-        full_id = FullArtifactId((self.id, artifact_id))
-        resource_path = self._resource_path(artifact_id)
+    def fetch(self, artifact_id: ArtifactId) -> Artifact:
+        extension = self._select_extension(artifact_id)
 
+        if extension is None:
+            raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
+
+        resource_path = self._resource_path(artifact_id, extension)
         if resource_path is None or not resource_path.is_file():
             raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
-        content = resource_path.read_text(encoding="utf-8")
+        content_bytes = resource_path.read_bytes()
+        full_id = FullArtifactId((self.id, artifact_id))
         from donna.world.config import config
 
-        source_config = cast(markdown_source.Config, config().get_source_config("markdown"))
-        return markdown_source.construct_artifact_from_markdown_source(
-            full_id,
-            content,
-            source_config,
-        )
+        source_config = config().find_source_for_extension(extension)
+        if source_config is None:
+            raise NotImplementedError(f"Unsupported artifact source extension '{extension}'")
 
-    def fetch(self, artifact_id: ArtifactId) -> Artifact:
-        return self._fetch_markdown(artifact_id)
+        return source_config.construct_artifact_from_bytes(full_id, content_bytes)
 
-    def _fetch_source_markdown(self, artifact_id: ArtifactId) -> bytes:
-        resource_path = self._resource_path(artifact_id)
+    def fetch_source(self, artifact_id: ArtifactId) -> bytes:  # noqa: CCR001
+        extension = self._select_extension(artifact_id)
+        if extension is None:
+            raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
+        resource_path = self._resource_path(artifact_id, extension)
         if resource_path is None or not resource_path.is_file():
             raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
         return resource_path.read_bytes()
 
-    def fetch_source(self, artifact_id: ArtifactId) -> bytes:  # noqa: CCR001
-        return self._fetch_source_markdown(artifact_id)
-
-    def update(self, artifact_id: ArtifactId, content: bytes) -> None:
+    def update(self, artifact_id: ArtifactId, content: bytes, extension: str) -> None:
         if self.readonly:
             raise NotImplementedError(f"World `{self.id}` is read-only")
 
         raise NotImplementedError(f"World `{self.id}` is read-only")
 
-    def _list_artifacts_markdown(self) -> list[ArtifactId]:  # noqa: CCR001
-        resource_artifacts: list[ArtifactId] = []
+    def file_extension_for(self, artifact_id: ArtifactId) -> str | None:
+        return self._select_extension(artifact_id)
+
+    def _list_artifacts_by_extension(self) -> list[ArtifactId]:  # noqa: CCR001
+        resource_artifacts: dict[ArtifactId, int] = {}
+        priorities = self._extension_priorities()
 
         def walk(  # noqa: CCR001
             node: importlib.resources.abc.Traversable,
@@ -103,17 +132,24 @@ class Python(BaseWorld):
                     walk(entry, parts + [entry.name], base_parts)
                     continue
 
-                if not entry.is_file() or not entry.name.endswith(".md"):
+                if not entry.is_file():
                     continue
 
-                stem = entry.name[: -len(".md")]
+                extension = pathlib.Path(entry.name).suffix.lower()
+                if extension not in priorities:
+                    continue
+
+                stem = entry.name[: -len(extension)]
                 artifact_name = ":".join(base_parts + parts + [stem])
                 if ArtifactId.validate(artifact_name):
-                    resource_artifacts.append(ArtifactId(artifact_name))
+                    artifact_id = ArtifactId(artifact_name)
+                    priority = priorities[extension]
+                    if artifact_id not in resource_artifacts or priority < resource_artifacts[artifact_id]:
+                        resource_artifacts[artifact_id] = priority
 
         resource_root = self._resource_root()
         if resource_root is None:
-            return resource_artifacts
+            return list(resource_artifacts.keys())
 
         base_path = resource_root
         base_parts: list[str] = []
@@ -121,13 +157,13 @@ class Python(BaseWorld):
         if base_path.is_dir():
             walk(base_path, [], base_parts)
 
-        return resource_artifacts
+        return list(resource_artifacts.keys())
 
     def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
         if pattern[0] not in {"*", "**"} and pattern[0] != str(self.id):
             return []
 
-        artifacts = self._list_artifacts_markdown()
+        artifacts = self._list_artifacts_by_extension()
         matched: list[ArtifactId] = []
 
         for artifact_id in artifacts:

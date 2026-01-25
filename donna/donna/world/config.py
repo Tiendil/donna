@@ -143,6 +143,23 @@ class Config(BaseEntity):
 
         raise NotImplementedError(f"Source config '{kind}' is not configured")
 
+    def find_source_for_extension(self, extension: str) -> SourceConfigValue | None:
+        for source in self._sources_instances:
+            if source.supports_extension(extension):
+                return source
+
+        return None
+
+    def supported_extensions(self) -> list[str]:
+        extensions: list[str] = []
+
+        for source in self._sources_instances:
+            for extension in source.supported_extensions:
+                if extension not in extensions:
+                    extensions.append(extension)
+
+        return extensions
+
 
 _CONFIG_DIR: pathlib.Path | None = None
 _CONFIG: Config | None = None
