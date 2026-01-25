@@ -81,6 +81,18 @@ class Artifact(BaseEntity):
 
         return True, []
 
+    def cells_info(self) -> list[Cell]:
+        primary_section = self.primary_section()
+        return [
+            Cell.build_meta(
+                kind="artifact_info",
+                artifact_id=str(self.id),
+                artifact_kind=str(primary_section.kind),
+                artifact_title=primary_section.title,
+                artifact_description=primary_section.description,
+            )
+        ]
+
     # TODO: should we attach section cells here as well?
     def cells(self) -> list[Cell]:
         primary_section = self.primary_section()

@@ -16,7 +16,7 @@ def list(prefix: ArtifactPrefixArgument) -> None:
     artifacts = world_artifacts.list_artifacts(prefix)
 
     for artifact in artifacts:
-        output_cells(artifact.cells())
+        output_cells(artifact.cells_info())
 
 
 @artifacts_cli.command()
