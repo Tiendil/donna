@@ -15,14 +15,14 @@ Donna's workflows create a plan of work on a session by iteratively polishing th
 
 Artifacts are:
 
-- `session:usage:work_scope` — a specification that describes the scope of work to be done on the session.
-- `session:work:work_execution` — a workflow that describes the step-by-step plan of work to be done on the session.
+- `session:work_scope` — a specification that describes the scope of work to be done on the session.
+- `session:work_execution` — a workflow that describes the step-by-step plan of work to be done on the session.
 
 The agent MUST create and iteratively polish these artifacts until they meet all quality criteria described in this document. After the plan is ready, the agent MUST run it as a workflow.
 
 ## Work Scope Specification
 
-The work scope specification has a standard name `session:usage:work_scope` and describes the work to be done in the context of the current session.
+The work scope specification has a standard name `session:work_scope` and describes the work to be done in the context of the current session.
 
 The specification MUST contain the following sections:
 
@@ -193,7 +193,7 @@ Source files as artifacts:
 
 ## Work Execution Workflow
 
-The work execution workflow has a standard name `session:work:work_execution` and describes the step-by-step plan of work to be done in the context of the current session.
+The work execution workflow has a standard name `session:work_execution` and describes the step-by-step plan of work to be done in the context of the current session.
 
 The workflow MUST be an artifact of kind `workflow`, see details `{{ donna.lib.view("donna:usage:artifacts") }}`. I.e. the final workflow must be a valid FSM that agent will execute with the help of `donna` tool.
 
@@ -223,7 +223,7 @@ General requirements:
   operation SHOULD include the exact command.
 - Workflow operation MUST NOT be vague (e.g., "Improve code quality", "Handle edge cases", "Do the thing").
 - Workflow operations MUST respect all "Known constraints".
-- If workflow operation includes research/design work, there results MUST be represented as concrete artifacts or changes in the `session:usage:work_scope` and `session:work:work_execution` artifacts.
+- If workflow operation includes research/design work, there results MUST be represented as concrete artifacts or changes in the `session:work_scope` and `session:work_execution` artifacts.
 
 Verification steps:
 

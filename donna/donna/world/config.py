@@ -14,10 +14,8 @@ from donna.world.worlds.base import World as BaseWorld
 from donna.world.worlds.base import WorldConstructor
 
 DONNA_DIR_NAME = ".donna"
-DONNA_CONFIG_NAME = "donna.toml"
+DONNA_CONFIG_NAME = "config.toml"
 DONNA_DESSION_DIR_NAME = "session"
-
-# TODO: refactor donna to use importlib.resources and enable WorldPackage
 
 
 class WorldConfig(BaseEntity):
