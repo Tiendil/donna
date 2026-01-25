@@ -44,7 +44,7 @@ class RequestActionConfig(OperationConfig):
         return v
 
 
-class RequestActionKind(MarkdownSectionMixin, OperationKind):
+class RequestAction(MarkdownSectionMixin, OperationKind):
     config_class: ClassVar[type[RequestActionConfig]] = RequestActionConfig
 
     def markdown_construct_meta(

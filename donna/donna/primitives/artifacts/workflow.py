@@ -55,7 +55,7 @@ class WorkflowMeta(ArtifactSectionMeta):
         return {"start_operation_id": str(self.start_operation_id)}
 
 
-class WorkflowKind(MarkdownSectionMixin, Primitive):
+class Workflow(MarkdownSectionMixin, Primitive):
     config_class: ClassVar[type[WorkflowConfig]] = WorkflowConfig
 
     def markdown_construct_meta(

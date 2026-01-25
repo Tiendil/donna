@@ -1,16 +1,14 @@
 from typing import Any
 
-import jinja2
 from jinja2.runtime import Context
 
 from donna.domain.ids import FullArtifactLocalId
-from donna.machine.templates import DirectiveKind
+from donna.machine.templates import Directive
 from donna.world.templates import RenderMode
 
 
-class GoTo(DirectiveKind):
-    @jinja2.pass_context
-    def __call__(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
+class GoTo(Directive):
+    def apply_directive(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
         render_mode: RenderMode = context["render_mode"]
         if argv is None or len(argv) != 1:
             raise ValueError("GoTo directive requires exactly one argument: next_operation_id")

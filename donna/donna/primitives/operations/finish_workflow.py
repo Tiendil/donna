@@ -15,7 +15,7 @@ class FinishWorkflowConfig(OperationConfig):
     fsm_mode: Literal[FsmMode.final] = FsmMode.final
 
 
-class FinishWorkflowKind(MarkdownSectionMixin, OperationKind):
+class FinishWorkflow(MarkdownSectionMixin, OperationKind):
     def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterator["Change"]:
         from donna.machine.changes import ChangeFinishTask
 

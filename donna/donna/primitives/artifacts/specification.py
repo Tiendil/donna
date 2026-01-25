@@ -13,12 +13,12 @@ class TextConfig(ArtifactSectionConfig):
     pass
 
 
-class ArtifactSectionTextKind(MarkdownSectionMixin, Primitive):
+class Text(MarkdownSectionMixin, Primitive):
     config_class: ClassVar[type[TextConfig]] = TextConfig
 
     def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("Text sections cannot be executed.")
 
 
-class SpecificationKind(MarkdownSectionMixin, Primitive):
+class Specification(MarkdownSectionMixin, Primitive):
     pass

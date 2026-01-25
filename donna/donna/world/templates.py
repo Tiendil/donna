@@ -8,7 +8,7 @@ from typing import Iterator
 import jinja2
 
 from donna.domain.ids import FullArtifactId
-from donna.machine.templates import DirectiveKind
+from donna.machine.templates import Directive
 
 
 class RenderMode(enum.Enum):
@@ -83,10 +83,10 @@ class DirectivePathBuilder:
         except AttributeError as exc:
             raise NotImplementedError(f"Directive '{module_path}.{directive_name}' is not available") from exc
 
-        if not isinstance(directive, DirectiveKind):
-            raise NotImplementedError(f"Directive '{module_path}.{directive_name}' is not a directive kind")
+        if not isinstance(directive, Directive):
+            raise NotImplementedError(f"Directive '{module_path}.{directive_name}' is not a directive")
 
-        return directive(context, *argv, **kwargs)
+        return directive.apply_directive(context, *argv, **kwargs)
 
 
 class DirectivePathUndefined(jinja2.Undefined):

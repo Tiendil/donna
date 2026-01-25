@@ -1,5 +1,7 @@
 import importlib
-from typing import TYPE_CHECKING, ClassVar, Iterable
+from typing import TYPE_CHECKING, Any, ClassVar, Iterable
+
+from jinja2.runtime import Context
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactLocalId, PythonImportPath
@@ -16,6 +18,9 @@ class Primitive(BaseEntity):
     config_class: ClassVar[type[ArtifactSectionConfig]] = ArtifactSectionConfig
 
     def execute_section(self, task: "Task", unit: "WorkUnit", section: "ArtifactSection") -> Iterable["Change"]:
+        raise NotImplementedError("You MUST implement this method.")
+
+    def apply_directive(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
         raise NotImplementedError("You MUST implement this method.")
 
     def validate_section(self, artifact: "Artifact", section_id: ArtifactLocalId) -> tuple[bool, list["Cell"]]:

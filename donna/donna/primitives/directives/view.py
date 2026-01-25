@@ -1,16 +1,14 @@
 from typing import Any
 
-import jinja2
 from jinja2.runtime import Context
 
 from donna.domain.ids import FullArtifactId
-from donna.machine.templates import DirectiveKind
+from donna.machine.templates import Directive
 from donna.world.templates import RenderMode
 
 
-class View(DirectiveKind):
-    @jinja2.pass_context
-    def __call__(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
+class View(Directive):
+    def apply_directive(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
         render_mode: RenderMode = context["render_mode"]
         if argv is None or len(argv) != 1:
             raise ValueError("View directive requires exactly one argument: specificatin_id")

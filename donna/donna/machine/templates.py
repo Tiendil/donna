@@ -1,14 +1,5 @@
-from typing import Any
-
-import jinja2
-from jinja2.runtime import Context
-
-from donna.core.entities import BaseEntity
+from donna.machine.primitives import Primitive
 
 
-class DirectiveKind(BaseEntity):
+class Directive(Primitive):
     analyze_id: str
-
-    @jinja2.pass_context
-    def __call__(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
-        raise NotImplementedError("You MUST implement this method.")
