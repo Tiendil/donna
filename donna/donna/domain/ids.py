@@ -104,10 +104,6 @@ class Identifier(str):
         )
 
 
-class DirectiveKindId(Identifier):
-    __slots__ = ()
-
-
 class WorldId(Identifier):
     __slots__ = ()
 
