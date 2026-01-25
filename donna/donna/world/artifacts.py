@@ -5,7 +5,6 @@ from donna.domain.ids import ArtifactId, FullArtifactId
 from donna.machine.artifacts import Artifact
 from donna.world.config import config
 from donna.world.sources import markdown as markdown_source
-from donna.world.sources import python as python_source
 
 
 def fetch_artifact(full_id: FullArtifactId, output: pathlib.Path) -> None:
@@ -29,13 +28,11 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> None:
     source_suffix = input.suffix.lower()
     content_bytes = input.read_bytes()
 
-    if source_suffix == ".md":
-        source_config = cast(markdown_source.Config, config().get_source_config("markdown"))
-        test_artifact = markdown_source.construct_artifact_from_bytes(full_id, content_bytes, source_config)
-    elif source_suffix == ".py":
-        test_artifact = python_source.construct_artifact_from_bytes(full_id, content_bytes)
-    else:
+    if source_suffix != ".md":
         raise NotImplementedError(f"Unsupported artifact source extension '{input.suffix}'")
+
+    source_config = cast(markdown_source.Config, config().get_source_config("markdown"))
+    test_artifact = markdown_source.construct_artifact_from_bytes(full_id, content_bytes, source_config)
 
     is_valid, _cells = test_artifact.validate()
 

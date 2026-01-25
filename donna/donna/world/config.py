@@ -7,7 +7,6 @@ from donna.core import utils
 from donna.core.entities import BaseEntity
 from donna.domain.ids import WorldId
 from donna.world.sources import markdown as markdown_source
-from donna.world.sources import python as python_source
 from donna.world.sources.base import SourceConfig
 from donna.world.worlds.base import World as BaseWorld
 from donna.world.worlds.filesystem import World as WorldFilesystem
@@ -27,7 +26,6 @@ SourceConfigValue = SourceConfig
 def _default_sources() -> list[SourceConfigValue]:
     return [
         markdown_source.Config(),
-        python_source.Config(),
     ]
 
 
