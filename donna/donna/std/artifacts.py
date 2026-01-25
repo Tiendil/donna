@@ -1,18 +1,12 @@
 """Python artifact that exposes artifact section kind definitions."""
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactLocalId
+from donna.lib import python_artifact_kind, specification_kind_entity, workflow_kind_entity
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionKindMeta, ArtifactSectionMeta
-from donna.primitives.artifacts.python import PythonArtifact
-from donna.primitives.artifacts.specification import SpecificationKind
-from donna.primitives.artifacts.workflow import WorkflowKind
 
 PYTHON_MODULE_SECTION_KIND_ID = FullArtifactLocalId.parse("donna.operations.python_module")
 PYTHON_ARTIFACT_KIND_ID = FullArtifactLocalId.parse("donna.artifacts.python")
 PRIMARY_SECTION_ID = ArtifactLocalId("primary")
-
-specification_kind_entity = SpecificationKind()
-workflow_kind_entity = WorkflowKind()
-python_artifact_kind = PythonArtifact()
 
 primary_section = ArtifactSection(
     title="Artifact Section Kinds",
