@@ -69,6 +69,7 @@
 ** introspection
 *** !filesystem list artifacts does not find .py (uses hardcoded .md)
 *** !remove _MARKDOWN_ROOTS
+*** sync world implementations with source implementations — there are a lot of hardcode there.
 *** !list_artifact should be recursive?
 *** ignore "session" from the artifacts? I.e. it is world.
 **** place project and session worlds on the same level with config.toml?

@@ -7,6 +7,11 @@ from donna.world.config import config
 from donna.world.sources import markdown as markdown_source
 
 
+def artifact_file_extension(full_id: FullArtifactId) -> str:
+    world = config().get_world(full_id.world_id)
+    return world.file_extension_for(full_id.artifact_id)
+
+
 def fetch_artifact(full_id: FullArtifactId, output: pathlib.Path) -> None:
     world = config().get_world(full_id.world_id)
 

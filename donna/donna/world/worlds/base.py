@@ -28,6 +28,13 @@ class World(BaseEntity):
     def update(self, artifact_id: ArtifactId, content: bytes) -> None:
         raise NotImplementedError("You must implement this method in subclasses")
 
+    def file_extension_for(self, artifact_id: ArtifactId) -> str | None:
+        if not self.has(artifact_id):
+            return None
+
+        # TODO: remove that hardcoding
+        return 'md'
+
     def list_artifacts(self, artifact_prefix: ArtifactId) -> list[ArtifactId]:
         raise NotImplementedError("You must implement this method in subclasses")
 

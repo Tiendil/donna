@@ -17,12 +17,12 @@ def tmp_dir() -> pathlib.Path:
     return tmp_path
 
 
-def tmp_file_for_artifact(artifact_id: FullArtifactIdArgument) -> pathlib.Path:
+def tmp_file_for_artifact(artifact_id: FullArtifactIdArgument, extention: str) -> pathlib.Path:
     directory = tmp_dir()
 
     directory.mkdir(parents=True, exist_ok=True)
 
-    artifact_file_name = f"{str(artifact_id).replace('/', '.')}.{int(time.time() * 1000)}.tmp"
+    artifact_file_name = f"{str(artifact_id).replace('/', '.')}.{int(time.time() * 1000)}.{extention}"
 
     return directory / artifact_file_name
 
