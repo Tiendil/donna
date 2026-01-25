@@ -2,14 +2,8 @@ import uuid
 from typing import Any, ClassVar, Literal, Protocol, cast
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactId, PythonImportPath
-from donna.machine.artifacts import (
-    Artifact,
-    ArtifactSection,
-    ArtifactSectionConfig,
-    ArtifactSectionKind,
-    ArtifactSectionMeta,
-    resolve_section_kind,
-)
+from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
+from donna.machine.primitives import Primitive, resolve_primitive
 from donna.world import markdown
 from donna.world.sources.base import SourceConfig
 from donna.world.templates import RenderMode, render, render_mode
@@ -143,11 +137,11 @@ def construct_artifact_from_markdown_source(full_id: FullArtifactId, content: st
     if "id" not in head_config or head_config["id"] is None:
         head_config["id"] = config.default_primary_section_id
 
-    primary_section_kind = resolve_section_kind(head_kind)
-    _ensure_markdown_constructible(primary_section_kind, head_kind)
-    markdown_primary_kind = cast(MarkdownSectionMixin, primary_section_kind)
+    primary_primitive = resolve_primitive(head_kind)
+    _ensure_markdown_constructible(primary_primitive, head_kind)
+    markdown_primary_primitive = cast(MarkdownSectionMixin, primary_primitive)
 
-    primary_section = markdown_primary_kind.markdown_construct_section(
+    primary_section = markdown_primary_primitive.markdown_construct_section(
         artifact_id=full_id,
         source=original_sections[0],
         config=head_config,
@@ -173,7 +167,7 @@ def construct_sections_from_markdown(  # noqa: CCR001
     artifact_id: FullArtifactId,
     sections: list[markdown.SectionSource],
     default_section_kind: PythonImportPath,
-    section_kind_overrides: dict[PythonImportPath, ArtifactSectionKind] | None = None,
+    primitive_overrides: dict[PythonImportPath, Primitive] | None = None,
 ) -> list[ArtifactSection]:
     constructed: list[ArtifactSection] = []
 
@@ -188,35 +182,35 @@ def construct_sections_from_markdown(  # noqa: CCR001
 
         kind_value = data["kind"]
         if isinstance(kind_value, str):
-            section_kind_id = PythonImportPath.parse(kind_value)
+            primitive_id = PythonImportPath.parse(kind_value)
         else:
-            section_kind_id = kind_value
+            primitive_id = kind_value
 
-        section_kind = _resolve_section_kind(section_kind_id, section_kind_overrides)
-        _ensure_markdown_constructible(section_kind, section_kind_id)
-        markdown_section_kind = cast(MarkdownSectionMixin, section_kind)
+        primitive = _resolve_primitive(primitive_id, primitive_overrides)
+        _ensure_markdown_constructible(primitive, primitive_id)
+        markdown_primitive = cast(MarkdownSectionMixin, primitive)
 
-        constructed.append(markdown_section_kind.markdown_construct_section(artifact_id, section, data, primary=False))
+        constructed.append(markdown_primitive.markdown_construct_section(artifact_id, section, data, primary=False))
 
     return constructed
 
 
-def _resolve_section_kind(
-    section_kind_id: PythonImportPath,
-    section_kind_overrides: dict[PythonImportPath, ArtifactSectionKind] | None = None,
-) -> ArtifactSectionKind:
-    if section_kind_overrides is not None and section_kind_id in section_kind_overrides:
-        return section_kind_overrides[section_kind_id]
+def _resolve_primitive(
+    primitive_id: PythonImportPath,
+    primitive_overrides: dict[PythonImportPath, Primitive] | None = None,
+) -> Primitive:
+    if primitive_overrides is not None and primitive_id in primitive_overrides:
+        return primitive_overrides[primitive_id]
 
-    return resolve_section_kind(section_kind_id)
+    return resolve_primitive(primitive_id)
 
 
 def _ensure_markdown_constructible(
-    section_kind: ArtifactSectionKind,
-    section_kind_id: PythonImportPath | str | None = None,
+    primitive: Primitive,
+    primitive_id: PythonImportPath | str | None = None,
 ) -> None:
-    if isinstance(section_kind, MarkdownSectionMixin):
+    if isinstance(primitive, MarkdownSectionMixin):
         return
 
-    kind_label = f"'{section_kind_id}'" if section_kind_id is not None else repr(section_kind)
-    raise NotImplementedError(f"Section kind {kind_label} cannot be constructed from markdown sources.")
+    kind_label = f"'{primitive_id}'" if primitive_id is not None else repr(primitive)
+    raise NotImplementedError(f"Primitive {kind_label} cannot be constructed from markdown sources.")

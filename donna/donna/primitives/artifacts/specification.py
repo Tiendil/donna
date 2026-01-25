@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, ClassVar, Iterable
 
-from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionKind
+from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig
+from donna.machine.primitives import Primitive
 from donna.world.sources.markdown import MarkdownSectionMixin
 
 if TYPE_CHECKING:
@@ -12,12 +13,12 @@ class TextConfig(ArtifactSectionConfig):
     pass
 
 
-class ArtifactSectionTextKind(MarkdownSectionMixin, ArtifactSectionKind):
+class ArtifactSectionTextKind(MarkdownSectionMixin, Primitive):
     config_class: ClassVar[type[TextConfig]] = TextConfig
 
     def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterable["Change"]:
         raise NotImplementedError("Text sections cannot be executed.")
 
 
-class SpecificationKind(MarkdownSectionMixin, ArtifactSectionKind):
+class SpecificationKind(MarkdownSectionMixin, Primitive):
     pass

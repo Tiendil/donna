@@ -52,7 +52,7 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Lazy import of primitives from Python artifacts
 ** simplifying python part
-*** ArtifactSectionKind — move out of machine.artifacts? rename?
+*** Primitive — move out of machine.artifacts? rename?
 *** primitives vs kinds
 *** each kind/primitive must has reference to specification section that explains it
 *** remove donna.std

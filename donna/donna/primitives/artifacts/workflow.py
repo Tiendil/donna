@@ -5,11 +5,11 @@ from donna.machine.artifacts import (
     Artifact,
     ArtifactSection,
     ArtifactSectionConfig,
-    ArtifactSectionKind,
     ArtifactSectionMeta,
 )
 from donna.machine.cells import Cell
 from donna.machine.operations import FsmMode, OperationMeta
+from donna.machine.primitives import Primitive
 from donna.world import markdown
 from donna.world.sources.markdown import MarkdownSectionMixin
 
@@ -55,7 +55,7 @@ class WorkflowMeta(ArtifactSectionMeta):
         return {"start_operation_id": str(self.start_operation_id)}
 
 
-class WorkflowKind(MarkdownSectionMixin, ArtifactSectionKind):
+class WorkflowKind(MarkdownSectionMixin, Primitive):
     config_class: ClassVar[type[WorkflowConfig]] = WorkflowConfig
 
     def markdown_construct_meta(
