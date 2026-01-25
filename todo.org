@@ -9,9 +9,6 @@
 * TODO Consider using https://github.com/toon-format/toon for json formatting in cells
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Architecture stabilization
-** remove hardcode from worlds and sources
-*** filesystem world uses hardcoded extensions instead of list of sources
-*** sync world implementations with source implementations — there are a lot of hardcode there.
 ** each kind/primitive must has reference to specification section that explains it
 *** cli command to list primitives?
 *** cli command to show primitive specification?
