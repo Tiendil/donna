@@ -20,8 +20,8 @@ fsm_mode = "start"
 1. Identify the full workflow artifact id to summarize from the developer request (for example: `project:work:grooming`).
 2. If the workflow id is missing or ambiguous, ask the developer to provide the exact id, then repeat this operation.
 3. Fetch the workflow artifact source with:
-   - `./bin/donna.sh artifacts fetch '<workflow-id>' /tmp/workflow_source.md`
-4. Read the fetched source to capture:
+   - `./bin/donna.sh artifacts fetch '<workflow-id>'`
+4. Read the fetched source from the path printed by the command to capture:
    - Workflow name (H1 title) and short description.
    - The start operation (from `start_operation_id` in the workflow head config, which must be marked with `fsm_mode = "start"`).
    - Each operation `id`, `kind`, and any {% raw %}`{{ donna.lib.goto(...) }}`{% endraw %} transitions in its body.
