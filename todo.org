@@ -52,35 +52,28 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Lazy import of primitives from Python artifacts
 ** introspection
-*** !Artifact listing is broken because there is no separation of artifact kinds
-*** !filesystem list artifacts does not find .py (uses hardcoded .md)
-*** !remove _MARKDOWN_ROOTS
+*** Artifact listing is broken because there is no separation of artifact kinds
+*** filesystem world uses hardcoded extensions instead of list of sources
 *** sync world implementations with source implementations — there are a lot of hardcode there.
-*** !list_artifact should be recursive?
-*** ignore "session" from the artifacts? I.e. it is world.
-**** place project and session worlds on the same level with config.toml?
-**** remove session world, add session directory to the project world?
-** introspection & discovery refactorings
+*** remove _MARKDOWN_ROOTS
+*** list_artifact should be recursive (search in subdirectories as well)
 *** artifacts listing/search functionality goest to the worlds
 **** words should return standardized short info records about each artifact
 **** and about each primitive (?) or should primitives be left for the donna side?
 *** => introspection uses worlds to list available artifact/primitives
 *** `donna artifacts list *` goest to `donna introspection`? or should be refactored into `artifacts search *`?
 *** Each primitive should have a link to related specification or to the section in the specification?
-*** In the context of all those changes, do we need namespaces for artifacts? Maybe we can live without them?
-**** or without their current role in the code
 *** mark artifacts and sections with tags to simplify filtering/searching
-**** Do we need speciciations for tags? I.e. does tag a primitive?
+**** Do we need speciciations for tags?
 *** tree-based artifacts discovery? I.e. folders with descriptions and folders as artifacts?
 *** full ids for references to objects kinds
 **** that'll allow to remove register in the honor of search in worlds
-*** we may want to remove separation of artifacts by namespaces/directories
 ** each kind/primitive must has reference to specification section that explains it
 ** review
 *** donna.world.worlds
 *** donna.world.sources
 *** reoganize donna.primitives submodules
-** builtins
+** builtins (make an issue on github)
 *** analogue of `__init__.py` for donna world for shorter ids/paths?
 *** sections from world.builtings should be accessible by their ids without prefixes?
 *** for directives
