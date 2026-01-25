@@ -1,7 +1,7 @@
 # Donna Usage Instructions
 
 ```toml donna
-kind = "donna.artifacts.specification"
+kind = "donna.lib.specification"
 ```
 
 This document describes how agents MUST use Donna to manage and perform their workflows.

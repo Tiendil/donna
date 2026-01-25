@@ -1,7 +1,7 @@
 # Grooming Workflow
 
 ```toml donna
-kind = "donna.artifacts.workflow"
+kind = "donna.lib.workflow"
 start_operation_id = "run_autoflake"
 ```
 
@@ -11,7 +11,7 @@ Initiate operations to groom and refine the donna codebase: running & fixing tes
 
 ```toml donna
 id = "run_autoflake"
-kind = "donna.operations.request_action"
+kind = "donna.lib.request_action"
 fsm_mode = "start"
 ```
 
@@ -22,7 +22,7 @@ fsm_mode = "start"
 
 ```toml donna
 id = "run_isort"
-kind = "donna.operations.request_action"
+kind = "donna.lib.request_action"
 ```
 
 1. Run `cd ./donna && poetry run isort .` to sort imports in the codebase.
@@ -32,7 +32,7 @@ kind = "donna.operations.request_action"
 
 ```toml donna
 id = "run_black"
-kind = "donna.operations.request_action"
+kind = "donna.lib.request_action"
 ```
 
 1. Run `cd ./donna && poetry run black .` to format the codebase.
@@ -42,7 +42,7 @@ kind = "donna.operations.request_action"
 
 ```toml donna
 id = "run_flake8"
-kind = "donna.operations.request_action"
+kind = "donna.lib.request_action"
 ```
 
 1. Run `cd ./donna && poetry run flake8 .` to check the codebase for style issues.
@@ -61,7 +61,7 @@ Instructions on fixing special cases:
 
 ```toml donna
 id = "run_mypy"
-kind = "donna.operations.request_action"
+kind = "donna.lib.request_action"
 ```
 
 1. Run `cd ./donna && poetry run mypy ./donna` to check the codebase for type annotation issues.
@@ -92,5 +92,5 @@ Changes you are not allowed to make:
 
 ```toml donna
 id = "finish"
-kind = "donna.operations.finish_workflow"
+kind = "donna.lib.finish"
 ```

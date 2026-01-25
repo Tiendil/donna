@@ -1,3 +1,4 @@
+import importlib
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable
 
 from donna.core.entities import BaseEntity
@@ -75,18 +76,8 @@ class Artifact(BaseEntity):
             ]
 
         for section in self.sections:
-            resolved_section = resolve(section.kind)
-            if not isinstance(resolved_section.meta, ArtifactSectionKindMeta):
-                return False, [
-                    Cell.build_meta(
-                        kind="artifact_kind_validation",
-                        id=str(self.id),
-                        status="failure",
-                        message=f"Section kind '{section.kind}' is not available.",
-                    )
-                ]
-
-            is_valid, cells = resolved_section.meta.section_kind.validate_section(self, section.id)
+            section_kind = resolve_section_kind(section.kind)
+            is_valid, cells = section_kind.validate_section(self, section.id)
 
             if not is_valid:
                 return is_valid, cells
@@ -161,3 +152,30 @@ def resolve(target_id: FullArtifactLocalId) -> ArtifactSection:
         raise NotImplementedError(f"Section '{target_id}' is not available")
 
     return section
+
+
+def resolve_section_kind(section_kind_id: FullArtifactLocalId | str) -> ArtifactSectionKind:
+    if isinstance(section_kind_id, FullArtifactLocalId):
+        import_path = str(section_kind_id)
+    else:
+        import_path = section_kind_id
+
+    if "." not in import_path:
+        raise NotImplementedError(f"Section kind '{import_path}' is not a valid import path")
+
+    module_path, kind_name = import_path.rsplit(".", maxsplit=1)
+
+    try:
+        module = importlib.import_module(module_path)
+    except ModuleNotFoundError as exc:
+        raise NotImplementedError(f"Section kind module '{module_path}' is not importable") from exc
+
+    try:
+        kind = getattr(module, kind_name)
+    except AttributeError as exc:
+        raise NotImplementedError(f"Section kind '{import_path}' is not available") from exc
+
+    if not isinstance(kind, ArtifactSectionKind):
+        raise NotImplementedError(f"Section kind '{import_path}' is not a section kind")
+
+    return kind

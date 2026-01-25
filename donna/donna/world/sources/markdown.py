@@ -7,9 +7,8 @@ from donna.machine.artifacts import (
     ArtifactSection,
     ArtifactSectionConfig,
     ArtifactSectionKind,
-    ArtifactSectionKindMeta,
     ArtifactSectionMeta,
-    resolve,
+    resolve_section_kind,
 )
 from donna.world import markdown
 from donna.world.sources.base import SourceConfig
@@ -29,7 +28,7 @@ class MarkdownSectionConstructor(Protocol):
 
 class Config(SourceConfig):
     kind: Literal["markdown"] = "markdown"
-    default_section_kind: FullArtifactLocalId = FullArtifactLocalId.parse("donna.operations.text")
+    default_section_kind: FullArtifactLocalId = FullArtifactLocalId.parse("donna.lib.text")
     default_primary_section_id: ArtifactLocalId = ArtifactLocalId("primary")
 
 
@@ -144,12 +143,7 @@ def construct_artifact_from_markdown_source(full_id: FullArtifactId, content: st
     if "id" not in head_config or head_config["id"] is None:
         head_config["id"] = config.default_primary_section_id
 
-    section = resolve(head_kind)
-
-    if not isinstance(section.meta, ArtifactSectionKindMeta):
-        raise NotImplementedError(f"Primary section kind '{head_kind}' is not available")
-
-    primary_section_kind = section.meta.section_kind
+    primary_section_kind = resolve_section_kind(head_kind)
     _ensure_markdown_constructible(primary_section_kind, head_kind)
     markdown_primary_kind = cast(MarkdownSectionMixin, primary_section_kind)
 
@@ -214,15 +208,12 @@ def _resolve_section_kind(
     if section_kind_overrides is not None and section_kind_id in section_kind_overrides:
         return section_kind_overrides[section_kind_id]
 
-    resolved_section = resolve(section_kind_id)
-    if not isinstance(resolved_section.meta, ArtifactSectionKindMeta):
-        raise NotImplementedError(f"Section kind '{section_kind_id}' is not available")
-    return resolved_section.meta.section_kind
+    return resolve_section_kind(section_kind_id)
 
 
 def _ensure_markdown_constructible(
     section_kind: ArtifactSectionKind,
-    section_kind_id: FullArtifactLocalId | None = None,
+    section_kind_id: FullArtifactLocalId | str | None = None,
 ) -> None:
     if isinstance(section_kind, MarkdownSectionMixin):
         return

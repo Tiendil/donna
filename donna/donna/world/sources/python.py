@@ -43,7 +43,7 @@ def construct_artifact_from_module(module: ModuleType, full_id: FullArtifactId) 
         primary_kind = FullArtifactLocalId.parse(primary_section.kind)
         primary_section.kind = primary_kind
 
-    expected_kind_id = FullArtifactLocalId.parse("donna.artifacts.python")
+    expected_kind_id = FullArtifactLocalId.parse("donna.lib.python_artifact")
     if primary_section.kind != expected_kind_id:
         raise NotImplementedError(
             f"Primary section kind mismatch: module uses '{primary_section.kind}', but expected '{expected_kind_id}'."

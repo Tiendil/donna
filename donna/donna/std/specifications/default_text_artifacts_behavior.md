@@ -1,7 +1,7 @@
 # Default Text Artifacts Behavior
 
 ```toml donna
-kind = "donna.artifacts.specification"
+kind = "donna.lib.specification"
 ```
 
 This document describes the default format and behavior of Donna's text artifacts.
@@ -97,12 +97,12 @@ When a section contains multiple configuration blocks, Donna merges them in docu
 
 ### Header section
 
-Header section MUST contain a config block with a `kind` property. The `kind` MUST be a full artifact-local id pointing to the primary section kind section.
+Header section MUST contain a config block with a `kind` property. The `kind` MUST be a full Python import path pointing to the primary section kind instance.
 
 Example (`donna` keyword skipped for examples):
 
 ```toml
-kind = "donna.artifacts.specification"
+kind = "donna.lib.specification"
 ```
 
 Header section MUST also contain short human-readable description of the artifact outside of the config block.
@@ -127,7 +127,7 @@ and MUST reference a tail section whose configuration sets `fsm_mode = "start"`.
 Example (`donna` keyword skipped for examples):
 
 ```toml
-kind = "donna.artifacts.workflow"
+kind = "donna.lib.workflow"
 start_operation_id = "start_operation"
 ```
 
@@ -137,12 +137,12 @@ Example (`donna` keyword skipped for examples):
 
 ```toml
 id = "operation_id"
-kind = "donna.operations.request_action"
+kind = "donna.lib.request_action"
 ```
 
 #### Kinds of Workflow Operations
 
-1. `donna.operations.request_action` operation kind indicates that Donna will request the agent to perform some action.
+1. `donna.lib.request_action` operation kind indicates that Donna will request the agent to perform some action.
 
 The content of the tail section is the text instructions for the agent on what to do.
 
@@ -160,7 +160,7 @@ Here may be any additional instructions, requirements, notes, references, etc.
 
 **The body of the operation MUST contain a neat strictly defined algorithm for the agent to follow.**
 
-2. `donna.operations.finish_workflow` operation kind indicates that the workflow is finished.
+2. `donna.lib.finish` operation kind indicates that the workflow is finished.
 
 Each possible path through the workflow MUST end with this operation kind.
 

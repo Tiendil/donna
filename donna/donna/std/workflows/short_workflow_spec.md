@@ -1,7 +1,7 @@
 # Show Workflow Spec + Schema
 
 ```toml donna
-kind = "donna.artifacts.workflow"
+kind = "donna.lib.workflow"
 start_operation_id = "read_workflow_source"
 ```
 
@@ -13,7 +13,7 @@ This workflow guides an agent through loading a workflow artifact source, choosi
 
 ```toml donna
 id = "read_workflow_source"
-kind = "donna.operations.request_action"
+kind = "donna.lib.request_action"
 fsm_mode = "start"
 ```
 
@@ -31,7 +31,7 @@ fsm_mode = "start"
 
 ```toml donna
 id = "select_fsm_dsl"
-kind = "donna.operations.request_action"
+kind = "donna.lib.request_action"
 ```
 
 1. Determine whether the developer requested a specific FSM graph DSL (from the original request or provided inputs).
@@ -43,7 +43,7 @@ kind = "donna.operations.request_action"
 
 ```toml donna
 id = "render_schema"
-kind = "donna.operations.request_action"
+kind = "donna.lib.request_action"
 ```
 
 1. Produce the schema output in the exact meta format below, using the selected DSL for the FSM graph:
@@ -67,7 +67,7 @@ kind = "donna.operations.request_action"
 
 ```toml donna
 id = "refine_schema"
-kind = "donna.operations.request_action"
+kind = "donna.lib.request_action"
 ```
 
 1. Re-read the produced schema and improve clarity and correctness without changing the required format.
@@ -79,7 +79,7 @@ kind = "donna.operations.request_action"
 
 ```toml donna
 id = "validate_schema"
-kind = "donna.operations.request_action"
+kind = "donna.lib.request_action"
 ```
 
 1. Verify the output contains the title, one-sentence description, FSM graph, and operation list in the required order.
@@ -92,7 +92,7 @@ kind = "donna.operations.request_action"
 
 ```toml donna
 id = "finish"
-kind = "donna.operations.finish_workflow"
+kind = "donna.lib.finish"
 ```
 
 Workflow complete.
