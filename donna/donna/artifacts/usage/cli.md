@@ -82,23 +82,6 @@ Artifact path prefixes:
 - `usage` — documents describing requirements, designs, constraints, or other important information related to the project.
 - `work` — documents describing predefined workflows that the `donna` tool can execute to manage the work of agents.
 
-### Introspection
-
-Sometimes you need to get information about the base primitives and structures used by the `donna` tool: operations, workflows, etc.
-
-Use the next commands to get introspection data:
-
-- `<DONNA_CMD> introspection show <primitive-id>` — show detailed information about the primitive with the given id. You will get IDs as the results of other operations (including action requests). Do not invent primitive IDs. Do not guess primitive IDs.
-
-Command parameters:
-
-- `<primitive-id>` — a short ASCII string identifying the type of the primitive. Use the exect id, do not prefix it with a kind of primitive. Do not look for primitive IDs in the source code. Use only the IDs you got as the results of other operations.
-
-When to use introspection:
-
-- You forget which results the operation produces.
-
-
 ## IMPORTANT ON DONNA TOOL USAGE
 
 **Substitute correct `donna` command from the `AGENTS.md` for `<DONNA_CMD>` placeholder in this document when you work with the tool.**
