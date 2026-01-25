@@ -150,13 +150,12 @@ class Config(BaseEntity):
 
         return None
 
-    def supported_extensions(self) -> list[str]:
-        extensions: list[str] = []
+    def supported_extensions(self) -> set[str]:
+        extensions: set[str] = set()
 
         for source in self._sources_instances:
             for extension in source.supported_extensions:
-                if extension not in extensions:
-                    extensions.append(extension)
+                extensions.add(extension)
 
         return extensions
 
