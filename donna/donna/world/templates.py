@@ -1,12 +1,14 @@
 import enum
+import importlib
+import importlib.util
 from contextlib import contextmanager
 from contextvars import ContextVar
 from typing import Iterator
 
 import jinja2
 
-from donna.domain.ids import ArtifactId, ArtifactLocalId, FullArtifactId, FullArtifactLocalId, WorldId
-from donna.machine.templates import DirectiveSectionMeta, load_directive_section
+from donna.domain.ids import FullArtifactId
+from donna.machine.templates import DirectiveKind
 
 
 class RenderMode(enum.Enum):
@@ -49,10 +51,8 @@ def set_default_render_mode(mode: RenderMode) -> None:
 _ENVIRONMENT = None
 
 
-def _known_world_ids() -> set[str]:
-    from donna.world.config import config
-
-    return {str(world.id) for world in config().worlds}
+def _is_importable_module(name: str) -> bool:
+    return importlib.util.find_spec(name) is not None
 
 
 class DirectivePathBuilder:
@@ -67,25 +67,31 @@ class DirectivePathBuilder:
 
     @jinja2.pass_context
     def __call__(self, context: jinja2.runtime.Context, *argv: object, **kwargs: object) -> object:
-        if len(self._parts) < 3:
-            raise NotImplementedError("Directive path must include world, artifact, and directive parts.")
+        if len(self._parts) < 2:
+            raise NotImplementedError("Directive path must include module and directive parts.")
 
-        world_id = WorldId(self._parts[0])
-        artifact_id = ArtifactId(".".join(self._parts[1:-1]))
-        local_id = ArtifactLocalId(self._parts[-1])
+        module_path = ".".join(self._parts[:-1])
+        directive_name = self._parts[-1]
 
-        directive_id = FullArtifactLocalId((world_id, artifact_id, local_id))
-        section = load_directive_section(directive_id)
+        try:
+            module = importlib.import_module(module_path)
+        except ModuleNotFoundError as exc:
+            raise NotImplementedError(f"Directive module '{module_path}' is not importable") from exc
 
-        if not isinstance(section.meta, DirectiveSectionMeta):
-            raise NotImplementedError(f"Directive '{directive_id}' does not have directive metadata")
+        try:
+            directive = getattr(module, directive_name)
+        except AttributeError as exc:
+            raise NotImplementedError(f"Directive '{module_path}.{directive_name}' is not available") from exc
 
-        return section.meta.directive(context, *argv, meta=section.meta, **kwargs)
+        if not isinstance(directive, DirectiveKind):
+            raise NotImplementedError(f"Directive '{module_path}.{directive_name}' is not a directive kind")
+
+        return directive(context, *argv, **kwargs)
 
 
 class DirectivePathUndefined(jinja2.Undefined):
     def __getattr__(self, name: str) -> object:
-        if not self._undefined_name or self._undefined_name not in _known_world_ids():
+        if not self._undefined_name or not _is_importable_module(self._undefined_name):
             return jinja2.Undefined(name=f"{self._undefined_name}.{name}")
 
         return DirectivePathBuilder((self._undefined_name, name))

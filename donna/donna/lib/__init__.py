@@ -17,5 +17,5 @@ python_module_section = PythonModuleSectionKind()
 request_action = RequestActionKind()
 finish = FinishWorkflowKind()
 
-view = View()
-goto = GoTo()
+view = View(analyze_id="view")
+goto = GoTo(analyze_id="goto")
