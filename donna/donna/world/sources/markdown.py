@@ -1,7 +1,7 @@
 import uuid
 from typing import Any, ClassVar, Literal, Protocol, cast
 
-from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
+from donna.domain.ids import ArtifactLocalId, FullArtifactId, PythonImportPath
 from donna.machine.artifacts import (
     Artifact,
     ArtifactSection,
@@ -28,7 +28,7 @@ class MarkdownSectionConstructor(Protocol):
 
 class Config(SourceConfig):
     kind: Literal["markdown"] = "markdown"
-    default_section_kind: FullArtifactLocalId = FullArtifactLocalId.parse("donna.lib.text")
+    default_section_kind: PythonImportPath = PythonImportPath.parse("donna.lib.text")
     default_primary_section_id: ArtifactLocalId = ArtifactLocalId("primary")
 
 
@@ -135,10 +135,10 @@ def construct_artifact_from_markdown_source(full_id: FullArtifactId, content: st
 
     head_config = dict(original_sections[0].merged_configs())
     head_kind_value = head_config["kind"]
-    if isinstance(head_kind_value, FullArtifactLocalId):
+    if isinstance(head_kind_value, PythonImportPath):
         head_kind = head_kind_value
     else:
-        head_kind = FullArtifactLocalId.parse(head_kind_value)
+        head_kind = PythonImportPath.parse(head_kind_value)
 
     if "id" not in head_config or head_config["id"] is None:
         head_config["id"] = config.default_primary_section_id
@@ -172,8 +172,8 @@ def construct_artifact_from_markdown_source(full_id: FullArtifactId, content: st
 def construct_sections_from_markdown(  # noqa: CCR001
     artifact_id: FullArtifactId,
     sections: list[markdown.SectionSource],
-    default_section_kind: FullArtifactLocalId,
-    section_kind_overrides: dict[FullArtifactLocalId, ArtifactSectionKind] | None = None,
+    default_section_kind: PythonImportPath,
+    section_kind_overrides: dict[PythonImportPath, ArtifactSectionKind] | None = None,
 ) -> list[ArtifactSection]:
     constructed: list[ArtifactSection] = []
 
@@ -188,7 +188,7 @@ def construct_sections_from_markdown(  # noqa: CCR001
 
         kind_value = data["kind"]
         if isinstance(kind_value, str):
-            section_kind_id = FullArtifactLocalId.parse(kind_value)
+            section_kind_id = PythonImportPath.parse(kind_value)
         else:
             section_kind_id = kind_value
 
@@ -202,8 +202,8 @@ def construct_sections_from_markdown(  # noqa: CCR001
 
 
 def _resolve_section_kind(
-    section_kind_id: FullArtifactLocalId,
-    section_kind_overrides: dict[FullArtifactLocalId, ArtifactSectionKind] | None = None,
+    section_kind_id: PythonImportPath,
+    section_kind_overrides: dict[PythonImportPath, ArtifactSectionKind] | None = None,
 ) -> ArtifactSectionKind:
     if section_kind_overrides is not None and section_kind_id in section_kind_overrides:
         return section_kind_overrides[section_kind_id]
@@ -213,7 +213,7 @@ def _resolve_section_kind(
 
 def _ensure_markdown_constructible(
     section_kind: ArtifactSectionKind,
-    section_kind_id: FullArtifactLocalId | str | None = None,
+    section_kind_id: PythonImportPath | str | None = None,
 ) -> None:
     if isinstance(section_kind, MarkdownSectionMixin):
         return

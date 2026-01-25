@@ -1,7 +1,7 @@
 from types import ModuleType
 from typing import Literal
 
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId
+from donna.domain.ids import FullArtifactId, PythonImportPath
 from donna.machine.artifacts import Artifact, ArtifactSection
 from donna.world.sources.base import SourceConfig
 
@@ -40,10 +40,11 @@ def construct_artifact_from_module(module: ModuleType, full_id: FullArtifactId) 
     primary_section = primary_sections[0]
 
     if isinstance(primary_section.kind, str):
-        primary_kind = FullArtifactLocalId.parse(primary_section.kind)
-        primary_section.kind = primary_kind
+        primary_kind = PythonImportPath.parse(primary_section.kind)
+        primary_section = primary_section.replace(kind=primary_kind)
+        sections = [primary_section if section is primary_sections[0] else section for section in sections]
 
-    expected_kind_id = FullArtifactLocalId.parse("donna.lib.python_artifact")
+    expected_kind_id = PythonImportPath.parse("donna.lib.python_artifact")
     if primary_section.kind != expected_kind_id:
         raise NotImplementedError(
             f"Primary section kind mismatch: module uses '{primary_section.kind}', but expected '{expected_kind_id}'."

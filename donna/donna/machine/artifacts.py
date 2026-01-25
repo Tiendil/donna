@@ -2,7 +2,7 @@ import importlib
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
+from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId, PythonImportPath
 from donna.machine.cells import Cell
 from donna.machine.tasks import Task, WorkUnit
 
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 class ArtifactSectionConfig(BaseEntity):
     id: ArtifactLocalId
-    kind: FullArtifactLocalId
+    kind: PythonImportPath
 
 
 class ArtifactSectionMeta(BaseEntity):
@@ -22,7 +22,7 @@ class ArtifactSectionMeta(BaseEntity):
 
 class ArtifactSection(BaseEntity):
     id: ArtifactLocalId
-    kind: FullArtifactLocalId
+    kind: PythonImportPath
     title: str
     description: str
     primary: bool = False
@@ -154,11 +154,11 @@ def resolve(target_id: FullArtifactLocalId) -> ArtifactSection:
     return section
 
 
-def resolve_section_kind(section_kind_id: FullArtifactLocalId | str) -> ArtifactSectionKind:
-    if isinstance(section_kind_id, FullArtifactLocalId):
+def resolve_section_kind(section_kind_id: PythonImportPath | str) -> ArtifactSectionKind:
+    if isinstance(section_kind_id, PythonImportPath):
         import_path = str(section_kind_id)
     else:
-        import_path = section_kind_id
+        import_path = str(PythonImportPath.parse(section_kind_id))
 
     if "." not in import_path:
         raise NotImplementedError(f"Section kind '{import_path}' is not a valid import path")
