@@ -12,7 +12,6 @@
 ** remove hardcode from worlds and sources
 *** filesystem world uses hardcoded extensions instead of list of sources
 *** sync world implementations with source implementations — there are a lot of hardcode there.
-*** remove _MARKDOWN_ROOTS
 *** => introspection uses worlds to list available artifact/primitives
 ** each kind/primitive must has reference to specification section that explains it
 *** cli command to list primitives?

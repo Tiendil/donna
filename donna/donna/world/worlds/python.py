@@ -19,10 +19,8 @@ class Python(BaseWorld):
     package: str
     artifacts_root: str
 
-    _MARKDOWN_ROOTS = {"usage", "work"}
-
-    def _resource_root(self, root_name: str) -> importlib.resources.abc.Traversable | None:
-        package = f"{self.artifacts_root}.{root_name}"
+    def _resource_root(self) -> importlib.resources.abc.Traversable | None:
+        package = self.artifacts_root
 
         try:
             return importlib.resources.files(package)
@@ -32,18 +30,15 @@ class Python(BaseWorld):
     def _resource_path(self, artifact_id: ArtifactId) -> importlib.resources.abc.Traversable | None:
         parts = str(artifact_id).split(":")
 
-        if not parts or parts[0] not in self._MARKDOWN_ROOTS:
+        if not parts:
             return None
 
-        if len(parts) == 1:
-            return None
-
-        resource_root = self._resource_root(parts[0])
+        resource_root = self._resource_root()
 
         if resource_root is None:
             return None
 
-        *dirs, file_name = parts[1:]
+        *dirs, file_name = parts
         resource_path = resource_root
 
         for part in dirs:
@@ -97,7 +92,6 @@ class Python(BaseWorld):
 
     def _list_artifacts_markdown(self) -> list[ArtifactId]:  # noqa: CCR001
         resource_artifacts: list[ArtifactId] = []
-        roots = sorted(self._MARKDOWN_ROOTS)
 
         def walk(  # noqa: CCR001
             node: importlib.resources.abc.Traversable,
@@ -117,16 +111,15 @@ class Python(BaseWorld):
                 if ArtifactId.validate(artifact_name):
                     resource_artifacts.append(ArtifactId(artifact_name))
 
-        for root in roots:
-            resource_root = self._resource_root(root)
-            if resource_root is None:
-                continue
+        resource_root = self._resource_root()
+        if resource_root is None:
+            return resource_artifacts
 
-            base_path = resource_root
-            base_parts = [root]
+        base_path = resource_root
+        base_parts: list[str] = []
 
-            if base_path.is_dir():
-                walk(base_path, [], base_parts)
+        if base_path.is_dir():
+            walk(base_path, [], base_parts)
 
         return resource_artifacts
 
