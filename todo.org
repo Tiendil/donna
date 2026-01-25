@@ -57,6 +57,8 @@
 *** remove donna.std
 *** where to move specs/workflows from donna.std?
 *** do we need to pass root to the worldpyhton config?
+*** establish correct world layout
+*** establish correct project world layout
 ** review
 *** primitives module and std/*.py modules
 *** donna.world.worlds
