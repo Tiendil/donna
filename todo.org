@@ -50,26 +50,27 @@
 * TODO Consider using https://github.com/toon-format/toon for json formatting in cells
 * TODO WE CAN ASK DONNA TO MAKE A FSM FOR DONNA!!! WHICH WILL BE OUR PLAN OF WORK!!!
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
-* TODO Lazy import of primitives from Python artifacts
-** introspection
-*** Artifact listing is broken because there is no separation of artifact kinds
+* TODO Architecture stabilization
+** remove introspection clie
+** artifacts list improvements
+*** output only heads of artifacts
+*** list recusively all matching artifacts
+*** list all head with glob expressions over ids
+*** tags <-- move into github issue?
+**** tags as default attribute of an artifact
+**** search by tags
+**** listing all tags
+**** specifications for tags
+** Artifact view improvements
+*** allow references to sections by full id -> display one specific section of artifact
+** remove hardcpode from worlds and sources
 *** filesystem world uses hardcoded extensions instead of list of sources
 *** sync world implementations with source implementations — there are a lot of hardcode there.
 *** remove _MARKDOWN_ROOTS
-*** `artifacts list` output the whole artifacts bodies — we need only standardized short info records about each artifact
-*** list_artifact should be recursive (search in subdirectories as well)
-*** artifacts listing/search functionality goest to the worlds
-**** words should return standardized short info records about each artifact
-**** and about each primitive (?) or should primitives be left for the donna side?
 *** => introspection uses worlds to list available artifact/primitives
-*** `donna artifacts list *` goest to `donna introspection`? or should be refactored into `artifacts search *`?
-*** Each primitive should have a link to related specification or to the section in the specification?
-*** mark artifacts and sections with tags to simplify filtering/searching
-**** Do we need speciciations for tags?
-*** tree-based artifacts discovery? I.e. folders with descriptions and folders as artifacts?
-*** full ids for references to objects kinds
-**** that'll allow to remove register in the honor of search in worlds
 ** each kind/primitive must has reference to specification section that explains it
+*** cli command to list primitives?
+*** cli command to show primitive specification?
 ** review
 *** donna.world.worlds
 *** donna.world.sources
@@ -80,7 +81,6 @@
 *** for directives
 *** for kind ids
 *** add `builtins: bool` into world config?
-** We may want to allow donna render part of artifact only (by section id)
 * TODO unify code of different directives? It is very similar
 ** add validation for specificaiton existence in directives
 ** Spec rendere can be unified, since its cli command
