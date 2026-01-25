@@ -8,8 +8,8 @@ from donna.core import utils
 from donna.core.entities import BaseEntity
 from donna.domain.ids import PythonImportPath, WorldId
 from donna.machine.primitives import resolve_primitive
-from donna.world.sources import markdown as markdown_source
-from donna.world.sources.base import SourceConfig
+from donna.world.sources.base import SourceConfig as SourceConfigValue
+from donna.world.sources.base import SourceConstructor
 from donna.world.worlds.base import World as BaseWorld
 from donna.world.worlds.base import WorldConstructor
 
@@ -29,12 +29,19 @@ class WorldConfig(BaseEntity):
     model_config = pydantic.ConfigDict(extra="allow")
 
 
-SourceConfigValue = SourceConfig
+class SourceConfig(BaseEntity):
+    kind: PythonImportPath
+
+    model_config = pydantic.ConfigDict(extra="allow")
 
 
-def _default_sources() -> list[SourceConfigValue]:
+def _default_sources() -> list[SourceConfig]:
     return [
-        markdown_source.Config(),
+        SourceConfig.model_validate(
+            {
+                "kind": PythonImportPath.parse("donna.lib.sources.markdown"),
+            }
+        ),
     ]
 
 
@@ -85,11 +92,13 @@ def _default_worlds() -> list[WorldConfig]:
 
 class Config(BaseEntity):
     worlds: list[WorldConfig] = pydantic.Field(default_factory=_default_worlds)
-    sources: list[SourceConfigValue] = pydantic.Field(default_factory=_default_sources)
+    sources: list[SourceConfig] = pydantic.Field(default_factory=_default_sources)
     _worlds_instances: list[BaseWorld] = pydantic.PrivateAttr(default_factory=list)
+    _sources_instances: list[SourceConfigValue] = pydantic.PrivateAttr(default_factory=list)
 
     def model_post_init(self, __context: Any) -> None:
         worlds: list[BaseWorld] = []
+        sources: list[SourceConfigValue] = []
 
         for world_config in self.worlds:
             primitive = resolve_primitive(world_config.kind)
@@ -99,7 +108,16 @@ class Config(BaseEntity):
 
             worlds.append(primitive.construct_world(world_config))
 
+        for source_config in self.sources:
+            primitive = resolve_primitive(source_config.kind)
+
+            if not isinstance(primitive, SourceConstructor):
+                raise NotImplementedError(f"Source constructor '{source_config.kind}' is not supported")
+
+            sources.append(primitive.construct_source(source_config))
+
         object.__setattr__(self, "_worlds_instances", worlds)
+        object.__setattr__(self, "_sources_instances", sources)
 
     def get_world(self, world_id: WorldId) -> BaseWorld:
         for world in self._worlds_instances:
@@ -112,8 +130,12 @@ class Config(BaseEntity):
     def worlds_instances(self) -> list[BaseWorld]:
         return list(self._worlds_instances)
 
+    @property
+    def sources_instances(self) -> list[SourceConfigValue]:
+        return list(self._sources_instances)
+
     def get_source_config(self, kind: str) -> SourceConfigValue:
-        for source in self.sources:
+        for source in self._sources_instances:
             if source.kind == kind:
                 return source
 

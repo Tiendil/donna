@@ -1,11 +1,11 @@
 import uuid
-from typing import Any, ClassVar, Literal, Protocol, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Protocol, cast
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactId, PythonImportPath
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.primitives import Primitive, resolve_primitive
 from donna.world import markdown
-from donna.world.sources.base import SourceConfig
+from donna.world.sources.base import SourceConfig, SourceConstructor
 from donna.world.templates import RenderMode, render, render_mode
 
 
@@ -24,6 +24,13 @@ class Config(SourceConfig):
     kind: Literal["markdown"] = "markdown"
     default_section_kind: PythonImportPath = PythonImportPath.parse("donna.lib.text")
     default_primary_section_id: ArtifactLocalId = ArtifactLocalId("primary")
+
+
+class MarkdownSourceConstructor(SourceConstructor):
+    def construct_source(self, config: "SourceConfigModel") -> Config:
+        data = config.model_dump()
+        data.pop("kind", None)
+        return Config.model_validate(data)
 
 
 class MarkdownSectionMixin:
@@ -214,3 +221,7 @@ def _ensure_markdown_constructible(
 
     kind_label = f"'{primitive_id}'" if primitive_id is not None else repr(primitive)
     raise NotImplementedError(f"Primitive {kind_label} cannot be constructed from markdown sources.")
+
+
+if TYPE_CHECKING:
+    from donna.world.config import SourceConfig as SourceConfigModel

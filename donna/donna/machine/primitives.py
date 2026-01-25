@@ -12,7 +12,9 @@ if TYPE_CHECKING:
     from donna.machine.cells import Cell
     from donna.machine.changes import Change
     from donna.machine.tasks import Task, WorkUnit
+    from donna.world.config import SourceConfig as SourceConfigModel
     from donna.world.config import WorldConfig
+    from donna.world.sources.base import SourceConfig as SourceConfigValue
     from donna.world.worlds.base import World
 
 
@@ -31,6 +33,9 @@ class Primitive(BaseEntity):
         raise NotImplementedError("You MUST implement this method.")
 
     def construct_world(self, config: "WorldConfig") -> "World":
+        raise NotImplementedError("You MUST implement this method.")
+
+    def construct_source(self, config: "SourceConfigModel") -> "SourceConfigValue":
         raise NotImplementedError("You MUST implement this method.")
 
 
