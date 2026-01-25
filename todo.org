@@ -9,9 +9,7 @@
 * TODO Consider using https://github.com/toon-format/toon for json formatting in cells
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Architecture stabilization
-** Artifact view improvements
-*** allow references to sections by full id -> display one specific section of artifact
-** remove hardcpode from worlds and sources
+** remove hardcode from worlds and sources
 *** filesystem world uses hardcoded extensions instead of list of sources
 *** sync world implementations with source implementations — there are a lot of hardcode there.
 *** remove _MARKDOWN_ROOTS
@@ -45,6 +43,7 @@
 ** currently we do not output the whole workflow body on the request of the artifact, only description. Maybe we should output the whole body?
 ** mention jinja comments {# ... #} in artifact specification
 ** artifact cli should always return Cells
+** CLI: allow references to sections by full id -> display one specific section of artifact
 * TODO Jinja2 improvements
 ** sandbox mode — do we need it?
 ** register jinja2 filters?
