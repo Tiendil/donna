@@ -52,7 +52,6 @@
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Architecture stabilization
 ** artifacts list improvements
-*** output only heads of artifacts
 *** list recusively all matching artifacts
 *** list all head with glob expressions over ids
 *** tags <-- move into github issue?
