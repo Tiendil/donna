@@ -17,7 +17,7 @@ kind = "donna.lib.request_action"
 fsm_mode = "start"
 ```
 
-1. Identify the full workflow artifact id to summarize from the developer request (for example: `project.workflows.grooming`).
+1. Identify the full workflow artifact id to summarize from the developer request (for example: `project:workflows:grooming`).
 2. If the workflow id is missing or ambiguous, ask the developer to provide the exact id, then repeat this operation.
 3. Fetch the workflow artifact source with:
    - `./bin/donna.sh artifacts fetch '<workflow-id>' /tmp/workflow_source.md`

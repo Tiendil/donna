@@ -122,7 +122,7 @@ class ArtifactId(str):
         if not isinstance(value, str) or not value:
             return False
 
-        parts = value.split(".")
+        parts = value.split(":")
         return all(part.isidentifier() for part in parts)
 
     @classmethod
@@ -194,7 +194,7 @@ class FullArtifactId(tuple[WorldId, ArtifactId]):
     __slots__ = ()
 
     def __str__(self) -> str:
-        return f"{self.world_id}.{self.artifact_id}"
+        return f"{self.world_id}:{self.artifact_id}"
 
     @property
     def world_id(self) -> WorldId:
@@ -209,7 +209,7 @@ class FullArtifactId(tuple[WorldId, ArtifactId]):
 
     @classmethod
     def parse(cls, text: str) -> "FullArtifactId":
-        parts = text.split(".", maxsplit=1)
+        parts = text.split(":", maxsplit=1)
 
         if len(parts) != 2:
             raise NotImplementedError(f"Invalid FullArtifactId format: '{text}'")
@@ -255,7 +255,7 @@ class FullArtifactLocalId(tuple[WorldId, ArtifactId, ArtifactLocalId]):
     __slots__ = ()
 
     def __str__(self) -> str:
-        return f"{self.world_id}.{self.artifact_id}.{self.local_id}"
+        return f"{self.world_id}:{self.artifact_id}:{self.local_id}"
 
     @property
     def world_id(self) -> WorldId:
@@ -276,7 +276,7 @@ class FullArtifactLocalId(tuple[WorldId, ArtifactId, ArtifactLocalId]):
     @classmethod
     def parse(cls, text: str) -> "FullArtifactLocalId":
         try:
-            artifact_part, local_part = text.rsplit(".", maxsplit=1)
+            artifact_part, local_part = text.rsplit(":", maxsplit=1)
         except ValueError as exc:
             raise NotImplementedError(f"Invalid FullArtifactLocalId format: '{text}'") from exc
 

@@ -51,7 +51,7 @@ All work in the context of session/story is managed by the `donna` tool.
   4. Start working by calling `<DONNA_CMD> sessions run <workflow-id>`.
   5. The `donna` tool will output descriptions of all operations it performs to complete the story.
   6. The `donna` tool will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
-- When you done doing your part, you call `<DONNA_CMD> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report that you completed the action request. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>.<artifact>.<operation-id>`.
+- When you done doing your part, you call `<DONNA_CMD> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report that you completed the action request. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>:<artifact>:<operation-id>`.
 - After you report the result:
   1. The `donna` tool will output what you need to do next.
   2. You repeat the process until the story is completed.
@@ -71,10 +71,10 @@ An artifact is a markdown document with some extra metadata stored in one of the
 Use the next commands to work with artifacts
 
 - `<DONNA_CMD> artifacts list <artifact-prefix>` — list all artifacts under the given prefix
-- `<DONNA_CMD> artifacts view <world>.<artifact>` — get the meaningful (rendered) content of the artifact. This command shows the rendered information about the artifact. Use this command when you need to read the artifact content.
-- `<DONNA_CMD> artifacts fetch <world>.<artifact> <file-path>` — download the original source of the artifact content to the given file path. Use this command when you need to change the content of the artifact.
-- `<DONNA_CMD> artifacts update <world>.<artifact> <file-path>` — upload the given file as the artifact. Use this command when you finished changing the content of the artifact.
-- `<DONNA_CMD> artifacts validate <world>.<artifact>` — check the artifact for validity according to its kind.
+- `<DONNA_CMD> artifacts view <world>:<artifact>` — get the meaningful (rendered) content of the artifact. This command shows the rendered information about the artifact. Use this command when you need to read the artifact content.
+- `<DONNA_CMD> artifacts fetch <world>:<artifact> <file-path>` — download the original source of the artifact content to the given file path. Use this command when you need to change the content of the artifact.
+- `<DONNA_CMD> artifacts update <world>:<artifact> <file-path>` — upload the given file as the artifact. Use this command when you finished changing the content of the artifact.
+- `<DONNA_CMD> artifacts validate <world>:<artifact>` — check the artifact for validity according to its kind.
 - `<DONNA_CMD> artifacts validate-all <artifact-prefix>` — check all artifacts under the given prefix for validity according to their kinds.
 
 Artifact path prefixes:

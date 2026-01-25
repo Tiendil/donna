@@ -22,7 +22,7 @@ To get information from the artifact, developers, agents and Donna view one of i
 
 **If you need an information from the artifact, you MUST view its representation**. Artifact sources are only for editing.
 
-Read the specification `{{ donna.lib.view("donna.specifications.donna_usage") }}` to learn how to work with artifacts via Donna CLI.
+Read the specification `{{ donna.lib.view("donna:specifications:donna_usage") }}` to learn how to work with artifacts via Donna CLI.
 
 ## Source Format and Rendering
 

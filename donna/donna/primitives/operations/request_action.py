@@ -23,7 +23,7 @@ def extract_transitions(text: str) -> set[FullArtifactLocalId]:
     $$donna goto <full_artifact_local_id> donna$$
     ```
     """
-    pattern = r"\$\$donna\s+goto\s+([a-zA-Z0-9_\-./]+)\s+donna\$\$"
+    pattern = r"\$\$donna\s+goto\s+([a-zA-Z0-9_\-./:]+)\s+donna\$\$"
     matches = re.findall(pattern, text)
 
     transitions: set[FullArtifactLocalId] = set()

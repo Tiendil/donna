@@ -20,7 +20,7 @@ class Python(BaseWorld):
     root: str
 
     def _artifact_module_name(self, artifact_id: ArtifactId) -> str:
-        return f"{self.root}.{artifact_id}"
+        return f"{self.root}.{artifact_id.replace(':', '.')}"
 
     _MARKDOWN_ROOTS = {"specifications", "workflows"}
 
@@ -33,7 +33,7 @@ class Python(BaseWorld):
             return None
 
     def _resource_path(self, artifact_id: ArtifactId) -> importlib.resources.abc.Traversable | None:
-        parts = str(artifact_id).split(".")
+        parts = str(artifact_id).split(":")
 
         if not parts or parts[0] not in self._MARKDOWN_ROOTS:
             return None
@@ -191,7 +191,7 @@ class Python(BaseWorld):
 
         for module_info in pkgutil.walk_packages(spec.submodule_search_locations, prefix=f"{self.root}."):
             module_name = module_info.name
-            artifact_name = module_name[len(self.root) + 1 :]
+            artifact_name = module_name[len(self.root) + 1 :].replace(".", ":")
 
             if not ArtifactId.validate(artifact_name):
                 continue

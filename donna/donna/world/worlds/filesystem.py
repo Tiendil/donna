@@ -15,10 +15,10 @@ class World(BaseWorld):
     path: pathlib.Path
 
     def _artifact_markdown_path(self, artifact_id: ArtifactId) -> pathlib.Path:
-        return self.path / f"{artifact_id.replace('.', '/')}.md"
+        return self.path / f"{artifact_id.replace(':', '/')}.md"
 
     def _artifact_python_path(self, artifact_id: ArtifactId) -> pathlib.Path:
-        return self.path / f"{artifact_id.replace('.', '/')}.py"
+        return self.path / f"{artifact_id.replace(':', '/')}.py"
 
     def has(self, artifact_id: ArtifactId) -> bool:
         return self._artifact_markdown_path(artifact_id).exists() or self._artifact_python_path(artifact_id).exists()
@@ -98,7 +98,7 @@ class World(BaseWorld):
     def list_artifacts(self, artifact_prefix: ArtifactId) -> list[ArtifactId]:  # noqa: CCR001
         artifacts: set[ArtifactId] = set()
 
-        prefix_path = self.path / artifact_prefix.replace(".", "/")
+        prefix_path = self.path / artifact_prefix.replace(":", "/")
         markdown_path = prefix_path.with_suffix(".md")
         python_path = prefix_path.with_suffix(".py")
 
@@ -120,7 +120,7 @@ class World(BaseWorld):
                 continue
 
             artifact_stem = rel_path.with_suffix("")
-            artifacts.add(ArtifactId(".".join(artifact_stem.parts)))
+            artifacts.add(ArtifactId(":".join(artifact_stem.parts)))
 
         for artifact_file in prefix_path.rglob("*.py"):
             if not artifact_file.is_file():
@@ -131,12 +131,12 @@ class World(BaseWorld):
                 continue
 
             artifact_stem = rel_path.with_suffix("")
-            artifacts.add(ArtifactId(".".join(artifact_stem.parts)))
+            artifacts.add(ArtifactId(":".join(artifact_stem.parts)))
 
         return sorted(artifacts, key=str)
 
     def _load_module_from_path(self, artifact_id: ArtifactId, path: pathlib.Path) -> ModuleType:
-        module_name = f"donna.world.filesystem.{self.id}.{artifact_id}"
+        module_name = f"donna.world.filesystem.{self.id}.{artifact_id.replace(':', '.')}"
         spec = importlib.util.spec_from_file_location(module_name, path)
 
         if spec is None or spec.loader is None:
