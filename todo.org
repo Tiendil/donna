@@ -65,12 +65,6 @@
 *** donna.world.worlds
 *** donna.world.sources
 *** reoganize donna.primitives submodules
-** builtins (make an issue on github)
-*** analogue of `__init__.py` for donna world for shorter ids/paths?
-*** sections from world.builtings should be accessible by their ids without prefixes?
-*** for directives
-*** for kind ids
-*** add `builtins: bool` into world config?
 * TODO unify code of different directives? It is very similar
 ** add validation for specificaiton existence in directives
 ** Spec rendere can be unified, since its cli command
