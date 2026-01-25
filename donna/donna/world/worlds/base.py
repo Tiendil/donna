@@ -1,6 +1,14 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactId, WorldId
 from donna.machine.artifacts import Artifact
+from donna.machine.primitives import Primitive
+
+if TYPE_CHECKING:
+    from donna.world.config import WorldConfig
 
 
 class World(BaseEntity):
@@ -19,6 +27,13 @@ class World(BaseEntity):
 
     def update(self, artifact_id: ArtifactId, content: bytes) -> None:
         raise NotImplementedError("You must implement this method in subclasses")
+
+    def file_extension_for(self, artifact_id: ArtifactId) -> str | None:
+        if not self.has(artifact_id):
+            return None
+
+        # TODO: remove that hardcoding
+        return "md"
 
     def list_artifacts(self, artifact_prefix: ArtifactId) -> list[ArtifactId]:
         raise NotImplementedError("You must implement this method in subclasses")
@@ -41,4 +56,9 @@ class World(BaseEntity):
         pass
 
     def is_initialized(self) -> bool:
+        raise NotImplementedError("You must implement this method in subclasses")
+
+
+class WorldConstructor(Primitive):
+    def construct_world(self, config: WorldConfig) -> World:
         raise NotImplementedError("You must implement this method in subclasses")

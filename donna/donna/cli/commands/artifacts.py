@@ -6,6 +6,7 @@ from donna.cli.application import app
 from donna.cli.types import ArtifactPrefixArgument, FullArtifactIdArgument
 from donna.cli.utils import output_cells
 from donna.world import artifacts as world_artifacts
+from donna.world import utils as world_utils
 
 artifacts_cli = typer.Typer()
 
@@ -25,7 +26,10 @@ def view(id: FullArtifactIdArgument) -> None:
 
 
 @artifacts_cli.command()
-def fetch(id: FullArtifactIdArgument, output: pathlib.Path) -> None:
+def fetch(id: FullArtifactIdArgument, output: pathlib.Path | None = None) -> None:
+    if output is None:
+        output = world_utils.tmp_file_for_artifact(id, world_artifacts.artifact_file_extension(id))
+
     world_artifacts.fetch_artifact(id, output)
     typer.echo(f"Artifact `{id}` fetched to '{output}'")
 

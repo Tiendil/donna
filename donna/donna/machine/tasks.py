@@ -53,7 +53,7 @@ class WorkUnit(BaseEntity):
         return unit
 
     def run(self, task: Task) -> list["Change"]:
-        from donna.machine.artifacts import ArtifactSectionKindMeta, resolve
+        from donna.machine.primitives import resolve_primitive
         from donna.world import artifacts
 
         workflow = artifacts.load_artifact(self.operation_id.full_artifact_id)
@@ -63,10 +63,7 @@ class WorkUnit(BaseEntity):
         if not operation:
             raise NotImplementedError(f"Operation with id '{self.operation_id.local_id}' not found")
 
-        section = resolve(operation.kind)
-        if not isinstance(section.meta, ArtifactSectionKindMeta):
-            raise NotImplementedError(f"Operation kind '{operation.kind}' is not available")
-        operation_kind = section.meta.section_kind
+        operation_kind = resolve_primitive(operation.kind)
 
         cells = list(operation_kind.execute_section(task, self, operation))
 

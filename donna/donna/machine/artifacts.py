@@ -1,17 +1,13 @@
-from typing import TYPE_CHECKING, Any, ClassVar, Iterable
+from typing import Any
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
+from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId, PythonImportPath
 from donna.machine.cells import Cell
-from donna.machine.tasks import Task, WorkUnit
-
-if TYPE_CHECKING:
-    from donna.machine.changes import Change
 
 
 class ArtifactSectionConfig(BaseEntity):
     id: ArtifactLocalId
-    kind: FullArtifactLocalId
+    kind: PythonImportPath
 
 
 class ArtifactSectionMeta(BaseEntity):
@@ -21,7 +17,7 @@ class ArtifactSectionMeta(BaseEntity):
 
 class ArtifactSection(BaseEntity):
     id: ArtifactLocalId
-    kind: FullArtifactLocalId
+    kind: PythonImportPath
     title: str
     description: str
     primary: bool = False
@@ -62,6 +58,8 @@ class Artifact(BaseEntity):
         return primary_sections[0]
 
     def validate(self) -> tuple[bool, list[Cell]]:  # type: ignore[override]  # noqa: CCR001
+        from donna.machine.primitives import resolve_primitive
+
         primary_sections = self._primary_sections()
 
         if len(primary_sections) != 1:
@@ -75,18 +73,8 @@ class Artifact(BaseEntity):
             ]
 
         for section in self.sections:
-            resolved_section = resolve(section.kind)
-            if not isinstance(resolved_section.meta, ArtifactSectionKindMeta):
-                return False, [
-                    Cell.build_meta(
-                        kind="artifact_kind_validation",
-                        id=str(self.id),
-                        status="failure",
-                        message=f"Section kind '{section.kind}' is not available.",
-                    )
-                ]
-
-            is_valid, cells = resolved_section.meta.section_kind.validate_section(self, section.id)
+            primitive = resolve_primitive(section.kind)
+            is_valid, cells = primitive.validate_section(self, section.id)
 
             if not is_valid:
                 return is_valid, cells
@@ -130,25 +118,6 @@ class Artifact(BaseEntity):
             blocks.extend(section.markdown_blocks())
 
         return blocks
-
-
-class ArtifactSectionKindMeta(ArtifactSectionMeta):
-    section_kind: "ArtifactSectionKind"
-
-    model_config = BaseEntity.model_config | {"arbitrary_types_allowed": True}
-
-    def cells_meta(self) -> dict[str, Any]:
-        return {"section_kind": repr(self.section_kind)}
-
-
-class ArtifactSectionKind(BaseEntity):
-    config_class: ClassVar[type[ArtifactSectionConfig]] = ArtifactSectionConfig
-
-    def execute_section(self, task: Task, unit: WorkUnit, section: ArtifactSection) -> Iterable["Change"]:
-        raise NotImplementedError("You MUST implement this method.")
-
-    def validate_section(self, artifact: "Artifact", section_id: ArtifactLocalId) -> tuple[bool, list[Cell]]:
-        return True, []
 
 
 def resolve(target_id: FullArtifactLocalId) -> ArtifactSection:

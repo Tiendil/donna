@@ -104,10 +104,6 @@ class Identifier(str):
         )
 
 
-class DirectiveKindId(Identifier):
-    __slots__ = ()
-
-
 class WorldId(Identifier):
     __slots__ = ()
 
@@ -126,7 +122,7 @@ class ArtifactId(str):
         if not isinstance(value, str) or not value:
             return False
 
-        parts = value.split(".")
+        parts = value.split(":")
         return all(part.isidentifier() for part in parts)
 
     @classmethod
@@ -151,11 +147,54 @@ class ArtifactId(str):
         )
 
 
+class PythonImportPath(str):
+    __slots__ = ()
+
+    def __new__(cls, value: str) -> "PythonImportPath":
+        if not cls.validate(value):
+            raise NotImplementedError(f"Invalid PythonImportPath: '{value}'")
+
+        return super().__new__(cls, value)
+
+    @classmethod
+    def validate(cls, value: str) -> bool:
+        if not isinstance(value, str) or not value:
+            return False
+
+        parts = value.split(".")
+        return all(part.isidentifier() for part in parts)
+
+    @classmethod
+    def parse(cls, text: str) -> "PythonImportPath":
+        return cls(text)
+
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
+
+        def validate(v: Any) -> "PythonImportPath":
+            if isinstance(v, cls):
+                return v
+
+            if not isinstance(v, str):
+                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
+
+            if not cls.validate(v):
+                raise ValueError(f"Invalid {cls.__name__}: {v!r}")
+
+            return cls(v)
+
+        return core_schema.json_or_python_schema(
+            json_schema=core_schema.str_schema(),
+            python_schema=core_schema.no_info_plain_validator_function(validate),
+            serialization=core_schema.to_string_ser_schema(),
+        )
+
+
 class FullArtifactId(tuple[WorldId, ArtifactId]):
     __slots__ = ()
 
     def __str__(self) -> str:
-        return f"{self.world_id}.{self.artifact_id}"
+        return f"{self.world_id}:{self.artifact_id}"
 
     @property
     def world_id(self) -> WorldId:
@@ -170,7 +209,7 @@ class FullArtifactId(tuple[WorldId, ArtifactId]):
 
     @classmethod
     def parse(cls, text: str) -> "FullArtifactId":
-        parts = text.split(".", maxsplit=1)
+        parts = text.split(":", maxsplit=1)
 
         if len(parts) != 2:
             raise NotImplementedError(f"Invalid FullArtifactId format: '{text}'")
@@ -216,7 +255,7 @@ class FullArtifactLocalId(tuple[WorldId, ArtifactId, ArtifactLocalId]):
     __slots__ = ()
 
     def __str__(self) -> str:
-        return f"{self.world_id}.{self.artifact_id}.{self.local_id}"
+        return f"{self.world_id}:{self.artifact_id}:{self.local_id}"
 
     @property
     def world_id(self) -> WorldId:
@@ -237,7 +276,7 @@ class FullArtifactLocalId(tuple[WorldId, ArtifactId, ArtifactLocalId]):
     @classmethod
     def parse(cls, text: str) -> "FullArtifactLocalId":
         try:
-            artifact_part, local_part = text.rsplit(".", maxsplit=1)
+            artifact_part, local_part = text.rsplit(":", maxsplit=1)
         except ValueError as exc:
             raise NotImplementedError(f"Invalid FullArtifactLocalId format: '{text}'") from exc
 
