@@ -7,9 +7,6 @@
 ** TODO intergration tests for workflows/stories/scenarios
 * TODO optimize imports by moving most used ones to \__init__.py files
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
-* TODO Architecture stabilization
-** review
-*** reoganize donna.primitives submodules
 * TODO unify code of different directives? It is very similar
 ** add validation for specificaiton existence in directives
 ** Spec rendere can be unified, since its cli command
