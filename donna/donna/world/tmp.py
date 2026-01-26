@@ -6,7 +6,7 @@ from donna.cli.types import FullArtifactIdArgument
 from donna.world.config import config, config_dir
 
 
-def tmp_dir() -> pathlib.Path:
+def dir() -> pathlib.Path:
     cfg = config()
     tmp_path = cfg.tmp_dir
 
@@ -18,8 +18,8 @@ def tmp_dir() -> pathlib.Path:
     return tmp_path
 
 
-def tmp_file_for_artifact(artifact_id: FullArtifactIdArgument, extention: str) -> pathlib.Path:
-    directory = tmp_dir()
+def file_for_artifact(artifact_id: FullArtifactIdArgument, extention: str) -> pathlib.Path:
+    directory = dir()
 
     directory.mkdir(parents=True, exist_ok=True)
 
@@ -29,5 +29,5 @@ def tmp_file_for_artifact(artifact_id: FullArtifactIdArgument, extention: str) -
     return directory / artifact_file_name
 
 
-def tmp_clear() -> None:
-    shutil.rmtree(tmp_dir())
+def clear() -> None:
+    shutil.rmtree(dir())
