@@ -47,27 +47,6 @@ class Cell(BaseEntity):
 
         self.meta[key] = value
 
-    def render(self) -> str:
-
-        id = self.short_id()
-
-        lines = [f"--DONNA-CELL {id} BEGIN--"]
-
-        for meta_key, meta_value in self.meta.items():
-            lines.append(f"{meta_key}: {meta_value}")
-
-        if self.meta and self.content:
-            lines.append("")
-
-        if self.content:
-            lines.append(self.content)
-
-        lines.append(f"--DONNA-CELL {id} END--")
-
-        cell = "\n".join(lines).strip()
-
-        return cell
-
 
 def cell_donna_message(content: str) -> Cell:
     return Cell.build_markdown(kind="donna_message", content=content)
