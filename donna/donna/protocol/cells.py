@@ -37,7 +37,6 @@ class Cell(BaseEntity):
     def build_markdown(cls, kind: str, content: str, **meta: MetaValue) -> "Cell":
         return cls.build(kind=kind, media_type="text/markdown", content=content, **meta)
 
-    # TODO: refactor to base62 (without `_` and `-` characters)
     def short_id(self) -> str:
         return base64.urlsafe_b64encode(self.id.bytes).rstrip(b"=").decode()
 
