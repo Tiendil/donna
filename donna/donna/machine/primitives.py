@@ -9,9 +9,9 @@ from donna.machine.artifacts import ArtifactSectionConfig
 
 if TYPE_CHECKING:
     from donna.machine.artifacts import Artifact, ArtifactSection
-    from donna.machine.cells import Cell
     from donna.machine.changes import Change
     from donna.machine.tasks import Task, WorkUnit
+    from donna.protocol.cells import Cell
     from donna.world.config import SourceConfig as SourceConfigModel
     from donna.world.config import WorldConfig
     from donna.world.sources.base import SourceConfig as SourceConfigValue

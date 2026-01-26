@@ -3,9 +3,9 @@ import functools
 from typing import Callable, Iterator, ParamSpec
 
 from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactLocalId, WorldId
-from donna.machine.cells import Cell, cell_donna_message
 from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
+from donna.protocol.cells import Cell, cell_donna_message
 from donna.world import artifacts
 from donna.world import tmp as world_tmp
 from donna.world.config import config

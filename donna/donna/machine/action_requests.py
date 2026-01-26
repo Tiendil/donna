@@ -4,7 +4,7 @@ import pydantic
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ActionRequestId, FullArtifactLocalId
-from donna.machine.cells import Cell
+from donna.protocol.cells import Cell
 
 
 class ActionRequest(BaseEntity):

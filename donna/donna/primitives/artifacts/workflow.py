@@ -7,9 +7,9 @@ from donna.machine.artifacts import (
     ArtifactSectionConfig,
     ArtifactSectionMeta,
 )
-from donna.machine.cells import Cell
 from donna.machine.operations import FsmMode, OperationMeta
 from donna.machine.primitives import Primitive
+from donna.protocol.cells import Cell
 from donna.world import markdown
 from donna.world.sources.markdown import MarkdownSectionMixin
 

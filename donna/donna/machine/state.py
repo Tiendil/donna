@@ -12,7 +12,6 @@ from donna.domain.ids import (
     WorkUnitId,
 )
 from donna.machine.action_requests import ActionRequest
-from donna.machine.cells import Cell
 from donna.machine.changes import (
     Change,
     ChangeAddTask,
@@ -22,6 +21,7 @@ from donna.machine.changes import (
     ChangeRemoveWorkUnit,
 )
 from donna.machine.tasks import Task, WorkUnit
+from donna.protocol.cells import Cell
 
 
 class BaseState(BaseEntity):
