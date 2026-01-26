@@ -4,6 +4,7 @@ from jinja2.runtime import Context
 
 from donna.domain.ids import FullArtifactLocalId
 from donna.machine.templates import Directive
+from donna.protocol.modes import mode
 from donna.world.templates import RenderMode
 
 
@@ -28,7 +29,11 @@ class GoTo(Directive):
                 raise NotImplementedError(f"Render mode {render_mode} not implemented in GoTo directive.")
 
     def render_cli(self, context: Context, next_operation_id: FullArtifactLocalId) -> str:
-        return f"donna sessions action-request-completed <action-request-id> '{next_operation_id}'"
+        protocol = mode().value
+        return (
+            "donna --protocol="
+            f"{protocol} sessions action-request-completed <action-request-id> '{next_operation_id}'"
+        )
 
     def render_analyze(self, context: Context, next_operation_id: FullArtifactLocalId) -> str:
         return f"$$donna {self.analyze_id} {next_operation_id} donna$$"

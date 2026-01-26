@@ -31,12 +31,14 @@ We may need coding agents on the each step of the process, but there no reason f
 - If developer asked you to do something and you have no session, you create one with the `donna` tool.
 - If you have a session, you MUST keep all the information about it in your memory. Ask `donna` tool for the session details when you forget something.
 - Donna may work from different environments. You MUST substitute correct `donna` command from the `AGENTS.md` for `<DONNA_CMD>` placeholder in this document when you work with the tool.
+- All Donna CLI commands MUST include an explicit protocol selection using `--protocol=<mode>` or `-p <mode>` immediately after `<DONNA_CMD>`.
+- When examples show `--protocol=<protocol>`, the equivalent short form is `-p <protocol>`.
 
 ## Stories
 
 Story is a semantically consistent unit of work assigned to you by the developer.
 
-Story has no direct representation in donna tool, it it just a convenient way to refer to a particular scope of work.
+Story has no direct representation in donna tool, it is just a convenient way to refer to a particular scope of work.
 
 The session always has exactly one active story at a time.
 
@@ -44,14 +46,14 @@ All work in the context of session/story is managed by the `donna` tool.
 
 ### Story workflow
 
-- Yoy start session by calling `<DONNA_CMD> sessions start`.
+- You start session by calling `<DONNA_CMD> --protocol=<protocol> sessions start`.
 - After you started a session:
-  2. List all possible workflows with command `<DONNA_CMD> artifacts list`.
+  2. List all possible workflows with command `<DONNA_CMD> --protocol=<protocol> artifacts list`.
   3. Choose the most appropriate workflow for the story you are going to work on or ask the developer if you are not sure which workflow to choose.
-  4. Start working by calling `<DONNA_CMD> sessions run <workflow-id>`.
+  4. Start working by calling `<DONNA_CMD> --protocol=<protocol> sessions run <workflow-id>`.
   5. The `donna` tool will output descriptions of all operations it performs to complete the story.
   6. The `donna` tool will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
-- When you done doing your part, you call `<DONNA_CMD> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report that you completed the action request. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>:<artifact>:<operation-id>`.
+- When you done doing your part, you call `<DONNA_CMD> --protocol=<protocol> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report that you completed the action request. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>:<artifact>:<operation-id>`.
 - After you report the result:
   1. The `donna` tool will output what you need to do next.
   2. You repeat the process until the story is completed.
@@ -59,10 +61,10 @@ All work in the context of session/story is managed by the `donna` tool.
 ### Starting work on a story
 
 - If the developer asked you to do something:
-  - run `<DONNA_CMD> sessions status` to get the status of the current session.
-  - if the work in completed, run `<DONNA_CMD> sessions start` to start a new session.
+  - run `<DONNA_CMD> --protocol=<protocol> sessions status` to get the status of the current session.
+  - if the work in completed, run `<DONNA_CMD> --protocol=<protocol> sessions start` to start a new session.
   - if there are still a work to do, ask developer if you need to resume the current session or start a new one.
-- If the developer asked you to continue your work, you MUST call `<DONNA_CMD> sessions continue` to get your instructions on what to do next.
+- If the developer asked you to continue your work, you MUST call `<DONNA_CMD> --protocol=<protocol> sessions continue` to get your instructions on what to do next.
 
 ### Working with artifacts
 
@@ -70,12 +72,12 @@ An artifact is a markdown document with some extra metadata stored in one of the
 
 Use the next commands to work with artifacts
 
-- `<DONNA_CMD> artifacts list [--pattern <artifact-pattern>]` — list all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, list all artifacts in all worlds. Use this command when you need to find an artifact or see what artifacts are available.
-- `<DONNA_CMD> artifacts view <world>:<artifact>` — get the meaningful (rendered) content of the artifact. This command shows the rendered information about the artifact. Use this command when you need to read the artifact content.
-- `<DONNA_CMD> artifacts fetch <world>:<artifact>` — download the original source of the artifact content, outputs the file path to the artifact you can change. Use this command when you need to change the content of the artifact.
-- `<DONNA_CMD> artifacts update <world>:<artifact> <file-path>` — upload the given file as the artifact. Use this command when you finished changing the content of the artifact.
-- `<DONNA_CMD> artifacts validate <world>:<artifact>` — check the artifact for validity according to its kind.
-- `<DONNA_CMD> artifacts validate-all [--pattern <artifact-pattern>]` — check all artifacts corresponding to the given pattern for validity according to their kinds.
+- `<DONNA_CMD> --protocol=<protocol> artifacts list [--pattern <artifact-pattern>]` — list all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, list all artifacts in all worlds. Use this command when you need to find an artifact or see what artifacts are available.
+- `<DONNA_CMD> --protocol=<protocol> artifacts view <world>:<artifact>` — get the meaningful (rendered) content of the artifact. This command shows the rendered information about the artifact. Use this command when you need to read the artifact content.
+- `<DONNA_CMD> --protocol=<protocol> artifacts fetch <world>:<artifact>` — download the original source of the artifact content, outputs the file path to the artifact you can change. Use this command when you need to change the content of the artifact.
+- `<DONNA_CMD> --protocol=<protocol> artifacts update <world>:<artifact> <file-path>` — upload the given file as the artifact. Use this command when you finished changing the content of the artifact.
+- `<DONNA_CMD> --protocol=<protocol> artifacts validate <world>:<artifact>` — check the artifact for validity according to its kind.
+- `<DONNA_CMD> --protocol=<protocol> artifacts validate-all [--pattern <artifact-pattern>]` — check all artifacts corresponding to the given pattern for validity according to their kinds.
 
 The format of `<artifact-pattern>` is as follows:
 
@@ -91,12 +93,13 @@ The format of `<artifact-pattern>` is as follows:
 ## IMPORTANT ON DONNA TOOL USAGE
 
 **Substitute correct `donna` command from the `AGENTS.md` for `<DONNA_CMD>` placeholder in this document when you work with the tool.**
+**All commands MUST include `--protocol=<mode>` or `-p <mode>` right after `<DONNA_CMD>`.**
 
 Examples:
 
-- `<DONNA_CMD>  artifacts list --pattern "*:usage:**"` -> `./bin/donna.sh artifacts list --pattern "*:usage:**"` when `<DONNA_CMD>` is `./bin/donna.sh`
-- `<DONNA_CMD>  artifacts list --pattern "*:usage:**"` -> `poetry run donna artifacts list --pattern "*:usage:**"` when `<DONNA_CMD>` is `poetry run donna`
-- `<DONNA_CMD>  artifacts list --pattern "*:usage:**"` -> `donna artifacts list --pattern "*:usage:**"` when `<DONNA_CMD>` is `donna`.
+- `<DONNA_CMD> --protocol=llm artifacts list --pattern "*:usage:**"` -> `./bin/donna.sh --protocol=llm artifacts list --pattern "*:usage:**"` when `<DONNA_CMD>` is `./bin/donna.sh`
+- `<DONNA_CMD> -p llm artifacts list --pattern "*:usage:**"` -> `poetry run donna -p llm artifacts list --pattern "*:usage:**"` when `<DONNA_CMD>` is `poetry run donna`
+- `<DONNA_CMD> --protocol=llm artifacts list --pattern "*:usage:**"` -> `donna --protocol=llm artifacts list --pattern "*:usage:**"` when `<DONNA_CMD>` is `donna`.
 
 **STRICTLY FOLLOW DESCRIBED COMMAND SYNTAX**
 
@@ -106,10 +109,10 @@ Use one of the next approaches to correctly escape text arguments:
 
 ```
 # option 1
-<DONNA_CMD> artifacts update <...>  $'# Long text\n\nwith escape sequences...'
+<DONNA_CMD> --protocol=<protocol> artifacts update <...>  $'# Long text\n\nwith escape sequences...'
 
 # option 2
-<DONNA_CMD> artifacts update <...> \
+<DONNA_CMD> --protocol=<protocol> artifacts update <...> \
   "$(cat <<'EOF'
 # Long text
 

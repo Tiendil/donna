@@ -4,6 +4,7 @@ from jinja2.runtime import Context
 
 from donna.domain.ids import FullArtifactId
 from donna.machine.templates import Directive
+from donna.protocol.modes import mode
 from donna.world.templates import RenderMode
 
 
@@ -26,7 +27,8 @@ class View(Directive):
                 raise NotImplementedError(f"Render mode {render_mode} not implemented in View directive.")
 
     def render_cli(self, context: Context, specification_id: FullArtifactId) -> str:
-        return f"donna artifacts view '{specification_id}'"
+        protocol = mode().value
+        return f"donna --protocol={protocol} artifacts view '{specification_id}'"
 
     def render_analyze(self, context: Context, specification_id: FullArtifactId) -> str:
         return f"$$donna {self.analyze_id} {specification_id} donna$$"

@@ -1,13 +1,12 @@
+import enum
 
-import enums
-
-from donna.protocol.formatters.base import Formatter
 from donna.protocol.formatters.automation import Formatter as AutomationFormatter
+from donna.protocol.formatters.base import Formatter
 from donna.protocol.formatters.human import Formatter as HumanFormatter
 from donna.protocol.formatters.llm import Formatter as LLMFormatter
 
 
-class Mode(enums.StrEnum):
+class Mode(enum.StrEnum):
     human = "human"
     llm = "llm"
     automation = "automation"
@@ -23,7 +22,7 @@ def set_mode(mode: Mode) -> None:
 
 def mode() -> Mode:
     if _MODE is None:
-        raise NotImplementedError("Mode is not set")
+        raise NotImplementedError("Mode is not set. Pass --protocol=<mode> or -p <mode> to the CLI.")
 
     return _MODE
 

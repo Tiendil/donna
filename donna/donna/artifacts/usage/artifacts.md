@@ -9,7 +9,7 @@ This format and behavior is what should be expected by default from an artifact 
 
 ## Overview
 
-An artifact is any text or binary document that Donna manages in its worlds. For example, via CLI commands `donna artifacts …`.
+An artifact is any text or binary document that Donna manages in its worlds. For example, via CLI commands `donna --protocol=<protocol> artifacts …`.
 
 The text artifact has a source and a representation.
 

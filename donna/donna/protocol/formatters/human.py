@@ -1,9 +1,8 @@
-
-
 from donna.protocol.cells import Cell
+from donna.protocol.formatters.base import Formatter as BaseFormatter
 
 
-class Formatter:
+class Formatter(BaseFormatter):
 
     def format_cell(self, cell: Cell) -> bytes:
         id = cell.short_id()
@@ -23,4 +22,4 @@ class Formatter:
 
     def format_cells(self, cells: list[Cell]) -> bytes:
         formatted_cells = [self.format_cell(cell) for cell in cells]
-        return "\n\n".join(formatted_cells).encode()
+        return b"\n\n".join(formatted_cells)
