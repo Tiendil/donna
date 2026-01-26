@@ -80,26 +80,32 @@
 ** tune wording of workflows (what to write before goto)
 ** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
 * TODO Cells & Errors
+** CLI mode
+*** human — pretty printing
+*** cli-agent — current cell borders
+*** cli-automation — json line (do we need that?)
+*** update specs
 ** Cells should use monotonic time for ids?
-** We generate different kinds of cells for different use-cases. That is not reflected in the code well enough.
-** Replace custom output woth json logging (?), for the sake of ai agents, it is not big difference to use json instead of cells.
-** stdout is for structured output of cells (like json?)
-** stderr is for logging and debug info
-** using json will help to rid of cell ids
-** artifact cli should always return Cells
-** Consider using https://github.com/toon-format/toon for json formatting in cells
-** each kind/primitive must has reference to specification section that explains it
-*** cli command to list primitives?
-*** cli command to show primitive specification?
-*** in case of errors primitives should return cell with reference to their specification section
-*** cli command to validate that every specification exists for each primitive
-** Organize standard cell kinds into enum (but allow custom kinds as well). Or just provide custom constructors for each use-case.
-** errors processing improvements
+** Cell renderers for each mode
+*** stdout
+** Imprpove cells construction
+*** We generate different kinds of cells for different use-cases. That is not reflected in the code well enough.
+*** Organize standard cell kinds into enum (but allow custom kinds as well). Or just provide custom constructors for each use-case.
+** Errors processing improvements
 *** Vebose jinja2 render errors to help agents and developers
 *** replace all NotImplementedError exceptions with custom exceptions and smart error handling
 *** exceptions must output cells?
 *** cleanup asserts — replace with real checks and exceptions
 *** rust-style errors?
+** Cli should always return Cells
+** Logs (do we need them now?)
+*** stderr
+*** turned off by default
+** Each primitive must has reference to specification section that explains it
+*** cli command to list primitives?
+*** cli command to show primitive specification?
+*** in case of errors primitives should return cell with reference to their specification section
+*** cli command to validate that every specification exists for each primitive
 * TODO Donna flow improvements
 ** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
 ** on initialization donna should create some default workflows based on the project configs (grooming, for example)
