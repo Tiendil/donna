@@ -107,3 +107,4 @@
 ** Replace them with json logging, for the sake of ai agent, it is not big difference to use json instead of cells.
 ** stdout is for structured output of cells (like json?)
 ** stderr is for logging and debug info
+** using json will help to rid of cell ids
