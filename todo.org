@@ -6,14 +6,8 @@
 ** TODO domain-level unit tests
 ** TODO intergration tests for workflows/stories/scenarios
 * TODO optimize imports by moving most used ones to \__init__.py files
-* TODO Consider using https://github.com/toon-format/toon for json formatting in cells
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO Architecture stabilization
-** each kind/primitive must has reference to specification section that explains it
-*** cli command to list primitives?
-*** cli command to show primitive specification?
-*** in case of errors primitives should return cell with reference to their specification section
-*** cli command to validate that every specification exists for each primitive
 ** review
 *** donna.world.worlds
 *** donna.world.sources
@@ -21,38 +15,19 @@
 * TODO unify code of different directives? It is very similar
 ** add validation for specificaiton existence in directives
 ** Spec rendere can be unified, since its cli command
-* TODO Artifact improvements:
-** When we start the workflow, should we output the head cells before the first operation?
+* TODO Specification improvements:
 ** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
 ** {{ edit(specification) }} directive?
 ** {{ run(workflow) }} directive?
-** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
-** Declare explicit refining loop
-** Add mini workflows to polish each kind of records?
-** meta_work_loop.md contains a lot of repetitive commands to read specifications. We should optimize them somehow.
-*** Approach 1: move them to the head section text
-*** Approach 2: move them to the head section config
-*** Approach 3: keep them, but add some meta info on analysis phase that donna can use.
-** tune wording of workflows (what to write before goto)
-** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
 ** remove mention of <DONNA_CMD> from specs
 ** "Story" term still in some specs for convienience, we should think of a better naming
 ** currently we do not output the whole workflow body on the request of the artifact, only description. Maybe we should output the whole body?
+** When we start the workflow, should we output the head cells before the first operation?
 ** mention jinja comments {# ... #} in artifact specification
-** artifact cli should always return Cells
 ** CLI: allow references to sections by full id -> display one specific section of artifact
 * TODO Jinja2 improvements
 ** sandbox mode — do we need it?
 ** register jinja2 filters?
-* TODO Organize standard cell kinds into enum (but allow custom kinds as well). Or just provide custom constructors for each use-case.
-* TODO ask codex to straighten the naming/dictionary/terms in the donna project
-** review the dictionary of primary terms
-* TODO errors processing improvements
-** Vebose jinja2 render errors to help agents and developers
-** replace all NotImplementedError exceptions with custom exceptions and smart error handling
-** exceptions must output cells?
-** cleanup asserts — replace with real checks and exceptions
-** rust-style errors?
 * TODO Possible workflows
 ** bootstrap.bootstrap_all.
 ** bootstrap.donna.create_project
@@ -61,17 +36,13 @@
 ** bootstrap.python.create_project
 ** morphologica_analysis — workflow for explicit morphological analysis
 ** simple_task — workflow for simple tasks to not bother with complex story workflows
+** Spec-based workflow (like in OpenSpec?)
 * TODO possible specifications
 ** how to prepare python package with artifacts for donna
 ** `donna:usage:dictionary` — standard terms and their definitions
-* TODO initialization of donna for the new project
-** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
-** create a copy of the default config for the new project
 * TODO Grooming improvements
 ** Add spelling validation
 ** Add import/dependency flow restrictions (there were a specialized package for that)
-* TODO integration into emacs? How?
-** https://github.com/d12frosted/vui.el/
 * TODO CLI operation
 ** Add a new operation kind, that runs cli commands as part of the workflow.
 ** The operation should not requre interaction with the agent or the user.
@@ -92,6 +63,7 @@
 ** https://github.com/m0n0x41d/quint-code
 ** https://github.com/Fission-AI/OpenSpec
 ** https://www.reddit.com/r/PKMS/comments/1qdgr5a/would_a_simple_pkm_programming_language_make_sense/
+** https://github.com/d12frosted/vui.el/
 * TODO README.md notes
 ** `No API keys required.` as a feature
 ** `save tokens by taking work from your agent to your code`
@@ -99,13 +71,39 @@
 *** fsms instead of plain texts
 *** "better" Markdown
 ** you can deliver instructions and operations for your package with your package
-* TODO lock for donna operations on the project
-* TODO donna should be able to continue finished session (somewhow). I.e. when the developer ads new details to it.
-* TODO Spec-based workflow (like in OpenSpec?)
-* TODO add depenedency graph validation to the grooming (there are some python packages for that)
 * TODO Request Action: agent has not always use the correctly specified branch, may be we should separate operation with next operation selection?
-* TODO We should improve the way we work with cells. I.e. we generate different kinds of cells for different use-cases. That is not reflected in the code well enough.
-** Replace them with json logging, for the sake of ai agent, it is not big difference to use json instead of cells.
+* TODO Workflows polishing
+** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
+** Declare explicit refining loop
+** Add mini workflows to polish each kind of records?
+** meta_work_loop.md contains a lot of repetitive commands to read specifications. We should optimize them somehow.
+*** Approach 1: move them to the head section text
+*** Approach 2: move them to the head section config
+*** Approach 3: keep them, but add some meta info on analysis phase that donna can use.
+** tune wording of workflows (what to write before goto)
+** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
+* TODO Cells & Errors
+** We generate different kinds of cells for different use-cases. That is not reflected in the code well enough.
+** Replace custom output woth json logging (?), for the sake of ai agents, it is not big difference to use json instead of cells.
 ** stdout is for structured output of cells (like json?)
 ** stderr is for logging and debug info
 ** using json will help to rid of cell ids
+** artifact cli should always return Cells
+** Consider using https://github.com/toon-format/toon for json formatting in cells
+** each kind/primitive must has reference to specification section that explains it
+*** cli command to list primitives?
+*** cli command to show primitive specification?
+*** in case of errors primitives should return cell with reference to their specification section
+*** cli command to validate that every specification exists for each primitive
+** Organize standard cell kinds into enum (but allow custom kinds as well). Or just provide custom constructors for each use-case.
+** errors processing improvements
+*** Vebose jinja2 render errors to help agents and developers
+*** replace all NotImplementedError exceptions with custom exceptions and smart error handling
+*** exceptions must output cells?
+*** cleanup asserts — replace with real checks and exceptions
+*** rust-style errors?
+* TODO Donna flow improvements
+** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
+** create a copy of the default config for the new project
+** lock for donna operations on the project
+** donna should be able to continue finished session (somewhow). I.e. when the developer ads new details to it.
