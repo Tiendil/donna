@@ -109,3 +109,4 @@
 ** create a copy of the default config for the new project
 ** lock for donna operations on the project
 ** donna should be able to continue finished session (somewhow). I.e. when the developer ads new details to it.
+** Agent can not continue work in finished session => remove all artifacts that may be required.
