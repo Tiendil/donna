@@ -27,20 +27,6 @@ class Python(BaseWorld):
         except ModuleNotFoundError:
             return None
 
-    def _extension_priorities(self) -> dict[str, int]:
-        from donna.world.config import config
-
-        priorities: dict[str, int] = {}
-        priority = 0
-
-        for source in config().sources_instances:
-            for extension in source.supported_extensions:
-                if extension not in priorities:
-                    priorities[extension] = priority
-                    priority += 1
-
-        return priorities
-
     def _resolve_artifact_file(self, artifact_id: ArtifactId) -> importlib.resources.abc.Traversable | None:
         parts = str(artifact_id).split(":")
         if not parts:
@@ -115,9 +101,11 @@ class Python(BaseWorld):
 
         return pathlib.Path(resource_path.name).suffix
 
-    def _list_artifacts_by_extension(self) -> list[ArtifactId]:  # noqa: CCR001
-        resource_artifacts: dict[ArtifactId, int] = {}
-        priorities = self._extension_priorities()
+    def _list_artifacts(self) -> list[ArtifactId]:  # noqa: CCR001
+        from donna.world.config import config
+
+        supported_extensions = config().supported_extensions()
+        artifacts: set[ArtifactId] = set()
 
         def walk(  # noqa: CCR001
             node: importlib.resources.abc.Traversable,
@@ -133,20 +121,17 @@ class Python(BaseWorld):
                     continue
 
                 extension = pathlib.Path(entry.name).suffix.lower()
-                if extension not in priorities:
+                if extension not in supported_extensions:
                     continue
 
                 stem = entry.name[: -len(extension)]
                 artifact_name = ":".join(base_parts + parts + [stem])
                 if ArtifactId.validate(artifact_name):
-                    artifact_id = ArtifactId(artifact_name)
-                    priority = priorities[extension]
-                    if artifact_id not in resource_artifacts or priority < resource_artifacts[artifact_id]:
-                        resource_artifacts[artifact_id] = priority
+                    artifacts.add(ArtifactId(artifact_name))
 
         resource_root = self._resource_root()
         if resource_root is None:
-            return list(resource_artifacts.keys())
+            return []
 
         base_path = resource_root
         base_parts: list[str] = []
@@ -154,13 +139,13 @@ class Python(BaseWorld):
         if base_path.is_dir():
             walk(base_path, [], base_parts)
 
-        return list(resource_artifacts.keys())
+        return list(sorted(artifacts))
 
     def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
         if pattern[0] not in {"*", "**"} and pattern[0] != str(self.id):
             return []
 
-        artifacts = self._list_artifacts_by_extension()
+        artifacts = self._list_artifacts()
         matched: list[ArtifactId] = []
 
         for artifact_id in artifacts:

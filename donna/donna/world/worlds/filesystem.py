@@ -17,20 +17,6 @@ class World(BaseWorld):
     def _artifact_path(self, artifact_id: ArtifactId, extension: str) -> pathlib.Path:
         return self.path / f"{artifact_id.replace(':', '/')}{extension}"
 
-    def _extension_priorities(self) -> dict[str, int]:
-        from donna.world.config import config
-
-        priorities: dict[str, int] = {}
-        priority = 0
-
-        for source in config().sources_instances:
-            for extension in source.supported_extensions:
-                if extension not in priorities:
-                    priorities[extension] = priority
-                    priority += 1
-
-        return priorities
-
     def _resolve_artifact_file(self, artifact_id: ArtifactId) -> pathlib.Path | None:
         artifact_path = self.path / artifact_id.replace(":", "/")
         parent = artifact_path.parent
@@ -118,7 +104,7 @@ class World(BaseWorld):
         path.write_bytes(content)
 
     def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
-        artifacts: dict[ArtifactId, int] = {}
+        from donna.world.config import config
 
         if pattern[0] not in {"*", "**"} and pattern[0] != str(self.id):
             return []
@@ -126,15 +112,16 @@ class World(BaseWorld):
         if not self.path.exists():
             return []
 
-        priorities = self._extension_priorities()
+        supported_extensions = config().supported_extensions()
+        artifacts: set[ArtifactId] = set()
 
-        for artifact_file in self.path.rglob("*"):
+        for artifact_file in sorted(self.path.rglob("*")):
             if not artifact_file.is_file():
                 continue
 
             rel_path = artifact_file.relative_to(self.path)
             extension = rel_path.suffix.lower()
-            if extension not in priorities:
+            if extension not in supported_extensions:
                 continue
 
             artifact_stem = rel_path.with_suffix("")
@@ -142,11 +129,9 @@ class World(BaseWorld):
             full_id = FullArtifactId((self.id, artifact_id))
 
             if pattern.matches_full_id(full_id):
-                priority = priorities[extension]
-                if artifact_id not in artifacts or priority < artifacts[artifact_id]:
-                    artifacts[artifact_id] = priority
+                artifacts.add(artifact_id)
 
-        return sorted(artifacts.keys(), key=str)
+        return list(sorted(artifacts))
 
     def initialize(self, reset: bool = False) -> None:
         if self.readonly:
