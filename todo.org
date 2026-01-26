@@ -43,6 +43,8 @@
 * TODO Grooming improvements
 ** Add spelling validation
 ** Add import/dependency flow restrictions (there were a specialized package for that)
+** Pyright or BasedPyright
+*** control that returned values are used
 * TODO CLI operation
 ** Add a new operation kind, that runs cli commands as part of the workflow.
 ** The operation should not requre interaction with the agent or the user.
