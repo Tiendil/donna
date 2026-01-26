@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, cast
 
 from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern, WorldId
 from donna.machine.artifacts import Artifact
-from donna.world.utils import ArtifactListingNode, list_artifacts_by_pattern
+from donna.world.artifacts_discovery import ArtifactListingNode, list_artifacts_by_pattern
 from donna.world.worlds.base import World as BaseWorld
 from donna.world.worlds.base import WorldConstructor
 
@@ -110,13 +110,10 @@ class Python(BaseWorld):
         return pathlib.Path(resource_path.name).suffix
 
     def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
-        from donna.world.config import config
-
         return list_artifacts_by_pattern(
             world_id=self.id,
             root=self._artifact_listing_root(),
             pattern=pattern,
-            supported_extensions=config().supported_extensions(),
         )
 
     # TODO: How can the state be represented in the Python world?
