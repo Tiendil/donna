@@ -13,6 +13,7 @@
 *** cli command to list primitives?
 *** cli command to show primitive specification?
 *** in case of errors primitives should return cell with reference to their specification section
+*** cli command to validate that every specification exists for each primitive
 ** review
 *** donna.world.worlds
 *** donna.world.sources
