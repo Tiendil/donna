@@ -80,11 +80,6 @@
 ** tune wording of workflows (what to write before goto)
 ** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
 * TODO Cells & Errors
-** CLI mode
-*** human — pretty printing
-*** cli-agent — current cell borders
-*** cli-automation — json line (do we need that?)
-*** update specs
 ** Cells should use monotonic time for ids?
 ** Cell renderers for each mode
 *** stdout
