@@ -10,7 +10,6 @@
 * TODO Architecture stabilization
 ** review
 *** donna.world.worlds
-*** donna.world.sources
 *** reoganize donna.primitives submodules
 * TODO unify code of different directives? It is very similar
 ** add validation for specificaiton existence in directives
