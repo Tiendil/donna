@@ -1,5 +1,9 @@
 # Donna Usage Instructions
 
+```toml donna
+kind = "donna.lib.specification"
+```
+
 This document describes how agents MUST use Donna to manage and perform their workflows.
 
 **Agents MUST follow the instructions and guidelines outlined in this document precisely.**
@@ -42,12 +46,12 @@ All work in the context of session/story is managed by the `donna` tool.
 
 - Yoy start session by calling `<DONNA_CMD> sessions start`.
 - After you started a session:
-  2. List all possible workflows with command `<DONNA_CMD> artifacts list workflows`.
+  2. List all possible workflows with command `<DONNA_CMD> artifacts list`.
   3. Choose the most appropriate workflow for the story you are going to work on or ask the developer if you are not sure which workflow to choose.
   4. Start working by calling `<DONNA_CMD> sessions run <workflow-id>`.
   5. The `donna` tool will output descriptions of all operations it performs to complete the story.
   6. The `donna` tool will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
-- When you done doing your part, you call `<DONNA_CMD> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report that you completed the action request. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>.<namespace>.<artifact>.<operation-id>`.
+- When you done doing your part, you call `<DONNA_CMD> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report that you completed the action request. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>:<artifact>:<operation-id>`.
 - After you report the result:
   1. The `donna` tool will output what you need to do next.
   2. You repeat the process until the story is completed.
@@ -66,34 +70,23 @@ An artifact is a markdown document with some extra metadata stored in one of the
 
 Use the next commands to work with artifacts
 
-- `<DONNA_CMD> artifacts list <namespace>` — list all artifacts
-- `<DONNA_CMD> artifacts view <world>/<namespace>/<artifact-id>` — get the meaningful (rendered) content of the artifact. This command shows the rendered information about the artifact. Use this command when you need to read the artifact content.
-- `<DONNA_CMD> artifacts fetch <world>/<namespace>/<artifact-id> <file-path>` — download the original source of the artifact content to the given file path. Use this command when you need to change the content of the artifact.
-- `<DONNA_CMD> artifacts update <world>/<namespace>/<artifact-id> <file-path>` — upload the given file as the artifact. Use this command when you finished changing the content of the artifact.
-- `<DONNA_CMD> artifacts validate <world>/<namespace>/<artifact-id>` — check the artifact for validity according to its kind.
-- `<DONNA_CMD> artifacts validate-all <namespace>` — check all artifacts in the given namespace for validity according to their kinds.
+- `<DONNA_CMD> artifacts list [--pattern <artifact-pattern>]` — list all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, list all artifacts in all worlds. Use this command when you need to find an artifact or see what artifacts are available.
+- `<DONNA_CMD> artifacts view <world>:<artifact>` — get the meaningful (rendered) content of the artifact. This command shows the rendered information about the artifact. Use this command when you need to read the artifact content.
+- `<DONNA_CMD> artifacts fetch <world>:<artifact>` — download the original source of the artifact content, outputs the file path to the artifact you can change. Use this command when you need to change the content of the artifact.
+- `<DONNA_CMD> artifacts update <world>:<artifact> <file-path>` — upload the given file as the artifact. Use this command when you finished changing the content of the artifact.
+- `<DONNA_CMD> artifacts validate <world>:<artifact>` — check the artifact for validity according to its kind.
+- `<DONNA_CMD> artifacts validate-all [--pattern <artifact-pattern>]` — check all artifacts corresponding to the given pattern for validity according to their kinds.
 
-Artifact types/namespaces:
+The format of `<artifact-pattern>` is as follows:
 
-- `specificattions` — documents describing requirements, designs, constraints, or other important information related to the project.
-- `workflows` — documents describing predefined workflows that the `donna` tool can execute to manage the work of agents.
-
-### Introspection
-
-Sometimes you need to get information about the base primitives and structures used by the `donna` tool: operations, workflows, etc.
-
-Use the next commands to get introspection data:
-
-- `<DONNA_CMD> introspection show <primitive-id>` — show detailed information about the primitive with the given id. You will get IDs as the results of other operations (including action requests). Do not invent primitive IDs. Do not guess primitive IDs.
-
-Command parameters:
-
-- `<primitive-id>` — a short ASCII string identifying the type of the primitive. Use the exect id, do not prefix it with a kind of primitive. Do not look for primitive IDs in the source code. Use only the IDs you got as the results of other operations.
-
-When to use introspection:
-
-- You forget which results the operation produces.
-
+- full artifact identifier: `<world>:<artifact>`
+- `*` — single wildcard matches a single level in the artifact path. Examples:
+  - `*:artifact:name` — matches all artifacts named `artifact:name` in all worlds.
+  - `world:*:name` — matches all artifacts with id `something:name` in the `world` world.
+- `**` — double wildcard matches multiple levels in the artifact path. Examples:
+  - `**:name` — matches all artifacts with id ending with `:name` in all worlds.
+  - `world:**` — matches all artifacts in the `world` world.
+  - `world:**:name` — matches all artifacts with id ending with `:name` in the `world` world.
 
 ## IMPORTANT ON DONNA TOOL USAGE
 
@@ -101,9 +94,9 @@ When to use introspection:
 
 Examples:
 
-- `<DONNA_CMD>  artifacts list specifications` -> `./bin/donna.sh artifacts list specifications` when `<DONNA_CMD>` is `./bin/donna.sh`
-- `<DONNA_CMD>  artifacts list specifications` -> `poetry run donna artifacts list specifications` when `<DONNA_CMD>` is `poetry run donna`
-- `<DONNA_CMD>  artifacts list specifications` -> `donna artifacts list specifications` when `<DONNA_CMD>` is `donna`.
+- `<DONNA_CMD>  artifacts list --pattern "*:usage:**"` -> `./bin/donna.sh artifacts list --pattern "*:usage:**"` when `<DONNA_CMD>` is `./bin/donna.sh`
+- `<DONNA_CMD>  artifacts list --pattern "*:usage:**"` -> `poetry run donna artifacts list --pattern "*:usage:**"` when `<DONNA_CMD>` is `poetry run donna`
+- `<DONNA_CMD>  artifacts list --pattern "*:usage:**"` -> `donna artifacts list --pattern "*:usage:**"` when `<DONNA_CMD>` is `donna`.
 
 **STRICTLY FOLLOW DESCRIBED COMMAND SYNTAX**
 

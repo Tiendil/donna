@@ -6,9 +6,10 @@ from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactLocalI
 from donna.machine.cells import Cell, cell_donna_message
 from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
-from donna.machine.workflows import WorkflowMeta
 from donna.world import artifacts
-from donna.world.config import World, config
+from donna.world import tmp as world_tmp
+from donna.world.config import config
+from donna.world.worlds.base import World
 
 
 def _session() -> World:
@@ -21,7 +22,12 @@ def _session() -> World:
 
 
 def _load_state() -> ConsistentState:
-    return ConsistentState.from_json(_session().read_state("state.json").decode("utf-8"))
+    content = _session().read_state("state.json")
+
+    if content is None:
+        raise NotImplementedError("Session state is not initialized")
+
+    return ConsistentState.from_json(content.decode("utf-8"))
 
 
 def _save_state(state: ConsistentState) -> None:
@@ -75,12 +81,14 @@ def _session_required(func: Callable[P, list[Cell]]) -> Callable[P, list[Cell]]:
 
 
 def start() -> list[Cell]:
+    world_tmp.clear()
     _session().initialize(reset=True)
     _save_state(MutableState.build().freeze())
     return [cell_donna_message("Started new session.")]
 
 
 def clear() -> list[Cell]:
+    world_tmp.clear()
     _session().initialize(reset=True)
     return [cell_donna_message("Cleared session.")]
 
@@ -102,10 +110,10 @@ def status() -> list[Cell]:
 @_session_required
 def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
     workflow = artifacts.load_artifact(artifact_id)
+    primary_section = workflow.primary_section()
 
     with _state_mutator() as mutator:
-        assert isinstance(workflow.meta, WorkflowMeta)
-        mutator.start_workflow(workflow.meta.start_operation_id)
+        mutator.start_workflow(workflow.id.to_full_local(primary_section.id))
         _save_state(mutator.freeze())
         _state_run(mutator)
 
@@ -119,7 +127,7 @@ def _validate_operation_transition(
 
     workflow = artifacts.load_artifact(operation_id.full_artifact_id)
 
-    operation = workflow.get_section(operation_id)
+    operation = workflow.get_section(operation_id.local_id)
     assert operation is not None
 
     assert isinstance(operation.meta, OperationMeta)

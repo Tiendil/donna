@@ -1,212 +1,178 @@
-import importlib.util
 import pathlib
-import shutil
 import tomllib
-import types
+from typing import Any
 
 import pydantic
 
 from donna.core import utils
 from donna.core.entities import BaseEntity
-from donna.domain.ids import ArtifactId, NamespaceId, WorldId
+from donna.domain.ids import PythonImportPath, WorldId
+from donna.machine.primitives import resolve_primitive
+from donna.world.sources.base import SourceConfig as SourceConfigValue
+from donna.world.sources.base import SourceConstructor
+from donna.world.worlds.base import World as BaseWorld
+from donna.world.worlds.base import WorldConstructor
 
 DONNA_DIR_NAME = ".donna"
-DONNA_CONFIG_NAME = "donna.toml"
-DONNA_DESSION_DIR_NAME = "session"
+DONNA_CONFIG_NAME = "config.toml"
+DONNA_WORLD_SESSION_DIR_NAME = "session"
+DONNA_WORLD_PROJECT_DIR_NAME = "project"
+DONNA_WORLD_HOME_DIR_NAME = "home"
 
 
-class World(BaseEntity):
+class WorldConfig(BaseEntity):
+    kind: PythonImportPath
     id: WorldId
-    readonly: bool = True
-    session: bool = False
+    readonly: bool
+    session: bool
 
-    def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
-        raise NotImplementedError("You must implement this method in subclasses")
-
-    def read(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bytes:
-        raise NotImplementedError("You must implement this method in subclasses")
-
-    def write(self, namespace_id: NamespaceId, artifact_id: ArtifactId, content: bytes) -> None:
-        raise NotImplementedError("You must implement this method in subclasses")
-
-    def list_artifacts(self, namespace_id: NamespaceId) -> list[ArtifactId]:
-        raise NotImplementedError("You must implement this method in subclasses")
-
-    def get_modules(self) -> list[types.ModuleType]:
-        raise NotImplementedError("You must implement this method in subclasses")
-
-    # These two methods are intended for storing world state (e.g., session data)
-    # It is and open question if the world state is an artifact itself or something else
-    # For the artifact: uniform API for storing/loading data
-    # Against the artifact:
-    # - session data MUST be accessible only by Donna => no one should be able to read/write/list it
-    # - session data will require an additonal kind(s) of artifact(s) just for that purpose
-    # - session data may change more frequently than regular artifacts
-
-    def read_state(self, name: str) -> bytes:
-        raise NotImplementedError("You must implement this method in subclasses")
-
-    def write_state(self, name: str, content: bytes) -> None:
-        raise NotImplementedError("You must implement this method in subclasses")
-
-    def initialize(self, reset: bool = False) -> None:
-        pass
-
-    def is_initialized(self) -> bool:
-        raise NotImplementedError("You must implement this method in subclasses")
+    model_config = pydantic.ConfigDict(extra="allow")
 
 
-class WorldFilesystem(World):
-    path: pathlib.Path
+class SourceConfig(BaseEntity):
+    kind: PythonImportPath
 
-    def _artifact_path(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> pathlib.Path:
-        return self.path / namespace_id / f"{artifact_id.replace('.', '/')}.md"
-
-    def has(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bool:
-        return self._artifact_path(namespace_id, artifact_id).exists()
-
-    def read(self, namespace_id: NamespaceId, artifact_id: ArtifactId) -> bytes:
-        path = self._artifact_path(namespace_id, artifact_id)
-
-        if not path.exists():
-            raise NotImplementedError(f"Artifact `{id}` does not exist in world `{self.id}`")
-
-        return path.read_bytes()
-
-    def write(self, namespace_id: NamespaceId, artifact_id: ArtifactId, content: bytes) -> None:
-        if self.readonly:
-            raise NotImplementedError(f"World `{self.id}` is read-only")
-
-        path = self._artifact_path(namespace_id, artifact_id)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(content)
-
-    def read_state(self, name: str) -> bytes:
-        if not self.session:
-            raise NotImplementedError(f"World `{self.id}` does not support state storage")
-
-        path = self.path / name
-
-        if not path.exists():
-            raise NotImplementedError(f"State `{name}` does not exist in world `{self.id}`")
-
-        return path.read_bytes()
-
-    def write_state(self, name: str, content: bytes) -> None:
-        if self.readonly:
-            raise NotImplementedError(f"World `{self.id}` is read-only")
-
-        if not self.session:
-            raise NotImplementedError(f"World `{self.id}` does not support state storage")
-
-        path = self.path / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(content)
-
-    def list_artifacts(self, namespace_id: NamespaceId) -> list[ArtifactId]:
-        path = self.path / namespace_id
-
-        if not path.exists() or not path.is_dir():
-            return []
-
-        artifacts: list[ArtifactId] = []
-
-        for artifact_file in path.iterdir():
-            if not artifact_file.is_file():
-                continue
-
-            if not artifact_file.suffix == ".md":
-                continue
-
-            artifacts.append(ArtifactId(artifact_file.stem))
-
-        return artifacts
-
-    def get_modules(self) -> list[types.ModuleType]:
-        # load only top-level .py files
-        # it is the responsibility of the developer to import submodules within those files
-        # if required
-
-        modules = []
-
-        code_path = self.path / "code"
-
-        for module_file in code_path.glob("*.py"):
-            relative_path = module_file.relative_to(self.path)
-            module_name = f"donna._world_code.{self.id}.{relative_path.stem}"
-            module_spec = importlib.util.spec_from_file_location(module_name, module_file)
-
-            if module_spec is None or module_spec.loader is None:
-                raise NotImplementedError(f"Cannot load workflow module from '{module_file}'")
-
-            module = importlib.util.module_from_spec(module_spec)
-            module_spec.loader.exec_module(module)
-
-            modules.append(module)
-
-        return modules
-
-    def initialize(self, reset: bool = False) -> None:
-        if self.readonly:
-            return
-
-        if self.path.exists() and reset:
-            shutil.rmtree(self.path)
-
-        self.path.mkdir(parents=True, exist_ok=True)
-
-    def is_initialized(self) -> bool:
-        return self.path.exists()
+    model_config = pydantic.ConfigDict(extra="allow")
 
 
-# TODO: refactor donna to use importlib.resources and enable WorldPackage
+def _default_sources() -> list[SourceConfig]:
+    return [
+        SourceConfig.model_validate(
+            {
+                "kind": PythonImportPath.parse("donna.lib.sources.markdown"),
+            }
+        ),
+    ]
 
 
-def _default_worlds() -> list["WorldFilesystem"]:
+def _default_worlds() -> list[WorldConfig]:
     _donna = DONNA_DIR_NAME
 
     project_dir = utils.discover_project_dir(_donna)
 
     return [
-        WorldFilesystem(
-            id=WorldId("donna"),
-            path=pathlib.Path(__file__).parent.parent / "std",
-            readonly=True,
-            session=False,
+        WorldConfig.model_validate(
+            {
+                "id": WorldId("donna"),
+                "kind": PythonImportPath.parse("donna.lib.worlds.python"),
+                "readonly": True,
+                "session": False,
+                "package": "donna",
+            }
         ),
-        WorldFilesystem(
-            id=WorldId("home"),
-            path=pathlib.Path.home() / _donna,
-            readonly=True,
-            session=False,
+        WorldConfig.model_validate(
+            {
+                "id": WorldId("home"),
+                "kind": PythonImportPath.parse("donna.lib.worlds.filesystem"),
+                "readonly": True,
+                "session": False,
+                "path": pathlib.Path.home() / _donna / DONNA_WORLD_HOME_DIR_NAME,
+            }
         ),
-        WorldFilesystem(
-            id=WorldId("project"),
-            path=project_dir / _donna,
-            readonly=False,
-            session=False,
+        WorldConfig.model_validate(
+            {
+                "id": WorldId("project"),
+                "kind": PythonImportPath.parse("donna.lib.worlds.filesystem"),
+                "readonly": False,
+                "session": False,
+                "path": project_dir / _donna / DONNA_WORLD_PROJECT_DIR_NAME,
+            }
         ),
-        WorldFilesystem(
-            id=WorldId("session"),
-            path=project_dir / _donna / DONNA_DESSION_DIR_NAME,
-            readonly=False,
-            session=True,
+        WorldConfig.model_validate(
+            {
+                "id": WorldId("session"),
+                "kind": PythonImportPath.parse("donna.lib.worlds.filesystem"),
+                "readonly": False,
+                "session": True,
+                "path": project_dir / _donna / DONNA_WORLD_SESSION_DIR_NAME,
+            }
         ),
     ]
 
 
 class Config(BaseEntity):
-    worlds: list[WorldFilesystem] = pydantic.Field(default_factory=_default_worlds)
+    worlds: list[WorldConfig] = pydantic.Field(default_factory=_default_worlds)
+    sources: list[SourceConfig] = pydantic.Field(default_factory=_default_sources)
+    _worlds_instances: list[BaseWorld] = pydantic.PrivateAttr(default_factory=list)
+    _sources_instances: list[SourceConfigValue] = pydantic.PrivateAttr(default_factory=list)
 
-    def get_world(self, world_id: WorldId) -> World:
-        for world in self.worlds:
+    tmp_dir: pathlib.Path = pathlib.Path("./tmp")
+
+    def model_post_init(self, __context: Any) -> None:
+        worlds: list[BaseWorld] = []
+        sources: list[SourceConfigValue] = []
+
+        for world_config in self.worlds:
+            primitive = resolve_primitive(world_config.kind)
+
+            if not isinstance(primitive, WorldConstructor):
+                raise NotImplementedError(f"World constructor '{world_config.kind}' is not supported")
+
+            worlds.append(primitive.construct_world(world_config))
+
+        for source_config in self.sources:
+            primitive = resolve_primitive(source_config.kind)
+
+            if not isinstance(primitive, SourceConstructor):
+                raise NotImplementedError(f"Source constructor '{source_config.kind}' is not supported")
+
+            sources.append(primitive.construct_source(source_config))
+
+        object.__setattr__(self, "_worlds_instances", worlds)
+        object.__setattr__(self, "_sources_instances", sources)
+
+    def get_world(self, world_id: WorldId) -> BaseWorld:
+        for world in self._worlds_instances:
             if world.id == world_id:
                 return world
 
         raise NotImplementedError(f"World with id '{world_id}' is not configured")
 
+    @property
+    def worlds_instances(self) -> list[BaseWorld]:
+        return list(self._worlds_instances)
 
+    @property
+    def sources_instances(self) -> list[SourceConfigValue]:
+        return list(self._sources_instances)
+
+    def get_source_config(self, kind: str) -> SourceConfigValue:
+        for source in self._sources_instances:
+            if source.kind == kind:
+                return source
+
+        raise NotImplementedError(f"Source config '{kind}' is not configured")
+
+    def find_source_for_extension(self, extension: str) -> SourceConfigValue | None:
+        for source in self._sources_instances:
+            if source.supports_extension(extension):
+                return source
+
+        return None
+
+    def supported_extensions(self) -> set[str]:
+        extensions: set[str] = set()
+
+        for source in self._sources_instances:
+            for extension in source.supported_extensions:
+                extensions.add(extension)
+
+        return extensions
+
+
+_CONFIG_DIR: pathlib.Path | None = None
 _CONFIG: Config | None = None
+
+
+def config_dir() -> pathlib.Path:
+    global _CONFIG_DIR
+
+    if _CONFIG_DIR:
+        return _CONFIG_DIR
+
+    _CONFIG_DIR = utils.discover_project_dir(DONNA_DIR_NAME) / DONNA_DIR_NAME
+
+    return _CONFIG_DIR
 
 
 def config() -> Config:
@@ -215,7 +181,7 @@ def config() -> Config:
     if _CONFIG:
         return _CONFIG
 
-    config_path = utils.discover_project_dir(DONNA_DIR_NAME) / DONNA_CONFIG_NAME
+    config_path = config_dir() / DONNA_CONFIG_NAME
 
     if config_path.exists():
         _CONFIG = Config.model_validate(tomllib.loads(config_path.read_text()))

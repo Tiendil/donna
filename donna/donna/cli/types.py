@@ -2,15 +2,11 @@ from typing import Annotated
 
 import typer
 
-from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactLocalId, NamespaceId
+from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactIdPattern, FullArtifactLocalId
 
 ActionRequestIdArgument = Annotated[
     ActionRequestId,
     typer.Argument(parser=ActionRequestId, help="The ID of the action request"),
-]
-ActionRequestIdOption = Annotated[
-    ActionRequestId,
-    typer.Option(parser=ActionRequestId, help="The ID of the action request"),
 ]
 
 
@@ -20,9 +16,9 @@ FullArtifactIdArgument = Annotated[
 ]
 
 
-NamespaceIdArgument = Annotated[
-    NamespaceId,
-    typer.Argument(parser=NamespaceId, help="The ID of the namespace"),
+FullArtifactIdPatternOption = Annotated[
+    FullArtifactIdPattern | None,
+    typer.Option(parser=FullArtifactIdPattern.parse, help="The full artifact pattern to list"),
 ]
 
 

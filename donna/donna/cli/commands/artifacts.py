@@ -3,20 +3,24 @@ import pathlib
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import FullArtifactIdArgument, NamespaceIdArgument
+from donna.cli.types import FullArtifactIdArgument, FullArtifactIdPatternOption
 from donna.cli.utils import output_cells
+from donna.domain.ids import FullArtifactIdPattern
 from donna.world import artifacts as world_artifacts
-from donna.world.primitives_register import register
+from donna.world import tmp as world_tmp
 
 artifacts_cli = typer.Typer()
 
 
 @artifacts_cli.command()
-def list(namespace: NamespaceIdArgument) -> None:
-    artifacts = world_artifacts.list_artifacts(namespace)
+def list(pattern: FullArtifactIdPatternOption = None) -> None:
+    if pattern is None:
+        pattern = FullArtifactIdPattern.parse("**")
+
+    artifacts = world_artifacts.list_artifacts(pattern)
 
     for artifact in artifacts:
-        output_cells(artifact.cells())
+        output_cells(artifact.cells_info())
 
 
 @artifacts_cli.command()
@@ -26,7 +30,10 @@ def view(id: FullArtifactIdArgument) -> None:
 
 
 @artifacts_cli.command()
-def fetch(id: FullArtifactIdArgument, output: pathlib.Path) -> None:
+def fetch(id: FullArtifactIdArgument, output: pathlib.Path | None = None) -> None:
+    if output is None:
+        output = world_tmp.file_for_artifact(id, world_artifacts.artifact_file_extension(id))
+
     world_artifacts.fetch_artifact(id, output)
     typer.echo(f"Artifact `{id}` fetched to '{output}'")
 
@@ -41,25 +48,20 @@ def update(id: FullArtifactIdArgument, input: pathlib.Path) -> None:
 def validate(id: FullArtifactIdArgument) -> None:
     artifact = world_artifacts.load_artifact(id)
 
-    artifact_kind = register().artifacts.get(artifact.kind)
-
-    assert artifact_kind is not None
-
-    _is_valid, cells = artifact_kind.validate_artifact(artifact)
+    _is_valid, cells = artifact.validate()
 
     output_cells(cells)
 
 
 @artifacts_cli.command()
-def validate_all(namespace: NamespaceIdArgument) -> None:
-    artifacts = world_artifacts.list_artifacts(namespace)
+def validate_all(pattern: FullArtifactIdPatternOption = None) -> None:
+    if pattern is None:
+        pattern = FullArtifactIdPattern.parse("**")
+
+    artifacts = world_artifacts.list_artifacts(pattern)
 
     for artifact in artifacts:
-        artifact_kind = register().artifacts.get(artifact.kind)
-
-        assert artifact_kind is not None
-
-        _is_valid, cells = artifact_kind.validate_artifact(artifact)
+        _is_valid, cells = artifact.validate()
 
         output_cells(cells)
 

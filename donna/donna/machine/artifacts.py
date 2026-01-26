@@ -1,67 +1,13 @@
-import uuid
-from typing import TYPE_CHECKING, Any, Iterable
+from typing import Any
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import (
-    ArtifactKindId,
-    ArtifactLocalId,
-    ArtifactSectionKindId,
-    FullArtifactId,
-    FullArtifactLocalId,
-    NamespaceId,
-)
+from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId, PythonImportPath
 from donna.machine.cells import Cell
-from donna.machine.tasks import Task, WorkUnit
-from donna.world.markdown import ArtifactSource, SectionSource
-
-if TYPE_CHECKING:
-    from donna.machine.changes import Change
-
-
-class ArtifactKind(BaseEntity):
-    id: ArtifactKindId
-    description: str
-    namespace_id: NamespaceId
-    default_section_kind: str = "text"
-
-    def cells(self) -> list[Cell]:
-        return [
-            Cell.build_meta(
-                kind="artifact_kind", id=self.id, namespace_id=self.namespace_id, description=self.description
-            )
-        ]
-
-    def construct_section(self, artifact_id: FullArtifactId, raw_section: SectionSource) -> "ArtifactSection":
-        from donna.world.primitives_register import register
-
-        data = raw_section.merged_configs()
-
-        if "kind" not in data:
-            data["kind"] = self.default_section_kind
-
-        section_kind = register().sections.get(ArtifactSectionKindId(data["kind"]))
-        assert section_kind is not None
-
-        section = section_kind.construct_section(artifact_id, raw_section)
-
-        return section
-
-    def construct_artifact(self, source: ArtifactSource) -> "Artifact":
-        raise NotImplementedError("You must implement this method in subclasses")
-
-    def validate_artifact(self, artifact: "Artifact") -> tuple[bool, list[Cell]]:
-        return True, [
-            Cell.build_meta(
-                kind="artifact_kind_validation",
-                id=str(artifact.id),
-                status="success",
-            )
-        ]
 
 
 class ArtifactSectionConfig(BaseEntity):
     id: ArtifactLocalId
-    kind: ArtifactSectionKindId
+    kind: PythonImportPath
 
 
 class ArtifactSectionMeta(BaseEntity):
@@ -70,11 +16,11 @@ class ArtifactSectionMeta(BaseEntity):
 
 
 class ArtifactSection(BaseEntity):
-    # some section may have no id and kind — it is ok for simple text sections
-    id: FullArtifactLocalId | None
-    kind: ArtifactSectionKindId | None
+    id: ArtifactLocalId
+    kind: PythonImportPath
     title: str
     description: str
+    primary: bool = False
 
     meta: ArtifactSectionMeta
 
@@ -86,6 +32,7 @@ class ArtifactSection(BaseEntity):
                 section_kind=str(self.kind) if self.kind else None,
                 section_title=self.title,
                 section_description=self.description,
+                section_primary=self.primary,
                 **self.meta.cells_meta(),
             )
         ]
@@ -94,31 +41,68 @@ class ArtifactSection(BaseEntity):
         return [f"## {self.title}", self.description]
 
 
-class ArtifactMeta(BaseEntity):
-
-    def cells_meta(self) -> dict[str, Any]:
-        return {}
-
-
 class Artifact(BaseEntity):
     id: FullArtifactId
-    kind: ArtifactKindId
-    title: str
-    description: str
 
-    meta: ArtifactMeta
     sections: list[ArtifactSection]
+
+    def _primary_sections(self) -> list[ArtifactSection]:
+        return [section for section in self.sections if section.primary]
+
+    def primary_section(self) -> ArtifactSection:
+        primary_sections = self._primary_sections()
+        if len(primary_sections) != 1:
+            raise NotImplementedError(
+                f"Artifact '{self.id}' must have exactly one primary section, found {len(primary_sections)}."
+            )
+        return primary_sections[0]
+
+    def validate(self) -> tuple[bool, list[Cell]]:  # type: ignore[override]  # noqa: CCR001
+        from donna.machine.primitives import resolve_primitive
+
+        primary_sections = self._primary_sections()
+
+        if len(primary_sections) != 1:
+            return False, [
+                Cell.build_meta(
+                    kind="artifact_kind_validation",
+                    id=str(self.id),
+                    status="failure",
+                    message=f"Artifact must have exactly one primary section, found {len(primary_sections)}.",
+                )
+            ]
+
+        for section in self.sections:
+            primitive = resolve_primitive(section.kind)
+            is_valid, cells = primitive.validate_section(self, section.id)
+
+            if not is_valid:
+                return is_valid, cells
+
+        return True, []
+
+    def cells_info(self) -> list[Cell]:
+        primary_section = self.primary_section()
+        return [
+            Cell.build_meta(
+                kind="artifact_info",
+                artifact_id=str(self.id),
+                artifact_kind=str(primary_section.kind),
+                artifact_title=primary_section.title,
+                artifact_description=primary_section.description,
+            )
+        ]
 
     # TODO: should we attach section cells here as well?
     def cells(self) -> list[Cell]:
+        primary_section = self.primary_section()
         cells = [
             Cell.build_meta(
                 kind="artifact_meta",
                 artifact_id=str(self.id),
-                artifact_kind=self.kind,
-                artifact_title=self.title,
-                artifact_description=self.description,
-                **self.meta.cells_meta(),
+                artifact_kind=str(primary_section.kind),
+                artifact_title=primary_section.title,
+                artifact_description=primary_section.description,
             )
         ]
 
@@ -128,66 +112,33 @@ class Artifact(BaseEntity):
 
         return cells
 
-    def get_section(self, section_id: FullArtifactLocalId) -> ArtifactSection | None:
+    def get_section(self, section_id: ArtifactLocalId | None) -> ArtifactSection | None:
+        if section_id is None:
+            return self.primary_section()
         for section in self.sections:
             if section.id == section_id:
                 return section
         return None
 
     def markdown_blocks(self) -> list[str]:
-        blocks = [f"# {self.title}", self.description]
+        primary_section = self.primary_section()
+        blocks = [f"# {primary_section.title}", primary_section.description]
 
         for section in self.sections:
+            if section.primary:
+                continue
             blocks.extend(section.markdown_blocks())
 
         return blocks
 
 
-class ArtifactSectionKind(BaseEntity):
-    id: ArtifactSectionKindId
-    title: str
+def resolve(target_id: FullArtifactLocalId) -> ArtifactSection:
+    from donna.world import artifacts as world_artifacts
 
-    def execute_section(self, task: Task, unit: WorkUnit, section: ArtifactSection) -> Iterable["Change"]:
-        raise NotImplementedError("You MUST implement this method.")
+    artifact = world_artifacts.load_artifact(target_id.full_artifact_id)
+    section = artifact.get_section(target_id.local_id)
 
-    def construct_section(self, artifact_id: FullArtifactId, raw_section: SectionSource) -> ArtifactSection:
-        raise NotImplementedError("You MUST implement this method.")
+    if section is None:
+        raise NotImplementedError(f"Section '{target_id}' is not available")
 
-    def cells(self) -> list[Cell]:
-        return [Cell.build_meta(kind="section_kind", id=self.id, title=self.title)]
-
-
-class TextConfig(ArtifactSectionConfig):
-    pass
-
-
-class ArtifactSectionTextKind(ArtifactSectionKind):
-
-    def execute_section(self, task: Task, unit: WorkUnit, operation: ArtifactSection) -> Iterable["Change"]:
-        raise NotImplementedError("Text sections cannot be executed.")
-
-    def construct_section(self, artifact_id: FullArtifactId, raw_section: SectionSource) -> ArtifactSection:
-        data = raw_section.merged_configs()
-
-        if "kind" not in data:
-            data["kind"] = self.id
-
-        if "id" not in data:
-            # TODO: we should replace this hack with a proper ID generator
-            #       to keep that id stable between runs
-            #       options:
-            #       - a hash of the content
-            #       - a sequential ID generator per artifact
-            data["id"] = "text" + uuid.uuid4().hex.replace("-", "")
-
-        config = TextConfig.parse_obj(data)
-
-        title = raw_section.title or ""
-
-        return ArtifactSection(
-            id=artifact_id.to_full_local(config.id),
-            kind=self.id,
-            title=title,
-            description=raw_section.as_original_markdown(with_title=False),
-            meta=ArtifactSectionMeta(),
-        )
+    return section

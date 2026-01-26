@@ -1,117 +1,28 @@
 
 * TODO freeze pydantic models which are possible
 * TODO codex should explain what it is doing, while executing requests from donna
-* TODO complex story workflow
-** TODO list based artifacts
-*** TODO LIST artifacts with operations add, remove, replace
-*** TODO iterate and groom over goals & objectives
-*** TODO iterate over risks
-*** TODO build plan from objectives and risks
-*** TODO execute the plan by taking actions from the plan
-** TODO graph-bases execution of the plan:
-*** TODO buiild things-to-do by iterating over it in the contexts of objectives and risjs
-*** TODO GRAPH(-LIST) artifacts with additiona operations to describe dependencies between list items
-*** TODO build plan on top of things-to-do list
-** TODO verify all risks are closed and rollback to planing if not
-** TODO verify all objectives are met and rollback to planing if not
-** TODO Split the whole worfklow into smaller scenarios/tasks?
-** TODO prepare a report after the story is finished
-** TODO custom command to run a specific subflow? Or whould we rest it to the agent? It look like agent can deside better, because otherwise we'll introduce a hard coupling between different flows.
-** TODO replace "here is the beginning of the story specification" with an introspection of the records?
-** TODO refactor records/kinds/items names, place them in order
 * TODO tests
 ** TODO basic / lowest unit tests for primitive operations
 ** TODO domain-level unit tests
 ** TODO intergration tests for workflows/stories/scenarios
 * TODO optimize imports by moving most used ones to \__init__.py files
-* TODO `behavior` can be something on top of workflows. Maybe it be a constructor of workflows. I.e. user define own workflow by parametrizing them via `behavior`.
-* TODO Objectives loop
-** TODO Full spec on planing activities
-** TODO Objectives grooming loop
-*** choose unprocessed objective
-*** groom objective
-*** maybe via a single action request operation? With customized code for searching next objective to process
-** TODO Goal-objective relations
-** TODO Iterate goals into objectives
-** TODO Full objective set grooming (may be moved into separate TODO list, since it may require planing)
-** TODO Goals grooming (may be moved into separate TODO list, since it may require planing)
-* TODO Do we need counters as a separate entity/config?
-* TODO Records navigation + introspection
-** TODO donna records ?extract? <kind*> <--property=>*
-*** add <display/renderer> as the global object that defines how to render the output
-*** maybe display may be just jinja template?
-*** dow we really need display? Maybe cells will be ok for technical output?
-*** What we need:
-**** select by kinds (and display kinds in order?)
-**** filter by properties (better to have reach filtering syntax?)
-**** run graph opertions on top of the result set? Or maybe just different <sort> operations?
-** TODO replace partial description with new ?extract? command
-** TODO Maybe we do not need kinds separate from records?
-* TODO Consider using https://github.com/toon-format/toon for json formatting in cells
-* TODO WE CAN ASK DONNA TO MAKE A FSM FOR DONNA!!! WHICH WILL BE OUR PLAN OF WORK!!!
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
-* TODO Lazy import of primitives from Python artifacts
-** world kinds are configured via python module imports (not artifact paths?)
-*** or somehow very smartly via artifact paths
-** system python (i.e. donna's environment) can be a world also with predefined behavior
-*** so references to actual python modules should also work
-** artifacts listing/search functionality goest to the worlds
-*** words should return standardized short info records about each artifact
-*** and about each primitive (?) or should primitives be left for the donna side?
-** => introspection uses worlds to list available artifact/primitives
-** remove primitives registry completely
-** improve introspection cli
-*** `artifacts list *` goest to introspection? or should be refactored into `artifacts search *`?
-** Each primitive should have a link to related specification or to the section in the specification?
-** action request also could be an artifact?
-** move code.operations into submodules
-** In the context of all those changes, do we need namespaces for artifacts? Maybe we can live without them?
-*** or without their current role in the code
-** mark artifacts and sections with tags to simplify filtering/searching
-*** Do we need speciciations for tags? I.e. does tag a primitive?
-** We may want to allow donna render part of artifact only (by section id)
-** Python package world will allow us to keep artifacts in standard python packages without hacks
-** tree-based artifacts discovery? I.e. folders with descriptions and folders as artifacts?
-** full ids for references to objects kinds
-*** that'll allow to remove register in the honor of search in worlds
-** OperationConfig is actually a section config — it should be equal for every kind of secttion?
-** we may want to remove separation of artifacts by namespaces/directories
-** In case we implemen python modules as artifacts, ArtifactSectionKindId should be full python module path to the kind definition.
-* unify code of different renderers? It is very similar
-** add validation for specificaiton existence in renderers
+* TODO unify code of different directives? It is very similar
+** add validation for specificaiton existence in directives
 ** Spec rendere can be unified, since its cli command
-* Artifact improvements:
-** We may want, by default load/upload artifacts in a custom donna-managed directory, so, no filenames are needed for agents. This also will help to add right extensions automatically => help agents to anderstand internal formats.
-** When we start the workflow, should we output the head cells before the first operation?
+* TODO Specification improvements:
 ** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
-** {{ edit(specification) }} renderer?
-** {{ run(workflow) }} renderer?
-** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
-** Declare explicit refining loop
-** Add mini workflows to polish each kind of records?
-** add tmp directory for intermediate artifacts? mayby in .donna/session/tmp/
-** meta_work_loop.md contains a lot of repetitive commands to read specifications. We should optimize them somehow.
-*** Approach 1: move them to the head section text
-*** Approach 2: move them to the head section config
-*** Approach 3: keep them, but add some meta info on analysis phase that donna can use.
-** tune wording of workflows (what to write before goto)
-** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
+** {{ edit(specification) }} directive?
+** {{ run(workflow) }} directive?
 ** remove mention of <DONNA_CMD> from specs
 ** "Story" term still in some specs for convienience, we should think of a better naming
 ** currently we do not output the whole workflow body on the request of the artifact, only description. Maybe we should output the whole body?
+** When we start the workflow, should we output the head cells before the first operation?
 ** mention jinja comments {# ... #} in artifact specification
-** artifact cli should always return Cells
+** CLI: allow references to sections by full id -> display one specific section of artifact
 * TODO Jinja2 improvements
 ** sandbox mode — do we need it?
 ** register jinja2 filters?
-* TODO Organize standard cell kinds into enum (but allow custom kinds as well). Or just provide custom constructors for each use-case.
-* TODO ask codex to straighten the naming/dictionary/terms in the donna project
-** review the dictionary of primary terms
-* TODO errors processing improvements
-** Vebose jinja2 render errors to help agents and developers
-** replace all NotImplementedError exceptions with custom exceptions and smart error handling
-** exceptions must output cells?
-** cleanup asserts — replace with real checks and exceptions
 * TODO Possible workflows
 ** bootstrap.bootstrap_all.
 ** bootstrap.donna.create_project
@@ -120,14 +31,15 @@
 ** bootstrap.python.create_project
 ** morphologica_analysis — workflow for explicit morphological analysis
 ** simple_task — workflow for simple tasks to not bother with complex story workflows
-* TODO initialization of donna for the new project
-** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
-** create a copy of the default config for the new project
+** Spec-based workflow (like in OpenSpec?)
+* TODO possible specifications
+** how to prepare python package with artifacts for donna
+** `donna:usage:dictionary` — standard terms and their definitions
 * TODO Grooming improvements
 ** Add spelling validation
 ** Add import/dependency flow restrictions (there were a specialized package for that)
-* TODO integration into emacs? How?
-** https://github.com/d12frosted/vui.el/
+** Pyright or BasedPyright
+*** control that returned values are used
 * TODO CLI operation
 ** Add a new operation kind, that runs cli commands as part of the workflow.
 ** The operation should not requre interaction with the agent or the user.
@@ -148,9 +60,49 @@
 ** https://github.com/m0n0x41d/quint-code
 ** https://github.com/Fission-AI/OpenSpec
 ** https://www.reddit.com/r/PKMS/comments/1qdgr5a/would_a_simple_pkm_programming_language_make_sense/
+** https://github.com/d12frosted/vui.el/
 * TODO README.md notes
 ** `No API keys required.` as a feature
 ** `save tokens by taking work from your agent to your code`
 ** compare to https://github.com/Fission-AI/OpenSpec
 *** fsms instead of plain texts
 *** "better" Markdown
+** you can deliver instructions and operations for your package with your package
+* TODO Request Action: agent has not always use the correctly specified branch, may be we should separate operation with next operation selection?
+* TODO Workflows polishing
+** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
+** Declare explicit refining loop
+** Add mini workflows to polish each kind of records?
+** meta_work_loop.md contains a lot of repetitive commands to read specifications. We should optimize them somehow.
+*** Approach 1: move them to the head section text
+*** Approach 2: move them to the head section config
+*** Approach 3: keep them, but add some meta info on analysis phase that donna can use.
+** tune wording of workflows (what to write before goto)
+** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
+* TODO Cells & Errors
+** We generate different kinds of cells for different use-cases. That is not reflected in the code well enough.
+** Replace custom output woth json logging (?), for the sake of ai agents, it is not big difference to use json instead of cells.
+** stdout is for structured output of cells (like json?)
+** stderr is for logging and debug info
+** using json will help to rid of cell ids
+** artifact cli should always return Cells
+** Consider using https://github.com/toon-format/toon for json formatting in cells
+** each kind/primitive must has reference to specification section that explains it
+*** cli command to list primitives?
+*** cli command to show primitive specification?
+*** in case of errors primitives should return cell with reference to their specification section
+*** cli command to validate that every specification exists for each primitive
+** Organize standard cell kinds into enum (but allow custom kinds as well). Or just provide custom constructors for each use-case.
+** errors processing improvements
+*** Vebose jinja2 render errors to help agents and developers
+*** replace all NotImplementedError exceptions with custom exceptions and smart error handling
+*** exceptions must output cells?
+*** cleanup asserts — replace with real checks and exceptions
+*** rust-style errors?
+* TODO Donna flow improvements
+** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
+** on initialization donna should create some default workflows based on the project configs (grooming, for example)
+** create a copy of the default config for the new project
+** lock for donna operations on the project
+** donna should be able to continue finished session (somewhow). I.e. when the developer ads new details to it.
+** Agent can not continue work in finished session => remove all artifacts that may be required.

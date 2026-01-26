@@ -8,7 +8,6 @@ from markdown_it.tree import SyntaxTreeNode
 from mdformat.renderer import MDRenderer
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import FullArtifactId
 
 
 class SectionLevel(str, enum.Enum):
@@ -79,30 +78,6 @@ class SectionSource(BaseEntity):
             result.update(config.structured_data())
 
         return result
-
-
-# TODO: we may want to move artifact source definition to world.artifacts
-class ArtifactSource(BaseEntity):
-    id: FullArtifactId
-
-    head: SectionSource
-    tail: list[SectionSource]
-
-    def as_original_markdown(self) -> str:
-        parts = [self.head.as_original_markdown(with_title=True)]
-
-        for section in self.tail:
-            parts.append(section.as_original_markdown(with_title=True))
-
-        return "\n".join(parts)
-
-    def as_analysis_markdown(self) -> str:
-        parts = [self.head.as_analysis_markdown(with_title=True)]
-
-        for section in self.tail:
-            parts.append(section.as_analysis_markdown(with_title=True))
-
-        return "\n".join(parts)
 
 
 def render_back(tokens: list[Token]) -> str:
