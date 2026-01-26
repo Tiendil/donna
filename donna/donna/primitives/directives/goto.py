@@ -30,10 +30,7 @@ class GoTo(Directive):
 
     def render_cli(self, context: Context, next_operation_id: FullArtifactLocalId) -> str:
         protocol = mode().value
-        return (
-            "donna --protocol="
-            f"{protocol} sessions action-request-completed <action-request-id> '{next_operation_id}'"
-        )
+        return f"donna -p {protocol} sessions action-request-completed <action-request-id> '{next_operation_id}'"
 
     def render_analyze(self, context: Context, next_operation_id: FullArtifactLocalId) -> str:
         return f"$$donna {self.analyze_id} {next_operation_id} donna$$"

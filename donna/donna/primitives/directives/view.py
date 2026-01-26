@@ -28,7 +28,7 @@ class View(Directive):
 
     def render_cli(self, context: Context, specification_id: FullArtifactId) -> str:
         protocol = mode().value
-        return f"donna --protocol={protocol} artifacts view '{specification_id}'"
+        return f"donna -p {protocol} artifacts view '{specification_id}'"
 
     def render_analyze(self, context: Context, specification_id: FullArtifactId) -> str:
         return f"$$donna {self.analyze_id} {specification_id} donna$$"

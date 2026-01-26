@@ -22,7 +22,7 @@ def set_mode(mode: Mode) -> None:
 
 def mode() -> Mode:
     if _MODE is None:
-        raise NotImplementedError("Mode is not set. Pass --protocol=<mode> or -p <mode> to the CLI.")
+        raise NotImplementedError("Mode is not set. Pass -p <mode> to the CLI.")
 
     return _MODE
 
