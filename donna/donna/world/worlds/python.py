@@ -1,6 +1,7 @@
 import importlib
 import importlib.resources
 import pathlib
+from functools import lru_cache
 from typing import TYPE_CHECKING
 
 from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern, WorldId
@@ -10,6 +11,28 @@ from donna.world.worlds.base import WorldConstructor
 
 if TYPE_CHECKING:
     from donna.world.config import SourceConfigValue, WorldConfig
+
+
+def _pattern_allows_prefix(pattern_parts: tuple[str, ...], prefix_parts: tuple[str, ...]) -> bool:
+    @lru_cache(maxsize=None)
+    def match_at(p_index: int, v_index: int) -> bool:  # noqa: CCR001
+        if v_index >= len(prefix_parts):
+            return True
+
+        if p_index >= len(pattern_parts):
+            return False
+
+        token = pattern_parts[p_index]
+
+        if token == "**":  # noqa: S105
+            return match_at(p_index + 1, v_index) or match_at(p_index, v_index + 1)
+
+        if token == "*" or token == prefix_parts[v_index]:  # noqa: S105
+            return match_at(p_index + 1, v_index + 1)
+
+        return False
+
+    return match_at(0, 0)
 
 
 class Python(BaseWorld):
@@ -101,20 +124,27 @@ class Python(BaseWorld):
 
         return pathlib.Path(resource_path.name).suffix
 
-    def _list_artifacts(self) -> list[ArtifactId]:  # noqa: CCR001
+    def _list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
         from donna.world.config import config
+
+        if pattern[0] not in {"*", "**"} and pattern[0] != str(self.id):
+            return []
 
         supported_extensions = config().supported_extensions()
         artifacts: set[ArtifactId] = set()
+        pattern_parts = tuple(pattern)
+        world_prefix = (str(self.id),)
 
         def walk(  # noqa: CCR001
             node: importlib.resources.abc.Traversable,
             parts: list[str],
-            base_parts: list[str],
         ) -> None:
-            for entry in node.iterdir():
+            for entry in sorted(node.iterdir(), key=lambda item: item.name):
                 if entry.is_dir():
-                    walk(entry, parts + [entry.name], base_parts)
+                    next_parts = parts + [entry.name]
+                    if not _pattern_allows_prefix(pattern_parts, world_prefix + tuple(next_parts)):
+                        continue
+                    walk(entry, next_parts)
                     continue
 
                 if not entry.is_file():
@@ -125,35 +155,26 @@ class Python(BaseWorld):
                     continue
 
                 stem = entry.name[: -len(extension)]
-                artifact_name = ":".join(base_parts + parts + [stem])
+                artifact_name = ":".join(parts + [stem])
                 if ArtifactId.validate(artifact_name):
-                    artifacts.add(ArtifactId(artifact_name))
+                    artifact_id = ArtifactId(artifact_name)
+                    full_id = FullArtifactId((self.id, artifact_id))
+                    if pattern.matches_full_id(full_id):
+                        artifacts.add(artifact_id)
 
         resource_root = self._resource_root()
         if resource_root is None:
             return []
 
         base_path = resource_root
-        base_parts: list[str] = []
 
         if base_path.is_dir():
-            walk(base_path, [], base_parts)
+            walk(base_path, [])
 
         return list(sorted(artifacts))
 
     def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
-        if pattern[0] not in {"*", "**"} and pattern[0] != str(self.id):
-            return []
-
-        artifacts = self._list_artifacts()
-        matched: list[ArtifactId] = []
-
-        for artifact_id in artifacts:
-            full_id = FullArtifactId((self.id, artifact_id))
-            if pattern.matches_full_id(full_id):
-                matched.append(artifact_id)
-
-        return matched
+        return self._list_artifacts(pattern)
 
     # TODO: How can the state be represented in the Python world?
     def read_state(self, name: str) -> bytes | None:
