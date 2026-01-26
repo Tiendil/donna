@@ -104,3 +104,4 @@
 * TODO add depenedency graph validation to the grooming (there are some python packages for that)
 * TODO Request Action: agent has not always use the correctly specified branch, may be we should separate operation with next operation selection?
 * TODO We should improve the way we work with cells. I.e. we generate different kinds of cells for different use-cases. That is not reflected in the code well enough.
+** Replace them with json logging, for the sake of ai agent, it is not big difference to use json instead of cells.
