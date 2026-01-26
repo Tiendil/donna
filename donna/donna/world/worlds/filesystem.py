@@ -8,7 +8,7 @@ from donna.world.worlds.base import World as BaseWorld
 from donna.world.worlds.base import WorldConstructor
 
 if TYPE_CHECKING:
-    from donna.world.config import WorldConfig
+    from donna.world.config import SourceConfigValue, WorldConfig
 
 
 class World(BaseWorld):
@@ -31,48 +31,50 @@ class World(BaseWorld):
 
         return priorities
 
-    def _select_extension(self, artifact_id: ArtifactId) -> str | None:
+    def _resolve_artifact_file(self, artifact_id: ArtifactId) -> pathlib.Path | None:
+        artifact_path = self.path / artifact_id.replace(":", "/")
+        parent = artifact_path.parent
+
+        if not parent.exists():
+            return None
+
+        matches = [path for path in parent.glob(f"{artifact_path.name}.*") if path.is_file()]
+
+        if not matches:
+            return None
+
+        if len(matches) > 1:
+            raise NotImplementedError(f"Artifact `{artifact_id}` has multiple files in world `{self.id}`")
+
+        return matches[0]
+
+    def _get_source_by_filename(self, filename: str) -> "SourceConfigValue":
         from donna.world.config import config
 
-        for source in config().sources_instances:
-            for extension in source.supported_extensions:
-                if self._artifact_path(artifact_id, extension).exists():
-                    return extension
-
-        return None
-
-    def has(self, artifact_id: ArtifactId) -> bool:
-        return self._select_extension(artifact_id) is not None
-
-    def fetch(self, artifact_id: ArtifactId) -> Artifact:
-        extension = self._select_extension(artifact_id)
-
-        if extension is None:
-            raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
-
-        path = self._artifact_path(artifact_id, extension)
-        if not path.exists():
-            raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
-
-        from donna.world.config import config
-
+        extension = pathlib.Path(filename).suffix
         source_config = config().find_source_for_extension(extension)
         if source_config is None:
             raise NotImplementedError(f"Unsupported artifact source extension '{extension}'")
 
+        return source_config
+
+    def has(self, artifact_id: ArtifactId) -> bool:
+        return self._resolve_artifact_file(artifact_id) is not None
+
+    def fetch(self, artifact_id: ArtifactId) -> Artifact:
+        path = self._resolve_artifact_file(artifact_id)
+        if path is None:
+            raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
+
         content_bytes = path.read_bytes()
         full_id = FullArtifactId((self.id, artifact_id))
+        source_config = self._get_source_by_filename(path.name)
 
         return source_config.construct_artifact_from_bytes(full_id, content_bytes)
 
     def fetch_source(self, artifact_id: ArtifactId) -> bytes:
-        extension = self._select_extension(artifact_id)
-
-        if extension is None:
-            raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
-
-        path = self._artifact_path(artifact_id, extension)
-        if not path.exists():
+        path = self._resolve_artifact_file(artifact_id)
+        if path is None:
             raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
         return path.read_bytes()
@@ -87,7 +89,11 @@ class World(BaseWorld):
         path.write_bytes(content)
 
     def file_extension_for(self, artifact_id: ArtifactId) -> str | None:
-        return self._select_extension(artifact_id)
+        path = self._resolve_artifact_file(artifact_id)
+        if path is None:
+            return None
+
+        return path.suffix
 
     def read_state(self, name: str) -> bytes | None:
         if not self.session:
