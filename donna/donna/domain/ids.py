@@ -324,9 +324,9 @@ class FullArtifactIdPattern(tuple[str, ...]):
 class ArtifactLocalId(Identifier):
     __slots__ = ()
 
-
-class OperationId(ArtifactLocalId):
-    __slots__ = ()
+    @classmethod
+    def parse(cls, text: str) -> "ArtifactLocalId":
+        return cls(text)
 
 
 class FullArtifactLocalId(tuple[WorldId, ArtifactId, ArtifactLocalId]):

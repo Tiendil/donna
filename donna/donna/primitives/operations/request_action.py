@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, ClassVar, Iterator, cast
 
 import pydantic
 
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId
+from donna.domain.ids import FullArtifactId, FullArtifactLocalId, ArtifactLocalId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
@@ -29,7 +29,7 @@ def extract_transitions(text: str) -> set[FullArtifactLocalId]:
     transitions: set[FullArtifactLocalId] = set()
 
     for match in matches:
-        transitions.add(FullArtifactLocalId.parse(match))
+        transitions.add(ArtifactLocalId.parse(match))
 
     return transitions
 

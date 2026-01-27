@@ -5,13 +5,12 @@ from jinja2.runtime import Context
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactLocalId, PythonImportPath
-from donna.machine.artifacts import ArtifactSectionConfig
+from donna.machine.artifacts import ArtifactSectionConfig, ArtifactValidationError
 
 if TYPE_CHECKING:
     from donna.machine.artifacts import Artifact, ArtifactSection
     from donna.machine.changes import Change
     from donna.machine.tasks import Task, WorkUnit
-    from donna.protocol.cells import Cell
     from donna.world.config import SourceConfig as SourceConfigModel
     from donna.world.config import WorldConfig
     from donna.world.sources.base import SourceConfig as SourceConfigValue
@@ -26,8 +25,8 @@ class Primitive(BaseEntity):
     def execute_section(self, task: "Task", unit: "WorkUnit", section: "ArtifactSection") -> Iterable["Change"]:
         raise NotImplementedError("You MUST implement this method.")
 
-    def validate_section(self, artifact: "Artifact", section_id: ArtifactLocalId) -> tuple[bool, list["Cell"]]:
-        return True, []
+    def validate_section(self, artifact: "Artifact", section_id: ArtifactLocalId) -> list[ArtifactValidationError]:
+        return []
 
     def apply_directive(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
         raise NotImplementedError("You MUST implement this method.")

@@ -34,6 +34,8 @@
 ** morphologica_analysis — workflow for explicit morphological analysis
 ** simple_task — workflow for simple tasks to not bother with complex story workflows
 ** Spec-based workflow (like in OpenSpec?)
+** Example worflow with iterative factorial calculation
+** Example workflow with recursive factorial calculation
 * TODO possible specifications
 ** how to prepare python package with artifacts for donna
 ** `donna:usage:dictionary` — standard terms and their definitions
@@ -86,7 +88,10 @@
 ** tune wording of workflows (what to write before goto)
 ** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
 * TODO Cells & Errors
-** Workflow.validate_section validates the whole artifact?
+** !Worflow section validation must validate only chain of sections from the start_operation
+*** shouldn't validate the whole artifact
+*** remove transitions collection
+*** remove find_not_reachable_operations? or rewrite to iterate over reachable sections
 ** Imprpove cells construction
 *** remove cell_donna_message
 *** artifact_validation_error_id (for tests?)
@@ -95,6 +100,11 @@
 *** do we need to return success cells from artifact validation?
 *** We generate different kinds of cells for different use-cases. That is not reflected in the code well enough.
 *** Organize standard cell kinds into enum (but allow custom kinds as well). Or just provide custom constructors for each use-case.
+*** ArtifactLocalId -> ArtifactSectionId
+*** FullArtifactLocalId -> FullArtifactSectionId
+*** remove cell_shortcuts module?
+*** implement ErrorCodeId like FullArtifactId or PythonImportPath.
+**** maybe we should refactor ids hierarchy in general?
 ** Errors processing improvements
 *** specification on how we process errors
 *** Vebose jinja2 render errors to help agents and developers

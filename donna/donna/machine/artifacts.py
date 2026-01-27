@@ -1,8 +1,62 @@
-from typing import Any
+from typing import Any, Literal
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId, PythonImportPath
-from donna.protocol.cells import Cell
+from donna.protocol.cells import Cell, MetaValue
+
+
+class ArtifactValidationError(BaseEntity):
+    code: str
+    artifact_id: FullArtifactId
+    section_id: ArtifactLocalId | None = None
+    message: str
+
+    def meta(self) -> dict[str, MetaValue]:
+        meta = {
+            "artifact_id": str(self.artifact_id),
+            "error_code": self.code,
+            "error_message": self.message,
+        }
+
+        if self.section_id:
+            meta["section_id"] = str(self.section_id)
+
+        for field_name, _field in self.model_fields.items():
+            if field_name in ("code", "artifact_id", "section_id", "message"):
+                continue
+
+            value = getattr(self, field_name)
+
+            meta[field_name] = value
+
+        return meta
+
+    def content(self) -> str:
+        if self.section_id:
+            intro = f"Error in artifact '{self.artifact_id}', section '{self.section_id}'"
+        else:
+            intro = f"Error in artifact '{self.artifact_id}':"
+
+        message = self.message.format(error=self).strip()
+
+        if '\n' in self.message:
+            return f"{intro}:\n\n{message}"
+
+        return f"{intro}: {message}"
+
+    def cell(self) -> Cell:
+        return Cell.build_meta(
+            kind="artifact_validation_error",
+            media_type="text/markdown",
+            content=self.content(),
+            **self.meta(),
+        )
+
+
+class MultiplePrimarySectionsError(ArtifactValidationError):
+    code: Literal["donna.artifacts.multiple_primary_sections"]
+    message: str = "Artifact must have exactly one primary section, found multiple: `{error.primary_sections}`"
+    primary_sections: list[ArtifactLocalId]
 
 
 class ArtifactSectionConfig(BaseEntity):
@@ -57,29 +111,26 @@ class Artifact(BaseEntity):
             )
         return primary_sections[0]
 
-    def validate(self) -> tuple[bool, list[Cell]]:  # type: ignore[override]  # noqa: CCR001
+    def validate(self) -> list[ArtifactValidationError]:
         from donna.machine.primitives import resolve_primitive
 
         primary_sections = self._primary_sections()
 
+        errors = []
+
         if len(primary_sections) != 1:
-            return False, [
-                Cell.build_meta(
-                    kind="artifact_kind_validation",
-                    id=str(self.id),
-                    status="failure",
-                    message=f"Artifact must have exactly one primary section, found {len(primary_sections)}.",
+            errors.append(
+                MultiplePrimarySectionsError(
+                    artifact_id=self.id,
+                    primary_sections=sorted(section.id for section in primary_sections),
                 )
-            ]
+            )
 
         for section in self.sections:
             primitive = resolve_primitive(section.kind)
-            is_valid, cells = primitive.validate_section(self, section.id)
+            errors.extend(primitive.validate_section(self, section.id))
 
-            if not is_valid:
-                return is_valid, cells
-
-        return True, []
+        return errors
 
     def cells_info(self) -> list[Cell]:
         primary_section = self.primary_section()

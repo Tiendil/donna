@@ -33,4 +33,4 @@ class GoTo(Directive):
         return f"donna -p {protocol} sessions action-request-completed <action-request-id> '{next_operation_id}'"
 
     def render_analyze(self, context: Context, next_operation_id: FullArtifactLocalId) -> str:
-        return f"$$donna {self.analyze_id} {next_operation_id} donna$$"
+        return f"$$donna {self.analyze_id} {next_operation_id.local_id} donna$$"
