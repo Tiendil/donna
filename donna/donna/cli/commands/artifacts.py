@@ -44,7 +44,11 @@ def fetch(id: FullArtifactIdArgument, output: pathlib.Path | None = None) -> Non
 
 @artifacts_cli.command()
 def update(id: FullArtifactIdArgument, input: pathlib.Path) -> None:
-    world_artifacts.update_artifact(id, input)
+    result = world_artifacts.update_artifact(id, input)
+    if result.is_err():
+        errors = result.unwrap_err()
+        output_cells([error.cell() for error in errors])
+        return
     output_cells(
         [operation_succeeded(f"Artifact `{id}` updated from '{input}'", artifact_id=str(id), input_path=str(input))]
     )
