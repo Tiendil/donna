@@ -1,8 +1,7 @@
 from typing import TYPE_CHECKING, ClassVar, Iterable, cast
 
-from safe_result import Err, Ok, Result, ok
-
 from donna.core.errors import ErrorsList
+from donna.core.result import Err, Ok, Result
 from donna.domain.ids import ArtifactLocalId, FullArtifactId
 from donna.machine.artifacts import (
     Artifact,
@@ -121,7 +120,7 @@ class Workflow(MarkdownSectionMixin, Primitive):
 
         start_operation_id = section.meta.start_operation_id
 
-        errors: list[ArtifactValidationError] = []
+        errors: ErrorsList = []
 
         if artifact.get_section(start_operation_id) is None:
             errors.append(

@@ -1089,18 +1089,6 @@ pygments = ">=2.13.0,<3.0.0"
 jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
-name = "safe-result"
-version = "4.0.3"
-description = "A Python library providing a Result type for elegant error handling, inspired by Rust's Result type."
-optional = false
-python-versions = ">=3.10"
-groups = ["main"]
-files = [
-    {file = "safe_result-4.0.3-py3-none-any.whl", hash = "sha256:7066afbea46ceb92b407883b8faa82aba407dc912f32873ae7d4ceafbd98003f"},
-    {file = "safe_result-4.0.3.tar.gz", hash = "sha256:829e2080d64a4f55c801abfbe2b3a71d2f76698f3bd392633507880b7a8c1ab2"},
-]
-
-[[package]]
 name = "setuptools"
 version = "80.9.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"

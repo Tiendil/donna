@@ -54,9 +54,10 @@ def update(id: FullArtifactIdArgument, input: pathlib.Path) -> None:
 def validate(id: FullArtifactIdArgument) -> None:
     artifact = world_artifacts.load_artifact(id)
 
-    errors = artifact.validate_artifact()
+    result = artifact.validate_artifact()
 
-    if errors:
+    if result.is_err():
+        errors = result.unwrap_err()
         output_cells([error.cell() for error in errors])
         return
 
@@ -73,7 +74,9 @@ def validate_all(pattern: FullArtifactIdPatternOption = None) -> None:
     errors = []
 
     for artifact in artifacts:
-        errors.extend(artifact.validate_artifact())
+        result = artifact.validate_artifact()
+        if result.is_err():
+            errors.extend(result.unwrap_err())
 
     if errors:
         output_cells([error.cell() for error in errors])

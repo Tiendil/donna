@@ -3,12 +3,11 @@ from typing import TYPE_CHECKING, Any, ClassVar, Iterable
 
 from jinja2.runtime import Context
 
-from safe_result import Err, Ok, Result, ok
-
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
+from donna.core.result import Ok, Result
 from donna.domain.ids import ArtifactLocalId, PythonImportPath
-from donna.machine.artifacts import ArtifactSectionConfig, ArtifactValidationError
+from donna.machine.artifacts import ArtifactSectionConfig
 
 if TYPE_CHECKING:
     from donna.machine.artifacts import Artifact, ArtifactSection
