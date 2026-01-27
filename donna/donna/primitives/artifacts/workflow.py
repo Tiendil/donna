@@ -37,9 +37,11 @@ class SectionIsNotAnOperation(ArtifactValidationError):
 class FinalOperationHasTransitions(ArtifactValidationError):
     code: str = "donna.workflows.final_operation_has_transitions"
     message: str = "Final operation `{error.workflow_section_id}` should not have outgoing transitions."
-    ways_to_fix: list[str] = ["Approach A: Remove all outgoing transitions from this operation.",
-                              "Approach B: Change the `fsm_mode` of this operation from `final` to `normal`",
-                              "Approach C: Remove the `fsm_mode` setting from this operation, as `normal` is the default."]
+    ways_to_fix: list[str] = [
+        "Approach A: Remove all outgoing transitions from this operation.",
+        "Approach B: Change the `fsm_mode` of this operation from `final` to `normal`",
+        "Approach C: Remove the `fsm_mode` setting from this operation, as `normal` is the default.",
+    ]
     workflow_section_id: ArtifactLocalId
 
 
@@ -48,10 +50,11 @@ class NoOutgoingTransitions(ArtifactValidationError):
     message: str = (
         "Operation `{error.workflow_section_id}` must have at least one outgoing transition or be marked as final."
     )
-    ways_to_fix: list[str] = ["Approach A: Add at least one outgoing transition from this operation.",
-                              "Approach B: Change the kind of this operation to `donna.lib.finish`",
-                              "Approach C: Mark this operation as final by setting its `fsm_mode` to `final`.",
-                              ]
+    ways_to_fix: list[str] = [
+        "Approach A: Add at least one outgoing transition from this operation.",
+        "Approach B: Change the kind of this operation to `donna.lib.finish`",
+        "Approach C: Mark this operation as final by setting its `fsm_mode` to `final`.",
+    ]
     workflow_section_id: ArtifactLocalId
 
 

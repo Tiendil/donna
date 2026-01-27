@@ -77,6 +77,11 @@
 *** maximum determinism
 *** maximum introspection
 *** LLMs must do only the work they can do better than code
+** How Donna help agents to do their work better
+*** Validation of artifacts
+*** Every error is accompanied with the explanation and list of ways to fix it
+*** Do algorithmic operations without need for LLMs to think about them
+*** Controls meta flow of work, so agent should not think about it
 * TODO Request Action: agent has not always use the correctly specified branch, may be we should separate operation with next operation selection?
 * TODO Workflows polishing
 ** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
