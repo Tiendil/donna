@@ -2,9 +2,11 @@
 * TODO freeze pydantic models which are possible
 * TODO codex should explain what it is doing, while executing requests from donna
 * TODO tests
-** TODO basic / lowest unit tests for primitive operations
-** TODO domain-level unit tests
-** TODO intergration tests for workflows/stories/scenarios
+** basic / lowest unit tests for primitive operations
+** domain-level unit tests
+** intergration tests for workflows/stories/scenarios
+** header of the module must contain the instruction on how to write tests for it?
+*** maybe just with links to the spec
 * TODO optimize imports by moving most used ones to \__init__.py files
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO unify code of different directives? It is very similar
