@@ -1,7 +1,7 @@
 import enum
 from typing import TYPE_CHECKING, Any
 
-from donna.domain.ids import FullArtifactLocalId, ArtifactLocalId
+from donna.domain.ids import ArtifactLocalId
 from donna.machine.artifacts import ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.primitives import Primitive
 

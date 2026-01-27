@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, ClassVar, Iterable, cast, Literal
+from typing import TYPE_CHECKING, ClassVar, Iterable, cast
 
 from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
 from donna.machine.artifacts import (
@@ -10,7 +10,6 @@ from donna.machine.artifacts import (
 )
 from donna.machine.operations import FsmMode, OperationMeta
 from donna.machine.primitives import Primitive
-from donna.protocol.cells import Cell
 from donna.world import markdown
 from donna.world.sources.markdown import MarkdownSectionMixin
 

@@ -1,4 +1,4 @@
-from typing import Any, Literal
+from typing import Any
 
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId, PythonImportPath
