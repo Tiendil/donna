@@ -72,6 +72,7 @@
 *** fsms instead of plain texts
 *** "better" Markdown
 ** you can deliver instructions and operations for your package with your package
+** every error is accompanied with the ways to fix it
 ** goals:
 *** maximum determinism
 *** maximum introspection
