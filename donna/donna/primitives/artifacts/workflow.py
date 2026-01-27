@@ -1,5 +1,8 @@
 from typing import TYPE_CHECKING, ClassVar, Iterable, cast
 
+from safe_result import Err, Ok, Result, ok
+
+from donna.core.errors import ErrorsList
 from donna.domain.ids import ArtifactLocalId, FullArtifactId
 from donna.machine.artifacts import (
     Artifact,
@@ -107,7 +110,7 @@ class Workflow(MarkdownSectionMixin, Primitive):
 
     def validate_section(  # noqa: CCR001, CFQ001
         self, artifact: Artifact, section_id: ArtifactLocalId
-    ) -> list[ArtifactValidationError]:
+    ) -> Result[None, ErrorsList]:
         section = artifact.get_section(section_id)
 
         if section is None:
@@ -161,4 +164,7 @@ class Workflow(MarkdownSectionMixin, Primitive):
 
             transitions[workflow_section.id] = set(workflow_section.meta.allowed_transtions)
 
-        return errors
+        if errors:
+            return Err(errors)
+
+        return Ok(None)

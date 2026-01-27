@@ -3,7 +3,10 @@ from typing import TYPE_CHECKING, Any, ClassVar, Iterable
 
 from jinja2.runtime import Context
 
+from safe_result import Err, Ok, Result, ok
+
 from donna.core.entities import BaseEntity
+from donna.core.errors import ErrorsList
 from donna.domain.ids import ArtifactLocalId, PythonImportPath
 from donna.machine.artifacts import ArtifactSectionConfig, ArtifactValidationError
 
@@ -25,8 +28,8 @@ class Primitive(BaseEntity):
     def execute_section(self, task: "Task", unit: "WorkUnit", section: "ArtifactSection") -> Iterable["Change"]:
         raise NotImplementedError("You MUST implement this method.")
 
-    def validate_section(self, artifact: "Artifact", section_id: ArtifactLocalId) -> list[ArtifactValidationError]:
-        return []
+    def validate_section(self, artifact: "Artifact", section_id: ArtifactLocalId) -> Result[None, ErrorsList]:
+        return Ok(None)
 
     def apply_directive(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
         raise NotImplementedError("You MUST implement this method.")

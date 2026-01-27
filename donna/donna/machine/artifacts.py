@@ -1,7 +1,9 @@
 from typing import Any
 
+from safe_result import Err, Ok, Result, ok
+
 from donna.core.entities import BaseEntity
-from donna.core.errors import EnvironmentError
+from donna.core.errors import EnvironmentError, ErrorsList
 from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId, PythonImportPath
 from donna.protocol.cells import Cell
 
@@ -80,7 +82,7 @@ class Artifact(BaseEntity):
             )
         return primary_sections[0]
 
-    def validate_artifact(self) -> list[ArtifactValidationError]:
+    def validate_artifact(self) -> Result[None, ErrorsList]:
         from donna.machine.primitives import resolve_primitive
 
         primary_sections = self._primary_sections()
@@ -97,9 +99,17 @@ class Artifact(BaseEntity):
 
         for section in self.sections:
             primitive = resolve_primitive(section.kind)
-            errors.extend(primitive.validate_section(self, section.id))
+            result = primitive.validate_section(self, section.id)
 
-        return errors
+            if ok(result):
+                continue
+
+            errors.extend(result.error)
+
+        if errors:
+            return Err(errors)
+
+        return Ok(None)
 
     def cells_info(self) -> list[Cell]:
         primary_section = self.primary_section()

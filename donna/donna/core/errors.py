@@ -47,3 +47,6 @@ class EnvironmentError(BaseEntity):
             content=self.content(),
             **self.meta(),
         )
+
+
+ErrorsList = list[EnvironmentError]
