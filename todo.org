@@ -89,8 +89,6 @@
 ** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
 * TODO Cells & Errors
 ** Imprpove cells construction
-*** artifact_validation_error_id (for tests?)
-*** workflow verification should process all sections
 *** for each validation error specify ways to fix it
 *** do we need to return success cells from artifact validation?
 *** We generate different kinds of cells for different use-cases. That is not reflected in the code well enough.
