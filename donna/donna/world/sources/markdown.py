@@ -99,6 +99,7 @@ class MarkdownSectionMixin:
 
         return ArtifactSection(
             id=section_config.id,
+            artifact_id=artifact_id,
             kind=section_config.kind,
             title=title,
             description=description,

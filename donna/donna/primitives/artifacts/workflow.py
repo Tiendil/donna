@@ -100,7 +100,9 @@ class Workflow(MarkdownSectionMixin, Primitive):
         if not isinstance(section.meta, WorkflowMeta):
             raise NotImplementedError("Workflow section is missing workflow metadata.")
 
-        yield ChangeAddWorkUnit(task_id=task.id, operation_id=section.meta.start_operation_id)
+        full_id = section.artifact_id.to_full_local(section.id)
+
+        yield ChangeAddWorkUnit(task_id=task.id, operation_id=full_id)
 
     def validate_section(  # noqa: CCR001, CFQ001
         self, artifact: Artifact, section_id: ArtifactLocalId

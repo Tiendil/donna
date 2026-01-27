@@ -70,6 +70,7 @@ class ArtifactSectionMeta(BaseEntity):
 
 class ArtifactSection(BaseEntity):
     id: ArtifactLocalId
+    artifact_id: FullArtifactId
     kind: PythonImportPath
     title: str
     description: str
@@ -81,6 +82,7 @@ class ArtifactSection(BaseEntity):
         return [
             Cell.build_meta(
                 kind="artifact_section_meta",
+                artifact_id=str(self.artifact_id),
                 section_id=str(self.id) if self.id else None,
                 section_kind=str(self.kind) if self.kind else None,
                 section_title=self.title,
