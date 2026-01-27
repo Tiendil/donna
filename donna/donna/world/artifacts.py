@@ -45,7 +45,7 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> None:
 
     test_artifact = source_config.construct_artifact_from_bytes(full_id, content_bytes)
 
-    errors = test_artifact.validation_errors()
+    errors = test_artifact.validate_artifact()
 
     # TODO: this is bad solution, we must return a list of errors instead
     if errors:

@@ -112,7 +112,7 @@ class Artifact(BaseEntity):
             )
         return primary_sections[0]
 
-    def validation_errors(self) -> list[ArtifactValidationError]:
+    def validate_artifact(self) -> list[ArtifactValidationError]:
         from donna.machine.primitives import resolve_primitive
 
         primary_sections = self._primary_sections()
