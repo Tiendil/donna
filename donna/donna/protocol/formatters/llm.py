@@ -5,20 +5,23 @@ from donna.protocol.formatters.base import Formatter as BaseFormatter
 class Formatter(BaseFormatter):
 
     def format_cell(self, cell: Cell, single_mode: bool) -> bytes:
-        id = cell.short_id()
+        id = cell.short_id
 
         lines = []
 
         if not single_mode:
             lines = [f"--DONNA-CELL {id} BEGIN--"]
 
+        lines.append(f"kind={cell.kind}")
+
+        if cell.media_type is not None:
+            lines.append(f"media_type={cell.media_type}")
+
         for meta_key, meta_value in sorted(cell.meta.items()):
             lines.append(f"{meta_key}={meta_value}")
 
-        if cell.meta and cell.content:
-            lines.append("")
-
         if cell.content:
+            lines.append("")
             lines.append(cell.content.strip())
 
         if not single_mode:

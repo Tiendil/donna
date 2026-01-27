@@ -12,6 +12,7 @@ from donna.machine.primitives import Primitive
 from donna.protocol.cells import Cell
 from donna.world import markdown
 from donna.world.sources.markdown import MarkdownSectionMixin
+from donna.protocol.cell_shortcuts import artifact_validation_error, artifact_validation_success
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -83,27 +84,18 @@ class Workflow(MarkdownSectionMixin, Primitive):
         section = artifact.get_section(section_id)
 
         if section is None:
-            raise NotImplementedError("Trying to validate an section that does not exist in the artifact.")
+            raise NotImplementedError("Trying to validate a section that does not exist in the artifact.")
 
         if not isinstance(section.meta, WorkflowMeta):
-            return False, [
-                Cell.build_meta(
-                    kind="artifact_kind_validation",
-                    id=str(artifact.id),
-                    status="failure",
-                    message=f"Section '{section_id}' does not have workflow metadata.",
-                )
-            ]
+            return False, [artifact_validation_error(artifact.id, f"Section '{section_id}' is not a workflow.")]
 
         start_operation_id = section.meta.start_operation_id
 
         if artifact.get_section(start_operation_id.local_id) is None:
             return False, [
-                Cell.build_meta(
-                    kind="artifact_kind_validation",
-                    id=str(artifact.id),
-                    status="failure",
-                    message=f"Start operation ID '{start_operation_id}' does not exist in the workflow.",
+                artifact_validation_error(
+                    artifact.id,
+                    f"Start operation ID '{start_operation_id}' does not exist in the workflow.",
                 )
             ]
 
@@ -112,13 +104,12 @@ class Workflow(MarkdownSectionMixin, Primitive):
         for section in artifact.sections:
             if isinstance(section.meta, WorkflowMeta):
                 continue
+
             if not isinstance(section.meta, OperationMeta):
                 return False, [
-                    Cell.build_meta(
-                        kind="artifact_kind_validation",
-                        id=str(artifact.id),
-                        status="failure",
-                        message=f"Section '{section.id}' is not an operation and cannot be part of the workflow.",
+                    artifact_validation_error(
+                        artifact.id,
+                        f"Section '{section.id}' is not an operation and cannot be part of the workflow.",
                     )
                 ]
 
@@ -126,37 +117,27 @@ class Workflow(MarkdownSectionMixin, Primitive):
 
             if section.meta.fsm_mode == FsmMode.final and section.meta.allowed_transtions:
                 return False, [
-                    Cell.build_meta(
-                        kind="artifact_kind_validation",
-                        id=str(artifact.id),
-                        status="failure",
-                        message=f"Final operation '{section_full_id}' should not have outgoing transitions.",
+                    artifact_validation_error(
+                        artifact.id,
+                        f"Final operation '{section_full_id}' should not have outgoing transitions.",
                     )
                 ]
 
             if section.meta.fsm_mode == FsmMode.start and section_full_id != start_operation_id:
                 return False, [
-                    Cell.build_meta(
-                        kind="artifact_kind_validation",
-                        id=str(artifact.id),
-                        status="failure",
-                        message=(
-                            f"Operation '{section_full_id}' is marked as start but does not match the workflow's start"
-                            f" operation ID '{start_operation_id}'."
-                        ),
+                    artifact_validation_error(
+                        artifact.id,
+                        f"Operation '{section_full_id}' is marked as start but does not match the workflow's start"
+                        f" operation ID '{start_operation_id}'.",
                     )
                 ]
 
             if section.meta.fsm_mode == FsmMode.normal and not section.meta.allowed_transtions:
                 return False, [
-                    Cell.build_meta(
-                        kind="artifact_kind_validation",
-                        id=str(artifact.id),
-                        status="failure",
-                        message=(
-                            f"Operation '{section_full_id}' must have at least one allowed transition or be marked as"
-                            " final."
-                        ),
+                    artifact_validation_error(
+                        artifact.id,
+                        f"Operation '{section_full_id}' must have at least one outgoing transition or be marked as"
+                        " final.",
                     )
                 ]
 
@@ -169,19 +150,11 @@ class Workflow(MarkdownSectionMixin, Primitive):
 
         if not_reachable_operations:
             return False, [
-                Cell.build_meta(
-                    kind="artifact_kind_validation",
-                    id=str(artifact.id),
-                    status="failure",
-                    message="The following operations are not reachable from the start operation: "
+                artifact_validation_error(
+                    artifact.id,
+                    "The following operations are not reachable from the start operation: "
                     f"{', '.join(str(op_id) for op_id in not_reachable_operations)}.",
                 )
             ]
 
-        return True, [
-            Cell.build_meta(
-                kind="artifact_kind_validation",
-                id=str(artifact.id),
-                status="success",
-            )
-        ]
+        return True, [artifact_validation_success(artifact.id)]

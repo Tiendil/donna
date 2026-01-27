@@ -7,7 +7,7 @@ from donna.protocol.formatters.base import Formatter as BaseFormatter
 class Formatter(BaseFormatter):
 
     def format_cell(self, cell: Cell, single_mode: bool) -> bytes:
-        data: dict[str, str | int | bool | None] = {"id": cell.short_id()}
+        data: dict[str, str | int | bool | None] = {"id": cell.short_id}
 
         for meta_key, meta_value in sorted(cell.meta.items()):
             data[meta_key] = meta_value
