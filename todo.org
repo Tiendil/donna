@@ -95,6 +95,7 @@
 *** We generate different kinds of cells for different use-cases. That is not reflected in the code well enough.
 *** Organize standard cell kinds into enum (but allow custom kinds as well). Or just provide custom constructors for each use-case.
 ** Errors processing improvements
+*** specification on how we process errors
 *** Vebose jinja2 render errors to help agents and developers
 *** replace all NotImplementedError exceptions with custom exceptions and smart error handling
 *** exceptions must output cells?
