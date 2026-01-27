@@ -1,7 +1,7 @@
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import ActionRequestIdArgument, FullArtifactIdArgument, FullArtifactLocalIdArgument
+from donna.cli.types import ActionRequestIdArgument, FullArtifactIdArgument, FullArtifactSectionIdArgument
 from donna.cli.utils import output_cells
 from donna.machine import sessions
 
@@ -30,7 +30,7 @@ def run(workflow_id: FullArtifactIdArgument) -> None:
 
 @sessions_cli.command()
 def action_request_completed(
-    request_id: ActionRequestIdArgument, next_operation_id: FullArtifactLocalIdArgument
+    request_id: ActionRequestIdArgument, next_operation_id: FullArtifactSectionIdArgument
 ) -> None:
     output_cells(sessions.complete_action_request(request_id, next_operation_id))
 

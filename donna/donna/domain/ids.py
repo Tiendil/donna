@@ -230,8 +230,8 @@ class FullArtifactId(tuple[WorldId, ArtifactId]):
     def artifact_id(self) -> ArtifactId:
         return self[1]
 
-    def to_full_local(self, local_id: "ArtifactLocalId") -> "FullArtifactLocalId":
-        return FullArtifactLocalId((self.world_id, self.artifact_id, local_id))
+    def to_full_local(self, local_id: "ArtifactSectionId") -> "FullArtifactSectionId":
+        return FullArtifactSectionId((self.world_id, self.artifact_id, local_id))
 
     @classmethod
     def parse(cls, text: str) -> "FullArtifactId":
@@ -321,15 +321,15 @@ class FullArtifactIdPattern(tuple[str, ...]):
         )
 
 
-class ArtifactLocalId(Identifier):
+class ArtifactSectionId(Identifier):
     __slots__ = ()
 
     @classmethod
-    def parse(cls, text: str) -> "ArtifactLocalId":
+    def parse(cls, text: str) -> "ArtifactSectionId":
         return cls(text)
 
 
-class FullArtifactLocalId(tuple[WorldId, ArtifactId, ArtifactLocalId]):
+class FullArtifactSectionId(tuple[WorldId, ArtifactId, ArtifactSectionId]):
     __slots__ = ()
 
     def __str__(self) -> str:
@@ -348,26 +348,26 @@ class FullArtifactLocalId(tuple[WorldId, ArtifactId, ArtifactLocalId]):
         return FullArtifactId((self.world_id, self.artifact_id))
 
     @property
-    def local_id(self) -> ArtifactLocalId:
+    def local_id(self) -> ArtifactSectionId:
         return self[2]
 
     @classmethod
-    def parse(cls, text: str) -> "FullArtifactLocalId":
+    def parse(cls, text: str) -> "FullArtifactSectionId":
         try:
             artifact_part, local_part = text.rsplit(":", maxsplit=1)
         except ValueError as exc:
-            raise NotImplementedError(f"Invalid FullArtifactLocalId format: '{text}'") from exc
+            raise NotImplementedError(f"Invalid FullArtifactSectionId format: '{text}'") from exc
 
         full_artifact_id = FullArtifactId.parse(artifact_part)
 
-        return FullArtifactLocalId(
-            (full_artifact_id.world_id, full_artifact_id.artifact_id, ArtifactLocalId(local_part))
+        return FullArtifactSectionId(
+            (full_artifact_id.world_id, full_artifact_id.artifact_id, ArtifactSectionId(local_part))
         )
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
 
-        def validate(v: Any) -> "FullArtifactLocalId":
+        def validate(v: Any) -> "FullArtifactSectionId":
             if isinstance(v, cls):
                 return v
 

@@ -1,7 +1,7 @@
 import uuid
 from typing import TYPE_CHECKING, Any, ClassVar, Literal, Protocol, cast
 
-from donna.domain.ids import ArtifactLocalId, FullArtifactId, PythonImportPath
+from donna.domain.ids import ArtifactSectionId, FullArtifactId, PythonImportPath
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.primitives import Primitive, resolve_primitive
 from donna.world import markdown
@@ -24,7 +24,7 @@ class Config(SourceConfig):
     kind: Literal["markdown"] = "markdown"
     supported_extensions: list[str] = [".md", ".markdown"]
     default_section_kind: PythonImportPath = PythonImportPath.parse("donna.lib.text")
-    default_primary_section_id: ArtifactLocalId = ArtifactLocalId("primary")
+    default_primary_section_id: ArtifactSectionId = ArtifactSectionId("primary")
 
     def construct_artifact_from_bytes(self, full_id: FullArtifactId, content: bytes) -> Artifact:
         return construct_artifact_from_bytes(full_id, content, self)
@@ -187,7 +187,7 @@ def construct_sections_from_markdown(  # noqa: CCR001
         data = dict(section.merged_configs())
 
         if "id" not in data or data["id"] is None:
-            data["id"] = ArtifactLocalId("markdown" + uuid.uuid4().hex.replace("-", ""))
+            data["id"] = ArtifactSectionId("markdown" + uuid.uuid4().hex.replace("-", ""))
 
         if "kind" not in data:
             data["kind"] = default_section_kind

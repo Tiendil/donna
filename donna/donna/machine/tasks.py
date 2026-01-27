@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import FullArtifactLocalId, TaskId, WorkUnitId
+from donna.domain.ids import FullArtifactSectionId, TaskId, WorkUnitId
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -28,7 +28,7 @@ class Task(BaseEntity):
 class WorkUnit(BaseEntity):
     id: WorkUnitId
     task_id: TaskId
-    operation_id: FullArtifactLocalId
+    operation_id: FullArtifactSectionId
     context: dict[str, Any]
 
     @classmethod
@@ -36,7 +36,7 @@ class WorkUnit(BaseEntity):
         cls,
         id: WorkUnitId,
         task_id: TaskId,
-        operation_id: FullArtifactLocalId,
+        operation_id: FullArtifactSectionId,
         context: dict[str, Any] | None = None,
     ) -> "WorkUnit":
 

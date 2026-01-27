@@ -3,14 +3,14 @@ from typing import Any
 from donna.core.entities import BaseEntity
 from donna.core.errors import EnvironmentError, ErrorsList
 from donna.core.result import Err, Ok, Result
-from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId, PythonImportPath
+from donna.domain.ids import ArtifactSectionId, FullArtifactId, FullArtifactSectionId, PythonImportPath
 from donna.protocol.cells import Cell
 
 
 class ArtifactValidationError(EnvironmentError):
     cell_kind: str = "artifact_validation_error"
     artifact_id: FullArtifactId
-    section_id: ArtifactLocalId | None = None
+    section_id: ArtifactSectionId | None = None
 
     def content_intro(self) -> str:
         if self.section_id:
@@ -23,11 +23,11 @@ class MultiplePrimarySectionsError(ArtifactValidationError):
     code: str = "donna.artifacts.multiple_primary_sections"
     message: str = "Artifact must have exactly one primary section, found multiple: `{error.primary_sections}`"
     ways_to_fix: list[str] = ["Keep a single h1 section in the artifact."]
-    primary_sections: list[ArtifactLocalId]
+    primary_sections: list[ArtifactSectionId]
 
 
 class ArtifactSectionConfig(BaseEntity):
-    id: ArtifactLocalId
+    id: ArtifactSectionId
     kind: PythonImportPath
 
 
@@ -37,7 +37,7 @@ class ArtifactSectionMeta(BaseEntity):
 
 
 class ArtifactSection(BaseEntity):
-    id: ArtifactLocalId
+    id: ArtifactSectionId
     artifact_id: FullArtifactId
     kind: PythonImportPath
     title: str
@@ -140,7 +140,7 @@ class Artifact(BaseEntity):
 
         return cells
 
-    def get_section(self, section_id: ArtifactLocalId | None) -> ArtifactSection | None:
+    def get_section(self, section_id: ArtifactSectionId | None) -> ArtifactSection | None:
         if section_id is None:
             return self.primary_section()
         for section in self.sections:
@@ -160,7 +160,7 @@ class Artifact(BaseEntity):
         return blocks
 
 
-def resolve(target_id: FullArtifactLocalId) -> ArtifactSection:
+def resolve(target_id: FullArtifactSectionId) -> ArtifactSection:
     from donna.world import artifacts as world_artifacts
 
     artifact = world_artifacts.load_artifact(target_id.full_artifact_id)

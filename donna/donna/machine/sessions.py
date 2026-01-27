@@ -2,7 +2,7 @@ import contextlib
 import functools
 from typing import Callable, Iterator, ParamSpec
 
-from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactLocalId, WorldId
+from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactSectionId, WorldId
 from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
 from donna.protocol.cell_shortcuts import operation_failed, operation_succeeded
@@ -122,7 +122,7 @@ def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
 
 
 def _validate_operation_transition(
-    state: MutableState, request_id: ActionRequestId, next_operation_id: FullArtifactLocalId
+    state: MutableState, request_id: ActionRequestId, next_operation_id: FullArtifactSectionId
 ) -> None:
     operation_id = state.get_action_request(request_id).operation_id
 
@@ -138,7 +138,7 @@ def _validate_operation_transition(
 
 
 @_session_required
-def complete_action_request(request_id: ActionRequestId, next_operation_id: FullArtifactLocalId) -> list[Cell]:
+def complete_action_request(request_id: ActionRequestId, next_operation_id: FullArtifactSectionId) -> list[Cell]:
     with _state_mutator() as mutator:
         _validate_operation_transition(mutator, request_id, next_operation_id)
         mutator.complete_action_request(request_id, next_operation_id)

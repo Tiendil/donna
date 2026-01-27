@@ -6,7 +6,7 @@ import pydantic
 from donna.core.entities import BaseEntity
 from donna.domain.ids import (
     ActionRequestId,
-    FullArtifactLocalId,
+    FullArtifactSectionId,
     InternalId,
     TaskId,
     WorkUnitId,
@@ -186,14 +186,14 @@ class MutableState(BaseState):
     # Complex operations
     ####################
 
-    def complete_action_request(self, request_id: ActionRequestId, next_operation_id: FullArtifactLocalId) -> None:
+    def complete_action_request(self, request_id: ActionRequestId, next_operation_id: FullArtifactSectionId) -> None:
         changes = [
             ChangeAddWorkUnit(task_id=self.current_task.id, operation_id=next_operation_id),
             ChangeRemoveActionRequest(action_request_id=request_id),
         ]
         self.apply_changes(changes)
 
-    def start_workflow(self, full_operation_id: FullArtifactLocalId) -> None:
+    def start_workflow(self, full_operation_id: FullArtifactSectionId) -> None:
         changes = [ChangeAddTask(operation_id=full_operation_id)]
         self.apply_changes(changes)
 

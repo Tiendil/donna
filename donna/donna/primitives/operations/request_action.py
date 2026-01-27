@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, ClassVar, Iterator, cast
 
 import pydantic
 
-from donna.domain.ids import ArtifactLocalId, FullArtifactId
+from donna.domain.ids import ArtifactSectionId, FullArtifactId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from donna.machine.tasks import Task, WorkUnit
 
 
-def extract_transitions(text: str) -> set[ArtifactLocalId]:
+def extract_transitions(text: str) -> set[ArtifactSectionId]:
     """Extracts all transitions from the text of action request.
 
     Transition is specified as render of `goto` directive in the format:
@@ -26,10 +26,10 @@ def extract_transitions(text: str) -> set[ArtifactLocalId]:
     pattern = r"\$\$donna\s+goto\s+([a-zA-Z0-9_\-./:]+)\s+donna\$\$"
     matches = re.findall(pattern, text)
 
-    transitions: set[ArtifactLocalId] = set()
+    transitions: set[ArtifactSectionId] = set()
 
     for match in matches:
-        transitions.add(ArtifactLocalId.parse(match))
+        transitions.add(ArtifactSectionId.parse(match))
 
     return transitions
 

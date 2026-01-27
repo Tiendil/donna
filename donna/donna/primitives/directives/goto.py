@@ -2,7 +2,7 @@ from typing import Any
 
 from jinja2.runtime import Context
 
-from donna.domain.ids import FullArtifactLocalId
+from donna.domain.ids import FullArtifactSectionId
 from donna.machine.templates import Directive
 from donna.protocol.modes import mode
 from donna.world.templates import RenderMode
@@ -28,9 +28,9 @@ class GoTo(Directive):
             case _:
                 raise NotImplementedError(f"Render mode {render_mode} not implemented in GoTo directive.")
 
-    def render_cli(self, context: Context, next_operation_id: FullArtifactLocalId) -> str:
+    def render_cli(self, context: Context, next_operation_id: FullArtifactSectionId) -> str:
         protocol = mode().value
         return f"donna -p {protocol} sessions action-request-completed <action-request-id> '{next_operation_id}'"
 
-    def render_analyze(self, context: Context, next_operation_id: FullArtifactLocalId) -> str:
+    def render_analyze(self, context: Context, next_operation_id: FullArtifactSectionId) -> str:
         return f"$$donna {self.analyze_id} {next_operation_id.local_id} donna$$"

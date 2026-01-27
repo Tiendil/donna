@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, ClassVar, Iterable, cast
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
-from donna.domain.ids import ArtifactLocalId, FullArtifactId
+from donna.domain.ids import ArtifactSectionId, FullArtifactId
 from donna.machine.artifacts import (
     Artifact,
     ArtifactSection,
@@ -24,14 +24,14 @@ class WrongStartOperation(ArtifactValidationError):
     code: str = "donna.workflows.wrong_start_operation"
     message: str = "Can not find the start operation `{error.start_operation_id}` in the workflow."
     ways_to_fix: list[str] = ["Ensure that the artifact contains the section with the specified start operation ID."]
-    start_operation_id: ArtifactLocalId
+    start_operation_id: ArtifactSectionId
 
 
 class SectionIsNotAnOperation(ArtifactValidationError):
     code: str = "donna.workflows.section_is_not_an_operation"
     message: str = "Section `{error.workflow_section_id}` is not an operation and cannot be part of the workflow."
     ways_to_fix: list[str] = ["Ensure that the section has a kind of one of operation primitives."]
-    workflow_section_id: ArtifactLocalId
+    workflow_section_id: ArtifactSectionId
 
 
 class FinalOperationHasTransitions(ArtifactValidationError):
@@ -42,7 +42,7 @@ class FinalOperationHasTransitions(ArtifactValidationError):
         "Approach B: Change the `fsm_mode` of this operation from `final` to `normal`",
         "Approach C: Remove the `fsm_mode` setting from this operation, as `normal` is the default.",
     ]
-    workflow_section_id: ArtifactLocalId
+    workflow_section_id: ArtifactSectionId
 
 
 class NoOutgoingTransitions(ArtifactValidationError):
@@ -55,10 +55,10 @@ class NoOutgoingTransitions(ArtifactValidationError):
         "Approach B: Change the kind of this operation to `donna.lib.finish`",
         "Approach C: Mark this operation as final by setting its `fsm_mode` to `final`.",
     ]
-    workflow_section_id: ArtifactLocalId
+    workflow_section_id: ArtifactSectionId
 
 
-def find_workflow_sections(start_operation_id: ArtifactLocalId, artifact: Artifact) -> set[ArtifactLocalId]:
+def find_workflow_sections(start_operation_id: ArtifactSectionId, artifact: Artifact) -> set[ArtifactSectionId]:
     workflow_sections = set()
     to_visit = [start_operation_id]
 
@@ -81,11 +81,11 @@ def find_workflow_sections(start_operation_id: ArtifactLocalId, artifact: Artifa
 
 
 class WorkflowConfig(ArtifactSectionConfig):
-    start_operation_id: ArtifactLocalId
+    start_operation_id: ArtifactSectionId
 
 
 class WorkflowMeta(ArtifactSectionMeta):
-    start_operation_id: ArtifactLocalId
+    start_operation_id: ArtifactSectionId
 
     def cells_meta(self) -> dict[str, object]:
         return {"start_operation_id": str(self.start_operation_id)}
@@ -116,7 +116,7 @@ class Workflow(MarkdownSectionMixin, Primitive):
         yield ChangeAddWorkUnit(task_id=task.id, operation_id=full_id)
 
     def validate_section(  # noqa: CCR001, CFQ001
-        self, artifact: Artifact, section_id: ArtifactLocalId
+        self, artifact: Artifact, section_id: ArtifactSectionId
     ) -> Result[None, ErrorsList]:
         section = artifact.get_section(section_id)
 

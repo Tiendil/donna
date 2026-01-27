@@ -3,20 +3,20 @@ import textwrap
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import ActionRequestId, FullArtifactLocalId
+from donna.domain.ids import ActionRequestId, FullArtifactSectionId
 from donna.protocol.cells import Cell
 
 
 class ActionRequest(BaseEntity):
     id: ActionRequestId | None
     request: str
-    operation_id: FullArtifactLocalId
+    operation_id: FullArtifactSectionId
 
     # TODO: we may want to make queue items frozen later
     model_config = pydantic.ConfigDict(frozen=False)
 
     @classmethod
-    def build(cls, request: str, operation_id: FullArtifactLocalId) -> "ActionRequest":
+    def build(cls, request: str, operation_id: FullArtifactSectionId) -> "ActionRequest":
         return cls(
             id=None,
             request=request,

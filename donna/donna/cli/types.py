@@ -2,7 +2,7 @@ from typing import Annotated
 
 import typer
 
-from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactIdPattern, FullArtifactLocalId
+from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactIdPattern, FullArtifactSectionId
 
 ActionRequestIdArgument = Annotated[
     ActionRequestId,
@@ -22,7 +22,7 @@ FullArtifactIdPatternOption = Annotated[
 ]
 
 
-FullArtifactLocalIdArgument = Annotated[
-    FullArtifactLocalId,
-    typer.Argument(parser=FullArtifactLocalId.parse, help="The full local ID of the artifact"),
+FullArtifactSectionIdArgument = Annotated[
+    FullArtifactSectionId,
+    typer.Argument(parser=FullArtifactSectionId.parse, help="The full section ID of the artifact"),
 ]
