@@ -46,30 +46,26 @@ class NoOutgoingTransitions(ArtifactValidationError):
     workflow_section_id: ArtifactLocalId
 
 
-def find_not_reachable_operations(
-    start_id: ArtifactLocalId,  # noqa: CCR001
-    transitions: dict[ArtifactLocalId, set[ArtifactLocalId]],
-) -> set[ArtifactLocalId]:
-    reachable = set()
-    to_visit = [start_id]
+def find_workflow_sections(start_operation_id: ArtifactLocalId, artifact: Artifact) -> set[ArtifactLocalId]:
+    workflow_sections = set()
+    to_visit = [start_operation_id]
 
     while to_visit:
         current = to_visit.pop()
 
-        if current in reachable:
+        if current in workflow_sections:
             continue
 
-        reachable.add(current)
+        workflow_sections.add(current)
 
-        to_visit.extend(transitions.get(current, set()))
+        section = artifact.get_section(current)
 
-    all_operations = set()
+        if section is None or not isinstance(section.meta, OperationMeta):
+            continue
 
-    for from_id, target_ids in transitions.items():
-        all_operations.add(from_id)
-        all_operations.update(target_ids)
+        to_visit.extend(section.meta.allowed_transtions)
 
-    return all_operations - reachable
+    return workflow_sections
 
 
 class WorkflowConfig(ArtifactSectionConfig):
@@ -129,9 +125,11 @@ class Workflow(MarkdownSectionMixin, Primitive):
                 )
             )
 
-        transitions = {}
+        workflow_sections = find_workflow_sections(start_operation_id, artifact)
 
-        for workflow_section in artifact.sections:
+        for workflow_section_id in workflow_sections:
+            workflow_section = artifact.get_section(workflow_section_id)
+
             if isinstance(workflow_section.meta, WorkflowMeta):
                 continue
 
@@ -160,8 +158,6 @@ class Workflow(MarkdownSectionMixin, Primitive):
                         artifact_id=artifact.id, section_id=section_id, workflow_section_id=workflow_section.id
                     )
                 )
-
-            transitions[workflow_section.id] = set(workflow_section.meta.allowed_transtions)
 
         if errors:
             return Err(errors)
