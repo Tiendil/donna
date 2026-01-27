@@ -86,6 +86,7 @@
 ** tune wording of workflows (what to write before goto)
 ** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
 * TODO Cells & Errors
+** Workflow.validate_section validates the whole artifact?
 ** Imprpove cells construction
 *** remove cell_donna_message
 *** artifact_validation_error_id (for tests?)
