@@ -88,6 +88,9 @@
 ** tune wording of workflows (what to write before goto)
 ** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
 * TODO Cells & Errors
+** General errors
+*** install (safe)result library?
+*** General Error class in the core module?
 ** !Worflow section validation must validate only chain of sections from the start_operation
 *** shouldn't validate the whole artifact
 *** remove transitions collection
@@ -109,6 +112,8 @@
 **** maybe we should refactor ids hierarchy in general?
 ** Errors processing improvements
 *** specification on how we process errors
+**** we raise errors that is cause by donna bugs
+**** we return errors that is caused by environment issues (invalid artifacts)
 *** Vebose jinja2 render errors to help agents and developers
 *** replace all NotImplementedError exceptions with custom exceptions and smart error handling
 *** exceptions must output cells?

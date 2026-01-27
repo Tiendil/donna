@@ -8,6 +8,13 @@ from donna.core.entities import BaseEntity
 MetaValue = str | int | bool | None
 
 
+def to_meta_value(value: object) -> MetaValue:
+    if isinstance(value, (str, int, bool)) or value is None:
+        return value
+
+    return str(value)
+
+
 class Cell(BaseEntity):
     id: uuid.UUID = pydantic.Field(default_factory=uuid.uuid4)
     kind: str
