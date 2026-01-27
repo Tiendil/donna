@@ -13,7 +13,6 @@ from donna.machine.primitives import Primitive
 from donna.protocol.cells import Cell
 from donna.world import markdown
 from donna.world.sources.markdown import MarkdownSectionMixin
-from donna.protocol.cell_shortcuts import artifact_validation_error, artifact_validation_success
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -21,25 +20,25 @@ if TYPE_CHECKING:
 
 
 class WrongStartOperation(ArtifactValidationError):
-    code: Literal["donna.workflows.wrong_start_operation"]
+    code: str = "donna.workflows.wrong_start_operation"
     message: str = "Can not find the start operation `{error.start_operation_id}` in the workflow."
     start_operation_id: ArtifactLocalId
 
 
 class SectionIsNotAnOperation(ArtifactValidationError):
-    code: Literal["donna.workflows.section_is_not_an_operation"]
+    code: str = "donna.workflows.section_is_not_an_operation"
     message: str = "Section `{error.workflow_section_id}` is not an operation and cannot be part of the workflow."
     workflow_section_id: ArtifactLocalId
 
 
 class FinalOperationHasTransitions(ArtifactValidationError):
-    code: Literal["donna.workflows.final_operation_has_transitions"]
+    code: str = "donna.workflows.final_operation_has_transitions"
     message: str = "Final operation `{error.workflow_section_id}` should not have outgoing transitions."
     workflow_section_id: ArtifactLocalId
 
 
 class NoOutgoingTransitions(ArtifactValidationError):
-    code: Literal["donna.workflows.no_outgoing_transitions"]
+    code: str = "donna.workflows.no_outgoing_transitions"
     message: str = "Operation `{error.workflow_section_id}` must have at least one outgoing transition or be marked as final."
     workflow_section_id: ArtifactLocalId
 
@@ -118,7 +117,7 @@ class Workflow(MarkdownSectionMixin, Primitive):
 
         errors = []
 
-        if artifact.get_section(start_operation_id.local_id) is None:
+        if artifact.get_section(start_operation_id) is None:
             errors.append(WrongStartOperation(artifact_id=artifact.id,
                                               section_id=section_id,
                                               start_operation_id=start_operation_id))

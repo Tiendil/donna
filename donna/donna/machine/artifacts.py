@@ -15,7 +15,6 @@ class ArtifactValidationError(BaseEntity):
         meta = {
             "artifact_id": str(self.artifact_id),
             "error_code": self.code,
-            "error_message": self.message,
         }
 
         if self.section_id:
@@ -45,7 +44,7 @@ class ArtifactValidationError(BaseEntity):
         return f"{intro}: {message}"
 
     def cell(self) -> Cell:
-        return Cell.build_meta(
+        return Cell.build(
             kind="artifact_validation_error",
             media_type="text/markdown",
             content=self.content(),
@@ -54,7 +53,7 @@ class ArtifactValidationError(BaseEntity):
 
 
 class MultiplePrimarySectionsError(ArtifactValidationError):
-    code: Literal["donna.artifacts.multiple_primary_sections"]
+    code: str = "donna.artifacts.multiple_primary_sections"
     message: str = "Artifact must have exactly one primary section, found multiple: `{error.primary_sections}`"
     primary_sections: list[ArtifactLocalId]
 

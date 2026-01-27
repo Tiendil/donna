@@ -31,7 +31,7 @@ class Cell(BaseEntity):
 
     @classmethod
     def build_meta(cls, kind: str, **meta: MetaValue) -> "Cell":
-        return cls.build(kind=kind, media_type=None, content="", **meta)
+        return cls.build(kind=kind, media_type=None, content=None, **meta)
 
     @classmethod
     def build_markdown(cls, kind: str, content: str, **meta: MetaValue) -> "Cell":
