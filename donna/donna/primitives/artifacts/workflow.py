@@ -129,6 +129,7 @@ class Workflow(MarkdownSectionMixin, Primitive):
 
         for workflow_section_id in workflow_sections:
             workflow_section = artifact.get_section(workflow_section_id)
+            assert workflow_section is not None
 
             if isinstance(workflow_section.meta, WorkflowMeta):
                 continue
