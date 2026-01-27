@@ -22,6 +22,7 @@ class ArtifactValidationError(EnvironmentError):
 class MultiplePrimarySectionsError(ArtifactValidationError):
     code: str = "donna.artifacts.multiple_primary_sections"
     message: str = "Artifact must have exactly one primary section, found multiple: `{error.primary_sections}`"
+    ways_to_fix: list[str] = ["Keep a single h1 section in the artifact."]
     primary_sections: list[ArtifactLocalId]
 
 

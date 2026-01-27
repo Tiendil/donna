@@ -99,6 +99,7 @@
 *** remove cell_shortcuts module?
 *** implement ErrorCodeId like FullArtifactId or PythonImportPath.
 **** maybe we should refactor ids hierarchy in general?
+*** references to the specifications in the errors
 ** Errors processing improvements
 *** specification on how we process errors
 **** we raise errors that is cause by donna bugs

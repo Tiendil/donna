@@ -23,18 +23,23 @@ if TYPE_CHECKING:
 class WrongStartOperation(ArtifactValidationError):
     code: str = "donna.workflows.wrong_start_operation"
     message: str = "Can not find the start operation `{error.start_operation_id}` in the workflow."
+    ways_to_fix: list[str] = ["Ensure that the artifact contains the section with the specified start operation ID."]
     start_operation_id: ArtifactLocalId
 
 
 class SectionIsNotAnOperation(ArtifactValidationError):
     code: str = "donna.workflows.section_is_not_an_operation"
     message: str = "Section `{error.workflow_section_id}` is not an operation and cannot be part of the workflow."
+    ways_to_fix: list[str] = ["Ensure that the section has a kind of one of operation primitives."]
     workflow_section_id: ArtifactLocalId
 
 
 class FinalOperationHasTransitions(ArtifactValidationError):
     code: str = "donna.workflows.final_operation_has_transitions"
     message: str = "Final operation `{error.workflow_section_id}` should not have outgoing transitions."
+    ways_to_fix: list[str] = ["Approach A: Remove all outgoing transitions from this operation.",
+                              "Approach B: Change the `fsm_mode` of this operation from `final` to `normal`",
+                              "Approach C: Remove the `fsm_mode` setting from this operation, as `normal` is the default."]
     workflow_section_id: ArtifactLocalId
 
 
@@ -43,6 +48,10 @@ class NoOutgoingTransitions(ArtifactValidationError):
     message: str = (
         "Operation `{error.workflow_section_id}` must have at least one outgoing transition or be marked as final."
     )
+    ways_to_fix: list[str] = ["Approach A: Add at least one outgoing transition from this operation.",
+                              "Approach B: Change the kind of this operation to `donna.lib.finish`",
+                              "Approach C: Mark this operation as final by setting its `fsm_mode` to `final`.",
+                              ]
     workflow_section_id: ArtifactLocalId
 
 
@@ -129,7 +138,10 @@ class Workflow(MarkdownSectionMixin, Primitive):
 
         for workflow_section_id in workflow_sections:
             workflow_section = artifact.get_section(workflow_section_id)
-            assert workflow_section is not None
+
+            if workflow_section is None:
+                # we already added an error for missing start operation, so just skip
+                continue
 
             if isinstance(workflow_section.meta, WorkflowMeta):
                 continue
