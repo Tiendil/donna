@@ -40,7 +40,3 @@ class Cell(BaseEntity):
     @property
     def short_id(self) -> str:
         return base64.urlsafe_b64encode(self.id.bytes).rstrip(b"=").decode()
-
-
-def cell_donna_message(content: str) -> Cell:
-    return Cell.build_markdown(kind="donna_message", content=content)

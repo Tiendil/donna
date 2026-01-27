@@ -5,7 +5,8 @@ from typing import Callable, Iterator, ParamSpec
 from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactLocalId, WorldId
 from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
-from donna.protocol.cells import Cell, cell_donna_message
+from donna.protocol.cell_shortcuts import operation_failed, operation_succeeded
+from donna.protocol.cells import Cell
 from donna.world import artifacts
 from donna.world import tmp as world_tmp
 from donna.world.config import config
@@ -73,7 +74,7 @@ def _session_required(func: Callable[P, list[Cell]]) -> Callable[P, list[Cell]]:
         try:
             _load_state()
         except Exception:
-            return [cell_donna_message("No active session. Please start a new session.")]
+            return [operation_failed("No active session. Please start a new session.")]
 
         return func(*args, **kwargs)
 
@@ -84,13 +85,13 @@ def start() -> list[Cell]:
     world_tmp.clear()
     _session().initialize(reset=True)
     _save_state(MutableState.build().freeze())
-    return [cell_donna_message("Started new session.")]
+    return [operation_succeeded("Started new session.")]
 
 
 def clear() -> list[Cell]:
     world_tmp.clear()
     _session().initialize(reset=True)
-    return [cell_donna_message("Cleared session.")]
+    return [operation_succeeded("Cleared session.")]
 
 
 @_session_required
