@@ -6,9 +6,9 @@ from donna.cli.application import app
 from donna.cli.types import FullArtifactIdArgument, FullArtifactIdPatternOption
 from donna.cli.utils import output_cells
 from donna.domain.ids import FullArtifactIdPattern
+from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.world import artifacts as world_artifacts
 from donna.world import tmp as world_tmp
-from donna.protocol.cell_shortcuts import operation_succeeded
 
 artifacts_cli = typer.Typer()
 
@@ -37,24 +37,24 @@ def fetch(id: FullArtifactIdArgument, output: pathlib.Path | None = None) -> Non
 
     world_artifacts.fetch_artifact(id, output)
 
-    output_cells([operation_succeeded(f"Artifact `{id}` fetched to '{output}'",
-                                      artifact_id=str(id),
-                                      output_path=str(output))])
+    output_cells(
+        [operation_succeeded(f"Artifact `{id}` fetched to '{output}'", artifact_id=str(id), output_path=str(output))]
+    )
 
 
 @artifacts_cli.command()
 def update(id: FullArtifactIdArgument, input: pathlib.Path) -> None:
     world_artifacts.update_artifact(id, input)
-    output_cells([operation_succeeded(f"Artifact `{id}` updated from '{input}'",
-                                      artifact_id=str(id),
-                                      input_path=str(input))])
+    output_cells(
+        [operation_succeeded(f"Artifact `{id}` updated from '{input}'", artifact_id=str(id), input_path=str(input))]
+    )
 
 
 @artifacts_cli.command()
 def validate(id: FullArtifactIdArgument) -> None:
     artifact = world_artifacts.load_artifact(id)
 
-    errors = artifact.validate()
+    errors = artifact.validation_errors()
 
     if errors:
         output_cells([error.cell() for error in errors])
@@ -73,7 +73,7 @@ def validate_all(pattern: FullArtifactIdPatternOption = None) -> None:
     errors = []
 
     for artifact in artifacts:
-        errors.extend(artifact.validate())
+        errors.extend(artifact.validation_errors())
 
     if errors:
         output_cells([error.cell() for error in errors])

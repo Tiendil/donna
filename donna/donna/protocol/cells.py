@@ -20,14 +20,7 @@ class Cell(BaseEntity):
         if media_type is None and content is not None:
             raise NotImplementedError("Cannot set content when media_type is None")
 
-        arguments = {
-            "kind": kind,
-            "media_type": media_type,
-            "content": content,
-            "meta": meta,
-        }
-
-        return cls(**arguments)
+        return cls(kind=kind, media_type=media_type, content=content, meta=meta)
 
     @classmethod
     def build_meta(cls, kind: str, **meta: MetaValue) -> "Cell":

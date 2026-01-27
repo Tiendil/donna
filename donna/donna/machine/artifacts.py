@@ -12,7 +12,7 @@ class ArtifactValidationError(BaseEntity):
     message: str
 
     def meta(self) -> dict[str, MetaValue]:
-        meta = {
+        meta: dict[str, MetaValue] = {
             "artifact_id": str(self.artifact_id),
             "error_code": self.code,
         }
@@ -38,7 +38,7 @@ class ArtifactValidationError(BaseEntity):
 
         message = self.message.format(error=self).strip()
 
-        if '\n' in self.message:
+        if "\n" in self.message:
             return f"{intro}:\n\n{message}"
 
         return f"{intro}: {message}"
@@ -112,12 +112,12 @@ class Artifact(BaseEntity):
             )
         return primary_sections[0]
 
-    def validate(self) -> list[ArtifactValidationError]:
+    def validation_errors(self) -> list[ArtifactValidationError]:
         from donna.machine.primitives import resolve_primitive
 
         primary_sections = self._primary_sections()
 
-        errors = []
+        errors: list[ArtifactValidationError] = []
 
         if len(primary_sections) != 1:
             errors.append(

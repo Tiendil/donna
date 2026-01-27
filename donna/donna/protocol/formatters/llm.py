@@ -30,6 +30,6 @@ class Formatter(BaseFormatter):
         return "\n".join(lines).strip().encode()
 
     def format_cells(self, cells: list[Cell]) -> bytes:
-        single_mode = (len(cells) == 1)
+        single_mode = len(cells) == 1
         formatted_cells = [self.format_cell(cell, single_mode=single_mode) for cell in cells]
         return b"\n".join(formatted_cells)

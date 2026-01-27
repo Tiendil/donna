@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, ClassVar, Iterator, cast
 
 import pydantic
 
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId, ArtifactLocalId
+from donna.domain.ids import ArtifactLocalId, FullArtifactId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
