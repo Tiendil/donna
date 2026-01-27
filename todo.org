@@ -99,7 +99,6 @@
 *** Organize standard cell kinds into enum (but allow custom kinds as well). Or just provide custom constructors for each use-case.
 *** ArtifactLocalId -> ArtifactSectionId
 *** FullArtifactLocalId -> FullArtifactSectionId
-*** remove cell_shortcuts module?
 *** implement ErrorCodeId like FullArtifactId or PythonImportPath.
 **** maybe we should refactor ids hierarchy in general?
 *** references to the specifications in the errors
