@@ -9,10 +9,8 @@ from donna.protocol.cells import Cell
 
 class ArtifactValidationError(EnvironmentError):
     cell_kind: str = "artifact_validation_error"
-    code: str
     artifact_id: FullArtifactId
     section_id: ArtifactLocalId | None = None
-    message: str
 
     def content_intro(self) -> str:
         if self.section_id:

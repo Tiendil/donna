@@ -2,16 +2,35 @@ import pathlib
 
 from donna.core.errors import EnvironmentError, ErrorsList
 from donna.core.result import Err, Ok, Result
-from donna.domain.ids import FullArtifactId, FullArtifactIdPattern
+from donna.domain.ids import FullArtifactId, FullArtifactIdPattern, WorldId
 from donna.machine.artifacts import Artifact
 from donna.world.config import config
+from donna.world import errors
 
 
-class ArtifactUpdateError(EnvironmentError):
+class ArtifactUpdateError(errors.WorldError):
     cell_kind: str = "artifact_update_error"
-    code: str = "donna.artifacts.update_error"
     artifact_id: FullArtifactId
-    message: str
+    path: pathlib.Path
+
+    def content_intro(self) -> str:
+        return f"Error updating artifact '{self.artifact_id}' from the path '{self.path}'"
+
+
+class CanNotUpdateReadonlyWorld(ArtifactUpdateError):
+    code: str = "donna.world.cannot_update_readonly_world"
+    message: str = "Cannot upload artifact to the read-only world `{error.world_id}`"
+    world_id: WorldId
+
+
+class InputPathHasNoExtension(ArtifactUpdateError):
+    code: str = "donna.world.input_path_has_no_extension"
+    message: str = "Input path has no extension to determine artifact source type"
+
+
+class NoSourceForArtifactExtension(ArtifactUpdateError):
+    code: str = "donna.world.no_source_for_artifact_extension"
+    message: str = "No source found for artifact extension of input path"
 
 
 def artifact_file_extension(full_id: FullArtifactId) -> str:
@@ -40,31 +59,17 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> Result[None
     world = config().get_world(full_id.world_id)
 
     if world.readonly:
-        return Err([ArtifactUpdateError(artifact_id=full_id, message=f"World `{world.id}` is read-only")])
+        return Err([CanNotUpdateReadonlyWorld(artifact_id=full_id, path=input, world_id=world.id)])
 
     source_suffix = input.suffix.lower()
     content_bytes = input.read_bytes()
 
     if not source_suffix:
-        return Err(
-            [
-                ArtifactUpdateError(
-                    artifact_id=full_id,
-                    message=f"Unsupported artifact source extension '{input.suffix}'",
-                )
-            ]
-        )
+        return Err([InputPathHasNoExtension(artifact_id=full_id, path=input)])
 
     source_config = config().find_source_for_extension(source_suffix)
     if source_config is None:
-        return Err(
-            [
-                ArtifactUpdateError(
-                    artifact_id=full_id,
-                    message=f"Unsupported artifact source extension '{input.suffix}'",
-                )
-            ]
-        )
+        return Err([NoSourceForArtifactExtension(artifact_id=full_id, path=input)])
 
     test_artifact = source_config.construct_artifact_from_bytes(full_id, content_bytes)
 
@@ -74,6 +79,7 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> Result[None
         return Err(validation_result.unwrap_err())
 
     world.update(full_id.artifact_id, content_bytes, source_suffix)
+
     return Ok(None)
 
 
