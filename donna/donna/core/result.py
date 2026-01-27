@@ -12,7 +12,7 @@ F = TypeVar("F")
 @dataclass(frozen=True, slots=True)
 class Result(Generic[T, E]):
     _is_ok: bool
-    _value: object
+    _value: T | E
 
     def is_ok(self) -> bool:
         return self._is_ok
