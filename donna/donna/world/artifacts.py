@@ -1,11 +1,11 @@
 import pathlib
 
-from donna.core.errors import EnvironmentError, ErrorsList
+from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.ids import FullArtifactId, FullArtifactIdPattern, WorldId
 from donna.machine.artifacts import Artifact
-from donna.world.config import config
 from donna.world import errors
+from donna.world.config import config
 
 
 class ArtifactUpdateError(errors.WorldError):
