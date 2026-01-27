@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from donna.machine.tasks import Task, WorkUnit
 
 
-def extract_transitions(text: str) -> set[FullArtifactLocalId]:
+def extract_transitions(text: str) -> set[ArtifactLocalId]:
     """Extracts all transitions from the text of action request.
 
     Transition is specified as render of `goto` directive in the format:
@@ -26,7 +26,7 @@ def extract_transitions(text: str) -> set[FullArtifactLocalId]:
     pattern = r"\$\$donna\s+goto\s+([a-zA-Z0-9_\-./:]+)\s+donna\$\$"
     matches = re.findall(pattern, text)
 
-    transitions: set[FullArtifactLocalId] = set()
+    transitions: set[ArtifactLocalId] = set()
 
     for match in matches:
         transitions.add(ArtifactLocalId.parse(match))

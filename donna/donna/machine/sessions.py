@@ -132,7 +132,7 @@ def _validate_operation_transition(
 
     assert isinstance(operation.meta, OperationMeta)
 
-    if next_operation_id not in operation.meta.allowed_transtions:
+    if next_operation_id.local_id not in operation.meta.allowed_transtions:
         raise NotImplementedError(f"Operation '{operation_id}' can not go to '{next_operation_id}'")
 
 
