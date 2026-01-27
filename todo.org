@@ -88,15 +88,10 @@
 ** tune wording of workflows (what to write before goto)
 ** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
 * TODO Cells & Errors
-** General errors
-*** install (safe)result library?
-*** General Error class in the core module?
 ** !Worflow section validation must validate only chain of sections from the start_operation
 *** shouldn't validate the whole artifact
 *** remove transitions collection
 *** remove find_not_reachable_operations? or rewrite to iterate over reachable sections
-** !Uploading artifact does not return errors
-*** maybe we should introduce a general errors instead of validation errors, since a lot of code could return reasonable list of errors
 ** Imprpove cells construction
 *** remove cell_donna_message
 *** artifact_validation_error_id (for tests?)
