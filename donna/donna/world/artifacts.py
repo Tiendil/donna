@@ -45,9 +45,10 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> None:
 
     test_artifact = source_config.construct_artifact_from_bytes(full_id, content_bytes)
 
-    is_valid, _cells = test_artifact.validate()
+    errors = test_artifact.validate()
 
-    if not is_valid:
+    # TODO: this is bad solution, we must return a list of errors instead
+    if errors:
         raise NotImplementedError(f"Artifact `{full_id}` is not valid and cannot be updated")
 
     world.update(full_id.artifact_id, content_bytes, source_suffix)

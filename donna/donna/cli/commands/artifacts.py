@@ -8,6 +8,7 @@ from donna.cli.utils import output_cells
 from donna.domain.ids import FullArtifactIdPattern
 from donna.world import artifacts as world_artifacts
 from donna.world import tmp as world_tmp
+from donna.protocol.cell_shortcuts import operation_succeeded
 
 artifacts_cli = typer.Typer()
 
@@ -35,22 +36,31 @@ def fetch(id: FullArtifactIdArgument, output: pathlib.Path | None = None) -> Non
         output = world_tmp.file_for_artifact(id, world_artifacts.artifact_file_extension(id))
 
     world_artifacts.fetch_artifact(id, output)
-    typer.echo(f"Artifact `{id}` fetched to '{output}'")
+
+    output_cells([operation_succeeded(f"Artifact `{id}` fetched to '{output}'",
+                                      artifact_id=str(id),
+                                      output_path=str(output))])
 
 
 @artifacts_cli.command()
 def update(id: FullArtifactIdArgument, input: pathlib.Path) -> None:
     world_artifacts.update_artifact(id, input)
-    typer.echo(f"Artifact `{id}` updated from '{input}'")
+    output_cells([operation_succeeded(f"Artifact `{id}` updated from '{input}'",
+                                      artifact_id=str(id),
+                                      input_path=str(input))])
 
 
 @artifacts_cli.command()
 def validate(id: FullArtifactIdArgument) -> None:
     artifact = world_artifacts.load_artifact(id)
 
-    _is_valid, cells = artifact.validate()
+    errors = artifact.validate()
 
-    output_cells(cells)
+    if errors:
+        output_cells([error.cell() for error in errors])
+        return
+
+    output_cells([operation_succeeded(f"Artifact `{id}` is valid", artifact_id=str(id))])
 
 
 @artifacts_cli.command()
@@ -60,10 +70,16 @@ def validate_all(pattern: FullArtifactIdPatternOption = None) -> None:
 
     artifacts = world_artifacts.list_artifacts(pattern)
 
-    for artifact in artifacts:
-        _is_valid, cells = artifact.validate()
+    errors = []
 
-        output_cells(cells)
+    for artifact in artifacts:
+        errors.extend(artifact.validate())
+
+    if errors:
+        output_cells([error.cell() for error in errors])
+        return
+
+    output_cells([operation_succeeded("All artifacts are valid")])
 
 
 app.add_typer(artifacts_cli, name="artifacts", help="Manage artifacts")
