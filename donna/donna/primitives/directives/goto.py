@@ -2,10 +2,19 @@ from typing import Any
 
 from jinja2.runtime import Context
 
+from donna.core import errors as core_errors
 from donna.domain.ids import FullArtifactSectionId
 from donna.machine.templates import Directive
 from donna.protocol.modes import mode
 from donna.world.templates import RenderMode
+
+
+class InternalError(core_errors.InternalError):
+    """Base class for internal errors in donna.primitives.directives.goto."""
+
+
+class UnsupportedRenderMode(InternalError):
+    message: str = "Render mode {render_mode} not implemented in GoTo directive."
 
 
 class GoTo(Directive):
@@ -26,7 +35,7 @@ class GoTo(Directive):
                 return self.render_analyze(context, next_operation_id)
 
             case _:
-                raise NotImplementedError(f"Render mode {render_mode} not implemented in GoTo directive.")
+                raise UnsupportedRenderMode(render_mode=render_mode)
 
     def render_cli(self, context: Context, next_operation_id: FullArtifactSectionId) -> str:
         protocol = mode().value

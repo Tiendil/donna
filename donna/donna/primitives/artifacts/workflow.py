@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, ClassVar, Iterable, cast
 
+from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.ids import ArtifactSectionId, FullArtifactId
@@ -15,6 +16,14 @@ if TYPE_CHECKING:
     from donna.machine.tasks import Task, WorkUnit
 
 
+class InternalError(core_errors.InternalError):
+    """Base class for internal errors in donna.primitives.artifacts.workflow."""
+
+
+class WorkflowSectionMissingMetadata(InternalError):
+    message: str = "Workflow section is missing workflow metadata."
+
+
 class WrongStartOperation(ArtifactValidationError):
     code: str = "donna.workflows.wrong_start_operation"
     message: str = "Can not find the start operation `{error.start_operation_id}` in the workflow."
@@ -27,6 +36,12 @@ class SectionIsNotAnOperation(ArtifactValidationError):
     message: str = "Section `{error.workflow_section_id}` is not an operation and cannot be part of the workflow."
     ways_to_fix: list[str] = ["Ensure that the section has a kind of one of operation primitives."]
     workflow_section_id: ArtifactSectionId
+
+
+class WorkflowSectionNotWorkflow(ArtifactValidationError):
+    code: str = "donna.workflows.section_not_workflow"
+    message: str = "Section `{error.section_id}` is not a workflow section."
+    ways_to_fix: list[str] = ["Ensure the section uses the workflow primitive and includes workflow metadata."]
 
 
 class FinalOperationHasTransitions(ArtifactValidationError):
@@ -108,7 +123,7 @@ class Workflow(MarkdownSectionMixin, Primitive):
         from donna.machine.changes import ChangeAddWorkUnit
 
         if not isinstance(section.meta, WorkflowMeta):
-            raise NotImplementedError("Workflow section is missing workflow metadata.")
+            raise WorkflowSectionMissingMetadata()
 
         full_id = section.artifact_id.to_full_local(section.meta.start_operation_id)
 
@@ -124,7 +139,7 @@ class Workflow(MarkdownSectionMixin, Primitive):
         section = section_result.unwrap()
 
         if not isinstance(section.meta, WorkflowMeta):
-            raise NotImplementedError("Workflow section is not workflow")
+            return Err([WorkflowSectionNotWorkflow(artifact_id=artifact.id, section_id=section_id)])
 
         start_operation_id = section.meta.start_operation_id
 
