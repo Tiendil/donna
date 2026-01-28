@@ -24,23 +24,22 @@ We may need coding agents on the each step of the process, but there no reason f
 
 ## Dictionary
 
-- **Action request** — a workflow operation of kind `donna.lib.request_action` that produces instructions an agent must execute and then report completion for, including the next operation id.
-- **Artifact** — any text or binary document managed by Donna in a world; text artifacts are typically Markdown templates with metadata and are the primary units of knowledge and workflow.
-- **Configuration block** — a fenced code block with the `donna` keyword (preferably TOML) that configures an artifact or section (e.g., kind, workflow ids).
-- **Directive** — a Jinja2 helper like `donna.lib.view(...)` or `donna.lib.goto(...)` that adds references and workflow transitions in artifact sources.
-- **Environment error** — a structured, user-facing error (Pydantic model) describing external problems; returned via `Result` rather than raised.
-- **Head section** — the H1 section of an artifact (before the first H2) that contains the primary description and mandatory config block.
-- **Internal error** — an exception derived from `InternalError` indicating a bug or invariant violation inside Donna.
-- **Protocol** — the output/interaction mode for Donna (e.g., `llm`) that governs CLI behavior and rendering and is required via `-p`.
-- **Representation** — a rendered view of an artifact (e.g., CLI output) produced from its source using a render mode.
-- **Result** — the Ok/Err return type used for functions that can yield environment errors.
+- **Action request** — an instruction to the agent (who runs Donna) to perform the specified operations. Action requests are created by operations, like `donna.lib.request_action`. After finishing following the instructions of an action request, the agent MUST report back to Donna specifying the next operation to continue with. The list of next operations is specified in the action request itself.
+- **Artifact** — any text or binary document managed by Donna in a world; text artifacts are typically Markdown templates with metadata and are the primary units of knowledge and instructions.
+- **Artifact Section** — a part of a text artifact separated by markdown headers, has its own configuration block and semantics depending on section kind.
+- **Configuration block** — a fenced code block with the `donna` keyword (preferably TOML) that configures an artifact or its section.
+- **Directive** — a Jinja2 helper like `donna.lib.view(...)` or `donna.lib.goto(...)` that adds meta information or special behavior to an artifact.
+- **Environment error** — a structured, user-facing error describing problem in the environment Donna operates in (e.g., missing artifact, invalid config). These errors are expected to be handled by agents or users.
+- **Head section** — the H1 section of a markdown artifact (before the first H2) that contains the primary description and mandatory config block.
+- **Internal error** — an error caused by a bug or unexpected state in Donna itself. These errors are not expected to be handled by agents or users.
+- **Protocol** — the output/interaction mode for Donna (e.g., `llm`) that governs CLI behavior and rendering.
 - **Session** — the active unit of work tracked by Donna; its state and artifacts live in the `session` world and it always has exactly one active story.
-- **Source** — the raw artifact text (typically a Jinja2 Markdown template) edited by developers/agents.
+- **Source** — the entity that implements logic of building an artifact from its raw data (text or binary).
 - **Specification** — a text artifact of kind `donna.lib.specification` that documents behavior, rules, or project guidance.
 - **Story** — a semantically consistent scope of work within a session; a conceptual unit not directly represented in the tool.
-- **Tail section** — each H2 section of an artifact; in workflows, each tail section defines one operation.
-- **World** — a storage namespace (filesystem or other backends) that contains artifacts (e.g., `donna`, `home`, `project`, `session`).
-- **Workflow** — a `donna.lib.workflow` artifact that encodes a finite-state machine of operations guiding the agent’s work.
+- **Tail section** — each H2 section of an artifact.
+- **World** — a storage namespace (filesystem or other backends) that contains artifacts.
+- **Workflow** — a `donna.lib.workflow` artifact that encodes a finite-state machine of operations guiding the agent's work.
 - **Workflow operation** — a single step in a workflow, defined by a tail section with an `id`, `kind`, and instructions.
 
 ## Points of interest
