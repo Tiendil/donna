@@ -1,4 +1,5 @@
 import importlib
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable
 
 from jinja2.runtime import Context
@@ -22,23 +23,32 @@ if TYPE_CHECKING:
 
 # TODO: Currently is is a kind of God interface. It is convinient for now.
 #       However, in future we should move these methods into specific subclasses.
-class Primitive(BaseEntity):
+class Primitive(BaseEntity, ABC):
     config_class: ClassVar[type[ArtifactSectionConfig]] = ArtifactSectionConfig
 
+    @abstractmethod
     def execute_section(self, task: "Task", unit: "WorkUnit", section: "ArtifactSection") -> Iterable["Change"]:
-        raise NotImplementedError("You MUST implement this method.")
+        raise machine_errors.PrimitiveMethodUnsupported(
+            primitive_name=self.__class__.__name__, method_name="execute_section()"
+        )
 
     def validate_section(self, artifact: "Artifact", section_id: ArtifactSectionId) -> Result[None, ErrorsList]:
         return Ok(None)
 
     def apply_directive(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
-        raise NotImplementedError("You MUST implement this method.")
+        raise machine_errors.PrimitiveMethodUnsupported(
+            primitive_name=self.__class__.__name__, method_name="apply_directive()"
+        )
 
     def construct_world(self, config: "WorldConfig") -> "World":
-        raise NotImplementedError("You MUST implement this method.")
+        raise machine_errors.PrimitiveMethodUnsupported(
+            primitive_name=self.__class__.__name__, method_name="construct_world()"
+        )
 
     def construct_source(self, config: "SourceConfigModel") -> "SourceConfigValue":
-        raise NotImplementedError("You MUST implement this method.")
+        raise machine_errors.PrimitiveMethodUnsupported(
+            primitive_name=self.__class__.__name__, method_name="construct_source()"
+        )
 
 
 def resolve_primitive(primitive_id: PythonImportPath | str) -> Result[Primitive, ErrorsList]:

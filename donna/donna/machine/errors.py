@@ -2,6 +2,16 @@ from donna.core import errors as core_errors
 from donna.domain.ids import ActionRequestId, ArtifactSectionId, FullArtifactId, FullArtifactSectionId, TaskId
 
 
+class InternalError(core_errors.InternalError):
+    """Base class for internal errors in donna.machine."""
+
+
+class PrimitiveMethodUnsupported(InternalError):
+    message: str = "Primitive '{primitive_name}' does not support {method_name}."
+    primitive_name: str
+    method_name: str
+
+
 class EnvironmentError(core_errors.EnvironmentError):
     """Base class for environment errors in donna.machine."""
 

@@ -1,16 +1,20 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable
 
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Result
 from donna.domain.ids import ArtifactId, FullArtifactIdPattern, WorldId
+from donna.machine import errors as machine_errors
 from donna.machine.artifacts import Artifact
 from donna.machine.primitives import Primitive
 
 if TYPE_CHECKING:
+    from donna.machine.artifacts import ArtifactSection
+    from donna.machine.changes import Change
+    from donna.machine.tasks import Task, WorkUnit
     from donna.world.config import WorldConfig
 
 
