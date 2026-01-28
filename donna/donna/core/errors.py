@@ -7,8 +7,6 @@ from donna.protocol.nodes import Node
 
 
 class InternalError(Exception):
-    cell_kind: str = "donna_internal_error"
-    cell_media_type: str = "text/markdown"
     message = "An internal error occurred"
 
     def __init__(self, **kwargs: Any) -> None:
@@ -20,30 +18,9 @@ class InternalError(Exception):
     def __str__(self) -> str:
         return f"{self.__class__.__name__}: {self.error_message()}"
 
-    def node(self) -> "InternalErrorNode":
-        return InternalErrorNode(self)
-
     @classmethod
     def full_class_path(cls: type) -> str:
         return f"{cls.__module__}.{cls.__qualname__}"
-
-
-class InternalErrorNode(Node):
-    __slots__ = ("_error",)
-
-    def __init__(self, internal_error: InternalError) -> None:
-        self._error = internal_error
-
-    def meta(self) -> dict[str, MetaValue]:
-        return {key: to_meta_value(value) for key, value in self._error.arguments.items()}
-
-    def status(self) -> Cell:
-        return Cell.build(
-            kind=self._error.cell_kind,
-            media_type=self._error.cell_media_type,
-            content=self._error.error_message(),
-            **self.meta(),
-        )
 
 
 class EnvironmentError(BaseEntity):
