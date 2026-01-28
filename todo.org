@@ -94,8 +94,6 @@
 ** tune wording of workflows (what to write before goto)
 ** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
 * TODO Cells & Errors
-** Imprpove cells construction
-*** references to the specifications in the errors
 ** Errors processing improvements
 *** specification on how we process errors
 **** we raise errors that is cause by donna bugs
@@ -122,4 +120,5 @@
 ** donna should be able to continue finished session (somewhow). I.e. when the developer ads new details to it.
 ** Agent can not continue work in finished session => remove all artifacts that may be required.
 ** Each world must provide an intro spec and donna should be able to conviniently output it to the user.
-* Changy for changelog
+* TODO Changy for changelog
+* TODO Environment errors should provide references to th especifications that explain how to fix them
