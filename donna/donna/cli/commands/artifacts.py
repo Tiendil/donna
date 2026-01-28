@@ -47,7 +47,7 @@ def update(id: FullArtifactIdArgument, input: pathlib.Path) -> None:
     result = world_artifacts.update_artifact(id, input)
     if result.is_err():
         errors = result.unwrap_err()
-        output_cells([error.node().cell() for error in errors])
+        output_cells([error.node().info() for error in errors])
         return
     output_cells(
         [operation_succeeded(f"Artifact `{id}` updated from '{input}'", artifact_id=str(id), input_path=str(input))]
@@ -62,7 +62,7 @@ def validate(id: FullArtifactIdArgument) -> None:
 
     if result.is_err():
         errors = result.unwrap_err()
-        output_cells([error.node().cell() for error in errors])
+        output_cells([error.node().info() for error in errors])
         return
 
     output_cells([operation_succeeded(f"Artifact `{id}` is valid", artifact_id=str(id))])
@@ -83,7 +83,7 @@ def validate_all(pattern: FullArtifactIdPatternOption = None) -> None:
             errors.extend(result.unwrap_err())
 
     if errors:
-        output_cells([error.node().cell() for error in errors])
+        output_cells([error.node().info() for error in errors])
         return
 
     output_cells([operation_succeeded("All artifacts are valid")])
