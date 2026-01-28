@@ -25,7 +25,9 @@ class Cell(BaseEntity):
     @classmethod
     def build(cls, kind: str, media_type: str | None, content: str | None, **meta: MetaValue) -> "Cell":
         if media_type is None and content is not None:
-            raise NotImplementedError("Cannot set content when media_type is None")
+            from donna.protocol.errors import ContentWithoutMediaType
+
+            raise ContentWithoutMediaType()
 
         return cls(kind=kind, media_type=media_type, content=content, meta=meta)
 

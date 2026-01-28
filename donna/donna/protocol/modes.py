@@ -1,5 +1,6 @@
 import enum
 
+from donna.protocol.errors import ModeNotSet, UnsupportedFormatterMode
 from donna.protocol.formatters.automation import Formatter as AutomationFormatter
 from donna.protocol.formatters.base import Formatter
 from donna.protocol.formatters.human import Formatter as HumanFormatter
@@ -22,7 +23,7 @@ def set_mode(mode: Mode) -> None:
 
 def mode() -> Mode:
     if _MODE is None:
-        raise NotImplementedError("Mode is not set. Pass -p <mode> to the CLI.")
+        raise ModeNotSet()
 
     return _MODE
 
@@ -36,4 +37,4 @@ def get_cell_formatter() -> Formatter:
         case Mode.automation:
             return AutomationFormatter()
         case _:
-            raise NotImplementedError(f"Formatter for mode '{mode()}' is not implemented")
+            raise UnsupportedFormatterMode(mode=mode())
