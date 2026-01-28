@@ -33,23 +33,37 @@ class NoSourceForArtifactExtension(ArtifactUpdateError):
     message: str = "No source found for artifact extension of input path"
 
 
-def artifact_file_extension(full_id: FullArtifactId) -> str:
-    world = config().get_world(full_id.world_id)
+def artifact_file_extension(full_id: FullArtifactId) -> Result[str, ErrorsList]:
+    world_result = config().get_world(full_id.world_id)
+    if world_result.is_err():
+        return Err(world_result.unwrap_err())
+
+    world = world_result.unwrap()
     extension = world.file_extension_for(full_id.artifact_id)
-    return extension.lstrip(".")
+    return Ok(extension.lstrip("."))
 
 
-def fetch_artifact(full_id: FullArtifactId, output: pathlib.Path) -> None:
-    world = config().get_world(full_id.world_id)
+def fetch_artifact(full_id: FullArtifactId, output: pathlib.Path) -> Result[None, ErrorsList]:
+    world_result = config().get_world(full_id.world_id)
+    if world_result.is_err():
+        return Err(world_result.unwrap_err())
+
+    world = world_result.unwrap()
 
     content = world.fetch_source(full_id.artifact_id)
 
     with output.open("wb") as f:
         f.write(content)
 
+    return Ok(None)
+
 
 def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> Result[None, ErrorsList]:
-    world = config().get_world(full_id.world_id)
+    world_result = config().get_world(full_id.world_id)
+    if world_result.is_err():
+        return Err(world_result.unwrap_err())
+
+    world = world_result.unwrap()
 
     if world.readonly:
         return Err([CanNotUpdateReadonlyWorld(artifact_id=full_id, path=input, world_id=world.id)])
@@ -76,19 +90,30 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> Result[None
     return Ok(None)
 
 
-def load_artifact(full_id: FullArtifactId) -> Artifact:
-    world = config().get_world(full_id.world_id)
+def load_artifact(full_id: FullArtifactId) -> Result[Artifact, ErrorsList]:
+    world_result = config().get_world(full_id.world_id)
+    if world_result.is_err():
+        return Err(world_result.unwrap_err())
 
-    return world.fetch(full_id.artifact_id)
+    world = world_result.unwrap()
+
+    return Ok(world.fetch(full_id.artifact_id))
 
 
-def list_artifacts(pattern: FullArtifactIdPattern) -> list[Artifact]:
+def list_artifacts(pattern: FullArtifactIdPattern) -> Result[list[Artifact], ErrorsList]:
     artifacts: list[Artifact] = []
+    errors: ErrorsList = []
 
     for world in reversed(config().worlds_instances):
         for artifact_id in world.list_artifacts(pattern):
             full_id = FullArtifactId((world.id, artifact_id))
-            artifact = load_artifact(full_id)
-            artifacts.append(artifact)
+            artifact_result = load_artifact(full_id)
+            if artifact_result.is_err():
+                errors.extend(artifact_result.unwrap_err())
+                continue
+            artifacts.append(artifact_result.unwrap())
 
-    return artifacts
+    if errors:
+        return Err(errors)
+
+    return Ok(artifacts)

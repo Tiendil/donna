@@ -102,6 +102,7 @@
 *** cleanup asserts — replace with real checks and exceptions
 *** internal-exceptions-mode for cli to specify that stack traces must be shown?
 *** DirectivePathBuilder — how to pass errors to the user?
+*** cleanup comments above `raise ...`
 ** Cli should always return Cells
 ** Logs (do we need them now?)
 *** stderr

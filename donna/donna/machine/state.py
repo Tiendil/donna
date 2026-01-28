@@ -4,6 +4,8 @@ from typing import Sequence, cast
 import pydantic
 
 from donna.core.entities import BaseEntity
+from donna.core.errors import ErrorsList
+from donna.core.result import Err, Ok, Result
 from donna.domain.ids import (
     ActionRequestId,
     FullArtifactSectionId,
@@ -168,14 +170,19 @@ class MutableState(BaseState):
         changes = [ChangeRemoveTask(task_id=task_id)]
         self.apply_changes(changes)
 
-    def exectute_next_work_unit(self) -> None:
+    def exectute_next_work_unit(self) -> Result[None, ErrorsList]:
         next_work_unit = self.get_next_work_unit()
         assert next_work_unit is not None
 
-        changes = next_work_unit.run(self.current_task)
+        changes_result = next_work_unit.run(self.current_task)
+        if changes_result.is_err():
+            return Err(changes_result.unwrap_err())
+
+        changes = changes_result.unwrap()
         changes.append(ChangeRemoveWorkUnit(work_unit_id=next_work_unit.id))
 
         self.apply_changes(changes)
+        return Ok(None)
 
 
 class StateNode(Node):

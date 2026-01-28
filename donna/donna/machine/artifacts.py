@@ -172,13 +172,16 @@ class ArtifactSectionNode(Node):
         )
 
 
-def resolve(target_id: FullArtifactSectionId) -> ArtifactSection:
+def resolve(target_id: FullArtifactSectionId) -> Result[ArtifactSection, ErrorsList]:
     from donna.world import artifacts as world_artifacts
 
-    artifact = world_artifacts.load_artifact(target_id.full_artifact_id)
+    artifact_result = world_artifacts.load_artifact(target_id.full_artifact_id)
+    if artifact_result.is_err():
+        return Err(artifact_result.unwrap_err())
+    artifact = artifact_result.unwrap()
     section = artifact.get_section(target_id.local_id)
 
     if section is None:
         raise NotImplementedError(f"Section '{target_id}' is not available")
 
-    return section
+    return Ok(section)
