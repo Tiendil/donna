@@ -87,8 +87,7 @@ def _create_default_worlds(project_dir: pathlib.Path) -> list[WorldConfig]:
 
 
 def _default_worlds() -> list[WorldConfig]:
-    project_dir = utils.discover_project_dir(DONNA_DIR_NAME)
-    return _create_default_worlds(project_dir)
+    return _create_default_worlds(project_dir())
 
 
 class Config(BaseEntity):
