@@ -18,10 +18,6 @@ class InternalError(Exception):
     def __str__(self) -> str:
         return f"{self.__class__.__name__}: {self.error_message()}"
 
-    @classmethod
-    def full_class_path(cls: type) -> str:
-        return f"{cls.__module__}.{cls.__qualname__}"
-
 
 class EnvironmentError(BaseEntity):
     cell_kind: str
