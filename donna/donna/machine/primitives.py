@@ -23,17 +23,16 @@ if TYPE_CHECKING:
 
 # TODO: Currently is is a kind of God interface. It is convinient for now.
 #       However, in future we should move these methods into specific subclasses.
-class Primitive(BaseEntity, ABC):
+class Primitive(BaseEntity):
     config_class: ClassVar[type[ArtifactSectionConfig]] = ArtifactSectionConfig
 
-    @abstractmethod
+    def validate_section(self, artifact: "Artifact", section_id: ArtifactSectionId) -> Result[None, ErrorsList]:
+        return Ok(None)
+
     def execute_section(self, task: "Task", unit: "WorkUnit", section: "ArtifactSection") -> Iterable["Change"]:
         raise machine_errors.PrimitiveMethodUnsupported(
             primitive_name=self.__class__.__name__, method_name="execute_section()"
         )
-
-    def validate_section(self, artifact: "Artifact", section_id: ArtifactSectionId) -> Result[None, ErrorsList]:
-        return Ok(None)
 
     def apply_directive(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
         raise machine_errors.PrimitiveMethodUnsupported(
