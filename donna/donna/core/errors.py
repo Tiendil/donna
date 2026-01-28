@@ -35,6 +35,32 @@ class EnvironmentError(BaseEntity):
         return EnvironmentErrorNode(self)
 
 
+class CoreEnvironmentError(EnvironmentError):
+    """Base class for environment errors in donna.core."""
+
+    cell_kind: str = "core_environment_error"
+
+
+class ProjectDirNotFound(CoreEnvironmentError):
+    code: str = "donna.core.project_dir_not_found"
+    message: str = "Could not find a project directory containing `{error.donna_dir_name}`."
+    ways_to_fix: list[str] = [
+        "Run Donna from within a project directory that contains the donna directory.",
+        "Create the donna directory in the project root if it is missing.",
+    ]
+    donna_dir_name: str
+
+
+class ProjectDirIsHome(CoreEnvironmentError):
+    code: str = "donna.core.project_dir_is_home"
+    message: str = "The discovered `{error.donna_dir_name}` directory is the home directory, not a project directory."
+    ways_to_fix: list[str] = [
+        "Run Donna from within a project directory that contains the donna directory.",
+        "Move the donna directory out of the home folder into the project root if appropriate.",
+    ]
+    donna_dir_name: str
+
+
 class EnvironmentErrorNode(Node):
     __slots__ = ("_error",)
 
