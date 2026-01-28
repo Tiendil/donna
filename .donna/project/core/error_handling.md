@@ -159,7 +159,6 @@ Follow this guidelines when naming error classes:
 
 - **Use only `InternalError` for all Donna's internal exceptions, untill the developer or the specification explicitly requires otherwise.**
 - You MAY use other exception types if the third-party library you are working with requires it. For example, Pydantic models require `ValidationError` exceptions.
-- You MUST use `NotImplementedError` when implementing abstract methods.
 - You MAY use `NotImplementedError` as temporary code when:
   - You need a temporary placeholder for the code that is not implemented yet, but will be in the scope of the current task.
   - You need to raise an exception, but you have no established error hierarchy yet.
