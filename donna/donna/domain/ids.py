@@ -134,27 +134,76 @@ class WorldId(Identifier):
     __slots__ = ()
 
 
-class ArtifactId(str):
+class IdPath(str):
     __slots__ = ()
+    delimiter: str = ""
+    min_parts: int = 1
+    validate_json: bool = False
 
-    def __new__(cls, value: str) -> "ArtifactId":
-        if not cls.validate(value):
-            raise NotImplementedError(f"Invalid ArtifactId: '{value}'")
+    def __new__(cls, value: str | tuple[str, ...] | list[str]) -> "IdPath":
+        text = cls._coerce_to_text(value)
 
-        return super().__new__(cls, value)
+        if not cls.validate(text):
+            raise NotImplementedError(f"Invalid {cls.__name__}: '{text}'")
+
+        return super().__new__(cls, text)
+
+    @classmethod
+    def _coerce_to_text(cls, value: str | tuple[str, ...] | list[str]) -> str:
+        if isinstance(value, str):
+            return value
+
+        return cls.delimiter.join(str(part) for part in value)
+
+    @classmethod
+    def _split(cls, value: str) -> list[str]:
+        return value.split(cls.delimiter)
+
+    @classmethod
+    def _validate_parts(cls, parts: Sequence[str]) -> bool:
+        return all(part.isidentifier() for part in parts)
 
     @classmethod
     def validate(cls, value: str) -> bool:
         if not isinstance(value, str) or not value:
             return False
 
-        parts = value.split(":")
-        return all(part.isidentifier() for part in parts)
+        if not cls.delimiter:
+            return False
+
+        parts = cls._split(value)
+
+        if any(part == "" for part in parts):
+            return False
+
+        if len(parts) < cls.min_parts:
+            return False
+
+        return cls._validate_parts(parts)
+
+    @property
+    def parts(self) -> tuple[str, ...]:
+        return tuple(self._split(str.__str__(self)))
+
+    @classmethod
+    def _build_pydantic_schema(cls, validate_func: Any) -> core_schema.CoreSchema:
+        str_then_validate = core_schema.no_info_after_validator_function(
+            validate_func,
+            core_schema.str_schema(),
+        )
+
+        json_schema = str_then_validate if cls.validate_json else core_schema.str_schema()
+
+        return core_schema.json_or_python_schema(
+            json_schema=json_schema,
+            python_schema=core_schema.no_info_plain_validator_function(validate_func),
+            serialization=core_schema.to_string_ser_schema(),
+        )
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
 
-        def validate(v: Any) -> "ArtifactId":
+        def validate(v: Any) -> "IdPath":
             if isinstance(v, cls):
                 return v
 
@@ -166,72 +215,49 @@ class ArtifactId(str):
 
             return cls(v)
 
-        return core_schema.json_or_python_schema(
-            json_schema=core_schema.str_schema(),
-            python_schema=core_schema.no_info_plain_validator_function(validate),
-            serialization=core_schema.to_string_ser_schema(),
-        )
+        return cls._build_pydantic_schema(validate)
 
 
-class PythonImportPath(str):
+class DottedPath(IdPath):
+    __slots__ = ()
+    delimiter = "."
+
+
+class ColonPath(IdPath):
+    __slots__ = ()
+    delimiter = ":"
+
+
+class ArtifactId(ColonPath):
     __slots__ = ()
 
-    def __new__(cls, value: str) -> "PythonImportPath":
-        if not cls.validate(value):
-            raise NotImplementedError(f"Invalid PythonImportPath: '{value}'")
 
-        return super().__new__(cls, value)
-
-    @classmethod
-    def validate(cls, value: str) -> bool:
-        if not isinstance(value, str) or not value:
-            return False
-
-        parts = value.split(".")
-        return all(part.isidentifier() for part in parts)
+class PythonImportPath(DottedPath):
+    __slots__ = ()
 
     @classmethod
     def parse(cls, text: str) -> "PythonImportPath":
         return cls(text)
 
-    @classmethod
-    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
 
-        def validate(v: Any) -> "PythonImportPath":
-            if isinstance(v, cls):
-                return v
-
-            if not isinstance(v, str):
-                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
-
-            if not cls.validate(v):
-                raise ValueError(f"Invalid {cls.__name__}: {v!r}")
-
-            return cls(v)
-
-        return core_schema.json_or_python_schema(
-            json_schema=core_schema.str_schema(),
-            python_schema=core_schema.no_info_plain_validator_function(validate),
-            serialization=core_schema.to_string_ser_schema(),
-        )
-
-
-class FullArtifactId(tuple[WorldId, ArtifactId]):
+class FullArtifactId(ColonPath):
     __slots__ = ()
+    min_parts = 2
+    validate_json = True
 
     def __str__(self) -> str:
         return f"{self.world_id}:{self.artifact_id}"
 
     @property
     def world_id(self) -> WorldId:
-        return self[0]
+        return WorldId(self.parts[0])
 
     @property
     def artifact_id(self) -> ArtifactId:
-        return self[1]
+        return ArtifactId(self.delimiter.join(self.parts[1:]))
 
     def to_full_local(self, local_id: "ArtifactSectionId") -> "FullArtifactSectionId":
-        return FullArtifactSectionId((self.world_id, self.artifact_id, local_id))
+        return FullArtifactSectionId(f"{self}:{local_id}")
 
     @classmethod
     def parse(cls, text: str) -> "FullArtifactId":
@@ -243,30 +269,7 @@ class FullArtifactId(tuple[WorldId, ArtifactId]):
         world_id = WorldId(parts[0])
         artifact_id = ArtifactId(parts[1])
 
-        return FullArtifactId((world_id, artifact_id))
-
-    @classmethod
-    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
-
-        def validate(v: Any) -> "FullArtifactId":
-            if isinstance(v, cls):
-                return v
-
-            if not isinstance(v, str):
-                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
-
-            return cls.parse(v)
-
-        str_then_validate = core_schema.no_info_after_validator_function(
-            validate,
-            core_schema.str_schema(),
-        )
-
-        return core_schema.json_or_python_schema(
-            json_schema=str_then_validate,
-            python_schema=core_schema.no_info_plain_validator_function(validate),
-            serialization=core_schema.to_string_ser_schema(),
-        )
+        return FullArtifactId(f"{world_id}:{artifact_id}")
 
 
 class FullArtifactIdPattern(tuple[str, ...]):
@@ -329,27 +332,29 @@ class ArtifactSectionId(Identifier):
         return cls(text)
 
 
-class FullArtifactSectionId(tuple[WorldId, ArtifactId, ArtifactSectionId]):
+class FullArtifactSectionId(ColonPath):
     __slots__ = ()
+    min_parts = 3
+    validate_json = True
 
     def __str__(self) -> str:
         return f"{self.world_id}:{self.artifact_id}:{self.local_id}"
 
     @property
     def world_id(self) -> WorldId:
-        return self[0]
+        return WorldId(self.parts[0])
 
     @property
     def artifact_id(self) -> ArtifactId:
-        return self[1]
+        return ArtifactId(self.delimiter.join(self.parts[1:-1]))
 
     @property
     def full_artifact_id(self) -> FullArtifactId:
-        return FullArtifactId((self.world_id, self.artifact_id))
+        return FullArtifactId(f"{self.world_id}:{self.artifact_id}")
 
     @property
     def local_id(self) -> ArtifactSectionId:
-        return self[2]
+        return ArtifactSectionId(self.parts[-1])
 
     @classmethod
     def parse(cls, text: str) -> "FullArtifactSectionId":
@@ -360,29 +365,4 @@ class FullArtifactSectionId(tuple[WorldId, ArtifactId, ArtifactSectionId]):
 
         full_artifact_id = FullArtifactId.parse(artifact_part)
 
-        return FullArtifactSectionId(
-            (full_artifact_id.world_id, full_artifact_id.artifact_id, ArtifactSectionId(local_part))
-        )
-
-    @classmethod
-    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
-
-        def validate(v: Any) -> "FullArtifactSectionId":
-            if isinstance(v, cls):
-                return v
-
-            if not isinstance(v, str):
-                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
-
-            return cls.parse(v)
-
-        str_then_validate = core_schema.no_info_after_validator_function(
-            validate,
-            core_schema.str_schema(),
-        )
-
-        return core_schema.json_or_python_schema(
-            json_schema=str_then_validate,
-            python_schema=core_schema.no_info_plain_validator_function(validate),
-            serialization=core_schema.to_string_ser_schema(),
-        )
+        return FullArtifactSectionId(f"{full_artifact_id}:{ArtifactSectionId(local_part)}")
