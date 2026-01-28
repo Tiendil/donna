@@ -7,6 +7,8 @@ T = TypeVar("T")
 U = TypeVar("U")
 E = TypeVar("E")
 F = TypeVar("F")
+NEW_T = TypeVar("NEW_T")
+NEW_E = TypeVar("NEW_E")
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,6 +56,18 @@ class Result(Generic[T, E]):
         if not self._is_ok:
             return Result(False, func(cast(E, self._value)))
         return Result(True, cast(T, self._value))
+
+    def cast(self) -> "Result[T, NEW_E]":
+        if self._is_ok:
+            return Ok(cast(T, self._value))
+
+        raise ValueError("Cannot cast Err value to different error type.")
+
+    def cast_err(self) -> "Result[NEW_T, E]":
+        if not self._is_ok:
+            return Err(cast(E, self._value))
+
+        raise ValueError("Cannot cast Ok value to different success type.")
 
 
 def Ok(value: T) -> Result[T, E]:
