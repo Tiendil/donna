@@ -36,6 +36,7 @@ class CodeSource(BaseEntity):
 
             return tomllib.loads(self.content)
 
+        # return Envrionment errors
         raise NotImplementedError(f"Unsupported code format: {self.format}")
 
 
@@ -93,9 +94,11 @@ def _parse_h1(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTree
     section = sections[-1]
 
     if section.level != SectionLevel.h1:
+        # return Envrionment errors
         raise NotImplementedError("Multiple H1 sections are not supported")
 
     if section.title is not None:
+        # return Envrionment errors
         raise NotImplementedError("Multiple H1 titles are not supported")
 
     section.title = clear_heading(render_back(node.to_tokens()).strip())
@@ -107,6 +110,7 @@ def _parse_h2(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTree
     section = sections[-1]
 
     if section.title is None:
+        # return Envrionment errors
         raise NotImplementedError("H2 section found before H1 title")
 
     new_section = SectionSource(

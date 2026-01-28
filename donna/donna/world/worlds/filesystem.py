@@ -37,6 +37,7 @@ class World(BaseWorld):
             return None
 
         if len(matches) > 1:
+            # return EnvironmentErrors
             raise NotImplementedError(f"Artifact `{artifact_id}` has multiple files in world `{self.id}`")
 
         return matches[0]
@@ -47,6 +48,7 @@ class World(BaseWorld):
         extension = pathlib.Path(filename).suffix
         source_config = config().find_source_for_extension(extension)
         if source_config is None:
+            # return EnvironmentErrors
             raise NotImplementedError(f"Unsupported artifact source extension '{extension}'")
 
         return source_config
@@ -57,6 +59,7 @@ class World(BaseWorld):
     def fetch(self, artifact_id: ArtifactId) -> Artifact:
         path = self._resolve_artifact_file(artifact_id)
         if path is None:
+            # return EnvironmentErrors
             raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
         content_bytes = path.read_bytes()
@@ -68,12 +71,14 @@ class World(BaseWorld):
     def fetch_source(self, artifact_id: ArtifactId) -> bytes:
         path = self._resolve_artifact_file(artifact_id)
         if path is None:
+            # return EnvironmentErrors
             raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
         return path.read_bytes()
 
     def update(self, artifact_id: ArtifactId, content: bytes, extension: str) -> None:
         if self.readonly:
+            # return EnvironmentErrors
             raise NotImplementedError(f"World `{self.id}` is read-only")
 
         path = self._artifact_path(artifact_id, extension)
@@ -81,15 +86,18 @@ class World(BaseWorld):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)
 
-    def file_extension_for(self, artifact_id: ArtifactId) -> str | None:
+    def file_extension_for(self, artifact_id: ArtifactId) -> str:
         path = self._resolve_artifact_file(artifact_id)
+
         if path is None:
-            return None
+            # return EnvironmentErrors
+            raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
         return path.suffix
 
     def read_state(self, name: str) -> bytes | None:
         if not self.session:
+            # return EnvironmentErrors
             raise NotImplementedError(f"World `{self.id}` does not support state storage")
 
         path = self.path / name
@@ -101,9 +109,11 @@ class World(BaseWorld):
 
     def write_state(self, name: str, content: bytes) -> None:
         if self.readonly:
+            # return EnvironmentErrors
             raise NotImplementedError(f"World `{self.id}` is read-only")
 
         if not self.session:
+            # return EnvironmentErrors
             raise NotImplementedError(f"World `{self.id}` does not support state storage")
 
         path = self.path / name
@@ -135,6 +145,7 @@ class FilesystemWorldConstructor(WorldConstructor):
         path_value = getattr(config, "path", None)
 
         if path_value is None:
+            # raise exception, suitable for pydantic
             raise NotImplementedError(f"World config '{config.id}' does not define a filesystem path")
 
         return World(

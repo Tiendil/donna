@@ -33,11 +33,13 @@ def initialize_environment() -> Result[None, core_errors.ErrorsList]:
     try:
         data = tomllib.loads(config_path.read_text())
     except tomllib.TOMLDecodeError as e:
+        # return list of Environment errors
         raise NotImplementedError(f"Failed to parse config file: {e}") from e
 
     try:
         loaded_config = config.Config.model_validate(data)
     except Exception as e:
+        # return list of Environment errors
         raise NotImplementedError(f"Failed to validate config file: {e}") from e
 
     config.config.set(loaded_config)

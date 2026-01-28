@@ -28,7 +28,7 @@ class World(BaseEntity):
     def update(self, artifact_id: ArtifactId, content: bytes, extension: str) -> None:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def file_extension_for(self, artifact_id: ArtifactId) -> str | None:
+    def file_extension_for(self, artifact_id: ArtifactId) -> str:
         raise NotImplementedError("You must implement this method in subclasses")
 
     def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:

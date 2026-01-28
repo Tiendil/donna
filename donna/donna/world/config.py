@@ -104,6 +104,7 @@ class Config(BaseEntity):
             primitive = resolve_primitive(world_config.kind)
 
             if not isinstance(primitive, WorldConstructor):
+                # use exception suitable for pydantic
                 raise NotImplementedError(f"World constructor '{world_config.kind}' is not supported")
 
             worlds.append(primitive.construct_world(world_config))
@@ -112,6 +113,7 @@ class Config(BaseEntity):
             primitive = resolve_primitive(source_config.kind)
 
             if not isinstance(primitive, SourceConstructor):
+                # use exception suitable for pydantic
                 raise NotImplementedError(f"Source constructor '{source_config.kind}' is not supported")
 
             sources.append(primitive.construct_source(source_config))
@@ -124,6 +126,7 @@ class Config(BaseEntity):
             if world.id == world_id:
                 return world
 
+        # return EnvironmentError
         raise NotImplementedError(f"World with id '{world_id}' is not configured")
 
     @property
@@ -139,6 +142,7 @@ class Config(BaseEntity):
             if source.kind == kind:
                 return source
 
+        # Return EnvironmentError
         raise NotImplementedError(f"Source config '{kind}' is not configured")
 
     def find_source_for_extension(self, extension: str) -> SourceConfigValue | None:
@@ -166,12 +170,14 @@ class GlobalConfig[V]():
 
     def set(self, value: V) -> None:
         if self._value is not None:
+            # raise InternalError
             raise NotImplementedError("Global config value is already set")
 
         self._value = value
 
     def get(self) -> V:
         if self._value is None:
+            # rais InternalError
             raise NotImplementedError("Global config value is not set")
 
         return self._value

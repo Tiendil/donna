@@ -68,6 +68,7 @@ class DirectivePathBuilder:
     @jinja2.pass_context
     def __call__(self, context: jinja2.runtime.Context, *argv: object, **kwargs: object) -> object:
         if len(self._parts) < 2:
+            # raise ValueError
             raise NotImplementedError("Directive path must include module and directive parts.")
 
         module_path = ".".join(self._parts[:-1])
@@ -76,14 +77,17 @@ class DirectivePathBuilder:
         try:
             module = importlib.import_module(module_path)
         except ModuleNotFoundError as exc:
+            # raise ValueError
             raise NotImplementedError(f"Directive module '{module_path}' is not importable") from exc
 
         try:
             directive = getattr(module, directive_name)
         except AttributeError as exc:
+            # raise ValueError
             raise NotImplementedError(f"Directive '{module_path}.{directive_name}' is not available") from exc
 
         if not isinstance(directive, Directive):
+            # raise ValueError
             raise NotImplementedError(f"Directive '{module_path}.{directive_name}' is not a directive")
 
         return directive.apply_directive(context, *argv, **kwargs)

@@ -80,7 +80,9 @@ class Python(BaseWorld):
 
     def fetch(self, artifact_id: ArtifactId) -> Artifact:
         resource_path = self._resolve_artifact_file(artifact_id)
+
         if resource_path is None:
+            # return environment error
             raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
         content_bytes = resource_path.read_bytes()
@@ -92,20 +94,24 @@ class Python(BaseWorld):
     def fetch_source(self, artifact_id: ArtifactId) -> bytes:  # noqa: CCR001
         resource_path = self._resolve_artifact_file(artifact_id)
         if resource_path is None:
+            # return environment error
             raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
         return resource_path.read_bytes()
 
     def update(self, artifact_id: ArtifactId, content: bytes, extension: str) -> None:
         if self.readonly:
+            # return environment error
             raise NotImplementedError(f"World `{self.id}` is read-only")
 
+        # return environment error
         raise NotImplementedError(f"World `{self.id}` is read-only")
 
-    def file_extension_for(self, artifact_id: ArtifactId) -> str | None:
+    def file_extension_for(self, artifact_id: ArtifactId) -> str:
         resource_path = self._resolve_artifact_file(artifact_id)
         if resource_path is None:
-            return None
+            # return environment error
+            raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
 
         return pathlib.Path(resource_path.name).suffix
 
@@ -118,9 +124,11 @@ class Python(BaseWorld):
 
     # TODO: How can the state be represented in the Python world?
     def read_state(self, name: str) -> bytes | None:
+        # return environment error
         raise NotImplementedError(f"World `{self.id}` does not support state storage")
 
     def write_state(self, name: str, content: bytes) -> None:
+        # return environment error
         raise NotImplementedError(f"World `{self.id}` does not support state storage")
 
     def initialize(self, reset: bool = False) -> None:
@@ -135,15 +143,18 @@ class PythonWorldConstructor(WorldConstructor):
         package = getattr(config, "package", None)
 
         if package is None:
+            # raise exception, suitable for pydantic
             raise NotImplementedError(f"World config '{config.id}' does not define a python package")
 
         module = importlib.import_module(str(package))
         artifacts_root = getattr(module, "donna_artifacts_root", None)
 
         if artifacts_root is None:
+            # raise exception, suitable for pydantic
             raise NotImplementedError(f"Package '{package}' does not define donna_artifacts_root")
 
         if not isinstance(artifacts_root, str):
+            # raise exception, suitable for pydantic
             raise NotImplementedError(f"Package '{package}' defines invalid donna_artifacts_root")
 
         return Python(

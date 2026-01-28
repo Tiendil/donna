@@ -100,6 +100,7 @@
 *** replace all NotImplementedError exceptions with custom exceptions and smart error handling
 *** cleanup asserts — replace with real checks and exceptions
 *** internal-exceptions-mode for cli to specify that stack traces must be shown?
+*** DirectivePathBuilder — how to pass errors to the user?
 ** Cli should always return Cells
 ** Logs (do we need them now?)
 *** stderr

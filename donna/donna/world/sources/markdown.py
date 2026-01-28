@@ -121,9 +121,11 @@ def parse_artifact_content(full_id: FullArtifactId, text: str) -> list[markdown.
         analyzed_sections = markdown.parse(analyzed_markdown_source)
 
     if len(original_sections) != len(analyzed_sections):
+        # raise InternalError
         raise NotImplementedError("Artifact sections count mismatch between original and analyzed renderings")
 
     if not original_sections:
+        # return Envrironment errors
         raise NotImplementedError("Artifact must have at least one section")
 
     for original, analyzed in zip(original_sections, analyzed_sections):
@@ -225,6 +227,8 @@ def _ensure_markdown_constructible(
         return
 
     kind_label = f"'{primitive_id}'" if primitive_id is not None else repr(primitive)
+
+    # return Envrionment errors
     raise NotImplementedError(f"Primitive {kind_label} cannot be constructed from markdown sources.")
 
 
