@@ -2,10 +2,20 @@ import typer
 
 from donna.cli.application import app
 from donna.cli.types import ActionRequestIdArgument, FullArtifactIdArgument, FullArtifactSectionIdArgument
-from donna.cli.utils import output_cells
+from donna.cli.utils import output_cells, try_initialize_donna
 from donna.machine import sessions
 
 sessions_cli = typer.Typer()
+
+
+@sessions_cli.callback(invoke_without_command=True)
+def initialize(ctx: typer.Context):
+    cmd = ctx.invoked_subcommand
+
+    if cmd is None:
+        return
+
+    try_initialize_donna()
 
 
 @sessions_cli.command()

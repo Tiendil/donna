@@ -161,32 +161,28 @@ class Config(BaseEntity):
         return extensions
 
 
-_CONFIG_DIR: pathlib.Path | None = None
-_CONFIG: Config | None = None
+class GlobalConfig[V]():
+    __slots__ = ('_value',)
+
+    def __init__(self) -> None:
+        self._value: V | None = None
+
+    def set(self, value: V) -> None:
+        if self._value is not None:
+            raise NotImplementedError("Global config value is already set")
+
+        self._value = value
+
+    def get(self) -> V:
+        if self._value is None:
+            raise NotImplementedError("Global config value is not set")
+
+        return self._value
+
+    def __call__(self) -> V:
+        return self.get()
 
 
-def config_dir() -> pathlib.Path:
-    global _CONFIG_DIR
-
-    if _CONFIG_DIR:
-        return _CONFIG_DIR
-
-    _CONFIG_DIR = utils.discover_project_dir(DONNA_DIR_NAME) / DONNA_DIR_NAME
-
-    return _CONFIG_DIR
-
-
-def config() -> Config:
-    global _CONFIG
-
-    if _CONFIG:
-        return _CONFIG
-
-    config_path = config_dir() / DONNA_CONFIG_NAME
-
-    if config_path.exists():
-        _CONFIG = Config.model_validate(tomllib.loads(config_path.read_text()))
-    else:
-        _CONFIG = Config()
-
-    return _CONFIG
+project_dir = GlobalConfig[pathlib.Path]()
+config_dir = GlobalConfig[pathlib.Path]()
+config = GlobalConfig[Config]()

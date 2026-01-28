@@ -4,13 +4,23 @@ import typer
 
 from donna.cli.application import app
 from donna.cli.types import FullArtifactIdArgument, FullArtifactIdPatternOption
-from donna.cli.utils import output_cells
+from donna.cli.utils import output_cells, try_initialize_donna
 from donna.domain.ids import FullArtifactIdPattern
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.world import artifacts as world_artifacts
 from donna.world import tmp as world_tmp
 
 artifacts_cli = typer.Typer()
+
+
+@artifacts_cli.callback(invoke_without_command=True)
+def initialize(ctx: typer.Context):
+    cmd = ctx.invoked_subcommand
+
+    if cmd is None:
+        return
+
+    try_initialize_donna()
 
 
 @artifacts_cli.command()
