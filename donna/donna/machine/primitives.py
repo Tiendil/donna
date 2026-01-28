@@ -5,8 +5,9 @@ from jinja2.runtime import Context
 
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
-from donna.core.result import Ok, Result
+from donna.core.result import Err, Ok, Result
 from donna.domain.ids import ArtifactSectionId, PythonImportPath
+from donna.machine import errors as machine_errors
 from donna.machine.artifacts import ArtifactSectionConfig
 
 if TYPE_CHECKING:
@@ -40,28 +41,28 @@ class Primitive(BaseEntity):
         raise NotImplementedError("You MUST implement this method.")
 
 
-def resolve_primitive(primitive_id: PythonImportPath | str) -> Primitive:
+def resolve_primitive(primitive_id: PythonImportPath | str) -> Result[Primitive, ErrorsList]:
     if isinstance(primitive_id, PythonImportPath):
         import_path = str(primitive_id)
     else:
         import_path = str(PythonImportPath.parse(primitive_id))
 
     if "." not in import_path:
-        raise NotImplementedError(f"Primitive '{import_path}' is not a valid import path")
+        return Err([machine_errors.PrimitiveInvalidImportPath(import_path=import_path)])
 
     module_path, primitive_name = import_path.rsplit(".", maxsplit=1)
 
     try:
         module = importlib.import_module(module_path)
-    except ModuleNotFoundError as exc:
-        raise NotImplementedError(f"Primitive module '{module_path}' is not importable") from exc
+    except ModuleNotFoundError:
+        return Err([machine_errors.PrimitiveModuleNotImportable(module_path=module_path)])
 
     try:
         primitive = getattr(module, primitive_name)
-    except AttributeError as exc:
-        raise NotImplementedError(f"Primitive '{import_path}' is not available") from exc
+    except AttributeError:
+        return Err([machine_errors.PrimitiveNotAvailable(import_path=import_path, module_path=module_path)])
 
     if not isinstance(primitive, Primitive):
-        raise NotImplementedError(f"Primitive '{import_path}' is not a primitive")
+        return Err([machine_errors.PrimitiveNotPrimitive(import_path=import_path)])
 
-    return primitive
+    return Ok(primitive)

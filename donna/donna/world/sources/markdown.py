@@ -153,7 +153,7 @@ def construct_artifact_from_bytes(
     return construct_artifact_from_markdown_source(full_id, content.decode("utf-8"), config)
 
 
-def construct_artifact_from_markdown_source(
+def construct_artifact_from_markdown_source(  # noqa: CCR001
     full_id: FullArtifactId, content: str, config: Config
 ) -> Result[Artifact, ErrorsList]:
     original_sections_result = parse_artifact_content(full_id, content)
@@ -174,8 +174,14 @@ def construct_artifact_from_markdown_source(
     if "id" not in head_config or head_config["id"] is None:
         head_config["id"] = config.default_primary_section_id
 
-    primary_primitive = resolve_primitive(head_kind)
-    _ensure_markdown_constructible(primary_primitive, head_kind)
+    primary_primitive_result = resolve_primitive(head_kind)
+    if primary_primitive_result.is_err():
+        return Err(primary_primitive_result.unwrap_err())
+
+    primary_primitive = primary_primitive_result.unwrap()
+    ensure_result = _ensure_markdown_constructible(primary_primitive, head_kind)
+    if ensure_result.is_err():
+        return Err(ensure_result.unwrap_err())
     markdown_primary_primitive = cast(MarkdownSectionMixin, primary_primitive)
 
     primary_section = markdown_primary_primitive.markdown_construct_section(
@@ -229,7 +235,11 @@ def construct_sections_from_markdown(  # noqa: CCR001
         else:
             primitive_id = kind_value
 
-        primitive = _resolve_primitive(primitive_id, primitive_overrides)
+        primitive_result = _resolve_primitive(primitive_id, primitive_overrides)
+        if primitive_result.is_err():
+            return Err(primitive_result.unwrap_err())
+
+        primitive = primitive_result.unwrap()
         ensure_result = _ensure_markdown_constructible(primitive, primitive_id)
         if ensure_result.is_err():
             return Err(ensure_result.unwrap_err())
@@ -243,9 +253,9 @@ def construct_sections_from_markdown(  # noqa: CCR001
 def _resolve_primitive(
     primitive_id: PythonImportPath,
     primitive_overrides: dict[PythonImportPath, Primitive] | None = None,
-) -> Primitive:
+) -> Result[Primitive, ErrorsList]:
     if primitive_overrides is not None and primitive_id in primitive_overrides:
-        return primitive_overrides[primitive_id]
+        return Ok(primitive_overrides[primitive_id])
 
     return resolve_primitive(primitive_id)
 

@@ -64,12 +64,17 @@ class WorkUnit(BaseEntity):
 
         workflow = workflow_result.unwrap()
 
-        operation = workflow.get_section(self.operation_id.local_id)
+        operation_result = workflow.get_section(self.operation_id.local_id)
+        if operation_result.is_err():
+            return Err(operation_result.unwrap_err())
 
-        if not operation:
-            raise NotImplementedError(f"Operation with id '{self.operation_id.local_id}' not found")
+        operation = operation_result.unwrap()
 
-        operation_kind = resolve_primitive(operation.kind)
+        operation_kind_result = resolve_primitive(operation.kind)
+        if operation_kind_result.is_err():
+            return Err(operation_kind_result.unwrap_err())
+
+        operation_kind = operation_kind_result.unwrap()
 
         cells = list(operation_kind.execute_section(task, self, operation))
 

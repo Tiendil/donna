@@ -3,13 +3,8 @@ from typing import TYPE_CHECKING, ClassVar, Iterable, cast
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.ids import ArtifactSectionId, FullArtifactId
-from donna.machine.artifacts import (
-    Artifact,
-    ArtifactSection,
-    ArtifactSectionConfig,
-    ArtifactSectionMeta,
-    ArtifactValidationError,
-)
+from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
+from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import FsmMode, OperationMeta
 from donna.machine.primitives import Primitive
 from donna.world import markdown
@@ -70,9 +65,13 @@ def find_workflow_sections(start_operation_id: ArtifactSectionId, artifact: Arti
 
         workflow_sections.add(current)
 
-        section = artifact.get_section(current)
+        section_result = artifact.get_section(current)
+        if section_result.is_err():
+            continue
 
-        if section is None or not isinstance(section.meta, OperationMeta):
+        section = section_result.unwrap()
+
+        if not isinstance(section.meta, OperationMeta):
             continue
 
         to_visit.extend(section.meta.allowed_transtions)
@@ -118,10 +117,11 @@ class Workflow(MarkdownSectionMixin, Primitive):
     def validate_section(  # noqa: CCR001, CFQ001
         self, artifact: Artifact, section_id: ArtifactSectionId
     ) -> Result[None, ErrorsList]:
-        section = artifact.get_section(section_id)
+        section_result = artifact.get_section(section_id)
+        if section_result.is_err():
+            return Err(section_result.unwrap_err())
 
-        if section is None:
-            raise NotImplementedError("Trying to validate a section that does not exist in the artifact.")
+        section = section_result.unwrap()
 
         if not isinstance(section.meta, WorkflowMeta):
             raise NotImplementedError("Workflow section is not workflow")
@@ -130,7 +130,9 @@ class Workflow(MarkdownSectionMixin, Primitive):
 
         errors: ErrorsList = []
 
-        if artifact.get_section(start_operation_id) is None:
+        start_operation_result = artifact.get_section(start_operation_id)
+        if start_operation_result.is_err():
+            errors.extend(start_operation_result.unwrap_err())
             errors.append(
                 WrongStartOperation(
                     artifact_id=artifact.id, section_id=section_id, start_operation_id=start_operation_id
@@ -140,11 +142,11 @@ class Workflow(MarkdownSectionMixin, Primitive):
         workflow_sections = find_workflow_sections(start_operation_id, artifact)
 
         for workflow_section_id in workflow_sections:
-            workflow_section = artifact.get_section(workflow_section_id)
-
-            if workflow_section is None:
-                # we already added an error for missing start operation, so just skip
+            workflow_section_result = artifact.get_section(workflow_section_id)
+            if workflow_section_result.is_err():
+                errors.extend(workflow_section_result.unwrap_err())
                 continue
+            workflow_section = workflow_section_result.unwrap()
 
             if isinstance(workflow_section.meta, WorkflowMeta):
                 continue

@@ -99,12 +99,17 @@ class Config(BaseEntity):
 
     tmp_dir: pathlib.Path = pathlib.Path("./tmp")
 
-    def model_post_init(self, __context: Any) -> None:
+    def model_post_init(self, __context: Any) -> None:  # noqa: CCR001
         worlds: list[BaseWorld] = []
         sources: list[SourceConfigValue] = []
 
         for world_config in self.worlds:
-            primitive = resolve_primitive(world_config.kind)
+            primitive_result = resolve_primitive(world_config.kind)
+            if primitive_result.is_err():
+                error = primitive_result.unwrap_err()[0]
+                raise ValueError(error.message.format(error=error))
+
+            primitive = primitive_result.unwrap()
 
             if not isinstance(primitive, WorldConstructor):
                 # use exception suitable for pydantic
@@ -113,7 +118,12 @@ class Config(BaseEntity):
             worlds.append(primitive.construct_world(world_config))
 
         for source_config in self.sources:
-            primitive = resolve_primitive(source_config.kind)
+            primitive_result = resolve_primitive(source_config.kind)
+            if primitive_result.is_err():
+                error = primitive_result.unwrap_err()[0]
+                raise ValueError(error.message.format(error=error))
+
+            primitive = primitive_result.unwrap()
 
             if not isinstance(primitive, SourceConstructor):
                 # use exception suitable for pydantic

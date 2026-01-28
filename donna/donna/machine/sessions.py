@@ -156,7 +156,11 @@ def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
         return _errors_to_cells(workflow_result.unwrap_err())
 
     workflow = workflow_result.unwrap()
-    primary_section = workflow.primary_section()
+    primary_section_result = workflow.primary_section()
+    if primary_section_result.is_err():
+        return _errors_to_cells(primary_section_result.unwrap_err())
+
+    primary_section = primary_section_result.unwrap()
 
     state_result = _load_state()
     if state_result.is_err():
@@ -182,7 +186,11 @@ def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
 def _validate_operation_transition(
     state: MutableState, request_id: ActionRequestId, next_operation_id: FullArtifactSectionId
 ) -> Result[None, ErrorsList]:
-    operation_id = state.get_action_request(request_id).operation_id
+    request_result = state.get_action_request(request_id)
+    if request_result.is_err():
+        return Err(request_result.unwrap_err())
+
+    operation_id = request_result.unwrap().operation_id
 
     workflow_result = artifacts.load_artifact(operation_id.full_artifact_id)
     if workflow_result.is_err():
@@ -190,13 +198,18 @@ def _validate_operation_transition(
 
     workflow = workflow_result.unwrap()
 
-    operation = workflow.get_section(operation_id.local_id)
-    assert operation is not None
+    operation_result = workflow.get_section(operation_id.local_id)
+    if operation_result.is_err():
+        return Err(operation_result.unwrap_err())
+
+    operation = operation_result.unwrap()
 
     assert isinstance(operation.meta, OperationMeta)
 
     if next_operation_id.local_id not in operation.meta.allowed_transtions:
-        raise NotImplementedError(f"Operation '{operation_id}' can not go to '{next_operation_id}'")
+        return Err(
+            [machine_errors.InvalidOperationTransition(operation_id=operation_id, next_operation_id=next_operation_id)]
+        )
 
     return Ok(None)
 

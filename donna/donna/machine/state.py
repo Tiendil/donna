@@ -13,6 +13,7 @@ from donna.domain.ids import (
     TaskId,
     WorkUnitId,
 )
+from donna.machine import errors as machine_errors
 from donna.machine.action_requests import ActionRequest
 from donna.machine.changes import (
     Change,
@@ -54,19 +55,19 @@ class BaseState(BaseEntity):
     def current_task(self) -> Task:
         return self.tasks[-1]
 
-    def get_task(self, task_id: TaskId) -> Task:
+    def get_task(self, task_id: TaskId) -> Result[Task, ErrorsList]:
         for task in self.tasks:
             if task.id == task_id:
-                return task
+                return Ok(task)
 
-        raise NotImplementedError(f"Task with id '{task_id}' not found in active tasks")
+        return Err([machine_errors.TaskNotFound(task_id=task_id)])
 
-    def get_action_request(self, request_id: ActionRequestId) -> ActionRequest:
+    def get_action_request(self, request_id: ActionRequestId) -> Result[ActionRequest, ErrorsList]:
         for request in self.action_requests:
             if request.id == request_id:
-                return request
+                return Ok(request)
 
-        raise NotImplementedError(f"Action request with id '{request_id}' not found in state")
+        return Err([machine_errors.ActionRequestNotFound(request_id=request_id)])
 
     # Currently we execute first work unit found for the current task
     # Since we only append work units, this effectively works as a queue per task
