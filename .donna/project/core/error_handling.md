@@ -169,3 +169,9 @@ You are encouraged to follow the next strategy when implementing new code:
 1. Use `NotImplementedError` as a temporary placeholders whenever you need to raise an exception.
 2. When the code is ready, you review all `NotImplementedError` usages implement proper error hierarchy by defining new error classes as needed.
 3. Replace all `NotImplementedError` usages with proper error classes.
+
+## Asserts
+
+Use `assert` statements as a hint for type checkers and linters to confirm invariants that are guaranteed by the code logic but type checkers cannot infer them automatically.
+
+Don't use `assert` statements for any other purpose, replace them with proper error handling code.
