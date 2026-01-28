@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING
 import pydantic
 
 from donna.core.entities import BaseEntity
+from donna.core.errors import ErrorsList
+from donna.core.result import Result
 from donna.machine.primitives import Primitive
 
 if TYPE_CHECKING:
@@ -47,7 +49,9 @@ class SourceConfig(BaseEntity):
     def supports_extension(self, extension: str) -> bool:
         return self.normalize_extension(extension) in self.supported_extensions
 
-    def construct_artifact_from_bytes(self, full_id: "FullArtifactId", content: bytes) -> "Artifact":
+    def construct_artifact_from_bytes(
+        self, full_id: "FullArtifactId", content: bytes
+    ) -> Result["Artifact", ErrorsList]:
         raise NotImplementedError("You must implement this method in subclasses")
 
 

@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from donna.core.entities import BaseEntity
+from donna.core.errors import ErrorsList
+from donna.core.result import Result
 from donna.domain.ids import ArtifactId, FullArtifactIdPattern, WorldId
 from donna.machine.artifacts import Artifact
 from donna.machine.primitives import Primitive
@@ -19,7 +21,7 @@ class World(BaseEntity):
     def has(self, artifact_id: ArtifactId) -> bool:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def fetch(self, artifact_id: ArtifactId) -> Artifact:
+    def fetch(self, artifact_id: ArtifactId) -> Result[Artifact, ErrorsList]:
         raise NotImplementedError("You must implement this method in subclasses")
 
     def fetch_source(self, artifact_id: ArtifactId) -> bytes:

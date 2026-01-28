@@ -3,8 +3,11 @@ import importlib.resources
 import pathlib
 from typing import TYPE_CHECKING, cast
 
+from donna.core.errors import ErrorsList
+from donna.core.result import Err, Ok, Result
 from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern, WorldId
 from donna.machine.artifacts import Artifact
+from donna.world import errors as world_errors
 from donna.world.artifacts_discovery import ArtifactListingNode, list_artifacts_by_pattern
 from donna.world.worlds.base import World as BaseWorld
 from donna.world.worlds.base import WorldConstructor
@@ -78,18 +81,38 @@ class Python(BaseWorld):
     def has(self, artifact_id: ArtifactId) -> bool:
         return self._resolve_artifact_file(artifact_id) is not None
 
-    def fetch(self, artifact_id: ArtifactId) -> Artifact:
-        resource_path = self._resolve_artifact_file(artifact_id)
+    def fetch(self, artifact_id: ArtifactId) -> Result[Artifact, ErrorsList]:
+        try:
+            resource_path = self._resolve_artifact_file(artifact_id)
+        except NotImplementedError:
+            return Err([world_errors.ArtifactMultipleFiles(artifact_id=artifact_id, world_id=self.id)])
 
         if resource_path is None:
-            # return environment error
-            raise NotImplementedError(f"Artifact `{artifact_id}` does not exist in world `{self.id}`")
+            return Err([world_errors.ArtifactNotFound(artifact_id=artifact_id, world_id=self.id)])
 
         content_bytes = resource_path.read_bytes()
         full_id = FullArtifactId((self.id, artifact_id))
-        source_config = self._get_source_by_filename(resource_path.name)
 
-        return source_config.construct_artifact_from_bytes(full_id, content_bytes)
+        extension = pathlib.Path(resource_path.name).suffix
+        from donna.world.config import config
+
+        source_config = config().find_source_for_extension(extension)
+        if source_config is None:
+            return Err(
+                [
+                    world_errors.UnsupportedArtifactSourceExtension(
+                        artifact_id=artifact_id,
+                        world_id=self.id,
+                        extension=extension,
+                    )
+                ]
+            )
+
+        artifact_result = source_config.construct_artifact_from_bytes(full_id, content_bytes)
+        if artifact_result.is_err():
+            return Err(artifact_result.unwrap_err())
+
+        return Ok(artifact_result.unwrap())
 
     def fetch_source(self, artifact_id: ArtifactId) -> bytes:  # noqa: CCR001
         resource_path = self._resolve_artifact_file(artifact_id)

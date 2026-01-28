@@ -78,8 +78,11 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> Result[None
     if source_config is None:
         return Err([NoSourceForArtifactExtension(artifact_id=full_id, path=input)])
 
-    test_artifact = source_config.construct_artifact_from_bytes(full_id, content_bytes)
+    test_artifact_result = source_config.construct_artifact_from_bytes(full_id, content_bytes)
+    if test_artifact_result.is_err():
+        return Err(test_artifact_result.unwrap_err())
 
+    test_artifact = test_artifact_result.unwrap()
     validation_result = test_artifact.validate_artifact()
 
     if validation_result.is_err():
@@ -97,7 +100,11 @@ def load_artifact(full_id: FullArtifactId) -> Result[Artifact, ErrorsList]:
 
     world = world_result.unwrap()
 
-    return Ok(world.fetch(full_id.artifact_id))
+    artifact_result = world.fetch(full_id.artifact_id)
+    if artifact_result.is_err():
+        return Err(artifact_result.unwrap_err())
+
+    return Ok(artifact_result.unwrap())
 
 
 def list_artifacts(pattern: FullArtifactIdPattern) -> Result[list[Artifact], ErrorsList]:
