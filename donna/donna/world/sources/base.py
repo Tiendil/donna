@@ -1,21 +1,18 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING
 
 import pydantic
 
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Result
-from donna.machine import errors as machine_errors
 from donna.machine.primitives import Primitive
 
 if TYPE_CHECKING:
     from donna.domain.ids import FullArtifactId
-    from donna.machine.artifacts import Artifact, ArtifactSection
-    from donna.machine.changes import Change
-    from donna.machine.tasks import Task, WorkUnit
+    from donna.machine.artifacts import Artifact
     from donna.world.config import SourceConfig as SourceConfigModel
 
 

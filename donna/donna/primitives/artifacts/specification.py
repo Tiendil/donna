@@ -1,13 +1,11 @@
-from typing import TYPE_CHECKING, ClassVar, Iterable
+from typing import TYPE_CHECKING, ClassVar
 
-from donna.core import errors as core_errors
-from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig
+from donna.machine.artifacts import ArtifactSectionConfig
 from donna.machine.primitives import Primitive
 from donna.world.sources.markdown import MarkdownSectionMixin
 
 if TYPE_CHECKING:
-    from donna.machine.changes import Change
-    from donna.machine.tasks import Task, WorkUnit
+    pass
 
 
 class TextConfig(ArtifactSectionConfig):

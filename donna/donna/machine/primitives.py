@@ -1,5 +1,4 @@
 import importlib
-from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable
 
 from jinja2.runtime import Context
