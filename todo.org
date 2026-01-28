@@ -94,7 +94,6 @@
 ** tune wording of workflows (what to write before goto)
 ** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
 * TODO Cells & Errors
-** Add dictionary to the project:intro specification.
 ** Errors processing improvements
 *** specification on how we process errors
 **** we raise errors that is cause by donna bugs
