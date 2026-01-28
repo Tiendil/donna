@@ -5,6 +5,7 @@ import pydantic
 from donna.core.entities import BaseEntity
 from donna.domain.ids import ActionRequestId, FullArtifactSectionId
 from donna.protocol.cells import Cell
+from donna.protocol.nodes import Node
 
 
 class ActionRequest(BaseEntity):
@@ -23,23 +24,27 @@ class ActionRequest(BaseEntity):
             operation_id=operation_id,
         )
 
-    def cells(self) -> list[Cell]:
+    def node(self) -> "ActionRequestNode":
+        return ActionRequestNode(self)
+
+
+class ActionRequestNode(Node):
+    __slots__ = ("action_request",)
+
+    def __init__(self, action_request: ActionRequest) -> None:
+        self.action_request = action_request
+
+    def status(self) -> Cell:
         message = textwrap.dedent(
             """
         **This is an action request for the agent. You MUST follow the instructions below.**
 
         {request}
         """
-        ).format(request=self.request)
+        ).format(request=self.action_request.request)
 
-        cells = []
-
-        cells.append(
-            Cell.build_markdown(
-                kind="action_request",
-                content=message,
-                action_request_id=str(self.id),
-            )
+        return Cell.build_markdown(
+            kind="action_request",
+            content=message,
+            action_request_id=str(self.action_request.id),
         )
-
-        return cells

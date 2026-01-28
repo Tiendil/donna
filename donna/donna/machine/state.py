@@ -22,6 +22,7 @@ from donna.machine.changes import (
 )
 from donna.machine.tasks import Task, WorkUnit
 from donna.protocol.cells import Cell
+from donna.protocol.nodes import Node
 
 
 class BaseState(BaseEntity):
@@ -39,6 +40,9 @@ class BaseState(BaseEntity):
 
     def has_work(self) -> bool:
         return bool(self.work_units)
+
+    def node(self) -> "StateNode":
+        return StateNode(self)
 
     ###########
     # Accessors
@@ -73,43 +77,6 @@ class BaseState(BaseEntity):
             return work_unit
 
         return None
-
-    #######
-    # Cells
-    #######
-
-    def cells_for_complete(self) -> Cell:
-        return Cell.build_markdown(
-            kind="work_is_completed",
-            content=(
-                "The work in this session is COMPLETED. You MUST STOP all your activities immediately. "
-                "ASK THE USER for further instructions."
-            ),
-        )
-
-    def cells_for_status(self) -> list[Cell]:
-        return [
-            Cell.build_meta(
-                kind="state_status",
-                tasks=len(self.tasks),
-                queued_work_units=len(self.work_units),
-                pending_action_requests=len(self.action_requests),
-                is_completed=self.is_completed,
-            )
-        ]
-
-    def get_cells(self) -> list[Cell]:
-
-        cells = []
-
-        for action_request in self.action_requests:
-            for cell in action_request.cells():
-                cells.append(cell)
-
-        if self.is_completed:
-            cells.append(self.cells_for_complete())
-
-        return cells
 
 
 class ConsistentState(BaseState):
@@ -209,3 +176,28 @@ class MutableState(BaseState):
         changes.append(ChangeRemoveWorkUnit(work_unit_id=next_work_unit.id))
 
         self.apply_changes(changes)
+
+
+class StateNode(Node):
+    __slots__ = ("state",)
+
+    def __init__(self, state: BaseState) -> None:
+        self.state = state
+
+    def status(self) -> Cell:
+        if self.state.completed:
+            message = "The work in this session is COMPLETED. You MUST STOP all your activities immediately. ASK THE USER for further instructions."
+        else:
+            message = "The session is ACTIVE. You have pending tasks to complete."
+
+        return Cell.build_markdown(
+            kind="session_state_status",
+            content=message,
+            tasks=len(self.state.tasks),
+            queued_work_units=len(self.state.work_units),
+            pending_action_requests=len(self.state.action_requests),
+            is_completed=self.state.is_completed,
+        )
+
+    def children(self) -> list[Node]:
+        return [action_request.node() for action_request in self.state.action_requests]

@@ -60,7 +60,7 @@ def _state_run(mutator: MutableState) -> None:
 
 def _state_cells() -> list[Cell]:
     with _state() as state:
-        return state.get_cells()
+        return state.node().details()
 
 
 P = ParamSpec("P")
