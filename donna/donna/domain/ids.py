@@ -246,7 +246,7 @@ class FullArtifactId(ColonPath):
     validate_json = True
 
     def __str__(self) -> str:
-        return f"{self.world_id}:{self.artifact_id}"
+        return f"{self.world_id}{self.delimiter}{self.artifact_id}"
 
     @property
     def world_id(self) -> WorldId:
@@ -261,7 +261,7 @@ class FullArtifactId(ColonPath):
 
     @classmethod
     def parse(cls, text: str) -> "FullArtifactId":
-        parts = text.split(":", maxsplit=1)
+        parts = text.split(cls.delimiter, maxsplit=1)
 
         if len(parts) != 2:
             raise NotImplementedError(f"Invalid FullArtifactId format: '{text}'")
@@ -269,21 +269,21 @@ class FullArtifactId(ColonPath):
         world_id = WorldId(parts[0])
         artifact_id = ArtifactId(parts[1])
 
-        return FullArtifactId(f"{world_id}:{artifact_id}")
+        return FullArtifactId(f"{world_id}{cls.delimiter}{artifact_id}")
 
 
 class FullArtifactIdPattern(tuple[str, ...]):
     __slots__ = ()
 
     def __str__(self) -> str:
-        return ":".join(self)
+        return FullArtifactId.delimiter.join(self)
 
     @classmethod
     def parse(cls, text: str) -> "FullArtifactIdPattern":  # noqa: CCR001
         if not isinstance(text, str) or not text:
             raise NotImplementedError(f"Invalid FullArtifactIdPattern: '{text}'")
 
-        parts = text.split(":")
+        parts = text.split(FullArtifactId.delimiter)
 
         if any(part == "" for part in parts):
             raise NotImplementedError(f"Invalid FullArtifactIdPattern: '{text}'")
@@ -298,7 +298,7 @@ class FullArtifactIdPattern(tuple[str, ...]):
         return cls(parts)
 
     def matches_full_id(self, full_id: "FullArtifactId") -> bool:
-        return _match_pattern_parts(self, str(full_id).split(":"))
+        return _match_pattern_parts(self, str(full_id).split(FullArtifactId.delimiter))
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
@@ -338,7 +338,7 @@ class FullArtifactSectionId(ColonPath):
     validate_json = True
 
     def __str__(self) -> str:
-        return f"{self.world_id}:{self.artifact_id}:{self.local_id}"
+        return f"{self.world_id}{self.delimiter}{self.artifact_id}{self.delimiter}{self.local_id}"
 
     @property
     def world_id(self) -> WorldId:
@@ -350,7 +350,7 @@ class FullArtifactSectionId(ColonPath):
 
     @property
     def full_artifact_id(self) -> FullArtifactId:
-        return FullArtifactId(f"{self.world_id}:{self.artifact_id}")
+        return FullArtifactId(f"{self.world_id}{self.delimiter}{self.artifact_id}")
 
     @property
     def local_id(self) -> ArtifactSectionId:
@@ -359,7 +359,7 @@ class FullArtifactSectionId(ColonPath):
     @classmethod
     def parse(cls, text: str) -> "FullArtifactSectionId":
         try:
-            artifact_part, local_part = text.rsplit(":", maxsplit=1)
+            artifact_part, local_part = text.rsplit(cls.delimiter, maxsplit=1)
         except ValueError as exc:
             raise NotImplementedError(f"Invalid FullArtifactSectionId format: '{text}'") from exc
 
