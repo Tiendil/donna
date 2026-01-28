@@ -105,7 +105,7 @@ def continue_() -> list[Cell]:
 @_session_required
 def status() -> list[Cell]:
     with _state() as state:
-        return state.cells_for_status()
+        return [state.node().info()]
 
 
 @_session_required

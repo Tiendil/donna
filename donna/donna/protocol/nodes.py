@@ -1,4 +1,3 @@
-
 from donna.protocol.cells import Cell
 
 
@@ -10,6 +9,7 @@ class Node:
     Its primary purpose is to simplify navigation through different Donna's entities
     and to provide a unified interface for retrieving information about them.
     """
+
     __slots__ = ()
 
     def status(self) -> Cell:
@@ -32,12 +32,11 @@ class Node:
 
     def index(self) -> list[Cell]:
         """Returns status of itself and all its children."""
-
         cells = [self.status()]
         cells.extend(child.status() for child in self.children())
 
         return cells
 
     def children(self) -> list["Node"]:
-        "Return all child nodes."
+        """Return all child nodes."""
         return []
