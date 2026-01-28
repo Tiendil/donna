@@ -4,6 +4,7 @@
 ```toml donna
 kind = "donna.lib.specification"
 ```
+This document provides an introduction to the Donna project for agents and developers who want to understand how to work with the Donna codebase.
 
 ## Project Overview
 
