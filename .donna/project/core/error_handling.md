@@ -179,5 +179,5 @@ Don't use `assert` statements for any other purpose, replace them with proper er
 ## Do and Don'ts
 
 - **DO NOT** define multiple functions with the same logic but different error handling strategies (e.g., one function raises exceptions, another returns `Result`). Instead define a single function with one error handling strategy that are explicitly specified by the developer or logically deduced from the context.
-- **DO NOT** use `.unwrap` or similar methods that cause exception on `Result` objects, until it is explicitly specified by the developer.
+- Use `.unwrap` or similar methods that cause exception on `Result` objects only when the context is guarantees that there will be no exceptions. For example, after a check like `if result.is_ok():`.
 - If modify funtion to return environment errors, you **MUST** update all functions up the call stack that call this function to handle the returned errors properly: process, propagate or output (accoring to the context).
