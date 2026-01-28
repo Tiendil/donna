@@ -103,6 +103,7 @@
 *** internal-exceptions-mode for cli to specify that stack traces must be shown?
 *** DirectivePathBuilder — how to pass errors to the user?
 *** cleanup comments above `raise ...`
+*** polish ways_to_fix lists
 ** Cli should always return Cells
 ** Logs (do we need them now?)
 *** stderr
