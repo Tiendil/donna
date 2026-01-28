@@ -1,4 +1,4 @@
-from typing import Any, Sequence
+from typing import Any, Generic, Sequence, TypeVar
 
 from pydantic_core import core_schema
 
@@ -218,6 +218,70 @@ class IdPath(str):
         return cls._build_pydantic_schema(validate)
 
 
+TIdPath = TypeVar("TIdPath", bound="IdPath")
+TIdPathPattern = TypeVar("TIdPathPattern", bound="IdPathPattern[Any]")
+
+
+class IdPathPattern(tuple[str, ...], Generic[TIdPath]):
+    __slots__ = ()
+    id_class: type[TIdPath]
+
+    def __str__(self) -> str:
+        return self.id_class.delimiter.join(self)
+
+    @classmethod
+    def _validate_pattern_part(cls, part: str) -> bool:
+        if part in {"*", "**"}:
+            return True
+
+        return part.isidentifier()
+
+    @classmethod
+    def parse(cls: type[TIdPathPattern], text: str) -> TIdPathPattern:
+        if not isinstance(text, str) or not text:
+            raise NotImplementedError(f"Invalid {cls.__name__}: '{text}'")
+
+        if not cls.id_class.delimiter:
+            raise NotImplementedError(f"Invalid {cls.__name__}: '{text}'")
+
+        parts = text.split(cls.id_class.delimiter)
+
+        if any(part == "" for part in parts):
+            raise NotImplementedError(f"Invalid {cls.__name__}: '{text}'")
+
+        for part in parts:
+            if not cls._validate_pattern_part(part):
+                raise NotImplementedError(f"Invalid {cls.__name__}: '{text}'")
+
+        return cls(parts)
+
+    def matches(self, value: TIdPath) -> bool:
+        return _match_pattern_parts(self, self.id_class._split(str(value)))
+
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
+
+        def validate(v: Any) -> "IdPathPattern[TIdPath]":
+            if isinstance(v, cls):
+                return v
+
+            if not isinstance(v, str):
+                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
+
+            return cls.parse(v)
+
+        str_then_validate = core_schema.no_info_after_validator_function(
+            validate,
+            core_schema.str_schema(),
+        )
+
+        return core_schema.json_or_python_schema(
+            json_schema=str_then_validate,
+            python_schema=core_schema.no_info_plain_validator_function(validate),
+            serialization=core_schema.to_string_ser_schema(),
+        )
+
+
 class DottedPath(IdPath):
     __slots__ = ()
     delimiter = "."
@@ -272,56 +336,12 @@ class FullArtifactId(ColonPath):
         return FullArtifactId(f"{world_id}{cls.delimiter}{artifact_id}")
 
 
-class FullArtifactIdPattern(tuple[str, ...]):
+class FullArtifactIdPattern(IdPathPattern["FullArtifactId"]):
     __slots__ = ()
-
-    def __str__(self) -> str:
-        return FullArtifactId.delimiter.join(self)
-
-    @classmethod
-    def parse(cls, text: str) -> "FullArtifactIdPattern":  # noqa: CCR001
-        if not isinstance(text, str) or not text:
-            raise NotImplementedError(f"Invalid FullArtifactIdPattern: '{text}'")
-
-        parts = text.split(FullArtifactId.delimiter)
-
-        if any(part == "" for part in parts):
-            raise NotImplementedError(f"Invalid FullArtifactIdPattern: '{text}'")
-
-        for part in parts:
-            if part in {"*", "**"}:
-                continue
-
-            if not part.isidentifier():
-                raise NotImplementedError(f"Invalid FullArtifactIdPattern: '{text}'")
-
-        return cls(parts)
+    id_class = FullArtifactId
 
     def matches_full_id(self, full_id: "FullArtifactId") -> bool:
-        return _match_pattern_parts(self, str(full_id).split(FullArtifactId.delimiter))
-
-    @classmethod
-    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
-
-        def validate(v: Any) -> "FullArtifactIdPattern":
-            if isinstance(v, cls):
-                return v
-
-            if not isinstance(v, str):
-                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
-
-            return cls.parse(v)
-
-        str_then_validate = core_schema.no_info_after_validator_function(
-            validate,
-            core_schema.str_schema(),
-        )
-
-        return core_schema.json_or_python_schema(
-            json_schema=str_then_validate,
-            python_schema=core_schema.no_info_plain_validator_function(validate),
-            serialization=core_schema.to_string_ser_schema(),
-        )
+        return self.matches(full_id)
 
 
 class ArtifactSectionId(Identifier):
