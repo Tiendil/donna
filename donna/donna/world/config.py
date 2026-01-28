@@ -4,8 +4,11 @@ from typing import Any
 import pydantic
 
 from donna.core.entities import BaseEntity
+from donna.core.errors import ErrorsList
+from donna.core.result import Err, Ok, Result
 from donna.domain.ids import PythonImportPath, WorldId
 from donna.machine.primitives import resolve_primitive
+from donna.world import errors as world_errors
 from donna.world.sources.base import SourceConfig as SourceConfigValue
 from donna.world.sources.base import SourceConstructor
 from donna.world.worlds.base import World as BaseWorld
@@ -105,7 +108,7 @@ class Config(BaseEntity):
 
             if not isinstance(primitive, WorldConstructor):
                 # use exception suitable for pydantic
-                raise NotImplementedError(f"World constructor '{world_config.kind}' is not supported")
+                raise ValueError(f"World constructor '{world_config.kind}' is not supported")
 
             worlds.append(primitive.construct_world(world_config))
 
@@ -114,20 +117,19 @@ class Config(BaseEntity):
 
             if not isinstance(primitive, SourceConstructor):
                 # use exception suitable for pydantic
-                raise NotImplementedError(f"Source constructor '{source_config.kind}' is not supported")
+                raise ValueError(f"Source constructor '{source_config.kind}' is not supported")
 
             sources.append(primitive.construct_source(source_config))
 
         object.__setattr__(self, "_worlds_instances", worlds)
         object.__setattr__(self, "_sources_instances", sources)
 
-    def get_world(self, world_id: WorldId) -> BaseWorld:
+    def get_world(self, world_id: WorldId) -> Result[BaseWorld, ErrorsList]:
         for world in self._worlds_instances:
             if world.id == world_id:
-                return world
+                return Ok(world)
 
-        # return EnvironmentError
-        raise NotImplementedError(f"World with id '{world_id}' is not configured")
+        return Err([world_errors.WorldNotConfigured(world_id=world_id)])
 
     @property
     def worlds_instances(self) -> list[BaseWorld]:
@@ -137,13 +139,12 @@ class Config(BaseEntity):
     def sources_instances(self) -> list[SourceConfigValue]:
         return list(self._sources_instances)
 
-    def get_source_config(self, kind: str) -> SourceConfigValue:
+    def get_source_config(self, kind: str) -> Result[SourceConfigValue, ErrorsList]:
         for source in self._sources_instances:
             if source.kind == kind:
-                return source
+                return Ok(source)
 
-        # Return EnvironmentError
-        raise NotImplementedError(f"Source config '{kind}' is not configured")
+        return Err([world_errors.SourceConfigNotConfigured(kind=kind)])
 
     def find_source_for_extension(self, extension: str) -> SourceConfigValue | None:
         for source in self._sources_instances:
@@ -170,15 +171,13 @@ class GlobalConfig[V]():
 
     def set(self, value: V) -> None:
         if self._value is not None:
-            # raise InternalError
-            raise NotImplementedError("Global config value is already set")
+            raise world_errors.GlobalConfigAlreadySet()
 
         self._value = value
 
     def get(self) -> V:
         if self._value is None:
-            # rais InternalError
-            raise NotImplementedError("Global config value is not set")
+            raise world_errors.GlobalConfigNotSet()
 
         return self._value
 
