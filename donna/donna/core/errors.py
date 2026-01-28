@@ -2,6 +2,7 @@ import pydantic
 
 from donna.core.entities import BaseEntity
 from donna.protocol.cells import Cell, MetaValue, to_meta_value
+from donna.protocol.nodes import Node
 
 
 class EnvironmentError(BaseEntity):
@@ -53,12 +54,22 @@ class EnvironmentError(BaseEntity):
 
         return f"{content}\n\nWays to fix:\n\n{fixes}"
 
-    def cell(self) -> Cell:
+    def node(self) -> "EnvironmentErrorNode":
+        return EnvironmentErrorNode(self)
+
+
+class EnvironmentErrorNode(Node):
+    __slots__ = ("error",)
+
+    def __init__(self, environment_error: EnvironmentError) -> None:
+        self.error = environment_error
+
+    def status(self) -> Cell:
         return Cell.build(
-            kind=self.cell_kind,
-            media_type=self.cell_media_type,
-            content=self.content(),
-            **self.meta(),
+            kind=self.error.cell_kind,
+            media_type=self.error.cell_media_type,
+            content=self.error.content(),
+            **self.error.meta(),
         )
 
 
