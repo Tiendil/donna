@@ -107,6 +107,9 @@ class Artifact(BaseEntity):
                 return section
         return None
 
+    def node(self) -> "ArtifactNode":
+        return ArtifactNode(self)
+
     def markdown_blocks(self) -> list[str]:
         primary_section = self.primary_section()
         blocks = [f"# {primary_section.title}", primary_section.description]
