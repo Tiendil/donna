@@ -227,3 +227,23 @@ error = FinalOperationHasTransitions(
   ],
 )
 ```
+
+If you need to propagate errors, do not unwrap them and wrap again, just return the original result.
+
+Good Example:
+
+```python
+result = some_function()
+
+if result.is_err():
+    return result  # good: propagate the original errors
+```
+
+Bad Example:
+
+```python
+result = some_function()
+
+if result.is_err():
+    return Err(result.unwrap_err())  # Bad: unwrapping and wrapping again is unnecessary
+```
