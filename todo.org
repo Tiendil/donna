@@ -102,7 +102,7 @@
 *** replace all NotImplementedError exceptions with custom exceptions and smart error handling
 *** exceptions must output cells?
 *** cleanup asserts — replace with real checks and exceptions
-*** rust-style errors?
+*** internal-exceptions-mode for cli to specify that stack traces must be shown?
 ** Cli should always return Cells
 ** Logs (do we need them now?)
 *** stderr
