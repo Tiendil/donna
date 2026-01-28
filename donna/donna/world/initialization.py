@@ -4,6 +4,7 @@ from donna.core import errors as core_errors
 from donna.core import utils
 from donna.core.result import Err, Ok, Result
 from donna.world import config
+from donna.world import errors as world_errors
 
 
 def initialize_environment() -> Result[None, core_errors.ErrorsList]:
@@ -34,13 +35,13 @@ def initialize_environment() -> Result[None, core_errors.ErrorsList]:
         data = tomllib.loads(config_path.read_text())
     except tomllib.TOMLDecodeError as e:
         # return list of Environment errors
-        raise NotImplementedError(f"Failed to parse config file: {e}") from e
+        return Err([world_errors.ConfigParseFailed(config_path=config_path, details=str(e))])
 
     try:
         loaded_config = config.Config.model_validate(data)
     except Exception as e:
         # return list of Environment errors
-        raise NotImplementedError(f"Failed to validate config file: {e}") from e
+        return Err([world_errors.ConfigValidationFailed(config_path=config_path, details=str(e))])
 
     config.config.set(loaded_config)
 
