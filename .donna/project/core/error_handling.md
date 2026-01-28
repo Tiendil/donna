@@ -175,3 +175,7 @@ You are encouraged to follow the next strategy when implementing new code:
 Use `assert` statements as a hint for type checkers and linters to confirm invariants that are guaranteed by the code logic but type checkers cannot infer them automatically.
 
 Don't use `assert` statements for any other purpose, replace them with proper error handling code.
+
+## Do and Don'ts
+
+- **DO NOT** define multiple functions with the same logic but different error handling strategies (e.g., one function raises exceptions, another returns `Result`). Instead define a single function with one error handling strategy that are explicitly specified by the developer or logically deduced from the context.
