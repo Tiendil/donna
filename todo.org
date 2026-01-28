@@ -95,8 +95,6 @@
 ** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
 * TODO Cells & Errors
 ** Imprpove cells construction
-*** We generate different kinds of cells for different use-cases. That is not reflected in the code well enough.
-*** Organize standard cell kinds into enum (but allow custom kinds as well). Or just provide custom constructors for each use-case.
 *** implement ErrorCodeId like FullArtifactId or PythonImportPath.
 **** maybe we should refactor ids hierarchy in general?
 *** references to the specifications in the errors
