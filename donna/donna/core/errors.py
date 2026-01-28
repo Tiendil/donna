@@ -1,5 +1,6 @@
-import pydantic
 from typing import Any
+
+import pydantic
 
 from donna.core.entities import BaseEntity
 from donna.protocol.cells import Cell, MetaValue, to_meta_value
