@@ -228,22 +228,22 @@ error = FinalOperationHasTransitions(
 )
 ```
 
-If you need to propagate errors, do not unwrap them and wrap again, just return the original result.
-
-Good Example:
+If you need to propagate errors and the function expected to return the same result type, do not unwrap it and wrap again, just return the original result.
 
 ```python
-result = some_function()
 
-if result.is_err():
-    return result  # good: propagate the original errors
-```
+def some_function_a() -> Result[SomeType, SomeErrorType]:
+    ...
 
-Bad Example:
+def some_function_b() -> Result[SomeType, SomeErrorType]:
+    result = some_function_a()
 
-```python
-result = some_function()
+    if result.is_err():
+        return result  # good: propagate the original errors
 
-if result.is_err():
-    return Err(result.unwrap_err())  # Bad: unwrapping and wrapping again is unnecessary
+def bad_example() -> Result[SomeType, SomeErrorType]:
+    result = some_function_a()
+
+    if result.is_err():
+        return Err(result.unwrap_err())  # Bad: unwrapping and wrapping again is unnecessary
 ```
