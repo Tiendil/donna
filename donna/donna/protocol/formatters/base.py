@@ -1,10 +1,12 @@
+from abc import ABC, abstractmethod
+
 from donna.protocol.cells import Cell
 
 
-class Formatter:
+class Formatter(ABC):
 
-    def format_cell(self, cell: Cell, single_mode: bool) -> bytes:
-        raise NotImplementedError()
+    @abstractmethod
+    def format_cell(self, cell: Cell, single_mode: bool) -> bytes: ...  # noqa: E704
 
-    def format_cells(self, cells: list[Cell]) -> bytes:
-        raise NotImplementedError()
+    @abstractmethod
+    def format_cells(self, cells: list[Cell]) -> bytes: ...  # noqa: E704

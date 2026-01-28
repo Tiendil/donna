@@ -1,7 +1,9 @@
+from abc import ABC, abstractmethod
+
 from donna.protocol.cells import Cell
 
 
-class Node:
+class Node(ABC):
     """Node of Donna's knowledge graph.
 
     The concept of knowledge graph is highly experimental and subject to change.
@@ -22,9 +24,10 @@ class Node:
 
     __slots__ = ()
 
+    @abstractmethod
     def status(self) -> Cell:
         """Returns short info about only this node."""
-        raise NotImplementedError()
+        ...
 
     def info(self) -> Cell:
         """Returns full info about only this node."""

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 import pydantic
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
     from donna.world.config import SourceConfig as SourceConfigModel
 
 
-class SourceConfig(BaseEntity):
+class SourceConfig(BaseEntity, ABC):
     kind: str
     supported_extensions: list[str] = pydantic.Field(default_factory=list)
 
@@ -49,12 +50,12 @@ class SourceConfig(BaseEntity):
     def supports_extension(self, extension: str) -> bool:
         return self.normalize_extension(extension) in self.supported_extensions
 
-    def construct_artifact_from_bytes(
+    @abstractmethod
+    def construct_artifact_from_bytes(  # noqa: E704
         self, full_id: "FullArtifactId", content: bytes
-    ) -> Result["Artifact", ErrorsList]:
-        raise NotImplementedError("You must implement this method in subclasses")
+    ) -> Result["Artifact", ErrorsList]: ...  # noqa: E704
 
 
-class SourceConstructor(Primitive):
-    def construct_source(self, config: SourceConfigModel) -> SourceConfig:
-        raise NotImplementedError("You must implement this method in subclasses")
+class SourceConstructor(Primitive, ABC):
+    @abstractmethod
+    def construct_source(self, config: SourceConfigModel) -> SourceConfig: ...  # noqa: E704

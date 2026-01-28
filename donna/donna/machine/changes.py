@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from donna.core.entities import BaseEntity
@@ -9,9 +10,9 @@ if TYPE_CHECKING:
     from donna.machine.state import MutableState
 
 
-class Change(BaseEntity):
-    def apply_to(self, state: "MutableState") -> None:
-        raise NotImplementedError()
+class Change(BaseEntity, ABC):
+    @abstractmethod
+    def apply_to(self, state: "MutableState") -> None: ...  # noqa: E704
 
 
 class ChangeFinishTask(Change):
