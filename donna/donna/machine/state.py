@@ -179,13 +179,13 @@ class MutableState(BaseState):
 
 
 class StateNode(Node):
-    __slots__ = ("state",)
+    __slots__ = ("_state",)
 
     def __init__(self, state: BaseState) -> None:
-        self.state = state
+        self._state = state
 
     def status(self) -> Cell:
-        if self.state.is_completed:
+        if self._state.is_completed:
             message = (
                 "The work in this session is COMPLETED. You MUST STOP all your activities "
                 "immediately. ASK THE USER for further instructions."
@@ -194,13 +194,13 @@ class StateNode(Node):
             message = "The session is ACTIVE. You have pending tasks to complete."
 
         return Cell.build_markdown(
-            kind="session_state_status",
+            kind="session__state_status",
             content=message,
-            tasks=len(self.state.tasks),
-            queued_work_units=len(self.state.work_units),
-            pending_action_requests=len(self.state.action_requests),
-            is_completed=self.state.is_completed,
+            tasks=len(self._state.tasks),
+            queued_work_units=len(self._state.work_units),
+            pending_action_requests=len(self._state.action_requests),
+            is_completed=self._state.is_completed,
         )
 
-    def children(self) -> list[Node]:
-        return [action_request.node() for action_request in self.state.action_requests]
+    def references(self) -> list[Node]:
+        return [action_request.node() for action_request in self._state.action_requests]

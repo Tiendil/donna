@@ -21,13 +21,13 @@ def list(pattern: FullArtifactIdPatternOption = None) -> None:
     artifacts = world_artifacts.list_artifacts(pattern)
 
     for artifact in artifacts:
-        output_cells(artifact.cells_info())
+        output_cells(artifact.node().status())
 
 
 @artifacts_cli.command()
 def view(id: FullArtifactIdArgument) -> None:
     artifact = world_artifacts.load_artifact(id)
-    output_cells(artifact.cells())
+    output_cells(artifact.node().info())
 
 
 @artifacts_cli.command()

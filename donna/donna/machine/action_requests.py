@@ -29,10 +29,10 @@ class ActionRequest(BaseEntity):
 
 
 class ActionRequestNode(Node):
-    __slots__ = ("action_request",)
+    __slots__ = ("_action_request",)
 
     def __init__(self, action_request: ActionRequest) -> None:
-        self.action_request = action_request
+        self._action_request = action_request
 
     def status(self) -> Cell:
         message = textwrap.dedent(
@@ -41,10 +41,10 @@ class ActionRequestNode(Node):
 
         {request}
         """
-        ).format(request=self.action_request.request)
+        ).format(request=self._action_request.request)
 
         return Cell.build_markdown(
             kind="action_request",
             content=message,
-            action_request_id=str(self.action_request.id),
+            action_request_id=str(self._action_request.id),
         )

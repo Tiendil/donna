@@ -5,6 +5,7 @@ from donna.core.errors import EnvironmentError, ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.ids import ArtifactSectionId, FullArtifactId, FullArtifactSectionId, PythonImportPath
 from donna.protocol.cells import Cell
+from donna.protocol.nodes import Node
 
 
 class ArtifactValidationError(EnvironmentError):
@@ -46,19 +47,8 @@ class ArtifactSection(BaseEntity):
 
     meta: ArtifactSectionMeta
 
-    def cells(self) -> list[Cell]:
-        return [
-            Cell.build_meta(
-                kind="artifact_section_meta",
-                artifact_id=str(self.artifact_id),
-                section_id=str(self.id) if self.id else None,
-                section_kind=str(self.kind) if self.kind else None,
-                section_title=self.title,
-                section_description=self.description,
-                section_primary=self.primary,
-                **self.meta.cells_meta(),
-            )
-        ]
+    def node(self) -> "ArtifactSectionNode":
+        return ArtifactSectionNode(self)
 
     def markdown_blocks(self) -> list[str]:
         return [f"## {self.title}", self.description]
@@ -109,37 +99,6 @@ class Artifact(BaseEntity):
 
         return Ok(None)
 
-    def cells_info(self) -> list[Cell]:
-        primary_section = self.primary_section()
-        return [
-            Cell.build_meta(
-                kind="artifact_info",
-                artifact_id=str(self.id),
-                artifact_kind=str(primary_section.kind),
-                artifact_title=primary_section.title,
-                artifact_description=primary_section.description,
-            )
-        ]
-
-    # TODO: should we attach section cells here as well?
-    def cells(self) -> list[Cell]:
-        primary_section = self.primary_section()
-        cells = [
-            Cell.build_meta(
-                kind="artifact_meta",
-                artifact_id=str(self.id),
-                artifact_kind=str(primary_section.kind),
-                artifact_title=primary_section.title,
-                artifact_description=primary_section.description,
-            )
-        ]
-
-        markdown = "\n".join(self.markdown_blocks())
-
-        cells.append(Cell.build_markdown(kind="artifact_markdown", content=markdown, artifact_id=str(self.id)))
-
-        return cells
-
     def get_section(self, section_id: ArtifactSectionId | None) -> ArtifactSection | None:
         if section_id is None:
             return self.primary_section()
@@ -158,6 +117,56 @@ class Artifact(BaseEntity):
             blocks.extend(section.markdown_blocks())
 
         return blocks
+
+
+class ArtifactNode(Node):
+    __slots__ = ("_artifact",)
+
+    def __init__(self, artifact: Artifact) -> None:
+        self._artifact = artifact
+
+    def status(self) -> Cell:
+        primary_section = self._artifact.primary_section()
+        return Cell.build_meta(
+            kind="artifact_status",
+            artifact_id=str(self._artifact.id),
+            artifact_kind=str(primary_section.kind),
+            artifact_title=primary_section.title,
+            artifact_description=primary_section.description,
+        )
+
+    def info(self) -> Cell:
+        primary_section = self._artifact.primary_section()
+
+        return Cell.build_markdown(
+            kind="artifact_info",
+            content="\n".join(self._artifact.markdown_blocks()),
+            artifact_id=str(self._artifact.id),
+            artifact_kind=str(primary_section.kind),
+            artifact_title=primary_section.title,
+            artifact_description=primary_section.description,
+        )
+
+    def components(self) -> list["Node"]:
+        return [ArtifactSectionNode(section) for section in self._artifact.sections]
+
+
+class ArtifactSectionNode(Node):
+    __slots__ = ("_section",)
+
+    def __init__(self, section: ArtifactSection) -> None:
+        self._section = section
+
+    def status(self) -> Cell:
+        return Cell.build_markdown(
+            kind="artifact_section_status",
+            content="\n".join(self._section.markdown_blocks()),
+            artifact_id=str(self._section.artifact_id),
+            section_id=str(self._section.id),
+            section_kind=str(self._section.kind),
+            section_primary=self._section.primary,
+            **self._section.meta.cells_meta(),
+        )
 
 
 def resolve(target_id: FullArtifactSectionId) -> ArtifactSection:

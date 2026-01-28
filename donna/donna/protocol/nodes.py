@@ -8,6 +8,16 @@ class Node:
 
     Its primary purpose is to simplify navigation through different Donna's entities
     and to provide a unified interface for retrieving information about them.
+
+    There are two types of child nodes:
+
+    - References — nodes that are referenced by this artifact, but not a part of it.
+                   An artifact does not include information from referenced nodes
+                   in its info.
+                   An artifact include references in its details and index.
+    - Components — nodes that are inseparable parts of this artifact.
+                   An artifact includes information from them in its info.
+                   An artifact does not include components in its details and index,
     """
 
     __slots__ = ()
@@ -26,17 +36,21 @@ class Node:
         The node decides itself which children to include with what level of detail.
         """
         cells = [self.info()]
-        cells.extend(child.info() for child in self.children())
+        cells.extend(child.info() for child in self.references())
 
         return cells
 
     def index(self) -> list[Cell]:
         """Returns status of itself and all its children."""
         cells = [self.status()]
-        cells.extend(child.status() for child in self.children())
+        cells.extend(child.status() for child in self.references())
 
         return cells
 
-    def children(self) -> list["Node"]:
-        """Return all child nodes."""
+    def references(self) -> list["Node"]:
+        """Return all nodes that are referenced by this one"""
+        return []
+
+    def components(self) -> list["Node"]:
+        """Return all nodes that are iseparable parts of this one."""
         return []
