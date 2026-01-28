@@ -9,7 +9,7 @@ sessions_cli = typer.Typer()
 
 
 @sessions_cli.callback(invoke_without_command=True)
-def initialize(ctx: typer.Context):
+def initialize(ctx: typer.Context) -> None:
     cmd = ctx.invoked_subcommand
 
     if cmd is None:

@@ -1,10 +1,8 @@
-
-import pathlib
 import tomllib
 
-from donna.core.result import Err, Ok, Result
 from donna.core import errors as core_errors
 from donna.core import utils
+from donna.core.result import Err, Ok, Result
 from donna.world import config
 
 
@@ -13,11 +11,10 @@ def initialize_environment() -> Result[None, core_errors.ErrorsList]:
 
     This function MUST be called before any other operations.
     """
-
     project_dir_result = utils.discover_project_dir(config.DONNA_DIR_NAME)
 
     if project_dir_result.is_err():
-        return project_dir_result
+        return Err(project_dir_result.unwrap_err())
 
     project_dir = project_dir_result.unwrap()
 

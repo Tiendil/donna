@@ -1,6 +1,7 @@
 import sys
-import typer
 from collections.abc import Iterable
+
+import typer
 
 from donna.protocol.cells import Cell
 from donna.protocol.modes import get_cell_formatter

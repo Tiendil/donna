@@ -3,15 +3,15 @@ import pathlib
 import typer
 
 from donna.cli.application import app
+from donna.cli.utils import try_initialize_donna
 from donna.domain.ids import WorldId
 from donna.world.config import config
-from donna.cli.utils import try_initialize_donna
 
 projects_cli = typer.Typer()
 
 
 @projects_cli.callback(invoke_without_command=True)
-def initialize(ctx: typer.Context):
+def initialize_callback(ctx: typer.Context) -> None:
     cmd = ctx.invoked_subcommand
 
     if cmd is None:

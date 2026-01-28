@@ -1,10 +1,8 @@
 import pathlib
-import tomllib
 from typing import Any
 
 import pydantic
 
-from donna.core import utils
 from donna.core.entities import BaseEntity
 from donna.domain.ids import PythonImportPath, WorldId
 from donna.machine.primitives import resolve_primitive
@@ -161,7 +159,7 @@ class Config(BaseEntity):
 
 
 class GlobalConfig[V]():
-    __slots__ = ('_value',)
+    __slots__ = ("_value",)
 
     def __init__(self) -> None:
         self._value: V | None = None
