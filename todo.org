@@ -104,6 +104,7 @@
 *** DirectivePathBuilder — how to pass errors to the user?
 *** cleanup comments above `raise ...`
 *** polish ways_to_fix lists
+*** try simplify error handling code with a kind of decorator on functions or smth like that
 ** Cli should always return Cells
 ** Logs (do we need them now?)
 *** stderr
