@@ -37,8 +37,11 @@ def _load_state() -> Result[ConsistentState, ErrorsList]:
     if session_result.is_err():
         return Err(session_result.unwrap_err())
 
-    content = session_result.unwrap().read_state("state.json")
+    read_result = session_result.unwrap().read_state("state.json")
+    if read_result.is_err():
+        return Err(read_result.unwrap_err())
 
+    content = read_result.unwrap()
     if content is None:
         return Err([machine_errors.SessionStateNotInitialized()])
 
@@ -50,7 +53,9 @@ def _save_state(state: ConsistentState) -> Result[None, ErrorsList]:
     if session_result.is_err():
         return Err(session_result.unwrap_err())
 
-    session_result.unwrap().write_state("state.json", state.to_json().encode("utf-8"))
+    write_result = session_result.unwrap().write_state("state.json", state.to_json().encode("utf-8"))
+    if write_result.is_err():
+        return Err(write_result.unwrap_err())
     return Ok(None)
 
 

@@ -39,8 +39,11 @@ def artifact_file_extension(full_id: FullArtifactId) -> Result[str, ErrorsList]:
         return Err(world_result.unwrap_err())
 
     world = world_result.unwrap()
-    extension = world.file_extension_for(full_id.artifact_id)
-    return Ok(extension.lstrip("."))
+    extension_result = world.file_extension_for(full_id.artifact_id)
+    if extension_result.is_err():
+        return Err(extension_result.unwrap_err())
+
+    return Ok(extension_result.unwrap().lstrip("."))
 
 
 def fetch_artifact(full_id: FullArtifactId, output: pathlib.Path) -> Result[None, ErrorsList]:
@@ -49,8 +52,11 @@ def fetch_artifact(full_id: FullArtifactId, output: pathlib.Path) -> Result[None
         return Err(world_result.unwrap_err())
 
     world = world_result.unwrap()
+    content_result = world.fetch_source(full_id.artifact_id)
+    if content_result.is_err():
+        return Err(content_result.unwrap_err())
 
-    content = world.fetch_source(full_id.artifact_id)
+    content = content_result.unwrap()
 
     with output.open("wb") as f:
         f.write(content)
@@ -88,7 +94,9 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> Result[None
     if validation_result.is_err():
         return Err(validation_result.unwrap_err())
 
-    world.update(full_id.artifact_id, content_bytes, source_suffix)
+    update_result = world.update(full_id.artifact_id, content_bytes, source_suffix)
+    if update_result.is_err():
+        return Err(update_result.unwrap_err())
 
     return Ok(None)
 

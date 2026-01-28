@@ -24,13 +24,13 @@ class World(BaseEntity):
     def fetch(self, artifact_id: ArtifactId) -> Result[Artifact, ErrorsList]:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def fetch_source(self, artifact_id: ArtifactId) -> bytes:
+    def fetch_source(self, artifact_id: ArtifactId) -> Result[bytes, ErrorsList]:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def update(self, artifact_id: ArtifactId, content: bytes, extension: str) -> None:
+    def update(self, artifact_id: ArtifactId, content: bytes, extension: str) -> Result[None, ErrorsList]:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def file_extension_for(self, artifact_id: ArtifactId) -> str:
+    def file_extension_for(self, artifact_id: ArtifactId) -> Result[str, ErrorsList]:
         raise NotImplementedError("You must implement this method in subclasses")
 
     def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:
@@ -44,10 +44,10 @@ class World(BaseEntity):
     # - session data will require an additonal kind(s) of artifact(s) just for that purpose
     # - session data may change more frequently than regular artifacts
 
-    def read_state(self, name: str) -> bytes | None:
+    def read_state(self, name: str) -> Result[bytes | None, ErrorsList]:
         raise NotImplementedError("You must implement this method in subclasses")
 
-    def write_state(self, name: str, content: bytes) -> None:
+    def write_state(self, name: str, content: bytes) -> Result[None, ErrorsList]:
         raise NotImplementedError("You must implement this method in subclasses")
 
     def initialize(self, reset: bool = False) -> None:

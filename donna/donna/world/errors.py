@@ -44,6 +44,24 @@ class SourceConfigNotConfigured(WorldError):
     kind: str
 
 
+class WorldReadonly(WorldError):
+    code: str = "donna.world.world_readonly"
+    message: str = "World `{error.world_id}` is read-only"
+    ways_to_fix: list[str] = [
+        "Use a world configured with readonly = false.",
+    ]
+    world_id: WorldId
+
+
+class WorldStateStorageUnsupported(WorldError):
+    code: str = "donna.world.state_storage_unsupported"
+    message: str = "World `{error.world_id}` does not support state storage"
+    ways_to_fix: list[str] = [
+        "Use the session world or configure the world to support state storage.",
+    ]
+    world_id: WorldId
+
+
 class ArtifactError(WorldError):
     cell_kind: str = "artifact_error"
     artifact_id: ArtifactId
