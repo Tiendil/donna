@@ -122,3 +122,4 @@
 ** Each world must provide an intro spec and donna should be able to conviniently output it to the user.
 * TODO Changy for changelog
 * TODO Environment errors should provide references to th especifications that explain how to fix them
+* TODO Process and remove ./long-term-dev-notes/*
