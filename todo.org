@@ -82,6 +82,7 @@
 *** Do algorithmic operations without need for LLMs to think about them
 *** Controls meta flow of work, so agent should not think about it
 ** Since the donna is developed with donna, Donna's `.donna` directory is a great example of how to structure donna projects and how to work with it in general.
+** this is also an experiment on agent-friendly cli tools
 * TODO Request Action: agent has not always use the correctly specified branch, may be we should separate operation with next operation selection?
 * TODO Workflows polishing
 ** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
