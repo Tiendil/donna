@@ -1,6 +1,6 @@
 import copy
-from typing import Sequence, cast
 import textwrap
+from typing import Sequence, cast
 
 import pydantic
 
@@ -191,13 +191,15 @@ class StateNode(Node):
 
             - If the developer asked you to start working on a new task, you can do so by initiating a new workflow.
             - If you have been working on a task, consider it completed and output the results to the developer.
-            """)
+            """
+            )
         else:
             message = textwrap.dedent(
                 """
             The session is ACTIVE. You have pending tasks to complete.
 
-            - If the developer asked you to start working on a new task, you MUST ask if you should start a new session or run a new workflow in the current one.
+            - If the developer asked you to start working on a new task, you MUST ask if you should start a new session
+              or run a new workflow in the current one.
             - If you have been working on a task, you can continue.
                 """
             )
