@@ -35,6 +35,13 @@ class EnvironmentError(BaseEntity):
         return EnvironmentErrorNode(self)
 
 
+class EnvironmentErrorsProxy(InternalError):
+    message = "This is a technical exception to pass an environment error up the call stack."
+
+    def __init__(self, errors: list[EnvironmentError]) -> None:
+        super().__init__(errors=errors)
+
+
 class CoreEnvironmentError(EnvironmentError):
     """Base class for environment errors in donna.core."""
 
