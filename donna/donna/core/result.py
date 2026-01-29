@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Callable, Generic, TypeVar, cast, ParamSpec
 import functools
-from donna.core.errors import InternalError
+from dataclasses import dataclass
+from typing import Callable, Generic, ParamSpec, TypeVar, cast
 
+from donna.core.errors import InternalError
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -94,6 +94,6 @@ def unwrap_to_error(func: Callable[P, Result[T, E]]) -> Callable[P, Result[T, E]
         try:
             return func(*args, **kwargs)
         except UnwrapError as e:
-            return Err(cast(E, e.error))
+            return Err(cast(E, e.arguments["error"]))
 
     return wrapper
