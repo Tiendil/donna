@@ -2,7 +2,7 @@ from typing import Any
 
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
+from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import ArtifactSectionId, FullArtifactId, FullArtifactSectionId, PythonImportPath
 from donna.machine.errors import (
     ArtifactPrimarySectionMissing,
@@ -187,15 +187,12 @@ class ArtifactSectionNode(Node):
         )
 
 
+@unwrap_to_error
 def resolve(target_id: FullArtifactSectionId) -> Result[ArtifactSection, ErrorsList]:
     from donna.world import artifacts as world_artifacts
 
-    artifact_result = world_artifacts.load_artifact(target_id.full_artifact_id)
-    if artifact_result.is_err():
-        return Err(artifact_result.unwrap_err())
-    artifact = artifact_result.unwrap()
-    section_result = artifact.get_section(target_id.local_id)
-    if section_result.is_err():
-        return Err(section_result.unwrap_err())
+    artifact = world_artifacts.load_artifact(target_id.full_artifact_id).unwrap()
 
-    return Ok(section_result.unwrap())
+    section = artifact.get_section(target_id.local_id).unwrap()
+
+    return Ok(section)

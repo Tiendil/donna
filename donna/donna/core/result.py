@@ -1,14 +1,28 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, Generic, TypeVar, cast
+from typing import Callable, Generic, TypeVar, cast, ParamSpec
+import functools
+from donna.core.errors import InternalError
+
 
 T = TypeVar("T")
 U = TypeVar("U")
 E = TypeVar("E")
 F = TypeVar("F")
-NEW_T = TypeVar("NEW_T")
-NEW_E = TypeVar("NEW_E")
+P = ParamSpec("P")
+
+
+class ResultError(InternalError):
+    """Base class for internal errors in donna.core.result."""
+
+
+class UnwrapError(ResultError):
+    message: str = "Called unwrap on an Err value."
+
+
+class UnwrapErrError(ResultError):
+    message: str = "Called unwrap_err on an Ok value."
 
 
 @dataclass(frozen=True, slots=True)
@@ -35,12 +49,14 @@ class Result(Generic[T, E]):
     def unwrap(self) -> T:
         if self._is_ok:
             return cast(T, self._value)
-        raise ValueError("Called unwrap on an Err value.")
+
+        raise UnwrapError(error=self.unwrap_err())
 
     def unwrap_err(self) -> E:
         if not self._is_ok:
             return cast(E, self._value)
-        raise ValueError("Called unwrap_err on an Ok value.")
+
+        raise UnwrapErrError(value=self.unwrap())
 
     def unwrap_or(self, default: U) -> T | U:
         if self._is_ok:
@@ -68,3 +84,16 @@ def Err(error: E) -> Result[T, E]:
 
 def ok(result: Result[T, E]) -> bool:
     return result.is_ok()
+
+
+def unwrap_to_error(func: Callable[P, Result[T, E]]) -> Callable[P, Result[T, E]]:
+
+    @functools.wraps(func)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> Result[T, E]:
+
+        try:
+            return func(*args, **kwargs)
+        except UnwrapError as e:
+            return Err(cast(E, e.error))
+
+    return wrapper
