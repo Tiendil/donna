@@ -48,7 +48,7 @@ class WorldReadonly(WorldError):
     code: str = "donna.world.world_readonly"
     message: str = "World `{error.world_id}` is read-only"
     ways_to_fix: list[str] = [
-        "Use a world configured with readonly = false.",
+        "Use a world configured with readonly = false. Most likely they are `project` and `session`.",
     ]
     world_id: WorldId
 
@@ -57,7 +57,7 @@ class WorldStateStorageUnsupported(WorldError):
     code: str = "donna.world.state_storage_unsupported"
     message: str = "World `{error.world_id}` does not support state storage"
     ways_to_fix: list[str] = [
-        "Use the session world or configure the world to support state storage.",
+        "Use the session world.",
     ]
     world_id: WorldId
 
@@ -143,14 +143,14 @@ class MarkdownH2BeforeH1Title(MarkdownError):
 
 class MarkdownArtifactWithoutSections(MarkdownError):
     code: str = "donna.world.markdown_artifact_without_sections"
-    message: str = "Artifact must have at least one section"
+    message: str = "Artifact MUST have at least one section"
 
 
-class MarkdownPrimitiveNotConstructible(MarkdownError):
-    code: str = "donna.world.markdown_primitive_not_constructible"
-    message: str = "Primitive {error.primitive_id} cannot be constructed from markdown sources"
+class PrimitiveDoesNotSupportMarkdown(MarkdownError):
+    code: str = "donna.world.primitive_does_not_support_markdown"
+    message: str = "Primitive {error.primitive_id} cannot construct artifact section from the Markdown source"
     ways_to_fix: list[str] = [
-        "Ensure the section kind points to a markdown-constructible primitive.",
+        "Ensure the section kind points to a primitive that supports Markdown sections.",
     ]
     primitive_id: str
 

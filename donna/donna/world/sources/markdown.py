@@ -235,8 +235,7 @@ def _ensure_markdown_constructible(
 
     kind_label = f"'{primitive_id}'" if primitive_id is not None else repr(primitive)
 
-    # return Envrionment errors
-    return Err([world_errors.MarkdownPrimitiveNotConstructible(primitive_id=kind_label)])
+    return Err([world_errors.PrimitiveDoesNotSupportMarkdown(primitive_id=kind_label)])
 
 
 if TYPE_CHECKING:
