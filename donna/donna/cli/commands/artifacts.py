@@ -39,8 +39,7 @@ def list(pattern: FullArtifactIdPatternOption = None) -> None:
         output_cells([error.node().info() for error in errors])
         return
 
-    for artifact in artifacts_result.unwrap():
-        output_cells([artifact.node().status()])
+    output_cells([artifact.node().status() for artifact in artifacts_result.unwrap()])
 
 
 @artifacts_cli.command()
