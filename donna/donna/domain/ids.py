@@ -373,19 +373,6 @@ class PythonImportPath(DottedPath):
 
         return Ok(cls(text))
 
-    @classmethod
-    def parse_or_raise(cls, text: str) -> "PythonImportPath":
-        result = cls.parse(text)
-        errors = result.err()
-        if errors is not None:
-            raise domain_errors.InvalidIdPath(id_type=cls.__name__, value=_stringify_value(text))
-
-        parsed = result.ok()
-        if parsed is None:
-            raise domain_errors.InvalidIdPath(id_type=cls.__name__, value=_stringify_value(text))
-
-        return parsed
-
 
 class FullArtifactId(ColonPath):
     __slots__ = ()

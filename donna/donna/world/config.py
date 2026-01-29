@@ -40,7 +40,7 @@ def _default_sources() -> list[SourceConfig]:
     return [
         SourceConfig.model_validate(
             {
-                "kind": PythonImportPath.parse_or_raise("donna.lib.sources.markdown"),
+                "kind": "donna.lib.sources.markdown",
             }
         ),
     ]
@@ -51,7 +51,7 @@ def _create_default_worlds(project_dir: pathlib.Path) -> list[WorldConfig]:
         WorldConfig.model_validate(
             {
                 "id": WorldId("donna"),
-                "kind": PythonImportPath.parse_or_raise("donna.lib.worlds.python"),
+                "kind": "donna.lib.worlds.python",
                 "readonly": True,
                 "session": False,
                 "package": "donna",
@@ -60,7 +60,7 @@ def _create_default_worlds(project_dir: pathlib.Path) -> list[WorldConfig]:
         WorldConfig.model_validate(
             {
                 "id": WorldId("home"),
-                "kind": PythonImportPath.parse_or_raise("donna.lib.worlds.filesystem"),
+                "kind": "donna.lib.worlds.filesystem",
                 "readonly": True,
                 "session": False,
                 "path": pathlib.Path.home() / DONNA_DIR_NAME / DONNA_WORLD_HOME_DIR_NAME,
@@ -69,7 +69,7 @@ def _create_default_worlds(project_dir: pathlib.Path) -> list[WorldConfig]:
         WorldConfig.model_validate(
             {
                 "id": WorldId("project"),
-                "kind": PythonImportPath.parse_or_raise("donna.lib.worlds.filesystem"),
+                "kind": "donna.lib.worlds.filesystem",
                 "readonly": False,
                 "session": False,
                 "path": project_dir / DONNA_DIR_NAME / DONNA_WORLD_PROJECT_DIR_NAME,
@@ -78,7 +78,7 @@ def _create_default_worlds(project_dir: pathlib.Path) -> list[WorldConfig]:
         WorldConfig.model_validate(
             {
                 "id": WorldId("session"),
-                "kind": PythonImportPath.parse_or_raise("donna.lib.worlds.filesystem"),
+                "kind": "donna.lib.worlds.filesystem",
                 "readonly": False,
                 "session": True,
                 "path": project_dir / DONNA_DIR_NAME / DONNA_WORLD_SESSION_DIR_NAME,
