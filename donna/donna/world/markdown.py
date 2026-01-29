@@ -25,6 +25,9 @@ class CodeSource(BaseEntity):
     content: str
 
     def structured_data(self) -> Result[Any, ErrorsList]:
+        if "script" in self.properties:
+            return Ok({})
+
         if self.format == "json":
             import json
 
@@ -153,7 +156,7 @@ def _parse_heading(
     return Ok(node.next_sibling)
 
 
-def _parse_fence(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:
+def _parse_fence(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:  # noqa: CCR001
     section = sections[-1]
 
     info_parts = node.info.split()
@@ -170,7 +173,7 @@ def _parse_fence(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxT
 
         properties[part] = True
 
-    if "donna" in properties:
+    if "donna" in properties or (format == "donna" and "script" in properties):
         code_block = CodeSource(
             format=format,
             properties=properties,

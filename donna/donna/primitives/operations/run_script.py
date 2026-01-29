@@ -4,7 +4,6 @@ import tempfile
 from typing import TYPE_CHECKING, ClassVar, Iterator, cast
 
 import pydantic
-from markdown_it import MarkdownIt
 
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
@@ -84,6 +83,8 @@ class RunScriptConfig(OperationConfig):
 
 
 class RunScriptMeta(OperationMeta):
+    script: str | None = None
+    script_blocks_count: int = 0
     save_stdout_to: str | None = None
     save_stderr_to: str | None = None
     goto_on_success: ArtifactSectionId | None = None
@@ -104,6 +105,8 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         primary: bool = False,
     ) -> ArtifactSectionMeta:
         run_config = cast(RunScriptConfig, section_config)
+        scripts = _extract_scripts_from_configs(source.configs)
+        script = scripts[0] if scripts else None
         allowed_transitions: set[ArtifactSectionId] = set()
 
         if run_config.goto_on_success is not None:
@@ -118,6 +121,8 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         return RunScriptMeta(
             fsm_mode=run_config.fsm_mode,
             allowed_transtions=allowed_transitions,
+            script=script,
+            script_blocks_count=len(scripts),
             save_stdout_to=run_config.save_stdout_to,
             save_stderr_to=run_config.save_stderr_to,
             goto_on_success=run_config.goto_on_success,
@@ -131,9 +136,8 @@ class RunScript(MarkdownSectionMixin, OperationKind):
 
         meta = cast(RunScriptMeta, operation.meta)
 
-        script_blocks = _extract_script_blocks(operation.description)
-        assert len(script_blocks) == 1
-        script = script_blocks[0]
+        script = meta.script
+        assert script is not None
 
         stdout, stderr, exit_code = _run_script(script, meta.timeout)
 
@@ -163,10 +167,9 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         if meta.goto_on_failure is None:
             errors.append(RunScriptMissingGotoOnFailure(artifact_id=artifact.id, section_id=section_id))
 
-        script_blocks = _extract_script_blocks(section.description)
-        if not script_blocks:
+        if meta.script_blocks_count == 0:
             errors.append(RunScriptMissingScriptBlock(artifact_id=artifact.id, section_id=section_id))
-        elif len(script_blocks) > 1:
+        elif meta.script_blocks_count > 1:
             errors.append(RunScriptMultipleScriptBlocks(artifact_id=artifact.id, section_id=section_id))
 
         for code in meta.goto_on_code:
@@ -191,31 +194,14 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         return Ok(None)
 
 
-def _extract_script_blocks(text: str) -> list[str]:  # noqa: CCR001
-    md = MarkdownIt("commonmark")
-    tokens = md.parse(text)
-
+def _extract_scripts_from_configs(configs: list[markdown.CodeSource]) -> list[str]:
     scripts: list[str] = []
 
-    for token in tokens:
-        if token.type != "fence":
+    for config in configs:
+        if "script" not in config.properties:
             continue
 
-        info = token.info.strip()
-        if not info:
-            continue
-
-        parts = info.split()
-        if len(parts) < 2:
-            continue
-
-        if parts[0] != "donna":
-            continue
-
-        if "script" not in parts[1:]:
-            continue
-
-        scripts.append(token.content)
+        scripts.append(config.content)
 
     return scripts
 
