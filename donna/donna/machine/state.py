@@ -185,8 +185,7 @@ class StateNode(Node):
     def status(self) -> Cell:
         if self._state.is_completed:
             message = (
-                "The work in this session is COMPLETED. You MUST STOP all your activities "
-                "immediately. ASK THE USER for further instructions."
+                "All the work in this session is COMPLETED."
             )
         else:
             message = "The session is ACTIVE. You have pending tasks to complete."
