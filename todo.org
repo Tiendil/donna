@@ -98,7 +98,7 @@
 ** We may return to much info in cells now. Let's check that manually.
 ** Errors processing improvements
 *** remove parse_or_raise
-*** ways_to_fix should support formatting / jinja2?
+*** ways_to_fix should support formatting / jinja2? or should not contain the formating at all?
 *** try simplify error handling code with a kind of decorator on functions or smth like that
 *** Vebose jinja2 render errors to help agents and developers
 *** replace all NotImplementedError exceptions with custom exceptions and smart error handling
