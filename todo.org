@@ -102,7 +102,15 @@
 ** donna should be able to continue finished session (somewhow). I.e. when the developer ads new details to it.
 ** Agent can not continue work in finished session => remove all artifacts that may be required.
 ** Each world must provide an intro spec and donna should be able to conviniently output it to the user.
+** Install donna as a skill
+** Install donna as a tool
+** automatically update all required instructions on donna update
+** usage modes
+*** easy mode — one of possible skills to use
+*** hard mode — forse agent to work via donna
 * TODO Changy for changelog
-* TODO Environment errors should provide references to th especifications that explain how to fix them
 * TODO Process and remove ./long-term-dev-notes/*
 * TODO Donna treat as duplicates temporary files, `like my-file.md~`
+* TODO CLI commands improvements
+** each cli command should have detailed description
+** protect each of cli commands with is_session_exists check
