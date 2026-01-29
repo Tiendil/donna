@@ -1,7 +1,7 @@
-import sys
 import functools
+import sys
 from collections.abc import Iterable
-from typing import Callable, Generic, ParamSpec, TypeVar, cast
+from typing import Callable, ParamSpec
 
 import typer
 

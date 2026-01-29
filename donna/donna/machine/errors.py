@@ -36,7 +36,7 @@ class InvalidOperationTransition(EnvironmentError):
     message: str = "Operation `{error.operation_id}` cannot transition to `{error.next_operation_id}`."
     ways_to_fix: list[str] = [
         "Check the next operation id for typos.",
-        "Use one of the allowed transitions listed in the action request."
+        "Use one of the allowed transitions listed in the action request.",
     ]
     operation_id: FullArtifactSectionId
     next_operation_id: FullArtifactSectionId
@@ -55,7 +55,10 @@ class PrimitiveModuleNotImportable(EnvironmentError):
     ways_to_fix: list[str] = [
         "Check the module path for typos.",
         "Check specifications for the correct primitive to use.",
-        "Check the module exists and is importable in the current environment. If not, ask the developer to install it."
+        (
+            "Check the module exists and is importable in the current environment. "
+            "If not, ask the developer to install it."
+        ),
     ]
     module_path: str
 
@@ -66,7 +69,7 @@ class PrimitiveNotAvailable(EnvironmentError):
     ways_to_fix: list[str] = [
         "Check the primitive name for typos.",
         "Ensure you are using the correct module for the desired primitive.",
-        "Check specifications for the correct primitive to use."
+        "Check specifications for the correct primitive to use.",
     ]
     import_path: str
     module_path: str
@@ -79,7 +82,7 @@ class PrimitiveNotPrimitive(EnvironmentError):
         "Check the primitive name for typos.",
         "Ensure you are using the correct module for the desired primitive.",
         "Check specifications for the correct primitive to use.",
-        "Ensure the referenced object is a `donna.machine.primitives.Primitive` instance."
+        "Ensure the referenced object is a `donna.machine.primitives.Primitive` instance.",
     ]
     import_path: str
 

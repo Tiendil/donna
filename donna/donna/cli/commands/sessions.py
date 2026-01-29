@@ -1,9 +1,12 @@
+from collections.abc import Iterable
+
 import typer
 
 from donna.cli.application import app
 from donna.cli.types import ActionRequestIdArgument, FullArtifactIdArgument, FullArtifactSectionIdArgument
-from donna.cli.utils import output_cells, try_initialize_donna, cells_cli
+from donna.cli.utils import cells_cli, try_initialize_donna
 from donna.machine import sessions
+from donna.protocol.cells import Cell
 
 sessions_cli = typer.Typer()
 
@@ -20,31 +23,31 @@ def initialize(ctx: typer.Context) -> None:
 
 @sessions_cli.command()
 @cells_cli
-def start() -> None:
+def start() -> Iterable[Cell]:
     return sessions.start()
 
 
 @sessions_cli.command(name="continue")
 @cells_cli
-def continue_() -> None:
+def continue_() -> Iterable[Cell]:
     return sessions.continue_()
 
 
 @sessions_cli.command()
 @cells_cli
-def status() -> None:
+def status() -> Iterable[Cell]:
     return sessions.status()
 
 
 @sessions_cli.command()
 @cells_cli
-def details() -> None:
+def details() -> Iterable[Cell]:
     return sessions.details()
 
 
 @sessions_cli.command()
 @cells_cli
-def run(workflow_id: FullArtifactIdArgument) -> None:
+def run(workflow_id: FullArtifactIdArgument) -> Iterable[Cell]:
     return sessions.start_workflow(workflow_id)
 
 
@@ -52,13 +55,13 @@ def run(workflow_id: FullArtifactIdArgument) -> None:
 @cells_cli
 def action_request_completed(
     request_id: ActionRequestIdArgument, next_operation_id: FullArtifactSectionIdArgument
-) -> None:
+) -> Iterable[Cell]:
     return sessions.complete_action_request(request_id, next_operation_id)
 
 
 @sessions_cli.command()
 @cells_cli
-def clear() -> None:
+def clear() -> Iterable[Cell]:
     return sessions.clear()
 
 
