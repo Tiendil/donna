@@ -34,44 +34,53 @@ class ActionRequestNotFound(EnvironmentError):
 class InvalidOperationTransition(EnvironmentError):
     code: str = "donna.machine.invalid_operation_transition"
     message: str = "Operation `{error.operation_id}` cannot transition to `{error.next_operation_id}`."
-    ways_to_fix: list[str] = ["Use one of the allowed transitions listed in the action request."]
+    ways_to_fix: list[str] = [
+        "Check the next operation id for typos.",
+        "Use one of the allowed transitions listed in the action request."
+    ]
     operation_id: FullArtifactSectionId
     next_operation_id: FullArtifactSectionId
-
-
-class WorkflowOperationNotFound(EnvironmentError):
-    code: str = "donna.machine.workflow_operation_not_found"
-    message: str = "Operation `{error.operation_id}` was not found in its workflow."
-    ways_to_fix: list[str] = ["Ensure the workflow contains the referenced operation section."]
-    operation_id: FullArtifactSectionId
 
 
 class PrimitiveInvalidImportPath(EnvironmentError):
     code: str = "donna.machine.primitive_invalid_import_path"
     message: str = "Primitive `{error.import_path}` is not a valid import path."
-    ways_to_fix: list[str] = ["Use a full Python import path, e.g. `package.module.ClassName`."]
+    ways_to_fix: list[str] = ["Use a full Python import path, e.g. `package.module.primitive_instance`."]
     import_path: str
 
 
 class PrimitiveModuleNotImportable(EnvironmentError):
     code: str = "donna.machine.primitive_module_not_importable"
     message: str = "Primitive module `{error.module_path}` is not importable."
-    ways_to_fix: list[str] = ["Ensure the module exists and is importable in the current environment."]
+    ways_to_fix: list[str] = [
+        "Check the module path for typos.",
+        "Check specifications for the correct primitive to use.",
+        "Check the module exists and is importable in the current environment. If not, ask the developer to install it."
+    ]
     module_path: str
 
 
 class PrimitiveNotAvailable(EnvironmentError):
     code: str = "donna.machine.primitive_not_available"
     message: str = "Primitive `{error.import_path}` is not available in module `{error.module_path}`."
-    ways_to_fix: list[str] = ["Check the primitive name for typos or export it from the module."]
+    ways_to_fix: list[str] = [
+        "Check the primitive name for typos.",
+        "Ensure you are using the correct module for the desired primitive.",
+        "Check specifications for the correct primitive to use."
+    ]
     import_path: str
     module_path: str
 
 
 class PrimitiveNotPrimitive(EnvironmentError):
     code: str = "donna.machine.primitive_not_primitive"
-    message: str = "Primitive `{error.import_path}` is not a Primitive instance."
-    ways_to_fix: list[str] = ["Ensure the referenced object is a donna.machine.primitives.Primitive instance."]
+    message: str = "`{error.import_path}` is not a Primitive instance."
+    ways_to_fix: list[str] = [
+        "Check the primitive name for typos.",
+        "Ensure you are using the correct module for the desired primitive.",
+        "Check specifications for the correct primitive to use.",
+        "Ensure the referenced object is a `donna.machine.primitives.Primitive` instance."
+    ]
     import_path: str
 
 
@@ -90,14 +99,14 @@ class ArtifactValidationError(EnvironmentError):
 class MultiplePrimarySectionsError(ArtifactValidationError):
     code: str = "donna.artifacts.multiple_primary_sections"
     message: str = "Artifact must have exactly one primary section, found multiple: `{error.primary_sections}`"
-    ways_to_fix: list[str] = ["Keep a single h1 section in the artifact."]
+    ways_to_fix: list[str] = ["Keep a single primary section in the artifact."]
     primary_sections: list[ArtifactSectionId]
 
 
 class ArtifactPrimarySectionMissing(ArtifactValidationError):
     code: str = "donna.artifacts.primary_section_missing"
     message: str = "Artifact must have exactly one primary section, found none."
-    ways_to_fix: list[str] = ["Keep a single h1 section in the artifact."]
+    ways_to_fix: list[str] = ["Keep a single primary section in the artifact."]
 
 
 class ArtifactSectionNotFound(ArtifactValidationError):
