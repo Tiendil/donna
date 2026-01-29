@@ -94,13 +94,6 @@
 *** Approach 3: keep them, but add some meta info on analysis phase that donna can use.
 ** tune wording of workflows (what to write before goto)
 ** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
-* TODO Cells & Errors
-** Errors processing improvements
-*** jinja2
-**** Vebose jinja2 render errors to help agents and developers
-**** DirectivePathBuilder — how to pass errors to the user?
-**** ways_to_fix should support jinja2 directives
-**** move to github issues?
 * TODO Donna flow improvements
 ** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
 ** on initialization donna should create some default workflows based on the project configs (grooming, for example)
