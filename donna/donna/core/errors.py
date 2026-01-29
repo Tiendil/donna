@@ -90,18 +90,21 @@ class EnvironmentErrorNode(Node):
 
         message = self._error.message.format(error=self._error).strip()
 
+        ways_to_fix = [fix.format(error=self._error).strip()
+                       for fix in self._error.ways_to_fix]
+
         if "\n" in self._error.message:
             content = f"{intro}:\n\n{message}"
         else:
             content = f"{intro}: {message}"
 
-        if not self._error.ways_to_fix:
+        if not ways_to_fix:
             return content
 
-        if len(self._error.ways_to_fix) == 1:
-            return f"{content}\nWay to fix: {self._error.ways_to_fix[0]}"
+        if len(ways_to_fix) == 1:
+            return f"{content}\nWay to fix: {ways_to_fix[0]}"
 
-        fixes = "\n".join(f"- {fix}" for fix in self._error.ways_to_fix)
+        fixes = "\n".join(f"- {fix}" for fix in ways_to_fix)
 
         return f"{content}\n\nWays to fix:\n\n{fixes}"
 
