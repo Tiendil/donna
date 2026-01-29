@@ -117,11 +117,11 @@ def parse_artifact_content(full_id: FullArtifactId, text: str) -> Result[list[ma
     # We should consider optimizing this in the future if performance or stability becomes an issue.
     # For now let's wait till we have more artifact analysis logic and till more use cases emerge.
 
-    original_markdown_source = render(full_id, text)
+    original_markdown_source = render(full_id, text).unwrap()
     original_sections = markdown.parse(original_markdown_source, artifact_id=full_id).unwrap()
 
     with render_mode(RenderMode.analysis):
-        analyzed_markdown_source = render(full_id, text)
+        analyzed_markdown_source = render(full_id, text).unwrap()
         analyzed_sections = markdown.parse(analyzed_markdown_source, artifact_id=full_id).unwrap()
 
     if len(original_sections) != len(analyzed_sections):

@@ -33,7 +33,7 @@ class Primitive(BaseEntity):
             primitive_name=self.__class__.__name__, method_name="execute_section()"
         )
 
-    def apply_directive(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
+    def apply_directive(self, context: Context, *argv: Any, **kwargs: Any) -> Result[Any, ErrorsList]:
         raise machine_errors.PrimitiveMethodUnsupported(
             primitive_name=self.__class__.__name__, method_name="apply_directive()"
         )

@@ -108,6 +108,68 @@ class MarkdownError(WorldError):
         return f"Error in markdown artifact '{self.artifact_id}'"
 
 
+class TemplateDirectiveError(WorldError):
+    cell_kind: str = "template_directive_error"
+    artifact_id: FullArtifactId | None = None
+
+    def content_intro(self) -> str:
+        if self.artifact_id is None:
+            return "Error in template directive"
+
+        return f"Error in template directive for artifact '{self.artifact_id}'"
+
+
+class DirectivePathIncomplete(TemplateDirectiveError):
+    code: str = "donna.world.directive_path_incomplete"
+    message: str = "Directive path must include module and directive parts, got `{error.path}`."
+    ways_to_fix: list[str] = ["Use a directive path with both module and directive names."]
+    path: str
+
+
+class DirectiveModuleNotImportable(TemplateDirectiveError):
+    code: str = "donna.world.directive_module_not_importable"
+    message: str = "Directive module `{error.module_path}` is not importable."
+    ways_to_fix: list[str] = [
+        "Check the module path for typos.",
+        "Ensure the module exists and is importable in the current environment.",
+    ]
+    module_path: str
+
+
+class DirectiveNotAvailable(TemplateDirectiveError):
+    code: str = "donna.world.directive_not_available"
+    message: str = "Directive `{error.module_path}.{error.directive_name}` is not available."
+    ways_to_fix: list[str] = [
+        "Check the directive name for typos.",
+        "Ensure the directive is defined in the module.",
+    ]
+    module_path: str
+    directive_name: str
+
+
+class DirectiveNotDirective(TemplateDirectiveError):
+    code: str = "donna.world.directive_not_directive"
+    message: str = "`{error.module_path}.{error.directive_name}` is not a directive."
+    ways_to_fix: list[str] = [
+        "Check the directive path for typos.",
+        "Check if you use the right primitive for the task.",
+        "Ensure the referenced object is a `donna.machine.templates.Directive` instance.",
+    ]
+    module_path: str
+    directive_name: str
+
+
+class DirectiveUnexpectedError(TemplateDirectiveError):
+    code: str = "donna.world.directive_unexpected_error"
+    message: str = "Unexpected error while applying directive `{error.directive_path}`: {error.details}"
+    ways_to_fix: list[str] = [
+        "Check the documentation for the directive to ensure correct usage.",
+        "Ask the developer to help debug the issue.",
+    ]
+    directive_path: str
+    details: str
+
+
 class MarkdownUnsupportedCodeFormat(MarkdownError):
     code: str = "donna.world.markdown_unsupported_code_format"
     message: str = "Unsupported code block format `{error.format}`"
