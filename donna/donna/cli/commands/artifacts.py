@@ -69,7 +69,7 @@ def update(id: FullArtifactIdArgument, input: pathlib.Path) -> Iterable[Cell]:
 def validate(id: FullArtifactIdArgument) -> Iterable[Cell]:
     artifact = world_artifacts.load_artifact(id).unwrap()
 
-    artifact.unwrap().validate_artifact().unwrap()
+    artifact.validate_artifact().unwrap()
 
     return [operation_succeeded(f"Artifact `{id}` is valid", artifact_id=str(id))]
 

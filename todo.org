@@ -101,7 +101,6 @@
 **** DirectivePathBuilder — how to pass errors to the user?
 **** ways_to_fix should support jinja2 directives
 **** move to github issues?
-** Cli should always return Cells
 ** Logs (do we need them now?)
 *** stderr
 *** turned off by default

@@ -5,8 +5,8 @@ from typing import Callable, ParamSpec
 
 import typer
 
-from donna.core.result import UnwrapError
 from donna.core.errors import EnvironmentError
+from donna.core.result import UnwrapError
 from donna.protocol.cells import Cell
 from donna.protocol.modes import get_cell_formatter
 from donna.world.initialization import initialize_environment
@@ -33,9 +33,7 @@ def cells_cli(func: Callable[P, Iterable[Cell]]) -> Callable[P, None]:
             if isinstance(e.arguments["error"], EnvironmentError):
                 cells = [e.arguments["error"].node().info()]
             elif isinstance(e.arguments["error"], Iterable):
-                cells = [error.node().info()
-                         for error in e.arguments["error"]
-                         if isinstance(error, EnvironmentError)]
+                cells = [error.node().info() for error in e.arguments["error"] if isinstance(error, EnvironmentError)]
             else:
                 raise
 
