@@ -97,7 +97,6 @@
 * TODO Cells & Errors
 ** We may return to much info in cells now. Let's check that manually.
 ** Errors processing improvements
-*** polish ways_to_fix lists
 *** jinja2
 **** Vebose jinja2 render errors to help agents and developers
 **** DirectivePathBuilder — how to pass errors to the user?
