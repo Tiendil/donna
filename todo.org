@@ -111,3 +111,6 @@
 * TODO CLI commands improvements
 ** each cli command should have detailed description
 ** protect each of cli commands with is_session_exists check
+* TODO Usage spec refactoring
+** move dictionary into cli.md?
+** update cells messages with session status.
