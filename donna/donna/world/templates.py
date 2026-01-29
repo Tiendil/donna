@@ -84,7 +84,7 @@ class DirectivePathBuilder:
             raise ValueError(f"Directive '{module_path}.{directive_name}' is not available") from exc
 
         if not isinstance(directive, Directive):
-            raise ValueError(f"Directive '{module_path}.{directive_name}' is not a directive")
+            raise ValueError(f"'{module_path}.{directive_name}' is not a directive")
 
         return directive.apply_directive(context, *argv, **kwargs)
 
