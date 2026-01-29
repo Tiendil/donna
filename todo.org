@@ -101,14 +101,6 @@
 **** DirectivePathBuilder — how to pass errors to the user?
 **** ways_to_fix should support jinja2 directives
 **** move to github issues?
-** Logs (do we need them now?)
-*** stderr
-*** turned off by default
-** Each primitive must has reference to specification section that explains it
-*** cli command to list primitives?
-*** cli command to show primitive specification?
-*** in case of errors primitives should return cell with reference to their specification section
-*** cli command to validate that every specification exists for each primitive
 * TODO Donna flow improvements
 ** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
 ** on initialization donna should create some default workflows based on the project configs (grooming, for example)
