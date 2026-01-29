@@ -40,21 +40,6 @@
 ** Add import/dependency flow restrictions (there were a specialized package for that)
 ** Pyright or BasedPyright
 *** control that returned values are used
-* TODO CLI operation
-** Add a new operation kind, that runs cli commands as part of the workflow.
-** The operation should not requre interaction with the agent or the user.
-** Cli command
-*** should start in the same environment as the donna runs
-*** should be specified as a string and interpreted as a shell command, pipes are allowed
-*** should be specified in a specialized code block
-** We consider those commands save enough, because they will be defined in the workflows (i.e. reviewed by humans and agents).
-** For this operation, specify next operations depending on the cli result code (as a map in the config block)
-*** on success (zero code?)
-*** on failure (none zero code?)
-*** on specific code
-** The next commands should be able to access the cli output (stdout and stderr) via variables.
-*** Use WorkUnit context for this
-** Update artifacts format specification with new operation info
 * TODO We can track causality between artifact sections (what depends on what) as universal functionality of the artifact system. I.e. no need to introduce specialized relations for specialized artifacts.
 * TODO interesting software to integrate with
 ** https://github.com/m0n0x41d/quint-code
@@ -114,3 +99,19 @@
 * TODO CLI commands improvements
 ** each cli command should have detailed description
 ** protect each of cli commands with is_session_exists check
+* TODO CLI operation
+** Add a new operation kind, that runs cli commands as part of the workflow.
+** The operation should not requre interaction with the agent or the user.
+** Cli command
+*** should start in the same environment as the donna runs
+*** should be specified as a string and interpreted as a shell command, pipes are allowed
+*** should be specified in a specialized code block
+** We consider those commands save enough, because they will be defined in the workflows (i.e. reviewed by humans and agents).
+** For this operation, specify next operations depending on the cli result code (as a map in the config block)
+*** on success (zero code?)
+*** on failure (none zero code?)
+*** on specific code
+** The next commands should be able to access the cli output (stdout and stderr) via variables.
+*** Use WorkUnit context for this
+** Update artifacts format specification with new operation info
+** CLI commands must output progress cells.
