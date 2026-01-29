@@ -289,7 +289,7 @@ Bad example:
 ...
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 
-from donna.core.result import Err, Ok, Result, unwrap_to_error
+def resolve(target_id: FullArtifactSectionId) -> Result[ArtifactSection, ErrorsList]:
     artifact_result = world_artifacts.load_artifact(target_id.full_artifact_id)
 
     if artifact_result.is_err():
