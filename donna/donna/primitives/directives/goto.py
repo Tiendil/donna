@@ -15,6 +15,10 @@ class EnvironmentError(core_errors.EnvironmentError):
     cell_kind: str = "directive_error"
 
 
+class InternalError(core_errors.InternalError):
+    """Base class for internal errors in donna.primitives.directives.goto."""
+
+
 class GoToInvalidArguments(EnvironmentError):
     code: str = "donna.directives.goto.invalid_arguments"
     message: str = "GoTo directive requires exactly one argument: next_operation_id (got {error.provided_count})."
@@ -22,11 +26,8 @@ class GoToInvalidArguments(EnvironmentError):
     provided_count: int
 
 
-class GoToUnsupportedRenderMode(EnvironmentError):
-    code: str = "donna.directives.goto.unsupported_render_mode"
-    message: str = "Render mode `{error.render_mode}` is not supported in GoTo directive."
-    ways_to_fix: list[str] = ["Use a supported render mode for GoTo directives."]
-    render_mode: str
+class GoToUnsupportedRenderMode(InternalError):
+    message: str = "Render mode {render_mode} not implemented in GoTo directive."
 
 
 class GoTo(Directive):
@@ -47,7 +48,7 @@ class GoTo(Directive):
                 return Ok(self.render_analyze(context, next_operation_id))
 
             case _:
-                return Err([GoToUnsupportedRenderMode(render_mode=str(render_mode))])
+                raise GoToUnsupportedRenderMode(render_mode=render_mode)
 
     def render_cli(self, context: Context, next_operation_id: FullArtifactSectionId) -> str:
         protocol = mode().value

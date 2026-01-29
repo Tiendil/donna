@@ -15,6 +15,10 @@ class EnvironmentError(core_errors.EnvironmentError):
     cell_kind: str = "directive_error"
 
 
+class InternalError(core_errors.InternalError):
+    """Base class for internal errors in donna.primitives.directives.view."""
+
+
 class ViewInvalidArguments(EnvironmentError):
     code: str = "donna.directives.view.invalid_arguments"
     message: str = "View directive requires exactly one argument: specification_id (got {error.provided_count})."
@@ -22,11 +26,8 @@ class ViewInvalidArguments(EnvironmentError):
     provided_count: int
 
 
-class ViewUnsupportedRenderMode(EnvironmentError):
-    code: str = "donna.directives.view.unsupported_render_mode"
-    message: str = "Render mode `{error.render_mode}` is not supported in View directive."
-    ways_to_fix: list[str] = ["Use a supported render mode for View directives."]
-    render_mode: str
+class ViewUnsupportedRenderMode(InternalError):
+    message: str = "Render mode {render_mode} not implemented in View directive."
 
 
 class View(Directive):
@@ -49,7 +50,7 @@ class View(Directive):
                 return Ok(self.render_analyze(context, artifact_id))
 
             case _:
-                return Err([ViewUnsupportedRenderMode(render_mode=str(render_mode))])
+                raise ViewUnsupportedRenderMode(render_mode=render_mode)
 
     def render_cli(self, context: Context, specification_id: FullArtifactId) -> str:
         protocol = mode().value

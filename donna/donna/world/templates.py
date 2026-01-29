@@ -7,6 +7,7 @@ from typing import Iterator
 
 import jinja2
 
+from donna.core import errors as core_errors
 from donna.core.errors import EnvironmentErrorsProxy, ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.ids import FullArtifactId
@@ -86,6 +87,8 @@ class DirectivePathBuilder:
             raise EnvironmentErrorsProxy(
                 [world_errors.DirectiveModuleNotImportable(module_path=module_path, artifact_id=artifact_id)]
             ) from exc
+        except core_errors.InternalError:
+            raise
         except Exception as exc:
             raise EnvironmentErrorsProxy(
                 [
@@ -124,6 +127,8 @@ class DirectivePathBuilder:
         try:
             result = directive.apply_directive(context, *argv, **kwargs)
         except EnvironmentErrorsProxy:
+            raise
+        except core_errors.InternalError:
             raise
         except Exception as exc:
             raise EnvironmentErrorsProxy(
