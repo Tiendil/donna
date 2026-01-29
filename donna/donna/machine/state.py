@@ -193,7 +193,14 @@ class StateNode(Node):
             - If you have been working on a task, consider it completed and output the results to the developer.
             """)
         else:
-            message = "The session is ACTIVE. You have pending tasks to complete."
+            message = textwrap.dedent(
+                """
+            The session is ACTIVE. You have pending tasks to complete.
+
+            - If the developer asked you to start working on a new task, you MUST ask if you should start a new session or run a new workflow in the current one.
+            - If you have been working on a task, you can continue.
+                """
+            )
 
         return Cell.build_markdown(
             kind="session__state_status",
