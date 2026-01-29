@@ -1,5 +1,7 @@
 import sys
+import functools
 from collections.abc import Iterable
+from typing import Callable, Generic, ParamSpec, TypeVar, cast
 
 import typer
 
@@ -14,6 +16,19 @@ def output_cells(cells: Iterable[Cell]) -> None:
     output = formatter.format_cells(list(cells))
 
     sys.stdout.buffer.write(output)
+
+
+P = ParamSpec("P")
+
+
+def cells_cli(func: Callable[P, Iterable[Cell]]) -> Callable[P, None]:
+
+    @functools.wraps(func)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> None:
+        cells = func(*args, **kwargs)
+        output_cells(cells)
+
+    return wrapper
 
 
 def try_initialize_donna() -> None:
