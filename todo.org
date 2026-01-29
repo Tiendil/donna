@@ -99,7 +99,6 @@
 ** Errors processing improvements
 *** ways_to_fix should support formatting / jinja2? or should not contain the formating at all?
 *** Vebose jinja2 render errors to help agents and developers
-*** cleanup asserts — replace with real checks and exceptions
 *** DirectivePathBuilder — how to pass errors to the user?
 *** cleanup comments above `raise ...`
 *** polish ways_to_fix lists
