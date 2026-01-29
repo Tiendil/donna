@@ -40,7 +40,6 @@ class CodeSource(BaseEntity):
 
             return Ok(tomllib.loads(self.content))
 
-        # return Envrionment errors
         return Err([world_errors.MarkdownUnsupportedCodeFormat(format=self.format)])
 
 
@@ -108,11 +107,9 @@ def _parse_h1(
     section = sections[-1]
 
     if section.level != SectionLevel.h1:
-        # return Envrionment errors
         return Err([world_errors.MarkdownMultipleH1Sections(artifact_id=artifact_id)])
 
     if section.title is not None:
-        # return Envrionment errors
         return Err([world_errors.MarkdownMultipleH1Titles(artifact_id=artifact_id)])
 
     section.title = clear_heading(render_back(node.to_tokens()).strip())
@@ -126,7 +123,6 @@ def _parse_h2(
     section = sections[-1]
 
     if section.title is None:
-        # return Envrionment errors
         return Err([world_errors.MarkdownH2BeforeH1Title(artifact_id=artifact_id)])
 
     new_section = SectionSource(

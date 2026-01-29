@@ -112,7 +112,6 @@ class Config(BaseEntity):
             primitive = primitive_result.unwrap()
 
             if not isinstance(primitive, WorldConstructor):
-                # use exception suitable for pydantic
                 raise ValueError(f"World constructor '{world_config.kind}' is not supported")
 
             worlds.append(primitive.construct_world(world_config))
@@ -126,7 +125,6 @@ class Config(BaseEntity):
             primitive = primitive_result.unwrap()
 
             if not isinstance(primitive, SourceConstructor):
-                # use exception suitable for pydantic
                 raise ValueError(f"Source constructor '{source_config.kind}' is not supported")
 
             sources.append(primitive.construct_source(source_config))

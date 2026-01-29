@@ -30,13 +30,11 @@ def initialize_environment() -> Result[None, core_errors.ErrorsList]:
     try:
         data = tomllib.loads(config_path.read_text())
     except tomllib.TOMLDecodeError as e:
-        # return list of Environment errors
         return Err([world_errors.ConfigParseFailed(config_path=config_path, details=str(e))])
 
     try:
         loaded_config = config.Config.model_validate(data)
     except Exception as e:
-        # return list of Environment errors
         return Err([world_errors.ConfigValidationFailed(config_path=config_path, details=str(e))])
 
     config.config.set(loaded_config)
