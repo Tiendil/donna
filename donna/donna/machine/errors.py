@@ -12,6 +12,10 @@ class PrimitiveMethodUnsupported(InternalError):
     method_name: str
 
 
+class SessionStateStatusInvalid(InternalError):
+    message: str = "Session state status is invalid."
+
+
 class EnvironmentError(core_errors.EnvironmentError):
     """Base class for environment errors in donna.machine."""
 

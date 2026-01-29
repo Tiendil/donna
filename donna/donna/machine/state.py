@@ -200,7 +200,8 @@ class StateNode(Node):
                 """
             The session has PENDING WORK UNITS. Donna has work to complete.
 
-            - If the developer asked you to start working on a new task, you MUST warn that there are pending work units and ask if you should start a new session or continue working on the current work units.
+            - If the developer asked you to start working on a new task, you MUST warn that there are pending work
+              units and ask if you should start a new session or continue working on the current work units.
             - If you have been working on a task, you can continue session.
                 """
             )
@@ -210,7 +211,8 @@ class StateNode(Node):
                 """
             The session is AWAITING YOUR ACTION. You have pending action requests to address.
 
-            - If the developer asked you to start working on a new task, you MUST ask if you should start a new session or continue working on the current action requests.
+            - If the developer asked you to start working on a new task, you MUST ask if you should start a new session
+              or continue working on the current action requests.
             - Otherwise, you MUST address the pending action requests before proceeding.
                 """
             )
@@ -220,13 +222,15 @@ class StateNode(Node):
                 """
             The session has unfinished TASKS but no pending work units or action requests.
 
-            - If the developer asked you to start working on a new task , you MUST ask if you should start a new session or run a new workflow in the current one.
-            - If you have been working on a task, you can consider it completed and output the results to the developer.
+            - If the developer asked you to start working on a new task , you MUST ask if you should start a new
+              session or run a new workflow in the current one.
+            - If you have been working on a task, you can consider it completed and output the results to the
+              developer.
                 """
             )
 
         else:
-            raise NotImplementedError("Something gone wrong — we should never go here")
+            raise machine_errors.SessionStateStatusInvalid()
 
         return Cell.build_markdown(
             kind="session__state_status",
