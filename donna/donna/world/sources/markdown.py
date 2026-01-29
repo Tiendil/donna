@@ -71,6 +71,7 @@ class MarkdownSectionMixin:
     ) -> Result[ArtifactSectionMeta, ErrorsList]:
         return Ok(ArtifactSectionMeta())
 
+    @unwrap_to_error
     def markdown_construct_section(  # noqa: CCR001
         self,
         artifact_id: FullArtifactId,
@@ -92,17 +93,13 @@ class MarkdownSectionMixin:
             section_config=section_config,
             primary=primary,
         )
-        meta_result = self.markdown_construct_meta(
+        meta = self.markdown_construct_meta(
             artifact_id=artifact_id,
             source=source,
             section_config=section_config,
             description=description,
             primary=primary,
-        )
-        if meta_result.is_err():
-            return Err(meta_result.unwrap_err())
-
-        meta = meta_result.unwrap()
+        ).unwrap()
 
         return Ok(
             ArtifactSection(

@@ -91,6 +91,17 @@ class RunScriptMeta(OperationMeta):
     goto_on_code: dict[str, ArtifactSectionId] = pydantic.Field(default_factory=dict)
     timeout: int = 60
 
+    def select_next_operation(self, exit_code: int) -> ArtifactSectionId:
+        if exit_code == 0:
+            next_operation = self.goto_on_success
+        else:
+            next_operation = self.goto_on_code.get(str(exit_code))
+            if next_operation is None:
+                next_operation = self.goto_on_failure
+
+        assert next_operation is not None
+        return next_operation
+
 
 class RunScript(MarkdownSectionMixin, OperationKind):
     config_class: ClassVar[type[RunScriptConfig]] = RunScriptConfig
@@ -152,7 +163,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         if meta.save_stderr_to is not None:
             yield ChangeSetTaskContext(task_id=task.id, key=meta.save_stderr_to, value=stderr)
 
-        next_operation = _select_next_operation(exit_code, meta)
+        next_operation = meta.select_next_operation(exit_code)
         full_operation_id = unit.operation_id.full_artifact_id.to_full_local(next_operation)
 
         yield ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id)
@@ -227,18 +238,6 @@ def _run_script(script: str, timeout: int) -> tuple[str, str, int]:  # noqa: CCR
                 os.remove(temp_path)
             except FileNotFoundError:
                 pass
-
-
-def _select_next_operation(exit_code: int, meta: RunScriptMeta) -> ArtifactSectionId:
-    if exit_code == 0:
-        next_operation = meta.goto_on_success
-    else:
-        next_operation = meta.goto_on_code.get(str(exit_code))
-        if next_operation is None:
-            next_operation = meta.goto_on_failure
-
-    assert next_operation is not None
-    return next_operation
 
 
 def _coerce_output(value: str | bytes | None) -> str:
