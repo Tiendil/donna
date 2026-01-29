@@ -125,7 +125,6 @@ def parse_artifact_content(full_id: FullArtifactId, text: str) -> Result[list[ma
         analyzed_sections = markdown.parse(analyzed_markdown_source, artifact_id=full_id).unwrap()
 
     if len(original_sections) != len(analyzed_sections):
-        # raise InternalError
         raise world_errors.MarkdownSectionsCountMismatch(
             artifact_id=full_id,
             original_count=len(original_sections),

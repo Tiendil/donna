@@ -168,18 +168,15 @@ class PythonWorldConstructor(WorldConstructor):
         package = getattr(config, "package", None)
 
         if package is None:
-            # raise exception, suitable for pydantic
             raise ValueError(f"World config '{config.id}' does not define a python package")
 
         module = importlib.import_module(str(package))
         artifacts_root = getattr(module, "donna_artifacts_root", None)
 
         if artifacts_root is None:
-            # raise exception, suitable for pydantic
             raise ValueError(f"Package '{package}' does not define donna_artifacts_root")
 
         if not isinstance(artifacts_root, str):
-            # raise exception, suitable for pydantic
             raise ValueError(f"Package '{package}' defines invalid donna_artifacts_root")
 
         return Python(

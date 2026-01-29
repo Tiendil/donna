@@ -90,8 +90,7 @@ class EnvironmentErrorNode(Node):
 
         message = self._error.message.format(error=self._error).strip()
 
-        ways_to_fix = [fix.format(error=self._error).strip()
-                       for fix in self._error.ways_to_fix]
+        ways_to_fix = [fix.format(error=self._error).strip() for fix in self._error.ways_to_fix]
 
         if "\n" in self._error.message:
             content = f"{intro}:\n\n{message}"
