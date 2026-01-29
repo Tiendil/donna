@@ -116,3 +116,4 @@
 *** Use WorkUnit context for this
 ** Update artifacts format specification with new operation info
 ** CLI commands must output progress cells.
+** operation to run donna cli commands (maybe as not cli exectly)
