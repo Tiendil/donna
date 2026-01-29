@@ -34,6 +34,11 @@ def status() -> None:
 
 
 @sessions_cli.command()
+def details() -> None:
+    output_cells(sessions.details())
+
+
+@sessions_cli.command()
 def run(workflow_id: FullArtifactIdArgument) -> None:
     output_cells(sessions.start_workflow(workflow_id))
 

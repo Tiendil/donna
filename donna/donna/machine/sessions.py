@@ -128,6 +128,15 @@ def status() -> list[Cell]:
 
 
 @_session_required
+def details() -> list[Cell]:
+    state_result = _load_state()
+    if state_result.is_err():
+        return _errors_to_cells(state_result.unwrap_err())
+
+    return state_result.unwrap().node().details()
+
+
+@_session_required
 def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
     workflow_result = artifacts.load_artifact(artifact_id)
     if workflow_result.is_err():

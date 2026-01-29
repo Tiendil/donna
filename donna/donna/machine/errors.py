@@ -27,7 +27,7 @@ class SessionStateNotInitialized(EnvironmentError):
 class ActionRequestNotFound(EnvironmentError):
     code: str = "donna.machine.action_request_not_found"
     message: str = "Action request `{error.request_id}` was not found in the current session state."
-    ways_to_fix: list[str] = ["Use an action request id from `sessions status` output."]
+    ways_to_fix: list[str] = ["Use an action request id from `sessions details` output."]
     request_id: ActionRequestId
 
 
