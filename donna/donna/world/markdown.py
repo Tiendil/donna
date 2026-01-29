@@ -94,6 +94,9 @@ class SectionSource(BaseEntity):
 
         return Ok(result)
 
+    def scripts(self) -> list[str]:
+        return [config.content for config in self.configs if "script" in config.properties]
+
 
 def render_back(tokens: list[Token]) -> str:
     renderer = MDRenderer()
@@ -173,7 +176,7 @@ def _parse_fence(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxT
 
         properties[part] = True
 
-    if "donna" in properties or (format == "donna" and "script" in properties):
+    if "donna" in properties:
         code_block = CodeSource(
             format=format,
             properties=properties,

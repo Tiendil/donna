@@ -115,9 +115,9 @@ class Workflow(MarkdownSectionMixin, Primitive):
         section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
-    ) -> ArtifactSectionMeta:
+    ) -> Result[ArtifactSectionMeta, ErrorsList]:
         workflow_config = cast(WorkflowConfig, section_config)
-        return WorkflowMeta(start_operation_id=workflow_config.start_operation_id)
+        return Ok(WorkflowMeta(start_operation_id=workflow_config.start_operation_id))
 
     def execute_section(self, task: "Task", unit: "WorkUnit", section: ArtifactSection) -> Iterable["Change"]:
         from donna.machine.changes import ChangeAddWorkUnit

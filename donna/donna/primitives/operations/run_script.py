@@ -84,7 +84,6 @@ class RunScriptConfig(OperationConfig):
 
 class RunScriptMeta(OperationMeta):
     script: str | None = None
-    script_blocks_count: int = 0
     save_stdout_to: str | None = None
     save_stderr_to: str | None = None
     goto_on_success: ArtifactSectionId | None = None
@@ -103,10 +102,15 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
-    ) -> ArtifactSectionMeta:
+    ) -> Result[ArtifactSectionMeta, ErrorsList]:
         run_config = cast(RunScriptConfig, section_config)
-        scripts = _extract_scripts_from_configs(source.configs)
-        script = scripts[0] if scripts else None
+        scripts = source.scripts()
+        if not scripts:
+            return Err([RunScriptMissingScriptBlock(artifact_id=artifact_id, section_id=run_config.id)])
+        if len(scripts) > 1:
+            return Err([RunScriptMultipleScriptBlocks(artifact_id=artifact_id, section_id=run_config.id)])
+
+        script = scripts[0]
         allowed_transitions: set[ArtifactSectionId] = set()
 
         if run_config.goto_on_success is not None:
@@ -118,17 +122,18 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         if run_config.goto_on_code:
             allowed_transitions.update(run_config.goto_on_code.values())
 
-        return RunScriptMeta(
-            fsm_mode=run_config.fsm_mode,
-            allowed_transtions=allowed_transitions,
-            script=script,
-            script_blocks_count=len(scripts),
-            save_stdout_to=run_config.save_stdout_to,
-            save_stderr_to=run_config.save_stderr_to,
-            goto_on_success=run_config.goto_on_success,
-            goto_on_failure=run_config.goto_on_failure,
-            goto_on_code=dict(run_config.goto_on_code),
-            timeout=run_config.timeout,
+        return Ok(
+            RunScriptMeta(
+                fsm_mode=run_config.fsm_mode,
+                allowed_transtions=allowed_transitions,
+                script=script,
+                save_stdout_to=run_config.save_stdout_to,
+                save_stderr_to=run_config.save_stderr_to,
+                goto_on_success=run_config.goto_on_success,
+                goto_on_failure=run_config.goto_on_failure,
+                goto_on_code=dict(run_config.goto_on_code),
+                timeout=run_config.timeout,
+            )
         )
 
     def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterator["Change"]:
@@ -167,11 +172,6 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         if meta.goto_on_failure is None:
             errors.append(RunScriptMissingGotoOnFailure(artifact_id=artifact.id, section_id=section_id))
 
-        if meta.script_blocks_count == 0:
-            errors.append(RunScriptMissingScriptBlock(artifact_id=artifact.id, section_id=section_id))
-        elif meta.script_blocks_count > 1:
-            errors.append(RunScriptMultipleScriptBlocks(artifact_id=artifact.id, section_id=section_id))
-
         for code in meta.goto_on_code:
             try:
                 parsed = int(code)
@@ -192,18 +192,6 @@ class RunScript(MarkdownSectionMixin, OperationKind):
             return Err(errors)
 
         return Ok(None)
-
-
-def _extract_scripts_from_configs(configs: list[markdown.CodeSource]) -> list[str]:
-    scripts: list[str] = []
-
-    for config in configs:
-        if "script" not in config.properties:
-            continue
-
-        scripts.append(config.content)
-
-    return scripts
 
 
 def _run_script(script: str, timeout: int) -> tuple[str, str, int]:  # noqa: CCR001

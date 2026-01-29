@@ -162,12 +162,12 @@ Here may be any additional instructions, requirements, notes, references, etc.
 
 2. `donna.lib.run_script` operation kind executes a script from the operation body without agent/user interaction.
 
-The body of the operation MUST include exactly one fenced code block with the `donna script` info string.
+The body of the operation MUST include exactly one fenced code block with the `bash donna script` info string.
 Any other text in the operation body is ignored.
 
 Script example:
 
-```donna script
+```bash donna script
 #!/usr/bin/bash
 
 echo "Hello, World!"

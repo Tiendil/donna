@@ -19,7 +19,7 @@ class MarkdownSectionConstructor(Protocol):
         source: markdown.SectionSource,
         config: dict[str, Any],
         primary: bool = False,
-    ) -> ArtifactSection:
+    ) -> Result[ArtifactSection, ErrorsList]:
         pass
 
 
@@ -68,8 +68,8 @@ class MarkdownSectionMixin:
         section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
-    ) -> ArtifactSectionMeta:
-        return ArtifactSectionMeta()
+    ) -> Result[ArtifactSectionMeta, ErrorsList]:
+        return Ok(ArtifactSectionMeta())
 
     def markdown_construct_section(  # noqa: CCR001
         self,
@@ -77,7 +77,7 @@ class MarkdownSectionMixin:
         source: markdown.SectionSource,
         config: dict[str, Any],
         primary: bool = False,
-    ) -> ArtifactSection:
+    ) -> Result[ArtifactSection, ErrorsList]:
         section_config = self.config_class.parse_obj(config)
 
         title = self.markdown_build_title(
@@ -92,22 +92,28 @@ class MarkdownSectionMixin:
             section_config=section_config,
             primary=primary,
         )
-        meta = self.markdown_construct_meta(
+        meta_result = self.markdown_construct_meta(
             artifact_id=artifact_id,
             source=source,
             section_config=section_config,
             description=description,
             primary=primary,
         )
+        if meta_result.is_err():
+            return Err(meta_result.unwrap_err())
 
-        return ArtifactSection(
-            id=section_config.id,
-            artifact_id=artifact_id,
-            kind=section_config.kind,
-            title=title,
-            description=description,
-            primary=primary,
-            meta=meta,
+        meta = meta_result.unwrap()
+
+        return Ok(
+            ArtifactSection(
+                id=section_config.id,
+                artifact_id=artifact_id,
+                kind=section_config.kind,
+                title=title,
+                description=description,
+                primary=primary,
+                meta=meta,
+            )
         )
 
 
@@ -166,14 +172,16 @@ def construct_artifact_from_markdown_source(  # noqa: CCR001
     _ensure_markdown_constructible(primary_primitive, head_kind).unwrap()
     markdown_primary_primitive = cast(MarkdownSectionMixin, primary_primitive)
 
-    primary_section = markdown_primary_primitive.markdown_construct_section(
+    primary_section_result = markdown_primary_primitive.markdown_construct_section(
         artifact_id=full_id,
         source=original_sections[0],
         config=head_config,
         primary=True,
     )
+    if primary_section_result.is_err():
+        return Err(primary_section_result.unwrap_err())
+    primary_section = primary_section_result.unwrap()
 
-    sections = [primary_section]
     sections = construct_sections_from_markdown(
         artifact_id=full_id,
         sections=original_sections[1:],
@@ -191,6 +199,7 @@ def construct_sections_from_markdown(  # noqa: CCR001
     primitive_overrides: dict[PythonImportPath, Primitive] | None = None,
 ) -> Result[list[ArtifactSection], ErrorsList]:
     constructed: list[ArtifactSection] = []
+    errors: ErrorsList = []
 
     for section in sections:
         data = dict(section.merged_configs().unwrap())
@@ -211,7 +220,14 @@ def construct_sections_from_markdown(  # noqa: CCR001
         _ensure_markdown_constructible(primitive, primitive_id).unwrap()
         markdown_primitive = cast(MarkdownSectionMixin, primitive)
 
-        constructed.append(markdown_primitive.markdown_construct_section(artifact_id, section, data, primary=False))
+        section_result = markdown_primitive.markdown_construct_section(artifact_id, section, data, primary=False)
+        if section_result.is_err():
+            errors.extend(section_result.unwrap_err())
+            continue
+        constructed.append(section_result.unwrap())
+
+    if errors:
+        return Err(errors)
 
     return Ok(constructed)
 
