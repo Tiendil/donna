@@ -1,5 +1,6 @@
 import copy
 from typing import Sequence, cast
+import textwrap
 
 import pydantic
 
@@ -184,9 +185,13 @@ class StateNode(Node):
 
     def status(self) -> Cell:
         if self._state.is_completed:
-            message = (
-                "All the work in this session is COMPLETED."
-            )
+            message = textwrap.dedent(
+                """
+            The session has no active tasks or pending actions.
+
+            - If the developer asked you to start working on a new task, you can do so by initiating a new workflow.
+            - If you have been working on a task, consider it completed and output the results to the developer.
+            """)
         else:
             message = "The session is ACTIVE. You have pending tasks to complete."
 
