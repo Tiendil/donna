@@ -66,6 +66,7 @@ When an agent invokes Donna, it SHOULD use the `llm` protocol (for example `-p l
 
 - If the developer asked you to do something:
   - run `<DONNA_CMD> -p <protocol> sessions status` to get the status of the current session.
+  - or run `<DONNA_CMD> -p <protocol> sessions details` to get detailed information about the current session, including list of active action requests.
   - if the work in completed, run `<DONNA_CMD> -p <protocol> sessions start` to start a new session.
   - if there are still a work to do, ask developer if you need to resume the current session or start a new one.
 - If the developer asked you to continue your work, you MUST call `<DONNA_CMD> -p <protocol> sessions continue` to get your instructions on what to do next.
@@ -113,10 +114,10 @@ Use one of the next approaches to correctly escape text arguments:
 
 ```
 # option 1
-<DONNA_CMD> -p <protocol> artifacts update <...>  $'# Long text\n\nwith escape sequences...'
+<DONNA_CMD> -p <protocol> <subcommands> <...>  $'# Long text\n\nwith escape sequences...'
 
 # option 2
-<DONNA_CMD> -p <protocol> artifacts update <...> \
+<DONNA_CMD> -p <protocol> <subcommands> <...> \
   "$(cat <<'EOF'
 # Long text
 
