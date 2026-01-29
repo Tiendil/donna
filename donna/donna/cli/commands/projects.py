@@ -3,7 +3,7 @@ import pathlib
 import typer
 
 from donna.cli.application import app
-from donna.cli.utils import output_cells, try_initialize_donna
+from donna.cli.utils import output_cells, try_initialize_donna, cells_cli
 from donna.domain.ids import WorldId
 from donna.world.config import config
 
@@ -24,18 +24,21 @@ def initialize_callback(ctx: typer.Context) -> None:
 
 
 @projects_cli.command()
+@cells_cli
 def initialize(workdir: pathlib.Path = pathlib.Path.cwd()) -> None:
     project_result = config().get_world(WorldId("project"))
     if project_result.is_err():
-        output_cells([error.node().info() for error in project_result.unwrap_err()])
-        return
+        return [error.node().info() for error in project_result.unwrap_err()]
+
     project_result.unwrap().initialize()
 
     session_result = config().get_world(WorldId("session"))
     if session_result.is_err():
-        output_cells([error.node().info() for error in session_result.unwrap_err()])
-        return
+        return [error.node().info() for error in session_result.unwrap_err()]
+
     session_result.unwrap().initialize()
+
+    return [operation_succeeded("Project initialized successfully")]
 
 
 app.add_typer(projects_cli, name="projects", help="Manage projects")
