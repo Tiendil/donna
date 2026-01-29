@@ -26,7 +26,7 @@ class MarkdownSectionConstructor(Protocol):
 class Config(SourceConfig):
     kind: Literal["markdown"] = "markdown"
     supported_extensions: list[str] = [".md", ".markdown"]
-    default_section_kind: PythonImportPath = PythonImportPath.parse_or_raise("donna.lib.text")
+    default_section_kind: PythonImportPath = "donna.lib.text"
     default_primary_section_id: ArtifactSectionId = ArtifactSectionId("primary")
 
     def construct_artifact_from_bytes(self, full_id: FullArtifactId, content: bytes) -> Result[Artifact, ErrorsList]:
