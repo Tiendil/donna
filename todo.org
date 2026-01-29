@@ -117,3 +117,5 @@
 ** Update artifacts format specification with new operation info
 ** CLI commands must output progress cells.
 ** operation to run donna cli commands (maybe as not cli exectly)
+** operation to run workflow
+** separate each grooming step into a specialized workflow with a short cycle?
