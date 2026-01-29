@@ -107,6 +107,8 @@
 *** hard mode — forse agent to work via donna
 ** installing donna cli via online instruction for agents
 ** command to reset session state (without removing artifacts)
+** mention `session clear` command in specs
+** usage:cli — we may want to better specify all possible commands or event to autogenerate them.
 * TODO Changy for changelog
 * TODO Donna treat as duplicates temporary files, `like my-file.md~`
 * TODO CLI commands improvements
