@@ -3,6 +3,7 @@ from typing import Any
 from jinja2.runtime import Context
 
 from donna.core import errors as core_errors
+from donna.domain import errors as domain_errors
 from donna.domain.ids import FullArtifactId
 from donna.machine.templates import Directive
 from donna.protocol.modes import mode
@@ -23,7 +24,11 @@ class View(Directive):
         if argv is None or len(argv) != 1:
             raise ValueError("View directive requires exactly one argument: specificatin_id")
 
-        artifact_id = FullArtifactId.parse(str(argv[0]))
+        artifact_id_result = FullArtifactId.parse(str(argv[0]))
+        if artifact_id_result.is_err():
+            raise domain_errors.InvalidIdPath(id_type=FullArtifactId.__name__, value=str(argv[0]))
+
+        artifact_id = artifact_id_result.unwrap()
 
         match render_mode:
             case RenderMode.cli:

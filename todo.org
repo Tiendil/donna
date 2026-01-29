@@ -97,6 +97,9 @@
 * TODO Cells & Errors
 ** We may return to much info in cells now. Let's check that manually.
 ** Errors processing improvements
+*** refactor ids parsing in donna/donna/cli/types.py
+*** remove parse_or_raise
+*** try simplify error handling code with a kind of decorator on functions or smth like that
 *** Vebose jinja2 render errors to help agents and developers
 *** replace all NotImplementedError exceptions with custom exceptions and smart error handling
 *** cleanup asserts — replace with real checks and exceptions
@@ -104,7 +107,6 @@
 *** DirectivePathBuilder — how to pass errors to the user?
 *** cleanup comments above `raise ...`
 *** polish ways_to_fix lists
-*** try simplify error handling code with a kind of decorator on functions or smth like that
 *** review the code
 ** Cli should always return Cells
 ** Logs (do we need them now?)

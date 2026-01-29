@@ -1,6 +1,10 @@
 from typing import Any, Generic, Sequence, TypeVar
 
-from pydantic_core import core_schema
+from pydantic_core import PydanticCustomError, core_schema
+
+from donna.core.errors import ErrorsList
+from donna.core.result import Err, Ok, Result
+from donna.domain import errors as domain_errors
 
 
 def _id_crc(number: int) -> str:
@@ -46,12 +50,45 @@ def _match_pattern_parts(pattern_parts: Sequence[str], value_parts: Sequence[str
     return match_at(0, 0)
 
 
+def _stringify_value(value: Any) -> str:
+    if isinstance(value, str):
+        return value
+    return repr(value)
+
+
+def _pydantic_type_error(type_name: str, value: Any) -> PydanticCustomError:
+    return PydanticCustomError(
+        "type_error",
+        "{type_name} must be a str, got {actual_type}",
+        {"type_name": type_name, "actual_type": type(value).__name__},
+    )
+
+
+def _pydantic_value_error(type_name: str, value: Any) -> PydanticCustomError:
+    return PydanticCustomError(
+        "value_error",
+        "Invalid {type_name}: {value}",
+        {"type_name": type_name, "value": _stringify_value(value)},
+    )
+
+
+TParsed = TypeVar("TParsed")
+
+
+def _invalid_format(id_type: str, value: Any) -> Result[TParsed, ErrorsList]:
+    return Err([domain_errors.InvalidIdFormat(id_type=id_type, value=_stringify_value(value))])
+
+
+def _invalid_pattern(id_type: str, value: Any) -> Result[TParsed, ErrorsList]:
+    return Err([domain_errors.InvalidIdPattern(id_type=id_type, value=_stringify_value(value))])
+
+
 class InternalId(str):
     __slots__ = ()
 
     def __new__(cls, value: str) -> "InternalId":
         if not cls.validate(value):
-            raise NotImplementedError(f"Invalid InternalId: '{value}'")
+            raise domain_errors.InvalidInternalId(value=value)
 
         return super().__new__(cls, value)
 
@@ -61,22 +98,33 @@ class InternalId(str):
 
     @classmethod
     def validate(cls, id: str) -> bool:
-        _prefix, value, crc = id.rsplit("-", maxsplit=2)
-        expected_crc = _id_crc(int(value))
+        if not isinstance(id, str):
+            return False
+
+        try:
+            _prefix, value, crc = id.rsplit("-", maxsplit=2)
+        except ValueError:
+            return False
+
+        try:
+            expected_crc = _id_crc(int(value))
+        except ValueError:
+            return False
+
         return crc == expected_crc
 
     @classmethod
-    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:  # noqa: CCR001
 
         def validate(v: Any) -> "InternalId":
             if isinstance(v, cls):
                 return v
 
             if not isinstance(v, str):
-                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
+                raise _pydantic_type_error(cls.__name__, v)
 
             if not cls.validate(v):
-                raise ValueError(f"Invalid {cls.__name__}: {v!r}")
+                raise _pydantic_value_error(cls.__name__, v)
 
             return cls(v)
 
@@ -103,23 +151,29 @@ class Identifier(str):
     __slots__ = ()
 
     def __new__(cls, value: str) -> "Identifier":
-        if not value.isidentifier():
-            raise NotImplementedError(f"Invalid identifier: '{value}'")
+        if not cls.validate(value):
+            raise domain_errors.InvalidIdentifier(value=value)
 
         return super().__new__(cls, value)
 
     @classmethod
-    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
+    def validate(cls, value: str) -> bool:
+        if not isinstance(value, str):
+            return False
+        return value.isidentifier()
+
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:  # noqa: CCR001
 
         def validate(v: Any) -> "Identifier":
             if isinstance(v, cls):
                 return v
 
             if not isinstance(v, str):
-                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
+                raise _pydantic_type_error(cls.__name__, v)
 
-            if not v.isidentifier():
-                raise ValueError(f"Invalid {cls.__name__}: {v!r}")
+            if not cls.validate(v):
+                raise _pydantic_value_error(cls.__name__, v)
 
             return cls(v)
 
@@ -144,7 +198,7 @@ class IdPath(str):
         text = cls._coerce_to_text(value)
 
         if not cls.validate(text):
-            raise NotImplementedError(f"Invalid {cls.__name__}: '{text}'")
+            raise domain_errors.InvalidIdPath(id_type=cls.__name__, value=text)
 
         return super().__new__(cls, text)
 
@@ -208,10 +262,10 @@ class IdPath(str):
                 return v
 
             if not isinstance(v, str):
-                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
+                raise _pydantic_type_error(cls.__name__, v)
 
             if not cls.validate(v):
-                raise ValueError(f"Invalid {cls.__name__}: {v!r}")
+                raise _pydantic_value_error(cls.__name__, v)
 
             return cls(v)
 
@@ -237,38 +291,48 @@ class IdPathPattern(tuple[str, ...], Generic[TIdPath]):
         return part.isidentifier()
 
     @classmethod
-    def parse(cls: type[TIdPathPattern], text: str) -> TIdPathPattern:
+    def parse(cls: type[TIdPathPattern], text: str) -> Result[TIdPathPattern, ErrorsList]:  # noqa: CCR001
         if not isinstance(text, str) or not text:
-            raise NotImplementedError(f"Invalid {cls.__name__}: '{text}'")
+            return _invalid_pattern(cls.__name__, text)
 
         if not cls.id_class.delimiter:
-            raise NotImplementedError(f"Invalid {cls.__name__}: '{text}'")
+            return _invalid_pattern(cls.__name__, text)
 
         parts = text.split(cls.id_class.delimiter)
 
         if any(part == "" for part in parts):
-            raise NotImplementedError(f"Invalid {cls.__name__}: '{text}'")
+            return _invalid_pattern(cls.__name__, text)
 
         for part in parts:
             if not cls._validate_pattern_part(part):
-                raise NotImplementedError(f"Invalid {cls.__name__}: '{text}'")
+                return _invalid_pattern(cls.__name__, text)
 
-        return cls(parts)
+        return Ok(cls(parts))
 
     def matches(self, value: TIdPath) -> bool:
         return _match_pattern_parts(self, self.id_class._split(str(value)))
 
     @classmethod
-    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
+    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:  # noqa: CCR001
 
         def validate(v: Any) -> "IdPathPattern[TIdPath]":
             if isinstance(v, cls):
                 return v
 
             if not isinstance(v, str):
-                raise TypeError(f"{cls.__name__} must be a str, got {type(v).__name__}")
+                raise _pydantic_type_error(cls.__name__, v)
 
-            return cls.parse(v)
+            result = cls.parse(v)
+            errors = result.err()
+            if errors is not None:
+                error = errors[0]
+                raise PydanticCustomError("value_error", error.message.format(error=error))
+
+            parsed = result.ok()
+            if parsed is None:
+                raise _pydantic_value_error(cls.__name__, v)
+
+            return parsed
 
         str_then_validate = core_schema.no_info_after_validator_function(
             validate,
@@ -300,8 +364,27 @@ class PythonImportPath(DottedPath):
     __slots__ = ()
 
     @classmethod
-    def parse(cls, text: str) -> "PythonImportPath":
-        return cls(text)
+    def parse(cls, text: str) -> Result["PythonImportPath", ErrorsList]:
+        if not isinstance(text, str) or not text:
+            return _invalid_format(cls.__name__, text)
+
+        if not cls.validate(text):
+            return _invalid_format(cls.__name__, text)
+
+        return Ok(cls(text))
+
+    @classmethod
+    def parse_or_raise(cls, text: str) -> "PythonImportPath":
+        result = cls.parse(text)
+        errors = result.err()
+        if errors is not None:
+            raise domain_errors.InvalidIdPath(id_type=cls.__name__, value=_stringify_value(text))
+
+        parsed = result.ok()
+        if parsed is None:
+            raise domain_errors.InvalidIdPath(id_type=cls.__name__, value=_stringify_value(text))
+
+        return parsed
 
 
 class FullArtifactId(ColonPath):
@@ -324,16 +407,27 @@ class FullArtifactId(ColonPath):
         return FullArtifactSectionId(f"{self}:{local_id}")
 
     @classmethod
-    def parse(cls, text: str) -> "FullArtifactId":
+    def parse(cls, text: str) -> Result["FullArtifactId", ErrorsList]:
+        if not isinstance(text, str) or not text:
+            return _invalid_format(f"{cls.__name__} format", text)
+
+        if not cls.delimiter:
+            return _invalid_format(f"{cls.__name__} format", text)
+
         parts = text.split(cls.delimiter, maxsplit=1)
 
         if len(parts) != 2:
-            raise NotImplementedError(f"Invalid FullArtifactId format: '{text}'")
+            return _invalid_format(f"{cls.__name__} format", text)
 
-        world_id = WorldId(parts[0])
-        artifact_id = ArtifactId(parts[1])
+        world_part, artifact_part = parts
 
-        return FullArtifactId(f"{world_id}{cls.delimiter}{artifact_id}")
+        if not WorldId.validate(world_part):
+            return _invalid_format(f"{cls.__name__} format", text)
+
+        if not ArtifactId.validate(artifact_part):
+            return _invalid_format(f"{cls.__name__} format", text)
+
+        return Ok(FullArtifactId(f"{world_part}{cls.delimiter}{artifact_part}"))
 
 
 class FullArtifactIdPattern(IdPathPattern["FullArtifactId"]):
@@ -348,8 +442,14 @@ class ArtifactSectionId(Identifier):
     __slots__ = ()
 
     @classmethod
-    def parse(cls, text: str) -> "ArtifactSectionId":
-        return cls(text)
+    def parse(cls, text: str) -> Result["ArtifactSectionId", ErrorsList]:
+        if not isinstance(text, str) or not text:
+            return _invalid_format(cls.__name__, text)
+
+        if not cls.validate(text):
+            return _invalid_format(cls.__name__, text)
+
+        return Ok(cls(text))
 
 
 class FullArtifactSectionId(ColonPath):
@@ -377,12 +477,34 @@ class FullArtifactSectionId(ColonPath):
         return ArtifactSectionId(self.parts[-1])
 
     @classmethod
-    def parse(cls, text: str) -> "FullArtifactSectionId":
+    def parse(cls, text: str) -> Result["FullArtifactSectionId", ErrorsList]:  # noqa: CCR001
+        if not isinstance(text, str) or not text:
+            return _invalid_format(f"{cls.__name__} format", text)
+
+        if not cls.delimiter:
+            return _invalid_format(f"{cls.__name__} format", text)
+
         try:
             artifact_part, local_part = text.rsplit(cls.delimiter, maxsplit=1)
-        except ValueError as exc:
-            raise NotImplementedError(f"Invalid FullArtifactSectionId format: '{text}'") from exc
+        except ValueError:
+            return _invalid_format(f"{cls.__name__} format", text)
 
-        full_artifact_id = FullArtifactId.parse(artifact_part)
+        full_artifact_id_result = FullArtifactId.parse(artifact_part)
+        errors = full_artifact_id_result.err()
+        if errors is not None:
+            return Err(errors)
 
-        return FullArtifactSectionId(f"{full_artifact_id}:{ArtifactSectionId(local_part)}")
+        full_artifact_id = full_artifact_id_result.ok()
+        if full_artifact_id is None:
+            return _invalid_format(f"{cls.__name__} format", text)
+
+        local_id_result = ArtifactSectionId.parse(local_part)
+        local_errors = local_id_result.err()
+        if local_errors is not None:
+            return Err(local_errors)
+
+        local_id = local_id_result.ok()
+        if local_id is None:
+            return _invalid_format(f"{cls.__name__} format", text)
+
+        return Ok(FullArtifactSectionId(f"{full_artifact_id}{cls.delimiter}{local_id}"))

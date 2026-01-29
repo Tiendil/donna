@@ -26,7 +26,12 @@ def initialize(ctx: typer.Context) -> None:
 @artifacts_cli.command()
 def list(pattern: FullArtifactIdPatternOption = None) -> None:
     if pattern is None:
-        pattern = FullArtifactIdPattern.parse("**")
+        pattern_result = FullArtifactIdPattern.parse("**")
+        if pattern_result.is_err():
+            errors = pattern_result.unwrap_err()
+            output_cells([error.node().info() for error in errors])
+            return
+        pattern = pattern_result.unwrap()
 
     artifacts_result = world_artifacts.list_artifacts(pattern)
     if artifacts_result.is_err():
@@ -100,9 +105,14 @@ def validate(id: FullArtifactIdArgument) -> None:
 
 
 @artifacts_cli.command()
-def validate_all(pattern: FullArtifactIdPatternOption = None) -> None:
+def validate_all(pattern: FullArtifactIdPatternOption = None) -> None:  # noqa: CCR001
     if pattern is None:
-        pattern = FullArtifactIdPattern.parse("**")
+        pattern_result = FullArtifactIdPattern.parse("**")
+        if pattern_result.is_err():
+            errors = pattern_result.unwrap_err()
+            output_cells([error.node().info() for error in errors])
+            return
+        pattern = pattern_result.unwrap()
 
     artifacts_result = world_artifacts.list_artifacts(pattern)
     if artifacts_result.is_err():

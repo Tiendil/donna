@@ -49,11 +49,15 @@ class Primitive(BaseEntity):
         )
 
 
-def resolve_primitive(primitive_id: PythonImportPath | str) -> Result[Primitive, ErrorsList]:
+def resolve_primitive(primitive_id: PythonImportPath | str) -> Result[Primitive, ErrorsList]:  # noqa: CCR001
     if isinstance(primitive_id, PythonImportPath):
         import_path = str(primitive_id)
     else:
-        import_path = str(PythonImportPath.parse(primitive_id))
+        import_path_result = PythonImportPath.parse(primitive_id)
+        if import_path_result.is_err():
+            return Err(import_path_result.unwrap_err())
+
+        import_path = str(import_path_result.unwrap())
 
     if "." not in import_path:
         return Err([machine_errors.PrimitiveInvalidImportPath(import_path=import_path)])

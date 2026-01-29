@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, ClassVar, Iterator, cast
 
 import pydantic
 
+from donna.domain import errors as domain_errors
 from donna.domain.ids import ArtifactSectionId, FullArtifactId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
@@ -29,7 +30,10 @@ def extract_transitions(text: str) -> set[ArtifactSectionId]:
     transitions: set[ArtifactSectionId] = set()
 
     for match in matches:
-        transitions.add(ArtifactSectionId.parse(match))
+        transition_result = ArtifactSectionId.parse(match)
+        if transition_result.is_err():
+            raise domain_errors.InvalidIdentifier(value=match)
+        transitions.add(transition_result.unwrap())
 
     return transitions
 

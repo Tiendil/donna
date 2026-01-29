@@ -26,7 +26,7 @@ class MarkdownSectionConstructor(Protocol):
 class Config(SourceConfig):
     kind: Literal["markdown"] = "markdown"
     supported_extensions: list[str] = [".md", ".markdown"]
-    default_section_kind: PythonImportPath = PythonImportPath.parse("donna.lib.text")
+    default_section_kind: PythonImportPath = PythonImportPath.parse_or_raise("donna.lib.text")
     default_primary_section_id: ArtifactSectionId = ArtifactSectionId("primary")
 
     def construct_artifact_from_bytes(self, full_id: FullArtifactId, content: bytes) -> Result[Artifact, ErrorsList]:
@@ -169,7 +169,10 @@ def construct_artifact_from_markdown_source(  # noqa: CCR001
     if isinstance(head_kind_value, PythonImportPath):
         head_kind = head_kind_value
     else:
-        head_kind = PythonImportPath.parse(head_kind_value)
+        head_kind_result = PythonImportPath.parse(head_kind_value)
+        if head_kind_result.is_err():
+            return Err(head_kind_result.unwrap_err())
+        head_kind = head_kind_result.unwrap()
 
     if "id" not in head_config or head_config["id"] is None:
         head_config["id"] = config.default_primary_section_id
@@ -231,7 +234,10 @@ def construct_sections_from_markdown(  # noqa: CCR001
 
         kind_value = data["kind"]
         if isinstance(kind_value, str):
-            primitive_id = PythonImportPath.parse(kind_value)
+            primitive_id_result = PythonImportPath.parse(kind_value)
+            if primitive_id_result.is_err():
+                return Err(primitive_id_result.unwrap_err())
+            primitive_id = primitive_id_result.unwrap()
         else:
             primitive_id = kind_value
 
