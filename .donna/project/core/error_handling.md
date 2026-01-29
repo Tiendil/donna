@@ -68,6 +68,8 @@ class EnvironmentError(core_errors.EnvironmentError):
 
 ```
 
+**Each unique error case MUST be represented by its own subclass.** This allows precise error handling and testing.
+
 ## Internal errors behavior
 
 Subclasses of internal errors can define parametrized error message:
