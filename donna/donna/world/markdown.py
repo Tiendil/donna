@@ -9,7 +9,7 @@ from mdformat.renderer import MDRenderer
 
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
+from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import FullArtifactId
 from donna.world import errors as world_errors
 
@@ -218,6 +218,7 @@ def _parse_others(sections: list[SectionSource], node: SyntaxTreeNode) -> Syntax
     return current
 
 
+@unwrap_to_error
 def parse(  # noqa: CCR001, CFQ001
     text: str, *, artifact_id: FullArtifactId | None = None
 ) -> Result[list[SectionSource], ErrorsList]:  # pylint: disable=R0912, R0915
@@ -241,10 +242,7 @@ def parse(  # noqa: CCR001, CFQ001
     while node is not None:
 
         if node.type == "heading":
-            heading_result = _parse_heading(sections, node, artifact_id)
-            if heading_result.is_err():
-                return Err(heading_result.unwrap_err())
-            node = heading_result.unwrap()
+            node = _parse_heading(sections, node, artifact_id).unwrap()
             continue
 
         if node.type == "fence":

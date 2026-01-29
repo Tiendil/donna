@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, ClassVar, Iterable, cast
 
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
+from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import ArtifactSectionId, FullArtifactId
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
@@ -129,14 +129,11 @@ class Workflow(MarkdownSectionMixin, Primitive):
 
         yield ChangeAddWorkUnit(task_id=task.id, operation_id=full_id)
 
+    @unwrap_to_error
     def validate_section(  # noqa: CCR001, CFQ001
         self, artifact: Artifact, section_id: ArtifactSectionId
     ) -> Result[None, ErrorsList]:
-        section_result = artifact.get_section(section_id)
-        if section_result.is_err():
-            return Err(section_result.unwrap_err())
-
-        section = section_result.unwrap()
+        section = artifact.get_section(section_id).unwrap()
 
         if not isinstance(section.meta, WorkflowMeta):
             return Err([WorkflowSectionNotWorkflow(artifact_id=artifact.id, section_id=section_id)])

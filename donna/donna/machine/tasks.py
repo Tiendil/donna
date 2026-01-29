@@ -5,7 +5,7 @@ import pydantic
 
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
+from donna.core.result import Ok, Result, unwrap_to_error
 from donna.domain.ids import FullArtifactSectionId, TaskId, WorkUnitId
 
 if TYPE_CHECKING:
@@ -54,27 +54,14 @@ class WorkUnit(BaseEntity):
 
         return unit
 
+    @unwrap_to_error
     def run(self, task: Task) -> Result[list["Change"], ErrorsList]:
         from donna.machine.primitives import resolve_primitive
         from donna.world import artifacts
 
-        workflow_result = artifacts.load_artifact(self.operation_id.full_artifact_id)
-        if workflow_result.is_err():
-            return Err(workflow_result.unwrap_err())
-
-        workflow = workflow_result.unwrap()
-
-        operation_result = workflow.get_section(self.operation_id.local_id)
-        if operation_result.is_err():
-            return Err(operation_result.unwrap_err())
-
-        operation = operation_result.unwrap()
-
-        operation_kind_result = resolve_primitive(operation.kind)
-        if operation_kind_result.is_err():
-            return Err(operation_kind_result.unwrap_err())
-
-        operation_kind = operation_kind_result.unwrap()
+        workflow = artifacts.load_artifact(self.operation_id.full_artifact_id).unwrap()
+        operation = workflow.get_section(self.operation_id.local_id).unwrap()
+        operation_kind = resolve_primitive(operation.kind).unwrap()
 
         cells = list(operation_kind.execute_section(task, self, operation))
 

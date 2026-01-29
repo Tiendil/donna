@@ -2,22 +2,18 @@ import tomllib
 
 from donna.core import errors as core_errors
 from donna.core import utils
-from donna.core.result import Err, Ok, Result
+from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.world import config
 from donna.world import errors as world_errors
 
 
+@unwrap_to_error
 def initialize_environment() -> Result[None, core_errors.ErrorsList]:
     """Initialize the environment for the application.
 
     This function MUST be called before any other operations.
     """
-    project_dir_result = utils.discover_project_dir(config.DONNA_DIR_NAME)
-
-    if project_dir_result.is_err():
-        return Err(project_dir_result.unwrap_err())
-
-    project_dir = project_dir_result.unwrap()
+    project_dir = utils.discover_project_dir(config.DONNA_DIR_NAME).unwrap()
 
     config.project_dir.set(project_dir)
 

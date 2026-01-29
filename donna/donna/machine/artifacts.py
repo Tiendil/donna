@@ -110,12 +110,9 @@ class Artifact(BaseEntity):
     def node(self) -> "ArtifactNode":
         return ArtifactNode(self)
 
+    @unwrap_to_error
     def markdown_blocks(self) -> Result[list[str], ErrorsList]:
-        primary_section_result = self.primary_section()
-        if primary_section_result.is_err():
-            return Err(primary_section_result.unwrap_err())
-
-        primary_section = primary_section_result.unwrap()
+        primary_section = self.primary_section().unwrap()
         blocks = [f"# {primary_section.title}", primary_section.description]
 
         for section in self.sections:

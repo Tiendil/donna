@@ -1,7 +1,7 @@
 import pathlib
 
 from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
+from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import FullArtifactId, FullArtifactIdPattern, WorldId
 from donna.machine.artifacts import Artifact
 from donna.world import errors
@@ -33,30 +33,16 @@ class NoSourceForArtifactExtension(ArtifactUpdateError):
     message: str = "No source found for artifact extension of input path"
 
 
+@unwrap_to_error
 def artifact_file_extension(full_id: FullArtifactId) -> Result[str, ErrorsList]:
-    world_result = config().get_world(full_id.world_id)
-    if world_result.is_err():
-        return Err(world_result.unwrap_err())
-
-    world = world_result.unwrap()
-    extension_result = world.file_extension_for(full_id.artifact_id)
-    if extension_result.is_err():
-        return Err(extension_result.unwrap_err())
-
-    return Ok(extension_result.unwrap().lstrip("."))
+    world = config().get_world(full_id.world_id).unwrap()
+    return Ok(world.file_extension_for(full_id.artifact_id).unwrap().lstrip("."))
 
 
+@unwrap_to_error
 def fetch_artifact(full_id: FullArtifactId, output: pathlib.Path) -> Result[None, ErrorsList]:
-    world_result = config().get_world(full_id.world_id)
-    if world_result.is_err():
-        return Err(world_result.unwrap_err())
-
-    world = world_result.unwrap()
-    content_result = world.fetch_source(full_id.artifact_id)
-    if content_result.is_err():
-        return Err(content_result.unwrap_err())
-
-    content = content_result.unwrap()
+    world = config().get_world(full_id.world_id).unwrap()
+    content = world.fetch_source(full_id.artifact_id).unwrap()
 
     with output.open("wb") as f:
         f.write(content)
@@ -64,12 +50,9 @@ def fetch_artifact(full_id: FullArtifactId, output: pathlib.Path) -> Result[None
     return Ok(None)
 
 
+@unwrap_to_error
 def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> Result[None, ErrorsList]:
-    world_result = config().get_world(full_id.world_id)
-    if world_result.is_err():
-        return Err(world_result.unwrap_err())
-
-    world = world_result.unwrap()
+    world = config().get_world(full_id.world_id).unwrap()
 
     if world.readonly:
         return Err([CanNotUpdateReadonlyWorld(artifact_id=full_id, path=input, world_id=world.id)])
@@ -84,35 +67,19 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> Result[None
     if source_config is None:
         return Err([NoSourceForArtifactExtension(artifact_id=full_id, path=input)])
 
-    test_artifact_result = source_config.construct_artifact_from_bytes(full_id, content_bytes)
-    if test_artifact_result.is_err():
-        return Err(test_artifact_result.unwrap_err())
-
-    test_artifact = test_artifact_result.unwrap()
+    test_artifact = source_config.construct_artifact_from_bytes(full_id, content_bytes).unwrap()
     validation_result = test_artifact.validate_artifact()
 
-    if validation_result.is_err():
-        return Err(validation_result.unwrap_err())
-
-    update_result = world.update(full_id.artifact_id, content_bytes, source_suffix)
-    if update_result.is_err():
-        return Err(update_result.unwrap_err())
+    validation_result.unwrap()
+    world.update(full_id.artifact_id, content_bytes, source_suffix).unwrap()
 
     return Ok(None)
 
 
+@unwrap_to_error
 def load_artifact(full_id: FullArtifactId) -> Result[Artifact, ErrorsList]:
-    world_result = config().get_world(full_id.world_id)
-    if world_result.is_err():
-        return Err(world_result.unwrap_err())
-
-    world = world_result.unwrap()
-
-    artifact_result = world.fetch(full_id.artifact_id)
-    if artifact_result.is_err():
-        return Err(artifact_result.unwrap_err())
-
-    return Ok(artifact_result.unwrap())
+    world = config().get_world(full_id.world_id).unwrap()
+    return Ok(world.fetch(full_id.artifact_id).unwrap())
 
 
 def list_artifacts(pattern: FullArtifactIdPattern) -> Result[list[Artifact], ErrorsList]:

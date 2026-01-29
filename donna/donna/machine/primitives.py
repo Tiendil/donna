@@ -5,7 +5,7 @@ from jinja2.runtime import Context
 
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
+from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import ArtifactSectionId, PythonImportPath
 from donna.machine import errors as machine_errors
 from donna.machine.artifacts import ArtifactSectionConfig
@@ -49,15 +49,12 @@ class Primitive(BaseEntity):
         )
 
 
+@unwrap_to_error
 def resolve_primitive(primitive_id: PythonImportPath | str) -> Result[Primitive, ErrorsList]:  # noqa: CCR001
     if isinstance(primitive_id, PythonImportPath):
         import_path = str(primitive_id)
     else:
-        import_path_result = PythonImportPath.parse(primitive_id)
-        if import_path_result.is_err():
-            return Err(import_path_result.unwrap_err())
-
-        import_path = str(import_path_result.unwrap())
+        import_path = str(PythonImportPath.parse(primitive_id).unwrap())
 
     if "." not in import_path:
         return Err([machine_errors.PrimitiveInvalidImportPath(import_path=import_path)])

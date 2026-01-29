@@ -2,7 +2,7 @@ import functools
 from typing import Callable, ParamSpec
 
 from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
+from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactSectionId, WorldId
 from donna.machine import errors as machine_errors
 from donna.machine.operations import OperationMeta
@@ -19,12 +19,9 @@ def _errors_to_cells(errors: ErrorsList) -> list[Cell]:
     return [error.node().info() for error in errors]
 
 
+@unwrap_to_error
 def _session() -> Result[World, ErrorsList]:
-    world_result = config().get_world(WorldId("session"))
-    if world_result.is_err():
-        return Err(world_result.unwrap_err())
-
-    world = world_result.unwrap()
+    world = config().get_world(WorldId("session")).unwrap()
 
     if not world.is_initialized():
         world.initialize(reset=False)
@@ -32,52 +29,33 @@ def _session() -> Result[World, ErrorsList]:
     return Ok(world)
 
 
+@unwrap_to_error
 def _load_state() -> Result[ConsistentState, ErrorsList]:
-    session_result = _session()
-    if session_result.is_err():
-        return Err(session_result.unwrap_err())
-
-    read_result = session_result.unwrap().read_state("state.json")
-    if read_result.is_err():
-        return Err(read_result.unwrap_err())
-
-    content = read_result.unwrap()
+    content = _session().unwrap().read_state("state.json").unwrap()
     if content is None:
         return Err([machine_errors.SessionStateNotInitialized()])
 
     return Ok(ConsistentState.from_json(content.decode("utf-8")))
 
 
+@unwrap_to_error
 def _save_state(state: ConsistentState) -> Result[None, ErrorsList]:
-    session_result = _session()
-    if session_result.is_err():
-        return Err(session_result.unwrap_err())
-
-    write_result = session_result.unwrap().write_state("state.json", state.to_json().encode("utf-8"))
-    if write_result.is_err():
-        return Err(write_result.unwrap_err())
+    _session().unwrap().write_state("state.json", state.to_json().encode("utf-8")).unwrap()
     return Ok(None)
 
 
+@unwrap_to_error
 def _state_run(mutator: MutableState) -> Result[None, ErrorsList]:
     while mutator.has_work():
-        execution_result = mutator.exectute_next_work_unit()
-        if execution_result.is_err():
-            return Err(execution_result.unwrap_err())
-
-        save_result = _save_state(mutator.freeze())
-        if save_result.is_err():
-            return Err(save_result.unwrap_err())
+        mutator.exectute_next_work_unit().unwrap()
+        _save_state(mutator.freeze()).unwrap()
 
     return Ok(None)
 
 
+@unwrap_to_error
 def _state_cells() -> Result[list[Cell], ErrorsList]:
-    state_result = _load_state()
-    if state_result.is_err():
-        return Err(state_result.unwrap_err())
-
-    return Ok(state_result.unwrap().node().details())
+    return Ok(_load_state().unwrap().node().details())
 
 
 P = ParamSpec("P")
@@ -183,26 +161,13 @@ def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
     return cells_result.unwrap()
 
 
+@unwrap_to_error
 def _validate_operation_transition(
     state: MutableState, request_id: ActionRequestId, next_operation_id: FullArtifactSectionId
 ) -> Result[None, ErrorsList]:
-    request_result = state.get_action_request(request_id)
-    if request_result.is_err():
-        return Err(request_result.unwrap_err())
-
-    operation_id = request_result.unwrap().operation_id
-
-    workflow_result = artifacts.load_artifact(operation_id.full_artifact_id)
-    if workflow_result.is_err():
-        return Err(workflow_result.unwrap_err())
-
-    workflow = workflow_result.unwrap()
-
-    operation_result = workflow.get_section(operation_id.local_id)
-    if operation_result.is_err():
-        return Err(operation_result.unwrap_err())
-
-    operation = operation_result.unwrap()
+    operation_id = state.get_action_request(request_id).unwrap().operation_id
+    workflow = artifacts.load_artifact(operation_id.full_artifact_id).unwrap()
+    operation = workflow.get_section(operation_id.local_id).unwrap()
 
     assert isinstance(operation.meta, OperationMeta)
 

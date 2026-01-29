@@ -3,7 +3,7 @@ import shutil
 from typing import TYPE_CHECKING, cast
 
 from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
+from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern
 from donna.machine.artifacts import Artifact
 from donna.world import errors as world_errors
@@ -71,12 +71,9 @@ class World(BaseWorld):
 
         return resolve_result.unwrap() is not None
 
+    @unwrap_to_error
     def fetch(self, artifact_id: ArtifactId) -> Result[Artifact, ErrorsList]:
-        resolve_result = self._resolve_artifact_file(artifact_id)
-        if resolve_result.is_err():
-            return Err(resolve_result.unwrap_err())
-
-        path = resolve_result.unwrap()
+        path = self._resolve_artifact_file(artifact_id).unwrap()
         if path is None:
             return Err([world_errors.ArtifactNotFound(artifact_id=artifact_id, world_id=self.id)])
 
@@ -98,18 +95,11 @@ class World(BaseWorld):
                 ]
             )
 
-        artifact_result = source_config.construct_artifact_from_bytes(full_id, content_bytes)
-        if artifact_result.is_err():
-            return Err(artifact_result.unwrap_err())
+        return Ok(source_config.construct_artifact_from_bytes(full_id, content_bytes).unwrap())
 
-        return Ok(artifact_result.unwrap())
-
+    @unwrap_to_error
     def fetch_source(self, artifact_id: ArtifactId) -> Result[bytes, ErrorsList]:
-        resolve_result = self._resolve_artifact_file(artifact_id)
-        if resolve_result.is_err():
-            return Err(resolve_result.unwrap_err())
-
-        path = resolve_result.unwrap()
+        path = self._resolve_artifact_file(artifact_id).unwrap()
         if path is None:
             return Err([world_errors.ArtifactNotFound(artifact_id=artifact_id, world_id=self.id)])
 
@@ -125,12 +115,9 @@ class World(BaseWorld):
         path.write_bytes(content)
         return Ok(None)
 
+    @unwrap_to_error
     def file_extension_for(self, artifact_id: ArtifactId) -> Result[str, ErrorsList]:
-        resolve_result = self._resolve_artifact_file(artifact_id)
-        if resolve_result.is_err():
-            return Err(resolve_result.unwrap_err())
-
-        path = resolve_result.unwrap()
+        path = self._resolve_artifact_file(artifact_id).unwrap()
         if path is None:
             return Err([world_errors.ArtifactNotFound(artifact_id=artifact_id, world_id=self.id)])
 
