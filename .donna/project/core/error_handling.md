@@ -177,11 +177,15 @@ Don't use `assert` statements for any other purpose, replace them with proper er
 
 ## Do and Don'ts
 
+### No duplicated logic
+
 **DO NOT** define multiple functions with the same logic but different error handling strategies (e.g., one function raises exceptions, another returns `Result`). Instead define a single function with one error handling strategy that are explicitly specified by the developer or logically deduced from the context.
 
-Use `.unwrap` or similar methods that cause exception on `Result` objects only when the context is guarantees that there will be no exceptions. For example, after a check like `if result.is_ok():`.
+### Update all calls up the call stack
 
-If modify funtion to return environment errors, you **MUST** update all functions up the call stack that call this function to handle the returned errors properly: process, propagate or output (accoring to the context).
+If you modify funtion to return environment errors, you **MUST** update all functions up the call stack that call this function to handle the returned errors properly: process, propagate or output (accoring to the context).
+
+### Long error definitions — short construction
 
 Define all possible environment error parameters in the body of subclass, not in the place where you construct the error object. It simplifies writing unit tests and shorten the code.
 
@@ -227,6 +231,8 @@ error = FinalOperationHasTransitions(
 )
 ```
 
+### Propagate original errors
+
 If you need to propagate errors and the function expected to return the same result type, do not unwrap it and wrap again, just return the original result.
 
 ```python
@@ -245,4 +251,56 @@ def bad_example() -> Result[SomeType, SomeErrorType]:
 
     if result.is_err():
         return Err(result.unwrap_err())  # Bad: unwrapping and wrapping again is unnecessary
+```
+
+### Use `unwrap_to_error` to make code shorter
+
+The `unwrap_to_error` decorator catches exceptions from `.unwrap()` calls and translate them to results with original errors.
+
+Use it whenever you see a construction like
+
+```python
+result = some_function()
+if result.is_err():
+    return Err(result.unwrap_err())
+```
+
+Good example:
+
+```python
+...
+from donna.core.result import Err, Ok, Result, unwrap_to_error
+
+@unwrap_to_error
+def resolve(target_id: FullArtifactSectionId) -> Result[ArtifactSection, ErrorsList]:
+    from donna.world import artifacts as world_artifacts
+
+    artifact = world_artifacts.load_artifact(target_id.full_artifact_id).unwrap()
+
+    section = artifact.get_section(target_id.local_id).unwrap()
+
+    return Ok(section)
+```
+
+
+Bad example:
+
+```python
+...
+from donna.core.result import Err, Ok, Result, unwrap_to_error
+
+from donna.core.result import Err, Ok, Result, unwrap_to_error
+    artifact_result = world_artifacts.load_artifact(target_id.full_artifact_id)
+
+    if artifact_result.is_err():
+        return Err(artifact_result.unwrap_err())
+
+    artifact = artifact_result.unwrap()
+
+    section_result = artifact.get_section(target_id.local_id)
+
+    if section_result.is_err():
+        return Err(section_result.unwrap_err())
+
+    return Ok(section_result.unwrap())
 ```
