@@ -76,7 +76,7 @@ class EnvironmentErrorNode(Node):
             if field_name in ("code", "message", "cell_kind"):
                 continue
 
-            value = getattr(self, field_name)
+            value = getattr(self._error, field_name)
 
             if value is None:
                 continue
@@ -88,7 +88,7 @@ class EnvironmentErrorNode(Node):
     def content(self) -> str:
         intro = self._error.content_intro()
 
-        message = self._error.message.format(error=self).strip()
+        message = self._error.message.format(error=self._error).strip()
 
         if "\n" in self._error.message:
             content = f"{intro}:\n\n{message}"
