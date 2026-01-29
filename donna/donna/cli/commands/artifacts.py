@@ -29,47 +29,28 @@ def initialize(ctx: typer.Context) -> None:
 @cells_cli
 def list(pattern: FullArtifactIdPatternOption = None) -> Iterable[Cell]:
     if pattern is None:
-        pattern_result = FullArtifactIdPattern.parse("**")
-        if pattern_result.is_err():
-            errors = pattern_result.unwrap_err()
-            return [error.node().info() for error in errors]
+        pattern = FullArtifactIdPattern.parse("**").unwrap()
 
-        pattern = pattern_result.unwrap()
+    artifacts = world_artifacts.list_artifacts(pattern).unwrap()
 
-    artifacts_result = world_artifacts.list_artifacts(pattern)
-    if artifacts_result.is_err():
-        errors = artifacts_result.unwrap_err()
-        return [error.node().info() for error in errors]
-
-    return [artifact.node().status() for artifact in artifacts_result.unwrap()]
+    return [artifact.node().status() for artifact in artifacts]
 
 
 @artifacts_cli.command()
 @cells_cli
 def view(id: FullArtifactIdArgument) -> Iterable[Cell]:
-    artifact_result = world_artifacts.load_artifact(id)
-    if artifact_result.is_err():
-        errors = artifact_result.unwrap_err()
-        return [error.node().info() for error in errors]
-
-    return [artifact_result.unwrap().node().info()]
+    artifact = world_artifacts.load_artifact(id).unwrap()
+    return [artifact.node().info()]
 
 
 @artifacts_cli.command()
 @cells_cli
 def fetch(id: FullArtifactIdArgument, output: pathlib.Path | None = None) -> Iterable[Cell]:
     if output is None:
-        extension_result = world_artifacts.artifact_file_extension(id)
-        if extension_result.is_err():
-            errors = extension_result.unwrap_err()
-            return [error.node().info() for error in errors]
+        extension = world_artifacts.artifact_file_extension(id).unwrap()
+        output = world_tmp.file_for_artifact(id, extension)
 
-        output = world_tmp.file_for_artifact(id, extension_result.unwrap())
-
-    fetch_result = world_artifacts.fetch_artifact(id, output)
-    if fetch_result.is_err():
-        errors = fetch_result.unwrap_err()
-        return [error.node().info() for error in errors]
+    world_artifacts.fetch_artifact(id, output).unwrap()
 
     return [
         operation_succeeded(f"Artifact `{id}` fetched to '{output}'", artifact_id=str(id), output_path=str(output))
@@ -79,27 +60,16 @@ def fetch(id: FullArtifactIdArgument, output: pathlib.Path | None = None) -> Ite
 @artifacts_cli.command()
 @cells_cli
 def update(id: FullArtifactIdArgument, input: pathlib.Path) -> Iterable[Cell]:
-    result = world_artifacts.update_artifact(id, input)
-    if result.is_err():
-        errors = result.unwrap_err()
-        return [error.node().info() for error in errors]
-
+    world_artifacts.update_artifact(id, input).unwrap()
     return [operation_succeeded(f"Artifact `{id}` updated from '{input}'", artifact_id=str(id), input_path=str(input))]
 
 
 @artifacts_cli.command()
 @cells_cli
 def validate(id: FullArtifactIdArgument) -> Iterable[Cell]:
-    artifact_result = world_artifacts.load_artifact(id)
-    if artifact_result.is_err():
-        errors = artifact_result.unwrap_err()
-        return [error.node().info() for error in errors]
+    artifact = world_artifacts.load_artifact(id).unwrap()
 
-    result = artifact_result.unwrap().validate_artifact()
-
-    if result.is_err():
-        errors = result.unwrap_err()
-        return [error.node().info() for error in errors]
+    artifact.unwrap().validate_artifact().unwrap()
 
     return [operation_succeeded(f"Artifact `{id}` is valid", artifact_id=str(id))]
 
@@ -108,21 +78,13 @@ def validate(id: FullArtifactIdArgument) -> Iterable[Cell]:
 @cells_cli
 def validate_all(pattern: FullArtifactIdPatternOption = None) -> Iterable[Cell]:  # noqa: CCR001
     if pattern is None:
-        pattern_result = FullArtifactIdPattern.parse("**")
-        if pattern_result.is_err():
-            errors = pattern_result.unwrap_err()
-            return [error.node().info() for error in errors]
+        pattern = FullArtifactIdPattern.parse("**").unwrap()
 
-        pattern = pattern_result.unwrap()
-
-    artifacts_result = world_artifacts.list_artifacts(pattern)
-    if artifacts_result.is_err():
-        errors = artifacts_result.unwrap_err()
-        return [error.node().info() for error in errors]
+    artifacts = world_artifacts.list_artifacts(pattern).unwrap()
 
     errors = []
 
-    for artifact in artifacts_result.unwrap():
+    for artifact in artifacts:
         result = artifact.validate_artifact()
         if result.is_err():
             errors.extend(result.unwrap_err())

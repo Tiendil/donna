@@ -29,17 +29,14 @@ def initialize_callback(ctx: typer.Context) -> None:
 @projects_cli.command()
 @cells_cli
 def initialize(workdir: pathlib.Path = pathlib.Path.cwd()) -> Iterable[Cell]:
-    project_result = config().get_world(WorldId("project"))
-    if project_result.is_err():
-        return [error.node().info() for error in project_result.unwrap_err()]
+    # TODO: use workdir attribute
+    project = config().get_world(WorldId("project")).unwrap()
 
-    project_result.unwrap().initialize()
+    project.initialize()
 
-    session_result = config().get_world(WorldId("session"))
-    if session_result.is_err():
-        return [error.node().info() for error in session_result.unwrap_err()]
+    session = config().get_world(WorldId("session")).unwrap()
 
-    session_result.unwrap().initialize()
+    session.initialize()
 
     return [operation_succeeded("Project initialized successfully")]
 
