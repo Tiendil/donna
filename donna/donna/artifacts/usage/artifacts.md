@@ -213,3 +213,4 @@ Here they are:
 
 1. `{{ "{{ donna.lib.view(<full-artifact-id>) }}" }}` — references another artifact. Depending of the rendering mode can be: exect CLI command to view the artifact, specially formatted reference link to the artifact to easier track dependencies.
 2. `{{ "{{ donna.lib.goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. Depending of the rendering mode can be: exect CLI command to push workflow forward, specially formatted reference link to the operation to enable FSM validation of the workflow.
+3. `{{ "{{ donna.lib.task_variable(<variable_name>) }}" }}` — renders the value from the current task context in normal mode, or `$$donna task_variable <variable_name> donna$$` in analysis mode.
