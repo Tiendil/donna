@@ -1,10 +1,13 @@
 import pathlib
+from collections.abc import Iterable
 
 import typer
 
 from donna.cli.application import app
-from donna.cli.utils import output_cells, try_initialize_donna, cells_cli
+from donna.cli.utils import cells_cli, try_initialize_donna
 from donna.domain.ids import WorldId
+from donna.protocol.cell_shortcuts import operation_succeeded
+from donna.protocol.cells import Cell
 from donna.world.config import config
 
 projects_cli = typer.Typer()
@@ -25,7 +28,7 @@ def initialize_callback(ctx: typer.Context) -> None:
 
 @projects_cli.command()
 @cells_cli
-def initialize(workdir: pathlib.Path = pathlib.Path.cwd()) -> None:
+def initialize(workdir: pathlib.Path = pathlib.Path.cwd()) -> Iterable[Cell]:
     project_result = config().get_world(WorldId("project"))
     if project_result.is_err():
         return [error.node().info() for error in project_result.unwrap_err()]

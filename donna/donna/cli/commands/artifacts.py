@@ -1,12 +1,14 @@
 import pathlib
+from collections.abc import Iterable
 
 import typer
 
 from donna.cli.application import app
 from donna.cli.types import FullArtifactIdArgument, FullArtifactIdPatternOption
-from donna.cli.utils import output_cells, try_initialize_donna, cells_cli
+from donna.cli.utils import cells_cli, try_initialize_donna
 from donna.domain.ids import FullArtifactIdPattern
 from donna.protocol.cell_shortcuts import operation_succeeded
+from donna.protocol.cells import Cell
 from donna.world import artifacts as world_artifacts
 from donna.world import tmp as world_tmp
 
@@ -25,7 +27,7 @@ def initialize(ctx: typer.Context) -> None:
 
 @artifacts_cli.command()
 @cells_cli
-def list(pattern: FullArtifactIdPatternOption = None) -> None:
+def list(pattern: FullArtifactIdPatternOption = None) -> Iterable[Cell]:
     if pattern is None:
         pattern_result = FullArtifactIdPattern.parse("**")
         if pattern_result.is_err():
@@ -44,7 +46,7 @@ def list(pattern: FullArtifactIdPatternOption = None) -> None:
 
 @artifacts_cli.command()
 @cells_cli
-def view(id: FullArtifactIdArgument) -> None:
+def view(id: FullArtifactIdArgument) -> Iterable[Cell]:
     artifact_result = world_artifacts.load_artifact(id)
     if artifact_result.is_err():
         errors = artifact_result.unwrap_err()
@@ -55,7 +57,7 @@ def view(id: FullArtifactIdArgument) -> None:
 
 @artifacts_cli.command()
 @cells_cli
-def fetch(id: FullArtifactIdArgument, output: pathlib.Path | None = None) -> None:
+def fetch(id: FullArtifactIdArgument, output: pathlib.Path | None = None) -> Iterable[Cell]:
     if output is None:
         extension_result = world_artifacts.artifact_file_extension(id)
         if extension_result.is_err():
@@ -69,12 +71,14 @@ def fetch(id: FullArtifactIdArgument, output: pathlib.Path | None = None) -> Non
         errors = fetch_result.unwrap_err()
         return [error.node().info() for error in errors]
 
-    return [operation_succeeded(f"Artifact `{id}` fetched to '{output}'", artifact_id=str(id), output_path=str(output))]
+    return [
+        operation_succeeded(f"Artifact `{id}` fetched to '{output}'", artifact_id=str(id), output_path=str(output))
+    ]
 
 
 @artifacts_cli.command()
 @cells_cli
-def update(id: FullArtifactIdArgument, input: pathlib.Path) -> None:
+def update(id: FullArtifactIdArgument, input: pathlib.Path) -> Iterable[Cell]:
     result = world_artifacts.update_artifact(id, input)
     if result.is_err():
         errors = result.unwrap_err()
@@ -85,7 +89,7 @@ def update(id: FullArtifactIdArgument, input: pathlib.Path) -> None:
 
 @artifacts_cli.command()
 @cells_cli
-def validate(id: FullArtifactIdArgument) -> None:
+def validate(id: FullArtifactIdArgument) -> Iterable[Cell]:
     artifact_result = world_artifacts.load_artifact(id)
     if artifact_result.is_err():
         errors = artifact_result.unwrap_err()
@@ -102,7 +106,7 @@ def validate(id: FullArtifactIdArgument) -> None:
 
 @artifacts_cli.command()
 @cells_cli
-def validate_all(pattern: FullArtifactIdPatternOption = None) -> None:  # noqa: CCR001
+def validate_all(pattern: FullArtifactIdPatternOption = None) -> Iterable[Cell]:  # noqa: CCR001
     if pattern is None:
         pattern_result = FullArtifactIdPattern.parse("**")
         if pattern_result.is_err():
