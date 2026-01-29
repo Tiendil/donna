@@ -72,3 +72,20 @@ class ChangeRemoveWorkUnit(Change):
 
     def apply_to(self, state: "MutableState") -> None:
         state.remove_work_unit(self.work_unit_id)
+
+
+class ChangeSetTaskContext(Change):
+    task_id: TaskId
+    key: str
+    value: object
+
+    def apply_to(self, state: "MutableState") -> None:
+        target_task: Task | None = None
+        for task in state.tasks:
+            if task.id == self.task_id:
+                target_task = task
+                break
+
+        assert target_task is not None
+
+        target_task.context[self.key] = self.value

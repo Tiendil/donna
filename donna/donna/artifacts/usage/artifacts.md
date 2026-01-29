@@ -160,7 +160,48 @@ Here may be any additional instructions, requirements, notes, references, etc.
 
 **The body of the operation MUST contain a neat strictly defined algorithm for the agent to follow.**
 
-2. `donna.lib.finish` operation kind indicates that the workflow is finished.
+2. `donna.lib.run_script` operation kind executes a script from the operation body without agent/user interaction.
+
+The body of the operation MUST include exactly one fenced code block with the `donna script` info string.
+Any other text in the operation body is ignored.
+
+Script example:
+
+```donna script
+#!/usr/bin/bash
+
+echo "Hello, World!"
+```
+
+Configuration options:
+
+```toml
+id = "<operation_id>"
+kind = "donna.lib.run_script"
+
+save_stdout_to = "<variable_name>"  # optional
+save_stderr_to = "<variable_name>"  # optional
+
+goto_on_success = "<next_operation_id>"  # required
+goto_on_failure = "<next_operation_id>"  # required
+goto_on_code = {                         # optional
+    "1" = "<next_operation_id_for_code_1>"
+    "2" = "<next_operation_id_for_code_2>"
+}
+
+timeout = 60  # optional, in seconds
+```
+
+Routing rules:
+
+- Exit code `0` routes to `goto_on_success`.
+- Non-zero exit codes first check `goto_on_code`, then fall back to `goto_on_failure`.
+- Timeouts are treated as exit code `124`.
+
+When `save_stdout_to` and/or `save_stderr_to` are set, the operation stores captured output in the task context
+under the specified variable names.
+
+3. `donna.lib.finish` operation kind indicates that the workflow is finished.
 
 Each possible path through the workflow MUST end with this operation kind.
 

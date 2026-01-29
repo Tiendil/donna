@@ -94,6 +94,7 @@
 ** command to reset session state (without removing artifacts)
 ** mention `session clear` command in specs
 ** usage:cli — we may want to better specify all possible commands or event to autogenerate them.
+** completed session keeps work_scope.md and work_scope_execution.md artifacts. We should make smth with that.
 * TODO Changy for changelog
 * TODO Donna treat as duplicates temporary files, `like my-file.md~`
 * TODO CLI commands improvements
