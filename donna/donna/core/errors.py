@@ -73,7 +73,7 @@ class EnvironmentErrorNode(Node):
         }
 
         for field_name, _field in self._error.model_fields.items():
-            if field_name in ("code", "message", "cell_kind"):
+            if field_name in ("code", "message", "cell_kind", "cell_media_type", "ways_to_fix"):
                 continue
 
             value = getattr(self._error, field_name)
