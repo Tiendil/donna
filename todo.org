@@ -106,6 +106,7 @@
 *** easy mode — one of possible skills to use
 *** hard mode — forse agent to work via donna
 ** installing donna cli via online instruction for agents
+** command to reset session state (without removing artifacts)
 * TODO Changy for changelog
 * TODO Donna treat as duplicates temporary files, `like my-file.md~`
 * TODO CLI commands improvements
