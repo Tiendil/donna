@@ -1,5 +1,5 @@
 from donna.core import errors as core_errors
-from donna.domain.ids import ActionRequestId, ArtifactSectionId, FullArtifactId, FullArtifactSectionId, TaskId
+from donna.domain.ids import ActionRequestId, ArtifactSectionId, FullArtifactId, FullArtifactSectionId
 
 
 class InternalError(core_errors.InternalError):
@@ -29,13 +29,6 @@ class ActionRequestNotFound(EnvironmentError):
     message: str = "Action request `{error.request_id}` was not found in the current session state."
     ways_to_fix: list[str] = ["Use an action request id from `sessions details` output."]
     request_id: ActionRequestId
-
-
-class TaskNotFound(EnvironmentError):
-    code: str = "donna.machine.task_not_found"
-    message: str = "Task `{error.task_id}` was not found in the current session state."
-    ways_to_fix: list[str] = ["Ensure the task exists in the current session state before referencing it."]
-    task_id: TaskId
 
 
 class InvalidOperationTransition(EnvironmentError):

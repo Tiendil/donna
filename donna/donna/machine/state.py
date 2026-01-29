@@ -55,13 +55,6 @@ class BaseState(BaseEntity):
     def current_task(self) -> Task:
         return self.tasks[-1]
 
-    def get_task(self, task_id: TaskId) -> Result[Task, ErrorsList]:
-        for task in self.tasks:
-            if task.id == task_id:
-                return Ok(task)
-
-        return Err([machine_errors.TaskNotFound(task_id=task_id)])
-
     def get_action_request(self, request_id: ActionRequestId) -> Result[ActionRequest, ErrorsList]:
         for request in self.action_requests:
             if request.id == request_id:
