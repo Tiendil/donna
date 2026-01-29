@@ -1,5 +1,8 @@
 import pathlib
 
+from donna.core import errors as core_errors
+from donna.core.result import Err, Ok, Result
+
 
 def first_donna_dir(donna_dir_name: str) -> pathlib.Path | None:
     """Get the first parent directory containing the donna directory.
@@ -21,14 +24,14 @@ def donna_home_dir(donna_dir_name: str) -> pathlib.Path:
     return pathlib.Path.home() / donna_dir_name
 
 
-def discover_project_dir(donna_dir_name: str) -> pathlib.Path:
+def discover_project_dir(donna_dir_name: str) -> Result[pathlib.Path, core_errors.ErrorsList]:
     """Discover the project directory by looking for the donna directory in parent folders."""
     donna_dir = first_donna_dir(donna_dir_name)
 
     if donna_dir is None:
-        raise NotImplementedError("Could not find project directory with donna directory")
+        return Err([core_errors.ProjectDirNotFound(donna_dir_name=donna_dir_name)])
 
     if donna_dir == donna_home_dir(donna_dir_name):
-        raise NotImplementedError("The discovered donna directory is the home directory, not a project directory")
+        return Err([core_errors.ProjectDirIsHome(donna_dir_name=donna_dir_name)])
 
-    return donna_dir
+    return Ok(donna_dir)

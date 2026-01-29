@@ -4,12 +4,14 @@ from typing import TYPE_CHECKING, Any, ClassVar, Iterable
 from jinja2.runtime import Context
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import ArtifactLocalId, PythonImportPath
+from donna.core.errors import ErrorsList
+from donna.core.result import Err, Ok, Result, unwrap_to_error
+from donna.domain.ids import ArtifactSectionId, PythonImportPath
+from donna.machine import errors as machine_errors
 from donna.machine.artifacts import ArtifactSectionConfig
 
 if TYPE_CHECKING:
     from donna.machine.artifacts import Artifact, ArtifactSection
-    from donna.machine.cells import Cell
     from donna.machine.changes import Change
     from donna.machine.tasks import Task, WorkUnit
     from donna.world.config import SourceConfig as SourceConfigModel
@@ -23,44 +25,53 @@ if TYPE_CHECKING:
 class Primitive(BaseEntity):
     config_class: ClassVar[type[ArtifactSectionConfig]] = ArtifactSectionConfig
 
+    def validate_section(self, artifact: "Artifact", section_id: ArtifactSectionId) -> Result[None, ErrorsList]:
+        return Ok(None)
+
     def execute_section(self, task: "Task", unit: "WorkUnit", section: "ArtifactSection") -> Iterable["Change"]:
-        raise NotImplementedError("You MUST implement this method.")
+        raise machine_errors.PrimitiveMethodUnsupported(
+            primitive_name=self.__class__.__name__, method_name="execute_section()"
+        )
 
-    def validate_section(self, artifact: "Artifact", section_id: ArtifactLocalId) -> tuple[bool, list["Cell"]]:
-        return True, []
-
-    def apply_directive(self, context: Context, *argv: Any, **kwargs: Any) -> Any:
-        raise NotImplementedError("You MUST implement this method.")
+    def apply_directive(self, context: Context, *argv: Any, **kwargs: Any) -> Result[Any, ErrorsList]:
+        raise machine_errors.PrimitiveMethodUnsupported(
+            primitive_name=self.__class__.__name__, method_name="apply_directive()"
+        )
 
     def construct_world(self, config: "WorldConfig") -> "World":
-        raise NotImplementedError("You MUST implement this method.")
+        raise machine_errors.PrimitiveMethodUnsupported(
+            primitive_name=self.__class__.__name__, method_name="construct_world()"
+        )
 
     def construct_source(self, config: "SourceConfigModel") -> "SourceConfigValue":
-        raise NotImplementedError("You MUST implement this method.")
+        raise machine_errors.PrimitiveMethodUnsupported(
+            primitive_name=self.__class__.__name__, method_name="construct_source()"
+        )
 
 
-def resolve_primitive(primitive_id: PythonImportPath | str) -> Primitive:
+@unwrap_to_error
+def resolve_primitive(primitive_id: PythonImportPath | str) -> Result[Primitive, ErrorsList]:  # noqa: CCR001
     if isinstance(primitive_id, PythonImportPath):
         import_path = str(primitive_id)
     else:
-        import_path = str(PythonImportPath.parse(primitive_id))
+        import_path = str(PythonImportPath.parse(primitive_id).unwrap())
 
     if "." not in import_path:
-        raise NotImplementedError(f"Primitive '{import_path}' is not a valid import path")
+        return Err([machine_errors.PrimitiveInvalidImportPath(import_path=import_path)])
 
     module_path, primitive_name = import_path.rsplit(".", maxsplit=1)
 
     try:
         module = importlib.import_module(module_path)
-    except ModuleNotFoundError as exc:
-        raise NotImplementedError(f"Primitive module '{module_path}' is not importable") from exc
+    except ModuleNotFoundError:
+        return Err([machine_errors.PrimitiveModuleNotImportable(module_path=module_path)])
 
     try:
         primitive = getattr(module, primitive_name)
-    except AttributeError as exc:
-        raise NotImplementedError(f"Primitive '{import_path}' is not available") from exc
+    except AttributeError:
+        return Err([machine_errors.PrimitiveNotAvailable(import_path=import_path, module_path=module_path)])
 
     if not isinstance(primitive, Primitive):
-        raise NotImplementedError(f"Primitive '{import_path}' is not a primitive")
+        return Err([machine_errors.PrimitiveNotPrimitive(import_path=import_path)])
 
-    return primitive
+    return Ok(primitive)

@@ -4,7 +4,9 @@ from typing import TYPE_CHECKING, Any
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import FullArtifactLocalId, TaskId, WorkUnitId
+from donna.core.errors import ErrorsList
+from donna.core.result import Ok, Result, unwrap_to_error
+from donna.domain.ids import FullArtifactSectionId, TaskId, WorkUnitId
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -28,7 +30,7 @@ class Task(BaseEntity):
 class WorkUnit(BaseEntity):
     id: WorkUnitId
     task_id: TaskId
-    operation_id: FullArtifactLocalId
+    operation_id: FullArtifactSectionId
     context: dict[str, Any]
 
     @classmethod
@@ -36,7 +38,7 @@ class WorkUnit(BaseEntity):
         cls,
         id: WorkUnitId,
         task_id: TaskId,
-        operation_id: FullArtifactLocalId,
+        operation_id: FullArtifactSectionId,
         context: dict[str, Any] | None = None,
     ) -> "WorkUnit":
 
@@ -52,19 +54,15 @@ class WorkUnit(BaseEntity):
 
         return unit
 
-    def run(self, task: Task) -> list["Change"]:
+    @unwrap_to_error
+    def run(self, task: Task) -> Result[list["Change"], ErrorsList]:
         from donna.machine.primitives import resolve_primitive
         from donna.world import artifacts
 
-        workflow = artifacts.load_artifact(self.operation_id.full_artifact_id)
-
-        operation = workflow.get_section(self.operation_id.local_id)
-
-        if not operation:
-            raise NotImplementedError(f"Operation with id '{self.operation_id.local_id}' not found")
-
-        operation_kind = resolve_primitive(operation.kind)
+        workflow = artifacts.load_artifact(self.operation_id.full_artifact_id).unwrap()
+        operation = workflow.get_section(self.operation_id.local_id).unwrap()
+        operation_kind = resolve_primitive(operation.kind).unwrap()
 
         cells = list(operation_kind.execute_section(task, self, operation))
 
-        return cells
+        return Ok(cells)

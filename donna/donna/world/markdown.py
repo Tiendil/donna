@@ -8,6 +8,10 @@ from markdown_it.tree import SyntaxTreeNode
 from mdformat.renderer import MDRenderer
 
 from donna.core.entities import BaseEntity
+from donna.core.errors import ErrorsList
+from donna.core.result import Err, Ok, Result, unwrap_to_error
+from donna.domain.ids import FullArtifactId
+from donna.world import errors as world_errors
 
 
 class SectionLevel(str, enum.Enum):
@@ -20,23 +24,23 @@ class CodeSource(BaseEntity):
     properties: dict[str, str | bool]
     content: str
 
-    def structured_data(self) -> Any:
+    def structured_data(self) -> Result[Any, ErrorsList]:
         if self.format == "json":
             import json
 
-            return json.loads(self.content)
+            return Ok(json.loads(self.content))
 
         if self.format == "yaml" or self.format == "yml":
             import yaml
 
-            return yaml.safe_load(self.content)
+            return Ok(yaml.safe_load(self.content))
 
         if self.format == "toml":
             import tomllib
 
-            return tomllib.loads(self.content)
+            return Ok(tomllib.loads(self.content))
 
-        raise NotImplementedError(f"Unsupported code format: {self.format}")
+        return Err([world_errors.MarkdownUnsupportedCodeFormat(format=self.format)])
 
 
 class SectionSource(BaseEntity):
@@ -71,13 +75,21 @@ class SectionSource(BaseEntity):
     def as_analysis_markdown(self, with_title: bool) -> str:
         return self._as_markdown(self.analysis_tokens, with_title)
 
-    def merged_configs(self) -> dict[str, Any]:
+    def merged_configs(self) -> Result[dict[str, Any], ErrorsList]:
         result: dict[str, Any] = {}
+        errors: ErrorsList = []
 
         for config in self.configs:
-            result.update(config.structured_data())
+            data_result = config.structured_data()
+            if data_result.is_err():
+                errors.extend(data_result.unwrap_err())
+                continue
+            result.update(data_result.unwrap())
 
-        return result
+        if errors:
+            return Err(errors)
+
+        return Ok(result)
 
 
 def render_back(tokens: list[Token]) -> str:
@@ -89,25 +101,29 @@ def clear_heading(text: str) -> str:
     return text.lstrip("#").strip()
 
 
-def _parse_h1(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:
+def _parse_h1(
+    sections: list[SectionSource], node: SyntaxTreeNode, artifact_id: FullArtifactId | None
+) -> Result[SyntaxTreeNode | None, ErrorsList]:
     section = sections[-1]
 
     if section.level != SectionLevel.h1:
-        raise NotImplementedError("Multiple H1 sections are not supported")
+        return Err([world_errors.MarkdownMultipleH1Sections(artifact_id=artifact_id)])
 
     if section.title is not None:
-        raise NotImplementedError("Multiple H1 titles are not supported")
+        return Err([world_errors.MarkdownMultipleH1Titles(artifact_id=artifact_id)])
 
     section.title = clear_heading(render_back(node.to_tokens()).strip())
 
-    return node.next_sibling
+    return Ok(node.next_sibling)
 
 
-def _parse_h2(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:
+def _parse_h2(
+    sections: list[SectionSource], node: SyntaxTreeNode, artifact_id: FullArtifactId | None
+) -> Result[SyntaxTreeNode | None, ErrorsList]:
     section = sections[-1]
 
     if section.title is None:
-        raise NotImplementedError("H2 section found before H1 title")
+        return Err([world_errors.MarkdownH2BeforeH1Title(artifact_id=artifact_id)])
 
     new_section = SectionSource(
         level=SectionLevel.h2,
@@ -119,20 +135,22 @@ def _parse_h2(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTree
 
     sections.append(new_section)
 
-    return node.next_sibling
+    return Ok(node.next_sibling)
 
 
-def _parse_heading(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:
+def _parse_heading(
+    sections: list[SectionSource], node: SyntaxTreeNode, artifact_id: FullArtifactId | None
+) -> Result[SyntaxTreeNode | None, ErrorsList]:
     section = sections[-1]
 
     if node.tag == "h1":
-        return _parse_h1(sections, node)
+        return _parse_h1(sections, node, artifact_id)
 
     if node.tag == "h2":
-        return _parse_h2(sections, node)
+        return _parse_h2(sections, node, artifact_id)
 
     section.original_tokens.extend(node.to_tokens())
-    return node.next_sibling
+    return Ok(node.next_sibling)
 
 
 def _parse_fence(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:
@@ -196,7 +214,10 @@ def _parse_others(sections: list[SectionSource], node: SyntaxTreeNode) -> Syntax
     return current
 
 
-def parse(text: str) -> list[SectionSource]:  # noqa: CCR001, CFQ001 # pylint: disable=R0912, R0915
+@unwrap_to_error
+def parse(  # noqa: CCR001, CFQ001
+    text: str, *, artifact_id: FullArtifactId | None = None
+) -> Result[list[SectionSource], ErrorsList]:  # pylint: disable=R0912, R0915
     md = MarkdownIt("commonmark")  # TODO: later we may want to customize it with plugins
 
     tokens = md.parse(text)
@@ -217,7 +238,7 @@ def parse(text: str) -> list[SectionSource]:  # noqa: CCR001, CFQ001 # pylint: d
     while node is not None:
 
         if node.type == "heading":
-            node = _parse_heading(sections, node)
+            node = _parse_heading(sections, node, artifact_id).unwrap()
             continue
 
         if node.type == "fence":
@@ -234,5 +255,7 @@ def parse(text: str) -> list[SectionSource]:  # noqa: CCR001, CFQ001 # pylint: d
             break
 
         node = node.next_sibling
+
+    return Ok(sections)
 
     return sections

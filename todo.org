@@ -2,9 +2,11 @@
 * TODO freeze pydantic models which are possible
 * TODO codex should explain what it is doing, while executing requests from donna
 * TODO tests
-** TODO basic / lowest unit tests for primitive operations
-** TODO domain-level unit tests
-** TODO intergration tests for workflows/stories/scenarios
+** basic / lowest unit tests for primitive operations
+** domain-level unit tests
+** intergration tests for workflows/stories/scenarios
+** header of the module must contain the instruction on how to write tests for it?
+*** maybe just with links to the spec
 * TODO optimize imports by moving most used ones to \__init__.py files
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO unify code of different directives? It is very similar
@@ -20,9 +22,6 @@
 ** When we start the workflow, should we output the head cells before the first operation?
 ** mention jinja comments {# ... #} in artifact specification
 ** CLI: allow references to sections by full id -> display one specific section of artifact
-* TODO Jinja2 improvements
-** sandbox mode — do we need it?
-** register jinja2 filters?
 * TODO Possible workflows
 ** bootstrap.bootstrap_all.
 ** bootstrap.donna.create_project
@@ -32,9 +31,10 @@
 ** morphologica_analysis — workflow for explicit morphological analysis
 ** simple_task — workflow for simple tasks to not bother with complex story workflows
 ** Spec-based workflow (like in OpenSpec?)
+** Example worflow with iterative factorial calculation
+** Example workflow with recursive factorial calculation
 * TODO possible specifications
 ** how to prepare python package with artifacts for donna
-** `donna:usage:dictionary` — standard terms and their definitions
 * TODO Grooming improvements
 ** Add spelling validation
 ** Add import/dependency flow restrictions (there were a specialized package for that)
@@ -68,6 +68,18 @@
 *** fsms instead of plain texts
 *** "better" Markdown
 ** you can deliver instructions and operations for your package with your package
+** every error is accompanied with the ways to fix it
+** goals:
+*** maximum determinism
+*** maximum introspection
+*** LLMs must do only the work they can do better than code
+** How Donna help agents to do their work better
+*** Validation of artifacts
+*** Every error is accompanied with the explanation and list of ways to fix it
+*** Do algorithmic operations without need for LLMs to think about them
+*** Controls meta flow of work, so agent should not think about it
+** Since the donna is developed with donna, Donna's `.donna` directory is a great example of how to structure donna projects and how to work with it in general.
+** this is also an experiment on agent-friendly cli tools
 * TODO Request Action: agent has not always use the correctly specified branch, may be we should separate operation with next operation selection?
 * TODO Workflows polishing
 ** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
@@ -79,26 +91,6 @@
 *** Approach 3: keep them, but add some meta info on analysis phase that donna can use.
 ** tune wording of workflows (what to write before goto)
 ** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
-* TODO Cells & Errors
-** We generate different kinds of cells for different use-cases. That is not reflected in the code well enough.
-** Replace custom output woth json logging (?), for the sake of ai agents, it is not big difference to use json instead of cells.
-** stdout is for structured output of cells (like json?)
-** stderr is for logging and debug info
-** using json will help to rid of cell ids
-** artifact cli should always return Cells
-** Consider using https://github.com/toon-format/toon for json formatting in cells
-** each kind/primitive must has reference to specification section that explains it
-*** cli command to list primitives?
-*** cli command to show primitive specification?
-*** in case of errors primitives should return cell with reference to their specification section
-*** cli command to validate that every specification exists for each primitive
-** Organize standard cell kinds into enum (but allow custom kinds as well). Or just provide custom constructors for each use-case.
-** errors processing improvements
-*** Vebose jinja2 render errors to help agents and developers
-*** replace all NotImplementedError exceptions with custom exceptions and smart error handling
-*** exceptions must output cells?
-*** cleanup asserts — replace with real checks and exceptions
-*** rust-style errors?
 * TODO Donna flow improvements
 ** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
 ** on initialization donna should create some default workflows based on the project configs (grooming, for example)
@@ -106,3 +98,17 @@
 ** lock for donna operations on the project
 ** donna should be able to continue finished session (somewhow). I.e. when the developer ads new details to it.
 ** Agent can not continue work in finished session => remove all artifacts that may be required.
+** Each world must provide an intro spec and donna should be able to conviniently output it to the user.
+** Install donna as a skill
+** Install donna as a tool
+** automatically update all required instructions on donna update
+** usage modes
+*** easy mode — one of possible skills to use
+*** hard mode — forse agent to work via donna
+** installing donna cli via online instruction for agents
+** command to reset session state (without removing artifacts)
+* TODO Changy for changelog
+* TODO Donna treat as duplicates temporary files, `like my-file.md~`
+* TODO CLI commands improvements
+** each cli command should have detailed description
+** protect each of cli commands with is_session_exists check

@@ -1,13 +1,11 @@
 from typing import TYPE_CHECKING, ClassVar, Iterable, cast
 
-from donna.domain.ids import ArtifactLocalId, FullArtifactId, FullArtifactLocalId
-from donna.machine.artifacts import (
-    Artifact,
-    ArtifactSection,
-    ArtifactSectionConfig,
-    ArtifactSectionMeta,
-)
-from donna.machine.cells import Cell
+from donna.core import errors as core_errors
+from donna.core.errors import ErrorsList
+from donna.core.result import Err, Ok, Result, unwrap_to_error
+from donna.domain.ids import ArtifactSectionId, FullArtifactId
+from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
+from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import FsmMode, OperationMeta
 from donna.machine.primitives import Primitive
 from donna.world import markdown
@@ -18,38 +16,90 @@ if TYPE_CHECKING:
     from donna.machine.tasks import Task, WorkUnit
 
 
-def find_not_reachable_operations(
-    start_id: FullArtifactLocalId,  # noqa: CCR001
-    transitions: dict[FullArtifactLocalId, set[FullArtifactLocalId]],
-) -> set[FullArtifactLocalId]:
-    reachable = set()
-    to_visit = [start_id]
+class InternalError(core_errors.InternalError):
+    """Base class for internal errors in donna.primitives.artifacts.workflow."""
+
+
+class WorkflowSectionMissingMetadata(InternalError):
+    message: str = "Workflow section is missing workflow metadata."
+
+
+class WrongStartOperation(ArtifactValidationError):
+    code: str = "donna.workflows.wrong_start_operation"
+    message: str = "Can not find the start operation `{error.start_operation_id}` in the workflow."
+    ways_to_fix: list[str] = ["Ensure that the artifact contains the section with the specified start operation ID."]
+    start_operation_id: ArtifactSectionId
+
+
+class SectionIsNotAnOperation(ArtifactValidationError):
+    code: str = "donna.workflows.section_is_not_an_operation"
+    message: str = "Section `{error.workflow_section_id}` is not an operation and cannot be part of the workflow."
+    ways_to_fix: list[str] = ["Ensure that the section has a kind of one of operation primitives."]
+    workflow_section_id: ArtifactSectionId
+
+
+class WorkflowSectionNotWorkflow(ArtifactValidationError):
+    code: str = "donna.workflows.section_not_workflow"
+    message: str = "Section `{error.section_id}` is not a workflow section."
+    ways_to_fix: list[str] = ["Ensure the section uses the workflow primitive and includes workflow metadata."]
+
+
+class FinalOperationHasTransitions(ArtifactValidationError):
+    code: str = "donna.workflows.final_operation_has_transitions"
+    message: str = "Final operation `{error.workflow_section_id}` should not have outgoing transitions."
+    ways_to_fix: list[str] = [
+        "Approach A: Remove all outgoing transitions from this operation.",
+        "Approach B: Change the `fsm_mode` of this operation from `final` to `normal`",
+        "Approach C: Remove the `fsm_mode` setting from this operation, as `normal` is the default.",
+    ]
+    workflow_section_id: ArtifactSectionId
+
+
+class NoOutgoingTransitions(ArtifactValidationError):
+    code: str = "donna.workflows.no_outgoing_transitions"
+    message: str = (
+        "Operation `{error.workflow_section_id}` must have at least one outgoing transition or be marked as final."
+    )
+    ways_to_fix: list[str] = [
+        "Approach A: Add at least one outgoing transition from this operation.",
+        "Approach B: Change the kind of this operation to `donna.lib.finish`",
+        "Approach C: Mark this operation as final by setting its `fsm_mode` to `final`.",
+    ]
+    workflow_section_id: ArtifactSectionId
+
+
+def find_workflow_sections(start_operation_id: ArtifactSectionId, artifact: Artifact) -> set[ArtifactSectionId]:
+    workflow_sections = set()
+    to_visit = [start_operation_id]
 
     while to_visit:
         current = to_visit.pop()
 
-        if current in reachable:
+        if current in workflow_sections:
             continue
 
-        reachable.add(current)
+        workflow_sections.add(current)
 
-        to_visit.extend(transitions.get(current, ()))
+        section_result = artifact.get_section(current)
+        if section_result.is_err():
+            continue
 
-    all_operations = set()
+        section = section_result.unwrap()
 
-    for from_id, target_ids in transitions.items():
-        all_operations.add(from_id)
-        all_operations.update(target_ids)
+        if not isinstance(section.meta, OperationMeta):
+            continue
 
-    return all_operations - reachable
+        to_visit.extend(section.meta.allowed_transtions)
+
+    return workflow_sections
 
 
 class WorkflowConfig(ArtifactSectionConfig):
-    start_operation_id: ArtifactLocalId
+    start_operation_id: ArtifactSectionId
 
 
 class WorkflowMeta(ArtifactSectionMeta):
-    start_operation_id: FullArtifactLocalId
+    start_operation_id: ArtifactSectionId
 
     def cells_meta(self) -> dict[str, object]:
         return {"start_operation_id": str(self.start_operation_id)}
@@ -67,121 +117,79 @@ class Workflow(MarkdownSectionMixin, Primitive):
         primary: bool = False,
     ) -> ArtifactSectionMeta:
         workflow_config = cast(WorkflowConfig, section_config)
-        return WorkflowMeta(start_operation_id=artifact_id.to_full_local(workflow_config.start_operation_id))
+        return WorkflowMeta(start_operation_id=workflow_config.start_operation_id)
 
     def execute_section(self, task: "Task", unit: "WorkUnit", section: ArtifactSection) -> Iterable["Change"]:
         from donna.machine.changes import ChangeAddWorkUnit
 
         if not isinstance(section.meta, WorkflowMeta):
-            raise NotImplementedError("Workflow section is missing workflow metadata.")
+            raise WorkflowSectionMissingMetadata()
 
-        yield ChangeAddWorkUnit(task_id=task.id, operation_id=section.meta.start_operation_id)
+        full_id = section.artifact_id.to_full_local(section.meta.start_operation_id)
 
+        yield ChangeAddWorkUnit(task_id=task.id, operation_id=full_id)
+
+    @unwrap_to_error
     def validate_section(  # noqa: CCR001, CFQ001
-        self, artifact: Artifact, section_id: ArtifactLocalId
-    ) -> tuple[bool, list[Cell]]:
-        section = artifact.get_section(section_id)
-
-        if section is None:
-            raise NotImplementedError("Trying to validate an section that does not exist in the artifact.")
+        self, artifact: Artifact, section_id: ArtifactSectionId
+    ) -> Result[None, ErrorsList]:
+        section = artifact.get_section(section_id).unwrap()
 
         if not isinstance(section.meta, WorkflowMeta):
-            return False, [
-                Cell.build_meta(
-                    kind="artifact_kind_validation",
-                    id=str(artifact.id),
-                    status="failure",
-                    message=f"Section '{section_id}' does not have workflow metadata.",
-                )
-            ]
+            return Err([WorkflowSectionNotWorkflow(artifact_id=artifact.id, section_id=section_id)])
 
         start_operation_id = section.meta.start_operation_id
 
-        if artifact.get_section(start_operation_id.local_id) is None:
-            return False, [
-                Cell.build_meta(
-                    kind="artifact_kind_validation",
-                    id=str(artifact.id),
-                    status="failure",
-                    message=f"Start operation ID '{start_operation_id}' does not exist in the workflow.",
+        errors: ErrorsList = []
+
+        start_operation_result = artifact.get_section(start_operation_id)
+        if start_operation_result.is_err():
+            errors.extend(start_operation_result.unwrap_err())
+            errors.append(
+                WrongStartOperation(
+                    artifact_id=artifact.id, section_id=section_id, start_operation_id=start_operation_id
                 )
-            ]
-
-        transitions = {}
-
-        for section in artifact.sections:
-            if isinstance(section.meta, WorkflowMeta):
-                continue
-            if not isinstance(section.meta, OperationMeta):
-                return False, [
-                    Cell.build_meta(
-                        kind="artifact_kind_validation",
-                        id=str(artifact.id),
-                        status="failure",
-                        message=f"Section '{section.id}' is not an operation and cannot be part of the workflow.",
-                    )
-                ]
-
-            section_full_id = artifact.id.to_full_local(section.id)
-
-            if section.meta.fsm_mode == FsmMode.final and section.meta.allowed_transtions:
-                return False, [
-                    Cell.build_meta(
-                        kind="artifact_kind_validation",
-                        id=str(artifact.id),
-                        status="failure",
-                        message=f"Final operation '{section_full_id}' should not have outgoing transitions.",
-                    )
-                ]
-
-            if section.meta.fsm_mode == FsmMode.start and section_full_id != start_operation_id:
-                return False, [
-                    Cell.build_meta(
-                        kind="artifact_kind_validation",
-                        id=str(artifact.id),
-                        status="failure",
-                        message=(
-                            f"Operation '{section_full_id}' is marked as start but does not match the workflow's start"
-                            f" operation ID '{start_operation_id}'."
-                        ),
-                    )
-                ]
-
-            if section.meta.fsm_mode == FsmMode.normal and not section.meta.allowed_transtions:
-                return False, [
-                    Cell.build_meta(
-                        kind="artifact_kind_validation",
-                        id=str(artifact.id),
-                        status="failure",
-                        message=(
-                            f"Operation '{section_full_id}' must have at least one allowed transition or be marked as"
-                            " final."
-                        ),
-                    )
-                ]
-
-            transitions[section_full_id] = set(section.meta.allowed_transtions)
-
-        not_reachable_operations = find_not_reachable_operations(
-            start_id=start_operation_id,
-            transitions=transitions,
-        )
-
-        if not_reachable_operations:
-            return False, [
-                Cell.build_meta(
-                    kind="artifact_kind_validation",
-                    id=str(artifact.id),
-                    status="failure",
-                    message="The following operations are not reachable from the start operation: "
-                    f"{', '.join(str(op_id) for op_id in not_reachable_operations)}.",
-                )
-            ]
-
-        return True, [
-            Cell.build_meta(
-                kind="artifact_kind_validation",
-                id=str(artifact.id),
-                status="success",
             )
-        ]
+
+        workflow_sections = find_workflow_sections(start_operation_id, artifact)
+
+        for workflow_section_id in workflow_sections:
+            workflow_section_result = artifact.get_section(workflow_section_id)
+            if workflow_section_result.is_err():
+                errors.extend(workflow_section_result.unwrap_err())
+                continue
+            workflow_section = workflow_section_result.unwrap()
+
+            if isinstance(workflow_section.meta, WorkflowMeta):
+                continue
+
+            if not isinstance(workflow_section.meta, OperationMeta):
+                errors.append(
+                    SectionIsNotAnOperation(
+                        artifact_id=artifact.id, section_id=section.id, workflow_section_id=workflow_section.id
+                    )
+                )
+                continue
+
+            if workflow_section.meta.fsm_mode == FsmMode.final and workflow_section.meta.allowed_transtions:
+                errors.append(
+                    FinalOperationHasTransitions(
+                        artifact_id=artifact.id, section_id=section_id, workflow_section_id=workflow_section.id
+                    )
+                )
+                continue
+
+            if workflow_section.meta.fsm_mode == FsmMode.final:
+                continue
+
+            if not workflow_section.meta.allowed_transtions:
+                errors.append(
+                    NoOutgoingTransitions(
+                        artifact_id=artifact.id, section_id=section_id, workflow_section_id=workflow_section.id
+                    )
+                )
+
+        if errors:
+            return Err(errors)
+
+        return Ok(None)

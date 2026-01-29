@@ -1,7 +1,7 @@
 import enum
 from typing import TYPE_CHECKING, Any
 
-from donna.domain.ids import FullArtifactLocalId
+from donna.domain.ids import ArtifactSectionId
 from donna.machine.artifacts import ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.primitives import Primitive
 
@@ -25,7 +25,7 @@ class OperationConfig(ArtifactSectionConfig):
 
 class OperationMeta(ArtifactSectionMeta):
     fsm_mode: FsmMode = FsmMode.normal
-    allowed_transtions: set[FullArtifactLocalId]
+    allowed_transtions: set[ArtifactSectionId]
 
     def cells_meta(self) -> dict[str, Any]:
         return {"fsm_mode": self.fsm_mode.value, "allowed_transtions": [str(t) for t in self.allowed_transtions]}

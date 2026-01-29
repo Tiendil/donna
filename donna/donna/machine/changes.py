@@ -1,7 +1,8 @@
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import ActionRequestId, FullArtifactLocalId, TaskId, WorkUnitId
+from donna.domain.ids import ActionRequestId, FullArtifactSectionId, TaskId, WorkUnitId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.tasks import Task, WorkUnit
 
@@ -9,9 +10,9 @@ if TYPE_CHECKING:
     from donna.machine.state import MutableState
 
 
-class Change(BaseEntity):
-    def apply_to(self, state: "MutableState") -> None:
-        raise NotImplementedError()
+class Change(BaseEntity, ABC):
+    @abstractmethod
+    def apply_to(self, state: "MutableState") -> None: ...  # noqa: E704
 
 
 class ChangeFinishTask(Change):
@@ -23,7 +24,7 @@ class ChangeFinishTask(Change):
 
 class ChangeAddWorkUnit(Change):
     task_id: TaskId
-    operation_id: FullArtifactLocalId
+    operation_id: FullArtifactSectionId
 
     def apply_to(self, state: "MutableState") -> None:
         work_unit = WorkUnit.build(id=state.next_work_unit_id(), task_id=self.task_id, operation_id=self.operation_id)
@@ -31,7 +32,7 @@ class ChangeAddWorkUnit(Change):
 
 
 class ChangeAddTask(Change):
-    operation_id: FullArtifactLocalId
+    operation_id: FullArtifactSectionId
 
     def apply_to(self, state: "MutableState") -> None:
         task = Task.build(state.next_task_id())

@@ -1,18 +1,21 @@
 import copy
+import textwrap
 from typing import Sequence, cast
 
 import pydantic
 
 from donna.core.entities import BaseEntity
+from donna.core.errors import ErrorsList
+from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import (
     ActionRequestId,
-    FullArtifactLocalId,
+    FullArtifactSectionId,
     InternalId,
     TaskId,
     WorkUnitId,
 )
+from donna.machine import errors as machine_errors
 from donna.machine.action_requests import ActionRequest
-from donna.machine.cells import Cell
 from donna.machine.changes import (
     Change,
     ChangeAddTask,
@@ -22,6 +25,8 @@ from donna.machine.changes import (
     ChangeRemoveWorkUnit,
 )
 from donna.machine.tasks import Task, WorkUnit
+from donna.protocol.cells import Cell
+from donna.protocol.nodes import Node
 
 
 class BaseState(BaseEntity):
@@ -40,6 +45,9 @@ class BaseState(BaseEntity):
     def has_work(self) -> bool:
         return bool(self.work_units)
 
+    def node(self) -> "StateNode":
+        return StateNode(self)
+
     ###########
     # Accessors
     ###########
@@ -48,19 +56,12 @@ class BaseState(BaseEntity):
     def current_task(self) -> Task:
         return self.tasks[-1]
 
-    def get_task(self, task_id: TaskId) -> Task:
-        for task in self.tasks:
-            if task.id == task_id:
-                return task
-
-        raise NotImplementedError(f"Task with id '{task_id}' not found in active tasks")
-
-    def get_action_request(self, request_id: ActionRequestId) -> ActionRequest:
+    def get_action_request(self, request_id: ActionRequestId) -> Result[ActionRequest, ErrorsList]:
         for request in self.action_requests:
             if request.id == request_id:
-                return request
+                return Ok(request)
 
-        raise NotImplementedError(f"Action request with id '{request_id}' not found in state")
+        return Err([machine_errors.ActionRequestNotFound(request_id=request_id)])
 
     # Currently we execute first work unit found for the current task
     # Since we only append work units, this effectively works as a queue per task
@@ -73,43 +74,6 @@ class BaseState(BaseEntity):
             return work_unit
 
         return None
-
-    #######
-    # Cells
-    #######
-
-    def cells_for_complete(self) -> Cell:
-        return Cell.build_markdown(
-            kind="work_is_completed",
-            content=(
-                "The work in this session is COMPLETED. You MUST STOP all your activities immediately. "
-                "ASK THE USER for further instructions."
-            ),
-        )
-
-    def cells_for_status(self) -> list[Cell]:
-        return [
-            Cell.build_meta(
-                kind="state_status",
-                tasks=len(self.tasks),
-                queued_work_units=len(self.work_units),
-                pending_action_requests=len(self.action_requests),
-                is_completed=self.is_completed,
-            )
-        ]
-
-    def get_cells(self) -> list[Cell]:
-
-        cells = []
-
-        for action_request in self.action_requests:
-            for cell in action_request.cells():
-                cells.append(cell)
-
-        if self.is_completed:
-            cells.append(self.cells_for_complete())
-
-        return cells
 
 
 class ConsistentState(BaseState):
@@ -186,14 +150,14 @@ class MutableState(BaseState):
     # Complex operations
     ####################
 
-    def complete_action_request(self, request_id: ActionRequestId, next_operation_id: FullArtifactLocalId) -> None:
+    def complete_action_request(self, request_id: ActionRequestId, next_operation_id: FullArtifactSectionId) -> None:
         changes = [
             ChangeAddWorkUnit(task_id=self.current_task.id, operation_id=next_operation_id),
             ChangeRemoveActionRequest(action_request_id=request_id),
         ]
         self.apply_changes(changes)
 
-    def start_workflow(self, full_operation_id: FullArtifactLocalId) -> None:
+    def start_workflow(self, full_operation_id: FullArtifactSectionId) -> None:
         changes = [ChangeAddTask(operation_id=full_operation_id)]
         self.apply_changes(changes)
 
@@ -201,11 +165,53 @@ class MutableState(BaseState):
         changes = [ChangeRemoveTask(task_id=task_id)]
         self.apply_changes(changes)
 
-    def exectute_next_work_unit(self) -> None:
+    @unwrap_to_error
+    def exectute_next_work_unit(self) -> Result[None, ErrorsList]:
         next_work_unit = self.get_next_work_unit()
         assert next_work_unit is not None
 
-        changes = next_work_unit.run(self.current_task)
+        changes = next_work_unit.run(self.current_task).unwrap()
         changes.append(ChangeRemoveWorkUnit(work_unit_id=next_work_unit.id))
 
         self.apply_changes(changes)
+        return Ok(None)
+
+
+class StateNode(Node):
+    __slots__ = ("_state",)
+
+    def __init__(self, state: BaseState) -> None:
+        self._state = state
+
+    def status(self) -> Cell:
+        if self._state.is_completed:
+            message = textwrap.dedent(
+                """
+            The session has no active tasks or pending actions.
+
+            - If the developer asked you to start working on a new task, you can do so by initiating a new workflow.
+            - If you have been working on a task, consider it completed and output the results to the developer.
+            """
+            )
+        else:
+            message = textwrap.dedent(
+                """
+            The session is ACTIVE. You have pending tasks to complete.
+
+            - If the developer asked you to start working on a new task, you MUST ask if you should start a new session
+              or run a new workflow in the current one.
+            - If you have been working on a task, you can continue.
+                """
+            )
+
+        return Cell.build_markdown(
+            kind="session__state_status",
+            content=message,
+            tasks=len(self._state.tasks),
+            queued_work_units=len(self._state.work_units),
+            pending_action_requests=len(self._state.action_requests),
+            is_completed=self._state.is_completed,
+        )
+
+    def references(self) -> list[Node]:
+        return [action_request.node() for action_request in self._state.action_requests]

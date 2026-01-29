@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING, ClassVar, Iterator, cast
 
 import pydantic
 
-from donna.domain.ids import FullArtifactId, FullArtifactLocalId
+from donna.domain import errors as domain_errors
+from donna.domain.ids import ArtifactSectionId, FullArtifactId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
     from donna.machine.tasks import Task, WorkUnit
 
 
-def extract_transitions(text: str) -> set[FullArtifactLocalId]:
+def extract_transitions(text: str) -> set[ArtifactSectionId]:
     """Extracts all transitions from the text of action request.
 
     Transition is specified as render of `goto` directive in the format:
@@ -26,10 +27,13 @@ def extract_transitions(text: str) -> set[FullArtifactLocalId]:
     pattern = r"\$\$donna\s+goto\s+([a-zA-Z0-9_\-./:]+)\s+donna\$\$"
     matches = re.findall(pattern, text)
 
-    transitions: set[FullArtifactLocalId] = set()
+    transitions: set[ArtifactSectionId] = set()
 
     for match in matches:
-        transitions.add(FullArtifactLocalId.parse(match))
+        transition_result = ArtifactSectionId.parse(match)
+        if transition_result.is_err():
+            raise domain_errors.InvalidIdentifier(value=match)
+        transitions.add(transition_result.unwrap())
 
     return transitions
 
@@ -75,7 +79,6 @@ class RequestAction(MarkdownSectionMixin, OperationKind):
         request_text = operation.description.format(**context)
 
         full_operation_id = unit.operation_id
-        assert operation.id == full_operation_id.local_id
 
         request = ActionRequest.build(request_text, full_operation_id)
 

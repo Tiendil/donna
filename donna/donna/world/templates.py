@@ -7,8 +7,12 @@ from typing import Iterator
 
 import jinja2
 
+from donna.core import errors as core_errors
+from donna.core.errors import EnvironmentErrorsProxy, ErrorsList
+from donna.core.result import Err, Ok, Result
 from donna.domain.ids import FullArtifactId
 from donna.machine.templates import Directive
+from donna.world import errors as world_errors
 
 
 class RenderMode(enum.Enum):
@@ -66,9 +70,13 @@ class DirectivePathBuilder:
         return DirectivePathBuilder(self._parts + (name,))
 
     @jinja2.pass_context
-    def __call__(self, context: jinja2.runtime.Context, *argv: object, **kwargs: object) -> object:
+    def __call__(self, context: jinja2.runtime.Context, *argv: object, **kwargs: object) -> object:  # noqa: CCR001
+        artifact_id = context.get("artifact_id")
+        directive_path = ".".join(self._parts)
         if len(self._parts) < 2:
-            raise NotImplementedError("Directive path must include module and directive parts.")
+            raise EnvironmentErrorsProxy(
+                [world_errors.DirectivePathIncomplete(path=directive_path, artifact_id=artifact_id)]
+            )
 
         module_path = ".".join(self._parts[:-1])
         directive_name = self._parts[-1]
@@ -76,17 +84,67 @@ class DirectivePathBuilder:
         try:
             module = importlib.import_module(module_path)
         except ModuleNotFoundError as exc:
-            raise NotImplementedError(f"Directive module '{module_path}' is not importable") from exc
+            raise EnvironmentErrorsProxy(
+                [world_errors.DirectiveModuleNotImportable(module_path=module_path, artifact_id=artifact_id)]
+            ) from exc
+        except core_errors.InternalError:
+            raise
+        except Exception as exc:
+            raise EnvironmentErrorsProxy(
+                [
+                    world_errors.DirectiveUnexpectedError(
+                        directive_path=directive_path,
+                        details=str(exc),
+                        artifact_id=artifact_id,
+                    )
+                ]
+            ) from exc
 
         try:
             directive = getattr(module, directive_name)
         except AttributeError as exc:
-            raise NotImplementedError(f"Directive '{module_path}.{directive_name}' is not available") from exc
+            raise EnvironmentErrorsProxy(
+                [
+                    world_errors.DirectiveNotAvailable(
+                        module_path=module_path,
+                        directive_name=directive_name,
+                        artifact_id=artifact_id,
+                    )
+                ]
+            ) from exc
 
         if not isinstance(directive, Directive):
-            raise NotImplementedError(f"Directive '{module_path}.{directive_name}' is not a directive")
+            raise EnvironmentErrorsProxy(
+                [
+                    world_errors.DirectiveNotDirective(
+                        module_path=module_path,
+                        directive_name=directive_name,
+                        artifact_id=artifact_id,
+                    )
+                ]
+            )
 
-        return directive.apply_directive(context, *argv, **kwargs)
+        try:
+            result = directive.apply_directive(context, *argv, **kwargs)
+        except EnvironmentErrorsProxy:
+            raise
+        except core_errors.InternalError:
+            raise
+        except Exception as exc:
+            raise EnvironmentErrorsProxy(
+                [
+                    world_errors.DirectiveUnexpectedError(
+                        directive_path=directive_path,
+                        details=str(exc),
+                        artifact_id=artifact_id,
+                    )
+                ]
+            ) from exc
+
+        if result.is_err():
+            raise EnvironmentErrorsProxy(result.unwrap_err())
+
+        return result.unwrap()
 
 
 class DirectivePathUndefined(jinja2.Undefined):
@@ -118,8 +176,11 @@ def env() -> jinja2.Environment:
     return _ENVIRONMENT
 
 
-def render(artifact_id: FullArtifactId, template: str) -> str:
+def render(artifact_id: FullArtifactId, template: str) -> Result[str, ErrorsList]:
     context = {"render_mode": _render_mode.get(), "artifact_id": artifact_id}
 
-    template_obj = env().from_string(template)
-    return template_obj.render(**context)
+    try:
+        template_obj = env().from_string(template)
+        return Ok(template_obj.render(**context))
+    except EnvironmentErrorsProxy as exc:
+        return Err(exc.arguments["errors"])

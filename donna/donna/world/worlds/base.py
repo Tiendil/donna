@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from donna.core.entities import BaseEntity
+from donna.core.errors import ErrorsList
+from donna.core.result import Result
 from donna.domain.ids import ArtifactId, FullArtifactIdPattern, WorldId
 from donna.machine.artifacts import Artifact
 from donna.machine.primitives import Primitive
@@ -11,28 +14,30 @@ if TYPE_CHECKING:
     from donna.world.config import WorldConfig
 
 
-class World(BaseEntity):
+class World(BaseEntity, ABC):
     id: WorldId
     readonly: bool = True
     session: bool = False
 
-    def has(self, artifact_id: ArtifactId) -> bool:
-        raise NotImplementedError("You must implement this method in subclasses")
+    @abstractmethod
+    def has(self, artifact_id: ArtifactId) -> bool: ...  # noqa: E704
 
-    def fetch(self, artifact_id: ArtifactId) -> Artifact:
-        raise NotImplementedError("You must implement this method in subclasses")
+    @abstractmethod
+    def fetch(self, artifact_id: ArtifactId) -> Result[Artifact, ErrorsList]: ...  # noqa: E704
 
-    def fetch_source(self, artifact_id: ArtifactId) -> bytes:
-        raise NotImplementedError("You must implement this method in subclasses")
+    @abstractmethod
+    def fetch_source(self, artifact_id: ArtifactId) -> Result[bytes, ErrorsList]: ...  # noqa: E704
 
-    def update(self, artifact_id: ArtifactId, content: bytes, extension: str) -> None:
-        raise NotImplementedError("You must implement this method in subclasses")
+    @abstractmethod
+    def update(  # noqa: E704
+        self, artifact_id: ArtifactId, content: bytes, extension: str
+    ) -> Result[None, ErrorsList]: ...  # noqa: E704
 
-    def file_extension_for(self, artifact_id: ArtifactId) -> str | None:
-        raise NotImplementedError("You must implement this method in subclasses")
+    @abstractmethod
+    def file_extension_for(self, artifact_id: ArtifactId) -> Result[str, ErrorsList]: ...  # noqa: E704
 
-    def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:
-        raise NotImplementedError("You must implement this method in subclasses")
+    @abstractmethod
+    def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]: ...  # noqa: E704
 
     # These two methods are intended for storing world state (e.g., session data)
     # It is an open question if the world state is an artifact itself or something else
@@ -42,19 +47,19 @@ class World(BaseEntity):
     # - session data will require an additonal kind(s) of artifact(s) just for that purpose
     # - session data may change more frequently than regular artifacts
 
-    def read_state(self, name: str) -> bytes | None:
-        raise NotImplementedError("You must implement this method in subclasses")
+    @abstractmethod
+    def read_state(self, name: str) -> Result[bytes | None, ErrorsList]: ...  # noqa: E704
 
-    def write_state(self, name: str, content: bytes) -> None:
-        raise NotImplementedError("You must implement this method in subclasses")
+    @abstractmethod
+    def write_state(self, name: str, content: bytes) -> Result[None, ErrorsList]: ...  # noqa: E704
 
     def initialize(self, reset: bool = False) -> None:
         pass
 
-    def is_initialized(self) -> bool:
-        raise NotImplementedError("You must implement this method in subclasses")
+    @abstractmethod
+    def is_initialized(self) -> bool: ...  # noqa: E704
 
 
-class WorldConstructor(Primitive):
-    def construct_world(self, config: WorldConfig) -> World:
-        raise NotImplementedError("You must implement this method in subclasses")
+class WorldConstructor(Primitive, ABC):
+    @abstractmethod
+    def construct_world(self, config: WorldConfig) -> World: ...  # noqa: E704
