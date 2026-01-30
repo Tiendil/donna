@@ -13,7 +13,8 @@ Initiate operations to groom and refine the donna codebase: running & fixing tes
 id = "run_autoflake_script"
 kind = "donna.lib.run_script"
 fsm_mode = "start"
-goto_on_success = "run_isort"
+save_stdout_to = "autoflake_output"
+goto_on_success = "run_isort_script"
 goto_on_failure = "fix_autoflake"
 ```
 
@@ -32,41 +33,112 @@ id = "fix_autoflake"
 kind = "donna.lib.request_action"
 ```
 
-1. Run `cd ./donna && poetry run autoflake .` to see the error output and fix any issues.
-2. If you make changes while fixing the issues, ensure they are saved.
+```
+{{ donna.lib.task_variable("autoflake_output") }}
+```
+
+1. Fix the autoflake issues based on the output above.
+2. Ensure your changes are saved.
 3. `{{ donna.lib.goto("run_autoflake_script") }}`
 
 ## Run isort
 
 ```toml donna
-id = "run_isort"
+id = "run_isort_script"
+kind = "donna.lib.run_script"
+save_stdout_to = "isort_output"
+goto_on_success = "run_black_script"
+goto_on_failure = "fix_isort"
+```
+
+```bash donna script
+#!/usr/bin/env bash
+
+cd ./donna
+
+poetry run isort .
+```
+
+## Fix isort Issues
+
+```toml donna
+id = "fix_isort"
 kind = "donna.lib.request_action"
 ```
 
-1. Run `cd ./donna && poetry run isort .` to sort imports in the codebase.
-2. `{{ donna.lib.goto("run_black") }}`
+```
+{{ donna.lib.task_variable("isort_output") }}
+```
+
+1. Fix the isort issues based on the output above.
+2. Ensure your changes are saved.
+3. `{{ donna.lib.goto("run_autoflake_script") }}`
 
 ## Run Black
 
 ```toml donna
-id = "run_black"
+id = "run_black_script"
+kind = "donna.lib.run_script"
+save_stdout_to = "black_output"
+goto_on_success = "run_flake8_script"
+goto_on_failure = "fix_black"
+```
+
+```bash donna script
+#!/usr/bin/env bash
+
+cd ./donna
+
+poetry run black .
+```
+
+## Fix Black Issues
+
+```toml donna
+id = "fix_black"
 kind = "donna.lib.request_action"
 ```
 
-1. Run `cd ./donna && poetry run black .` to format the codebase.
-2. `{{ donna.lib.goto("run_flake8") }}`
+```
+{{ donna.lib.task_variable("black_output") }}
+```
+
+1. Fix the Black issues based on the output above.
+2. Ensure your changes are saved.
+3. `{{ donna.lib.goto("run_autoflake_script") }}`
 
 ## Run Flake8
 
 ```toml donna
-id = "run_flake8"
+id = "run_flake8_script"
+kind = "donna.lib.run_script"
+save_stdout_to = "flake8_output"
+goto_on_success = "run_mypy_script"
+goto_on_failure = "fix_flake8"
+```
+
+```bash donna script
+#!/usr/bin/env bash
+
+cd ./donna
+
+poetry run flake8 .
+```
+
+## Fix Flake8 Issues
+
+```toml donna
+id = "fix_flake8"
 kind = "donna.lib.request_action"
 ```
 
-1. Run `cd ./donna && poetry run flake8 .` to check the codebase for style issues.
-2. If any issues are found, fix them.
-3. If you made changes, do `{{ donna.lib.goto("run_autoflake_script") }}`.
-4. If no issues are found, do `{{ donna.lib.goto("run_mypy") }}`.
+```
+{{ donna.lib.task_variable("flake8_output") }}
+```
+
+1. Fix the flake8 issues based on the output above.
+2. Ensure your changes are saved.
+3. `{{ donna.lib.goto("run_autoflake_script") }}`
 
 Instructions on fixing special cases:
 
@@ -78,26 +150,47 @@ Instructions on fixing special cases:
 ## Run Mypy
 
 ```toml donna
-id = "run_mypy"
+id = "run_mypy_script"
+kind = "donna.lib.run_script"
+save_stdout_to = "mypy_output"
+goto_on_success = "finish"
+goto_on_failure = "fix_mypy"
+```
+
+```bash donna script
+#!/usr/bin/env bash
+
+cd ./donna
+
+poetry run mypy ./donna
+```
+
+## Fix Mypy Issues
+
+```toml donna
+id = "fix_mypy"
 kind = "donna.lib.request_action"
 ```
 
-1. Run `cd ./donna && poetry run mypy ./donna` to check the codebase for type annotation issues.
-2. If there are issues found that you can fix, fix them.
-3. Ask developer to fix any remaining issues manually.
-4. If you made changes, do `{{ donna.lib.goto("run_autoflake_script") }}`.
-5. If no issues are found, do `{{ donna.lib.goto("finish") }}`.
+```
+{{ donna.lib.task_variable("mypy_output") }}
+```
+
+1. Fix the mypy issues based on the output above that you are allowed to fix.
+2. Ask the developer to fix any remaining issues manually.
+3. Ensure your changes are saved.
+4. `{{ donna.lib.goto("run_autoflake_script") }}`
 
 Issues you are allowed to fix:
 
-- No type annotation in the code — add type annotations based on the code context.
+- No type annotation in the code — add type annotations based on the code context.
 - Mismatched type annotations that are trivial to fix — fix them.
 - Type conversion issues when there are explicit type conversions functions implied in the code — fix them.
 - Type conversion issues when the data is received from external sources (like database) and the type is known to be correct.
 
 Instructions on fixing special cases:
 
-- "variable can be None" when None is not allowed — add `assert variable is not None` if that explicitly makes sense from the code flow.
+- "variable can be None" when None is not allowed — add `assert variable is not None` if that explicitly makes sense from the code flow.
 
 Changes you are not allowed to make:
 
