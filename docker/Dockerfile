@@ -12,8 +12,8 @@ USER $USER
 
 WORKDIR /repository
 
-COPY donna/pyproject.toml donna/poetry.lock* ./
-COPY README.md ./
+COPY README.md pyproject.toml poetry.lock* ./
+COPY donna/__init__.py donna/
 
 RUN poetry install --no-interaction --no-ansi
 
