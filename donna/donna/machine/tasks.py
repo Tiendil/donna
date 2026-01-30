@@ -73,6 +73,9 @@ class WorkUnit(BaseEntity):
         operation_kind = resolve_primitive(operation.kind).unwrap()
 
         ##########################
+        # We log each operation here to help agent display the progress to the user
+        # TODO: not a good solution from the agent perspective
+        #       let's hope there will some protocol appear that helps with that later
         # TODO: not so good place for and way of logging, should do smth with that
         log_message = f"{self.operation_id}: {operation.title}"
         log_cell = Cell.build(kind="donna_log", media_type="text/plain", content=log_message)
