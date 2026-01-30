@@ -1,0 +1,27 @@
+name: code checks
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  workflow_call:
+    inputs:
+      branch_ref:
+        type: string
+        required: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.branch_ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  run-dev-checks:
+    timeout-minutes: 20
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch_ref }}
