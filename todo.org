@@ -1,13 +1,11 @@
 
 * TODO freeze pydantic models which are possible
-* TODO codex should explain what it is doing, while executing requests from donna
 * TODO tests
 ** basic / lowest unit tests for primitive operations
 ** domain-level unit tests
 ** intergration tests for workflows/stories/scenarios
 ** header of the module must contain the instruction on how to write tests for it?
 *** maybe just with links to the spec
-* TODO optimize imports by moving most used ones to \__init__.py files
 * TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO unify code of different directives? It is very similar
 ** add validation for specificaiton existence in directives
@@ -110,9 +108,3 @@
 * TODO CLI commands improvements
 ** each cli command should have detailed description
 ** protect each of cli commands with is_session_exists check
-* TODO proposal: better artifact types separation
-** separate .md and .md.j2? so we can create .md files without jinja processing
-** multipart artifacts,
-*** option 1, two files: .txt with logs and .meta.md with metadata
-*** option 2: every artifact is .md file, but there may be attachements to it, like xxx.md.txt
-*** option 3: "original artifacts" are only .md, they can link to any another binary file.
