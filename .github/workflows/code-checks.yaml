@@ -37,6 +37,3 @@ jobs:
 
       - name: Check runtime
         run: ./bin/dev-check-runtime.sh
-
-      # - name: Run tests
-      #   run: ./bin/run-tests.sh
