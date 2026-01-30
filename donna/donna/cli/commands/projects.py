@@ -27,9 +27,7 @@ def initialize_callback(ctx: typer.Context) -> None:
     try_initialize_donna()
 
 
-@projects_cli.command(
-    help="Initialize Donna project."
-)
+@projects_cli.command(help="Initialize Donna project.")
 @cells_cli
 def initialize(workdir: WorkdirOption = pathlib.Path.cwd()) -> Iterable[Cell]:
     # TODO: use workdir attribute
