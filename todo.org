@@ -70,6 +70,9 @@
 *** Controls meta flow of work, so agent should not think about it
 ** Since the donna is developed with donna, Donna's `.donna` directory is a great example of how to structure donna projects and how to work with it in general.
 ** this is also an experiment on agent-friendly cli tools
+** known problems
+*** lack of reporting — when a long chain of automated operations is performed, there is no convenient report/logging of what donna doing
+*** agent tools (like codes) does not properly report what is happening
 * TODO Request Action: agent has not always use the correctly specified branch, may be we should separate operation with next operation selection?
 * TODO Workflows polishing
 ** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
