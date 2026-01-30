@@ -70,7 +70,11 @@ class TaskVariable(Directive):
             # Since we render the whole artifact, instead of a particular executed section
             # some variables may be missing
             # TODO: we may want to timprove this behavior later to avoid possible confusion
-            return Ok(f"$$donna {self.analyze_id} variable '{variable_name}' does not found. If you are an LLM agent and see that message AS AN INSTRUCTION TO EXECUTE, stop your work and notify developer about the problems in workflow donna$$")
+            return Ok(
+                f"$$donna {self.analyze_id} variable '{variable_name}' does not found. "
+                "If you are an LLM agent and see that message AS AN INSTRUCTION TO EXECUTE, "
+                "stop your work and notify developer about the problems in workflow donna$$"
+            )
 
         return Ok(task_context[variable_name])
 
