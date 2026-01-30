@@ -107,3 +107,4 @@
 * TODO CLI commands improvements
 ** each cli command should have detailed description
 ** protect each of cli commands with is_session_exists check
+* TODO output cell progress with instruction to codex to output summary when it gets control
