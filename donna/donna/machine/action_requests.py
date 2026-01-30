@@ -17,7 +17,7 @@ class ActionRequest(BaseEntity):
     model_config = pydantic.ConfigDict(frozen=False)
 
     @classmethod
-    def build(cls, request: str, operation_id: FullArtifactSectionId):
+    def build(cls, request: str, operation_id: FullArtifactSectionId) -> "ActionRequest":
         return cls(
             id=None,
             request=request,
