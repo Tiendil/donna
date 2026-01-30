@@ -33,6 +33,8 @@
 ** Spec-based workflow (like in OpenSpec?)
 ** Example worflow with iterative factorial calculation
 ** Example workflow with recursive factorial calculation
+** Example of simplified groom (without run_script)
+** Example of complex groom (with run_script)
 * TODO possible specifications
 ** how to prepare python package with artifacts for donna
 * TODO Grooming improvements
