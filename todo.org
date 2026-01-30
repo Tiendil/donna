@@ -63,6 +63,7 @@
 *** agent tools (like codes) does not properly report what is happening
 **** action requests as a verbose approach vs run_script as a silent approach
 ** You can distribute your specs as a separate package or within your own lib and you don't need dependency on donna.
+** list of python packages that support donna
 * TODO Workflows polishing
 ** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
 ** Declare explicit refining loop
