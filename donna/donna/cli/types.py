@@ -1,3 +1,4 @@
+import pathlib
 from typing import Annotated
 
 import typer
@@ -5,6 +6,7 @@ import typer
 from donna.cli.utils import output_cells
 from donna.core.errors import ErrorsList
 from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactIdPattern, FullArtifactSectionId
+from donna.protocol.modes import Mode
 
 
 def _exit_with_errors(errors: ErrorsList) -> None:
@@ -39,25 +41,98 @@ def _parse_full_artifact_section_id(value: str) -> FullArtifactSectionId:
     return result.unwrap()
 
 
+def _parse_action_request_id(value: str) -> ActionRequestId:
+    if not ActionRequestId.validate(value):
+        raise typer.BadParameter("Invalid action request ID format (expected '<prefix>-<number>-<crc>').")
+    return ActionRequestId(value)
+
+
+def _parse_protocol_mode(value: str) -> Mode:
+    try:
+        return Mode(value)
+    except ValueError as exc:
+        allowed = ", ".join(mode.value for mode in Mode)
+        raise typer.BadParameter(f"Unsupported protocol mode '{value}'. Expected one of: {allowed}.") from exc
+
+
 ActionRequestIdArgument = Annotated[
     ActionRequestId,
-    typer.Argument(parser=ActionRequestId, help="The ID of the action request"),
+    typer.Argument(
+        parser=_parse_action_request_id,
+        help="Action request ID (for example: AR-12-x).",
+    ),
 ]
 
 
 FullArtifactIdArgument = Annotated[
     FullArtifactId,
-    typer.Argument(parser=_parse_full_artifact_id, help="The full ID of the artifact"),
+    typer.Argument(
+        parser=_parse_full_artifact_id,
+        help="Full artifact ID in the form 'world:artifact[:path]' (e.g., 'project:intro').",
+    ),
 ]
 
 
 FullArtifactIdPatternOption = Annotated[
     FullArtifactIdPattern | None,
-    typer.Option(parser=_parse_full_artifact_id_pattern, help="The full artifact pattern to list"),
+    typer.Option(
+        parser=_parse_full_artifact_id_pattern,
+        help="Artifact pattern (supports '*' and '**', e.g. 'project:*' or '**:intro').",
+    ),
 ]
 
 
 FullArtifactSectionIdArgument = Annotated[
     FullArtifactSectionId,
-    typer.Argument(parser=_parse_full_artifact_section_id, help="The full section ID of the artifact"),
+    typer.Argument(
+        parser=_parse_full_artifact_section_id,
+        help="Full artifact section ID in the form 'world:artifact:section'.",
+    ),
+]
+
+
+ProtocolModeOption = Annotated[
+    Mode | None,
+    typer.Option(
+        "--protocol",
+        "-p",
+        parser=_parse_protocol_mode,
+        help="Protocol mode to use (required). Examples: --protocol=llm, -p llm.",
+    ),
+]
+
+
+InputPathArgument = Annotated[
+    pathlib.Path,
+    typer.Argument(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+        help="Path to an existing local file used as input.",
+    ),
+]
+
+
+OutputPathOption = Annotated[
+    pathlib.Path | None,
+    typer.Option(
+        resolve_path=True,
+        dir_okay=False,
+        file_okay=True,
+        help="Optional output file path (file only). Defaults to a temporary file if omitted.",
+    ),
+]
+
+
+WorkdirOption = Annotated[
+    pathlib.Path,
+    typer.Option(
+        resolve_path=True,
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        help="Project root directory to initialize (defaults to current working directory).",
+    ),
 ]
