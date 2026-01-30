@@ -6,4 +6,4 @@
 
 ROOT_DIR="$(cd "$(dirname "$0")/.."; pwd)"
 cd "$ROOT_DIR"
-poetry -P "$ROOT_DIR/donna" run donna "$@"
+poetry run donna "$@"

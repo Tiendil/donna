@@ -9,4 +9,4 @@ fi
 
 source .venv-donna/bin/activate
 
-python3 -m pip install ./donna
+python3 -m pip install ./
