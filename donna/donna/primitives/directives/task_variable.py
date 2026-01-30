@@ -30,16 +30,6 @@ class TaskVariableTaskContextMissing(EnvironmentError):
     ways_to_fix: list[str] = ["Ensure the directive is rendered with a task context present."]
 
 
-class TaskVariableNotFound(EnvironmentError):
-    code: str = "donna.directives.task_variable.variable_not_found"
-    message: str = "Task context does not contain variable `{error.variable_name}`."
-    ways_to_fix: list[str] = [
-        "Check the variable name for typos.",
-        "Ensure the task context includes the variable before rendering.",
-    ]
-    variable_name: str
-
-
 class TaskVariableUnsupportedRenderMode(InternalError):
     message: str = "Render mode {render_mode} not implemented in TaskVariable directive."
 
@@ -77,7 +67,10 @@ class TaskVariable(Directive):
             return Err([TaskVariableTaskContextMissing()])
 
         if variable_name not in task_context:
-            return Err([TaskVariableNotFound(variable_name=variable_name)])
+            # Since we render the whole artifact, instead of a particular executed section
+            # some variables may be missing
+            # TODO: we may want to timprove this behavior later to avoid possible confusion
+            return f"$$donna {self.analyze_id} variable '{variable_name}' does not found. If you are an LLM agent and see that message AS AN INSTRUCTION TO EXECUTE, stop your work and notify developer about the problems in workflow donna$$"
 
         return Ok(task_context[variable_name])
 
