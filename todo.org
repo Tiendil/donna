@@ -119,3 +119,9 @@
 ** operation to run donna cli commands (maybe as not cli exectly)
 ** operation to run workflow
 ** separate each grooming step into a specialized workflow with a short cycle?
+* TODO proposal: better artifact types separation
+** separate .md and .md.j2? so we can create .md files without jinja processing
+** multipart artifacts,
+*** option 1, two files: .txt with logs and .meta.md with metadata
+*** option 2: every artifact is .md file, but there may be attachements to it, like xxx.md.txt
+*** option 3: "original artifacts" are only .md, they can link to any another binary file.
