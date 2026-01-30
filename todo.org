@@ -110,9 +110,6 @@
 * TODO CLI commands improvements
 ** each cli command should have detailed description
 ** protect each of cli commands with is_session_exists check
-* TODO CLI operation
-** CLI commands must output progress cells.
-** we must somehow log silent operations
 * TODO proposal: better artifact types separation
 ** separate .md and .md.j2? so we can create .md files without jinja processing
 ** multipart artifacts,
