@@ -233,7 +233,7 @@ class StateNode(Node):
             raise machine_errors.SessionStateStatusInvalid()
 
         return Cell.build_markdown(
-            kind="session__state_status",
+            kind="session_state_status",
             content=message,
             tasks=len(self._state.tasks),
             queued_work_units=len(self._state.work_units),
