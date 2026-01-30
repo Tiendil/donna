@@ -187,8 +187,11 @@ class ArtifactSectionNode(Node):
 @unwrap_to_error
 def resolve(target_id: FullArtifactSectionId) -> Result[ArtifactSection, ErrorsList]:
     from donna.world import artifacts as world_artifacts
+    from donna.world.artifacts import ArtifactRenderContext
+    from donna.world.templates import RenderMode
 
-    artifact = world_artifacts.load_artifact(target_id.full_artifact_id).unwrap()
+    render_context = ArtifactRenderContext(primary_mode=RenderMode.view)
+    artifact = world_artifacts.load_artifact(target_id.full_artifact_id, render_context).unwrap()
 
     section = artifact.get_section(target_id.local_id).unwrap()
 

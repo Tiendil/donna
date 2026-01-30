@@ -43,8 +43,8 @@ class View(Directive):
         artifact_id = artifact_id_result.unwrap()
 
         match render_mode:
-            case RenderMode.cli:
-                return Ok(self.render_cli(context, artifact_id))
+            case RenderMode.view | RenderMode.execute:
+                return Ok(self.render_view(context, artifact_id))
 
             case RenderMode.analysis:
                 return Ok(self.render_analyze(context, artifact_id))
@@ -52,7 +52,7 @@ class View(Directive):
             case _:
                 raise ViewUnsupportedRenderMode(render_mode=render_mode)
 
-    def render_cli(self, context: Context, specification_id: FullArtifactId) -> str:
+    def render_view(self, context: Context, specification_id: FullArtifactId) -> str:
         protocol = mode().value
         return f"donna -p {protocol} artifacts view '{specification_id}'"
 

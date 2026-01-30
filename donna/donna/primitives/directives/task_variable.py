@@ -53,8 +53,8 @@ class TaskVariable(Directive):
         variable_name = str(argv[0])
 
         match render_mode:
-            case RenderMode.cli:
-                return self.render_cli(context, variable_name)
+            case RenderMode.view | RenderMode.execute:
+                return self.render_view(context, variable_name)
 
             case RenderMode.analysis:
                 return Ok(self.render_analyze(context, variable_name))
@@ -62,7 +62,7 @@ class TaskVariable(Directive):
             case _:
                 raise TaskVariableUnsupportedRenderMode(render_mode=render_mode)
 
-    def render_cli(self, context: Context, variable_name: str) -> Result[Any, ErrorsList]:
+    def render_view(self, context: Context, variable_name: str) -> Result[Any, ErrorsList]:
         task_context = self._resolve_task_context(context)
         if task_context is None:
             return Err([TaskVariableTaskContextMissing()])

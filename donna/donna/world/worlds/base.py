@@ -11,6 +11,7 @@ from donna.machine.artifacts import Artifact
 from donna.machine.primitives import Primitive
 
 if TYPE_CHECKING:
+    from donna.world.artifacts import ArtifactRenderContext
     from donna.world.config import WorldConfig
 
 
@@ -23,7 +24,9 @@ class World(BaseEntity, ABC):
     def has(self, artifact_id: ArtifactId) -> bool: ...  # noqa: E704
 
     @abstractmethod
-    def fetch(self, artifact_id: ArtifactId) -> Result[Artifact, ErrorsList]: ...  # noqa: E704
+    def fetch(  # noqa: E704
+        self, artifact_id: ArtifactId, render_context: "ArtifactRenderContext"
+    ) -> Result[Artifact, ErrorsList]: ...
 
     @abstractmethod
     def fetch_source(self, artifact_id: ArtifactId) -> Result[bytes, ErrorsList]: ...  # noqa: E704

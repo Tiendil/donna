@@ -8,8 +8,9 @@ from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionCo
 from donna.machine.primitives import Primitive, resolve_primitive
 from donna.world import errors as world_errors
 from donna.world import markdown
+from donna.world.artifacts import ArtifactRenderContext
 from donna.world.sources.base import SourceConfig, SourceConstructor
-from donna.world.templates import RenderMode, render, render_mode
+from donna.world.templates import RenderMode, render
 
 
 class MarkdownSectionConstructor(Protocol):
@@ -29,8 +30,10 @@ class Config(SourceConfig):
     default_section_kind: PythonImportPath = PythonImportPath("donna.lib.text")
     default_primary_section_id: ArtifactSectionId = ArtifactSectionId("primary")
 
-    def construct_artifact_from_bytes(self, full_id: FullArtifactId, content: bytes) -> Result[Artifact, ErrorsList]:
-        return construct_artifact_from_bytes(full_id, content, self)
+    def construct_artifact_from_bytes(
+        self, full_id: FullArtifactId, content: bytes, render_context: ArtifactRenderContext
+    ) -> Result[Artifact, ErrorsList]:
+        return construct_artifact_from_bytes(full_id, content, render_context, self)
 
 
 class MarkdownSourceConstructor(SourceConstructor):
@@ -115,17 +118,19 @@ class MarkdownSectionMixin:
 
 
 @unwrap_to_error
-def parse_artifact_content(full_id: FullArtifactId, text: str) -> Result[list[markdown.SectionSource], ErrorsList]:
+def parse_artifact_content(
+    full_id: FullArtifactId, text: str, render_context: ArtifactRenderContext
+) -> Result[list[markdown.SectionSource], ErrorsList]:
     # Parsing an artifact two times is not ideal, but it is straightforward approach that works for now.
     # We should consider optimizing this in the future if performance or stability becomes an issue.
     # For now let's wait till we have more artifact analysis logic and till more use cases emerge.
 
-    original_markdown_source = render(full_id, text).unwrap()
+    original_markdown_source = render(full_id, text, render_context).unwrap()
     original_sections = markdown.parse(original_markdown_source, artifact_id=full_id).unwrap()
 
-    with render_mode(RenderMode.analysis):
-        analyzed_markdown_source = render(full_id, text).unwrap()
-        analyzed_sections = markdown.parse(analyzed_markdown_source, artifact_id=full_id).unwrap()
+    analysis_context = render_context.replace(primary_mode=RenderMode.analysis)
+    analyzed_markdown_source = render(full_id, text, analysis_context).unwrap()
+    analyzed_sections = markdown.parse(analyzed_markdown_source, artifact_id=full_id).unwrap()
 
     if len(original_sections) != len(analyzed_sections):
         raise world_errors.MarkdownSectionsCountMismatch(
@@ -145,16 +150,16 @@ def parse_artifact_content(full_id: FullArtifactId, text: str) -> Result[list[ma
 
 
 def construct_artifact_from_bytes(
-    full_id: FullArtifactId, content: bytes, config: Config
+    full_id: FullArtifactId, content: bytes, render_context: ArtifactRenderContext, config: Config
 ) -> Result[Artifact, ErrorsList]:
-    return construct_artifact_from_markdown_source(full_id, content.decode("utf-8"), config)
+    return construct_artifact_from_markdown_source(full_id, content.decode("utf-8"), render_context, config)
 
 
 @unwrap_to_error
 def construct_artifact_from_markdown_source(  # noqa: CCR001
-    full_id: FullArtifactId, content: str, config: Config
+    full_id: FullArtifactId, content: str, render_context: ArtifactRenderContext, config: Config
 ) -> Result[Artifact, ErrorsList]:
-    original_sections = parse_artifact_content(full_id, content).unwrap()
+    original_sections = parse_artifact_content(full_id, content, render_context).unwrap()
     head_config = dict(original_sections[0].merged_configs().unwrap())
     head_kind_value = head_config["kind"]
     if isinstance(head_kind_value, PythonImportPath):

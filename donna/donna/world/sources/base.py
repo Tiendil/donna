@@ -13,6 +13,7 @@ from donna.machine.primitives import Primitive
 if TYPE_CHECKING:
     from donna.domain.ids import FullArtifactId
     from donna.machine.artifacts import Artifact
+    from donna.world.artifacts import ArtifactRenderContext
     from donna.world.config import SourceConfig as SourceConfigModel
 
 
@@ -52,7 +53,7 @@ class SourceConfig(BaseEntity, ABC):
 
     @abstractmethod
     def construct_artifact_from_bytes(  # noqa: E704
-        self, full_id: "FullArtifactId", content: bytes
+        self, full_id: "FullArtifactId", content: bytes, render_context: "ArtifactRenderContext"
     ) -> Result["Artifact", ErrorsList]: ...  # noqa: E704
 
 

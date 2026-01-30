@@ -41,8 +41,8 @@ class GoTo(Directive):
         next_operation_id = artifact_id.to_full_local(argv[0])
 
         match render_mode:
-            case RenderMode.cli:
-                return Ok(self.render_cli(context, next_operation_id))
+            case RenderMode.view | RenderMode.execute:
+                return Ok(self.render_view(context, next_operation_id))
 
             case RenderMode.analysis:
                 return Ok(self.render_analyze(context, next_operation_id))
@@ -50,7 +50,7 @@ class GoTo(Directive):
             case _:
                 raise GoToUnsupportedRenderMode(render_mode=render_mode)
 
-    def render_cli(self, context: Context, next_operation_id: FullArtifactSectionId) -> str:
+    def render_view(self, context: Context, next_operation_id: FullArtifactSectionId) -> str:
         protocol = mode().value
         return f"donna -p {protocol} sessions action-request-completed <action-request-id> '{next_operation_id}'"
 

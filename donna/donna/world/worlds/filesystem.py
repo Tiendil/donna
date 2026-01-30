@@ -7,6 +7,7 @@ from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern
 from donna.machine.artifacts import Artifact
 from donna.world import errors as world_errors
+from donna.world.artifacts import ArtifactRenderContext
 from donna.world.artifacts_discovery import ArtifactListingNode, list_artifacts_by_pattern
 from donna.world.worlds.base import World as BaseWorld
 from donna.world.worlds.base import WorldConstructor
@@ -72,7 +73,7 @@ class World(BaseWorld):
         return resolve_result.unwrap() is not None
 
     @unwrap_to_error
-    def fetch(self, artifact_id: ArtifactId) -> Result[Artifact, ErrorsList]:
+    def fetch(self, artifact_id: ArtifactId, render_context: ArtifactRenderContext) -> Result[Artifact, ErrorsList]:
         path = self._resolve_artifact_file(artifact_id).unwrap()
         if path is None:
             return Err([world_errors.ArtifactNotFound(artifact_id=artifact_id, world_id=self.id)])
@@ -95,7 +96,7 @@ class World(BaseWorld):
                 ]
             )
 
-        return Ok(source_config.construct_artifact_from_bytes(full_id, content_bytes).unwrap())
+        return Ok(source_config.construct_artifact_from_bytes(full_id, content_bytes, render_context).unwrap())
 
     @unwrap_to_error
     def fetch_source(self, artifact_id: ArtifactId) -> Result[bytes, ErrorsList]:
