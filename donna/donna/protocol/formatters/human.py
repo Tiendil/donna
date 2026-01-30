@@ -26,6 +26,10 @@ class Formatter(BaseFormatter):
 
         return "\n".join(lines).encode()
 
+    def format_log(self, cell: Cell, single_mode: bool) -> bytes:
+        message = cell.content.strip() if cell.content else ""
+        return f"DONNA LOG: {message}".strip().encode()
+
     def format_cells(self, cells: list[Cell]) -> bytes:
         single_mode = len(cells) == 1
         formatted_cells = [self.format_cell(cell, single_mode=single_mode) for cell in cells]
