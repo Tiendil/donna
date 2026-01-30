@@ -1,0 +1,11 @@
+
+services:
+
+  donna:
+
+    build:
+      context: ./
+      dockerfile: ./docker/Dockerfile
+
+    volumes:
+      - ${PWD}/donna/donna:/repository/donna

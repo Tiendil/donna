@@ -25,3 +25,28 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch_ref }}
+
+      - name: Build containers
+        run: ./bin/build-dev-containers.sh
+
+      - name: Check code formatting
+        run: ./bin/check-code-formatting.sh
+
+      - name: Check types
+        run: ./bin/check-code-semantics.sh
+
+      - name: Run tests
+        run: ./bin/run-tests.sh
+
+  run-prod-checks:
+    timeout-minutes: 20
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch_ref }}
+
+      - name: check ffun cli is runnable in prod
+        run: ./bin/check-ffun-runnable-in-prod.sh
