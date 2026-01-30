@@ -21,7 +21,7 @@ goto_on_failure = "fix_autoflake"
 ```bash donna script
 #!/usr/bin/env bash
 
-autoflake .
+autoflake ./donna
 ```
 
 ## Fix Autoflake Issues
@@ -52,7 +52,7 @@ goto_on_failure = "fix_isort"
 ```bash donna script
 #!/usr/bin/env bash
 
-isort .
+isort ./donna
 ```
 
 ## Fix isort Issues
@@ -83,7 +83,7 @@ goto_on_failure = "fix_black"
 ```bash donna script
 #!/usr/bin/env bash
 
-black .
+black ./donna
 ```
 
 ## Fix Black Issues
@@ -114,7 +114,7 @@ goto_on_failure = "fix_flake8"
 ```bash donna script
 #!/usr/bin/env bash
 
-flake8 . 2>&1
+flake8 ./donna 2>&1
 ```
 
 ## Fix Flake8 Issues
