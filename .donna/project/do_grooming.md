@@ -2,7 +2,7 @@
 
 ```toml donna
 kind = "donna.lib.workflow"
-start_operation_id = "run_autoflake"
+start_operation_id = "run_autoflake_script"
 ```
 
 Initiate operations to groom and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc.
@@ -10,13 +10,31 @@ Initiate operations to groom and refine the donna codebase: running & fixing tes
 ## Run Autoflake
 
 ```toml donna
-id = "run_autoflake"
-kind = "donna.lib.request_action"
+id = "run_autoflake_script"
+kind = "donna.lib.run_script"
 fsm_mode = "start"
+goto_on_success = "run_isort"
+goto_on_failure = "fix_autoflake"
 ```
 
-1. Run `cd ./donna && poetry run autoflake .` to remove unused imports and variables in the codebase.
-2. `{{ donna.lib.goto("run_isort") }}`
+```bash donna script
+#!/usr/bin/env bash
+
+cd ./donna
+
+poetry run autoflake .
+```
+
+## Fix Autoflake Issues
+
+```toml donna
+id = "fix_autoflake"
+kind = "donna.lib.request_action"
+```
+
+1. Run `cd ./donna && poetry run autoflake .` to see the error output and fix any issues.
+2. If you make changes while fixing the issues, ensure they are saved.
+3. `{{ donna.lib.goto("run_autoflake_script") }}`
 
 ## Run isort
 
@@ -47,7 +65,7 @@ kind = "donna.lib.request_action"
 
 1. Run `cd ./donna && poetry run flake8 .` to check the codebase for style issues.
 2. If any issues are found, fix them.
-3. If you made changes, do `{{ donna.lib.goto("run_autoflake") }}`.
+3. If you made changes, do `{{ donna.lib.goto("run_autoflake_script") }}`.
 4. If no issues are found, do `{{ donna.lib.goto("run_mypy") }}`.
 
 Instructions on fixing special cases:
@@ -67,7 +85,7 @@ kind = "donna.lib.request_action"
 1. Run `cd ./donna && poetry run mypy ./donna` to check the codebase for type annotation issues.
 2. If there are issues found that you can fix, fix them.
 3. Ask developer to fix any remaining issues manually.
-4. If you made changes, do `{{ donna.lib.goto("run_autoflake") }}`.
+4. If you made changes, do `{{ donna.lib.goto("run_autoflake_script") }}`.
 5. If no issues are found, do `{{ donna.lib.goto("finish") }}`.
 
 Issues you are allowed to fix:
