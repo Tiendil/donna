@@ -6,7 +6,6 @@
 ** intergration tests for workflows/stories/scenarios
 ** header of the module must contain the instruction on how to write tests for it?
 *** maybe just with links to the spec
-* TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
 * TODO unify code of different directives? It is very similar
 ** add validation for specificaiton existence in directives
 ** Spec rendere can be unified, since its cli command
