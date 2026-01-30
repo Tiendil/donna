@@ -31,12 +31,12 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
-          # Use personal access token to trigger other workflows on tag push
-          token: ${{ secrets.TIENDIL_RELEASE_TOKEN }}
+      # Use personal access token to trigger other workflows on tag push
+      # - name: Checkout
+      #   uses: actions/checkout@v4
+      #   with:
+      #     ref: ${{ github.ref }}
+      #     token: ${{ secrets.TIENDIL_RELEASE_TOKEN }}
 
       - name: Setup git user
         run: |
