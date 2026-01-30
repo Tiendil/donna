@@ -57,7 +57,7 @@ class DirectivePathBuilder:
         return DirectivePathBuilder(self._parts + (name,))
 
     @jinja2.pass_context
-    def __call__(self, context: jinja2.runtime.Context, *argv: object, **kwargs: object) -> object:  # noqa: CCR001
+    def __call__(self, context: jinja2.runtime.Context, *argv: object) -> object:  # noqa: CCR001
         artifact_id = context.get("artifact_id")
         directive_path = ".".join(self._parts)
         if len(self._parts) < 2:
@@ -112,7 +112,7 @@ class DirectivePathBuilder:
             )
 
         try:
-            result = directive.apply_directive(context, *argv, **kwargs)
+            result = directive.apply_directive(context, *argv)
         except EnvironmentErrorsProxy:
             raise
         except core_errors.InternalError:

@@ -5,16 +5,11 @@ from jinja2.runtime import Context
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
-from donna.machine.templates import Directive
-from donna.world.templates import RenderMode
+from donna.machine.templates import Directive, PreparedDirectiveResult
 
 
 class EnvironmentError(core_errors.EnvironmentError):
     cell_kind: str = "directive_error"
-
-
-class InternalError(core_errors.InternalError):
-    """Base class for internal errors in donna.primitives.directives.task_variable."""
 
 
 class TaskVariableInvalidArguments(EnvironmentError):
@@ -30,30 +25,18 @@ class TaskVariableTaskContextMissing(EnvironmentError):
     ways_to_fix: list[str] = ["Ensure the directive is rendered with a task context present."]
 
 
-class TaskVariableUnsupportedRenderMode(InternalError):
-    message: str = "Render mode {render_mode} not implemented in TaskVariable directive."
-
-
 class TaskVariable(Directive):
-    def apply_directive(self, context: Context, *argv: Any, **kwargs: Any) -> Result[Any, ErrorsList]:
-        render_mode: RenderMode = context["render_mode"]
+    def _prepare_arguments(
+        self,
+        context: Context,
+        *argv: Any,
+    ) -> PreparedDirectiveResult:
         if argv is None or len(argv) != 1:
             return Err([TaskVariableInvalidArguments(provided_count=0 if argv is None else len(argv))])
 
         variable_name = str(argv[0])
 
-        match render_mode:
-            case RenderMode.view:
-                return self.render_view(context, variable_name)
-
-            case RenderMode.execute:
-                return self.render_execute(context, variable_name)
-
-            case RenderMode.analysis:
-                return Ok(self.render_analyze(context, variable_name))
-
-            case _:
-                raise TaskVariableUnsupportedRenderMode(render_mode=render_mode)
+        return Ok((variable_name,))
 
     def render_view(self, context: Context, variable_name: str) -> Result[Any, ErrorsList]:
         return Ok(
@@ -77,9 +60,6 @@ class TaskVariable(Directive):
             )
 
         return Ok(task_context[variable_name])
-
-    def render_analyze(self, context: Context, variable_name: str) -> str:
-        return f"$$donna {self.analyze_id} {variable_name} donna$$"
 
     def _resolve_task_context(self, context: Context) -> dict[str, Any] | None:
         task = context.get("current_task")
