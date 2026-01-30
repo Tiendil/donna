@@ -110,8 +110,6 @@
 ** each cli command should have detailed description
 ** protect each of cli commands with is_session_exists check
 * TODO CLI operation
-** Add a new operation kind, that runs cli commands as part of the workflow.
-** The operation should not requre interaction with the agent or the user.
 ** Cli command
 *** should start in the same environment as the donna runs
 *** should be specified as a string and interpreted as a shell command, pipes are allowed
