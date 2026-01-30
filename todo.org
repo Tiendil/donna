@@ -94,6 +94,7 @@
 ** when the run is finished with error, agent tries to run session status and session continue to continue work because it sees that the session is not finished. What is the correct behavior here?
 * TODO Changy for changelog
 * TODO Donna treat as duplicates temporary files, `like my-file.md~` (process only files with supported extensions)
+** world should not see artifacts/files with unsupported extensions, i.e. should fully ignore them, do not apply checks, etc.
 * TODO CLI commands improvements
 ** each cli command should have detailed description
 ** protect each of cli commands with is_session_exists check
