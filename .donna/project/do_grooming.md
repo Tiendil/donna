@@ -23,7 +23,7 @@ goto_on_failure = "fix_autoflake"
 
 cd ./donna
 
-poetry run autoflake .
+autoflake .
 ```
 
 ## Fix Autoflake Issues
@@ -56,7 +56,7 @@ goto_on_failure = "fix_isort"
 
 cd ./donna
 
-poetry run isort .
+isort .
 ```
 
 ## Fix isort Issues
@@ -89,7 +89,7 @@ goto_on_failure = "fix_black"
 
 cd ./donna
 
-poetry run black .
+black .
 ```
 
 ## Fix Black Issues
@@ -122,7 +122,7 @@ goto_on_failure = "fix_flake8"
 
 cd ./donna
 
-poetry run flake8 .
+flake8 . 2>&1
 ```
 
 ## Fix Flake8 Issues
@@ -162,7 +162,7 @@ goto_on_failure = "fix_mypy"
 
 cd ./donna
 
-poetry run mypy ./donna
+mypy ./donna
 ```
 
 ## Fix Mypy Issues
