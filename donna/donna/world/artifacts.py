@@ -87,14 +87,23 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> Result[None
 
 
 @unwrap_to_error
-def load_artifact(full_id: FullArtifactId, render_context: ArtifactRenderContext) -> Result[Artifact, ErrorsList]:
+def load_artifact(
+    full_id: FullArtifactId, render_context: ArtifactRenderContext | None = None
+) -> Result[Artifact, ErrorsList]:
+    if render_context is None:
+        render_context = ArtifactRenderContext(primary_mode=RenderMode.view)
+
     world = config().get_world(full_id.world_id).unwrap()
     return Ok(world.fetch(full_id.artifact_id, render_context).unwrap())
 
 
 def list_artifacts(
-    pattern: FullArtifactIdPattern, render_context: ArtifactRenderContext
+    pattern: FullArtifactIdPattern, render_context: ArtifactRenderContext | None = None
 ) -> Result[list[Artifact], ErrorsList]:
+
+    if render_context is None:
+        render_context = ArtifactRenderContext(primary_mode=RenderMode.view)
+
     artifacts: list[Artifact] = []
     errors: ErrorsList = []
 

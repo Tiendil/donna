@@ -56,8 +56,8 @@ class WorkUnit(BaseEntity):
 
     @unwrap_to_error
     def run(self, task: Task) -> Result[list["Change"], ErrorsList]:
+        from donna.machine import artifacts as machine_artifacts
         from donna.machine.primitives import resolve_primitive
-        from donna.world import artifacts
         from donna.world.artifacts import ArtifactRenderContext
         from donna.world.templates import RenderMode
 
@@ -66,8 +66,7 @@ class WorkUnit(BaseEntity):
             current_task=task,
             current_work_unit=self,
         )
-        workflow = artifacts.load_artifact(self.operation_id.full_artifact_id, render_context).unwrap()
-        operation = workflow.get_section(self.operation_id.local_id).unwrap()
+        operation = machine_artifacts.resolve(self.operation_id, render_context).unwrap()
         operation_kind = resolve_primitive(operation.kind).unwrap()
 
         cells = list(operation_kind.execute_section(task, self, operation))

@@ -17,10 +17,6 @@ from donna.world.templates import RenderMode
 artifacts_cli = typer.Typer()
 
 
-def _view_render_context() -> ArtifactRenderContext:
-    return ArtifactRenderContext(primary_mode=RenderMode.view)
-
-
 @artifacts_cli.callback(invoke_without_command=True)
 def initialize(ctx: typer.Context) -> None:
     cmd = ctx.invoked_subcommand
@@ -37,7 +33,7 @@ def list(pattern: FullArtifactIdPatternOption = None) -> Iterable[Cell]:
     if pattern is None:
         pattern = FullArtifactIdPattern.parse("**").unwrap()
 
-    artifacts = world_artifacts.list_artifacts(pattern, _view_render_context()).unwrap()
+    artifacts = world_artifacts.list_artifacts(pattern).unwrap()
 
     return [artifact.node().status() for artifact in artifacts]
 
@@ -45,7 +41,7 @@ def list(pattern: FullArtifactIdPatternOption = None) -> Iterable[Cell]:
 @artifacts_cli.command()
 @cells_cli
 def view(id: FullArtifactIdArgument) -> Iterable[Cell]:
-    artifact = world_artifacts.load_artifact(id, _view_render_context()).unwrap()
+    artifact = world_artifacts.load_artifact(id).unwrap()
     return [artifact.node().info()]
 
 
@@ -73,7 +69,7 @@ def update(id: FullArtifactIdArgument, input: pathlib.Path) -> Iterable[Cell]:
 @artifacts_cli.command()
 @cells_cli
 def validate(id: FullArtifactIdArgument) -> Iterable[Cell]:
-    artifact = world_artifacts.load_artifact(id, _view_render_context()).unwrap()
+    artifact = world_artifacts.load_artifact(id).unwrap()
 
     artifact.validate_artifact().unwrap()
 
@@ -86,7 +82,7 @@ def validate_all(pattern: FullArtifactIdPatternOption = None) -> Iterable[Cell]:
     if pattern is None:
         pattern = FullArtifactIdPattern.parse("**").unwrap()
 
-    artifacts = world_artifacts.list_artifacts(pattern, _view_render_context()).unwrap()
+    artifacts = world_artifacts.list_artifacts(pattern).unwrap()
 
     errors = []
 

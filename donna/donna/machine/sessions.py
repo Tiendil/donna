@@ -11,18 +11,12 @@ from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
 from donna.world import artifacts
 from donna.world import tmp as world_tmp
-from donna.world.artifacts import ArtifactRenderContext
 from donna.world.config import config
-from donna.world.templates import RenderMode
 from donna.world.worlds.base import World
 
 
 def _errors_to_cells(errors: ErrorsList) -> list[Cell]:
     return [error.node().info() for error in errors]
-
-
-def _view_render_context() -> ArtifactRenderContext:
-    return ArtifactRenderContext(primary_mode=RenderMode.view)
 
 
 @unwrap_to_error
@@ -144,7 +138,7 @@ def details() -> list[Cell]:
 
 @_session_required
 def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
-    workflow_result = artifacts.load_artifact(artifact_id, _view_render_context())
+    workflow_result = artifacts.load_artifact(artifact_id)
     if workflow_result.is_err():
         return _errors_to_cells(workflow_result.unwrap_err())
 
@@ -181,7 +175,7 @@ def _validate_operation_transition(
     state: MutableState, request_id: ActionRequestId, next_operation_id: FullArtifactSectionId
 ) -> Result[None, ErrorsList]:
     operation_id = state.get_action_request(request_id).unwrap().operation_id
-    workflow = artifacts.load_artifact(operation_id.full_artifact_id, _view_render_context()).unwrap()
+    workflow = artifacts.load_artifact(operation_id.full_artifact_id).unwrap()
     operation = workflow.get_section(operation_id.local_id).unwrap()
 
     assert isinstance(operation.meta, OperationMeta)
