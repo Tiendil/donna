@@ -59,8 +59,15 @@ class Python(BaseWorld):
         if not resource_dir.is_dir():
             return Ok(None)
 
+        from donna.world.config import config
+
+        supported_extensions = config().supported_extensions()
         matches = [
-            entry for entry in resource_dir.iterdir() if entry.is_file() and entry.name.startswith(f"{file_name}.")
+            entry
+            for entry in resource_dir.iterdir()
+            if entry.is_file()
+            and entry.name.startswith(f"{file_name}.")
+            and pathlib.Path(entry.name).suffix.lower() in supported_extensions
         ]
 
         if not matches:

@@ -35,7 +35,14 @@ class World(BaseWorld):
         if not parent.exists():
             return Ok(None)
 
-        matches = [path for path in parent.glob(f"{artifact_path.name}.*") if path.is_file()]
+        from donna.world.config import config
+
+        supported_extensions = config().supported_extensions()
+        matches = [
+            path
+            for path in parent.glob(f"{artifact_path.name}.*")
+            if path.is_file() and path.suffix.lower() in supported_extensions
+        ]
 
         if not matches:
             return Ok(None)
