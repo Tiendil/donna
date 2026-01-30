@@ -62,6 +62,7 @@
 *** lack of reporting — when a long chain of automated operations is performed, there is no convenient report/logging of what donna doing
 *** agent tools (like codes) does not properly report what is happening
 **** action requests as a verbose approach vs run_script as a silent approach
+** You can distribute your specs as a separate package or within your own lib and you don't need dependency on donna.
 * TODO Workflows polishing
 ** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
 ** Declare explicit refining loop
@@ -90,7 +91,7 @@
 ** command to reset session state (without removing artifacts)
 ** mention `session clear` command in specs
 ** usage:cli — we may want to better specify all possible commands or event to autogenerate them.
-** completed session keeps work_scope.md and work_scope_execution.md artifacts. We should make smth with that.
+p** completed session keeps work_scope.md and work_scope_execution.md artifacts. We should make smth with that.
 ** when the run is finished with error, agent tries to run session status and session continue to continue work because it sees that the session is not finished. What is the correct behavior here?
 * TODO Changy for changelog
 * TODO CLI commands improvements
