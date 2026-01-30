@@ -57,7 +57,10 @@
 ** goals:
 *** maximum determinism
 *** maximum introspection
+*** maximum quality
 *** LLMs must do only the work they can do better than code
+*** not a goal: optimizing tokens (however, we do this when we can)
+*** not a goal: optimizing speed (however, we do this when we can)
 ** How Donna help agents to do their work better
 *** Validation of artifacts
 *** Every error is accompanied with the explanation and list of ways to fix it
