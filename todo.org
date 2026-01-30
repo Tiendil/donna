@@ -6,9 +6,6 @@
 ** intergration tests for workflows/stories/scenarios
 ** header of the module must contain the instruction on how to write tests for it?
 *** maybe just with links to the spec
-* TODO unify code of different directives? It is very similar
-** add validation for specificaiton existence in directives
-** Spec rendere can be unified, since its cli command
 * TODO Specification improvements:
 ** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
 ** {{ edit(specification) }} directive?
@@ -39,12 +36,6 @@
 ** Add import/dependency flow restrictions (there were a specialized package for that)
 ** Pyright or BasedPyright
 *** control that returned values are used
-* TODO We can track causality between artifact sections (what depends on what) as universal functionality of the artifact system. I.e. no need to introduce specialized relations for specialized artifacts.
-* TODO interesting software to integrate with
-** https://github.com/m0n0x41d/quint-code
-** https://github.com/Fission-AI/OpenSpec
-** https://www.reddit.com/r/PKMS/comments/1qdgr5a/would_a_simple_pkm_programming_language_make_sense/
-** https://github.com/d12frosted/vui.el/
 * TODO README.md notes
 ** `No API keys required.` as a feature
 ** `save tokens by taking work from your agent to your code`
@@ -108,3 +99,6 @@
 ** each cli command should have detailed description
 ** protect each of cli commands with is_session_exists check
 * TODO output cell progress with instruction to codex to output summary when it gets control
+* TODO improve directives documentation
+** Add information about two stage rendering
+** to each directive add information about when it is applied (rendering stage)
