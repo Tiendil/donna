@@ -66,7 +66,10 @@ class TaskVariable(Directive):
                 raise TaskVariableUnsupportedRenderMode(render_mode=render_mode)
 
     def render_view(self, context: Context, variable_name: str) -> Result[Any, ErrorsList]:
-        return f"$$donna at the time of execution of this section here will placed a value of the task variable '{variable_name}'$$"
+        return Ok(
+            "$$donna at the time of execution of this section here will placed a value "
+            f"of the task variable '{variable_name}' donna$$"
+        )
 
     def render_execute(self, context: Context, variable_name: str) -> Result[Any, ErrorsList]:
         task_context = self._resolve_task_context(context)
@@ -82,7 +85,7 @@ class TaskVariable(Directive):
         return f"$$donna {self.analyze_id} {variable_name} donna$$"
 
     def _resolve_task_context(self, context: Context) -> dict[str, Any] | None:
-        task = context.get("task")
+        task = context.get("current_task")
         if task is not None and hasattr(task, "context"):
             return cast(dict[str, Any], task.context)
 

@@ -11,8 +11,6 @@ from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
 from donna.world import artifacts as world_artifacts
 from donna.world import tmp as world_tmp
-from donna.world.artifacts import ArtifactRenderContext
-from donna.world.templates import RenderMode
 
 artifacts_cli = typer.Typer()
 

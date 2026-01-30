@@ -97,7 +97,7 @@ def load_artifact(
     return Ok(world.fetch(full_id.artifact_id, render_context).unwrap())
 
 
-def list_artifacts(
+def list_artifacts(  # noqa: CCR001
     pattern: FullArtifactIdPattern, render_context: ArtifactRenderContext | None = None
 ) -> Result[list[Artifact], ErrorsList]:
 
