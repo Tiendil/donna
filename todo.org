@@ -62,7 +62,6 @@
 *** lack of reporting — when a long chain of automated operations is performed, there is no convenient report/logging of what donna doing
 *** agent tools (like codes) does not properly report what is happening
 **** action requests as a verbose approach vs run_script as a silent approach
-* TODO Request Action: agent has not always use the correctly specified branch, may be we should separate operation with next operation selection?
 * TODO Workflows polishing
 ** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
 ** Declare explicit refining loop
