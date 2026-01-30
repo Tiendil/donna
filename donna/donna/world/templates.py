@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 import enum
 import importlib
 import importlib.util
-from contextlib import contextmanager
-from contextvars import ContextVar
-from typing import Iterator
+from typing import TYPE_CHECKING
 
 import jinja2
 
@@ -13,6 +13,9 @@ from donna.core.result import Err, Ok, Result
 from donna.domain.ids import FullArtifactId
 from donna.machine.templates import Directive
 from donna.world import errors as world_errors
+
+if TYPE_CHECKING:
+    from donna.world.artifacts import ArtifactRenderContext
 
 
 class RenderMode(enum.Enum):
@@ -27,29 +30,13 @@ class RenderMode(enum.Enum):
 
     In each mode Donna can produce different outputs.
 
-    For example, it can output CLI commands in CLI mode, tool specifications in tool mode,
+    For example, it can output CLI commands in view/execute mode, tool specifications in tool mode,
     special markup in analyze mode, etc.
     """
 
-    cli = "cli"
+    view = "view"
+    execute = "execute"
     analysis = "analysis"
-
-
-_render_mode: ContextVar[RenderMode | None] = ContextVar("render_mode", default=None)
-
-
-@contextmanager
-def render_mode(mode: RenderMode) -> Iterator[None]:
-    token = _render_mode.set(mode)
-
-    try:
-        yield
-    finally:
-        _render_mode.reset(token)
-
-
-def set_default_render_mode(mode: RenderMode) -> None:
-    _render_mode.set(mode)
 
 
 _ENVIRONMENT = None
@@ -70,7 +57,7 @@ class DirectivePathBuilder:
         return DirectivePathBuilder(self._parts + (name,))
 
     @jinja2.pass_context
-    def __call__(self, context: jinja2.runtime.Context, *argv: object, **kwargs: object) -> object:  # noqa: CCR001
+    def __call__(self, context: jinja2.runtime.Context, *argv: object) -> object:  # noqa: CCR001
         artifact_id = context.get("artifact_id")
         directive_path = ".".join(self._parts)
         if len(self._parts) < 2:
@@ -125,7 +112,7 @@ class DirectivePathBuilder:
             )
 
         try:
-            result = directive.apply_directive(context, *argv, **kwargs)
+            result = directive.apply_directive(context, *argv)
         except EnvironmentErrorsProxy:
             raise
         except core_errors.InternalError:
@@ -176,8 +163,16 @@ def env() -> jinja2.Environment:
     return _ENVIRONMENT
 
 
-def render(artifact_id: FullArtifactId, template: str) -> Result[str, ErrorsList]:
-    context = {"render_mode": _render_mode.get(), "artifact_id": artifact_id}
+def render(
+    artifact_id: FullArtifactId, template: str, render_context: "ArtifactRenderContext"
+) -> Result[str, ErrorsList]:
+    context = {"render_mode": render_context.primary_mode, "artifact_id": artifact_id}
+
+    if render_context.current_task is not None:
+        context["current_task"] = render_context.current_task
+
+    if render_context.current_work_unit is not None:
+        context["current_work_unit"] = render_context.current_work_unit
 
     try:
         template_obj = env().from_string(template)

@@ -11,14 +11,14 @@ This format and behavior is what should be expected by default from an artifact 
 
 An artifact is any text or binary document that Donna manages in its worlds. For example, via CLI commands `donna -p <protocol> artifacts …`.
 
-The text artifact has a source and a representation.
+The text artifact has a source and one or more rendered representations, produced in specific rendering modes.
 
 — The source is the raw text content of the artifact as it is stored on disk or in remote storage.
-- The representation is the rendered version of the artifact. The artifact can have multiple representations for different purposes. For example, a markdown artifact can have agent-centric representation with extra metadata, a human-centric representation with more content formatting, a DSL representation for artifacts validation, structured representation that renders semantic schema of the artifact, a specialized representation for other tools, etc.
+- The representation is the rendered version of the artifact for a specific rendering mode. In practice, the same source is rendered in `view` mode for CLI display, `execute` mode for workflow execution, and `analysis` mode for internal parsing and validation (see "Rendering artifacts").
 
 To change the artifact, developers and agents edit its source.
 
-To get information from the artifact, developers, agents and Donna view one of its representation.
+To get information from the artifact, developers, agents and Donna view one of its representations (typically via the view rendering mode).
 
 **If you need an information from the artifact, you MUST view its representation**. Artifact sources are only for editing.
 
@@ -28,7 +28,7 @@ Read the specification `{{ donna.lib.view("donna:usage:cli") }}` to learn how to
 
 The source of the text artifact is a Jinja2-template of Markdown document.
 
-When rendering the artifact, Donna processes the Jinja2 template with a predefined set of variables and filters, and then renders the resulting Markdown content into the desired representation.
+When rendering the artifact, Donna processes the Jinja2 template with a predefined context (at minimum `render_mode` and `artifact_id`, and optionally `current_task`/`current_work_unit` during workflow execution), then renders the resulting Markdown content into the desired representation based on the selected rendering mode.
 
 **Artifact source should not use Jinja2 inheretance features** like `{{ "{% extends %}" }}` and `{{ "{% block %}" }}`.
 
@@ -36,8 +36,16 @@ Donna provides a set of special directives that can and MUST be used in the arti
 
 Here are some examples:
 
-- `{{ "{{ donna.lib.view(<artifact-id>) }}" }}` — references another artifact. Depending of the rendering mode can be: exect CLI command to view the artifact, specially formatted reference link to the artifact to easier track dependencies.
-- `{{ "{{ donna.lib.goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. Depending of the rendering mode can be: exect CLI command to push workflow forward, specially formatted reference link to the operation to enable FSM validation of the workflow.
+- `{{ "{{ donna.lib.view(<artifact-id>) }}" }}` — references another artifact. In `view`/`execute` modes it renders an exact CLI command to view the artifact; in `analysis` mode it renders a `$$donna ... $$` marker used for internal parsing.
+- `{{ "{{ donna.lib.goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. In `view`/`execute` modes it renders an exact CLI command to advance the workflow; in `analysis` mode it renders a `$$donna goto ... $$` marker used to extract workflow transitions.
+
+## Rendering artifacts
+
+Donna renders the same artifact source into different representations depending on the rendering mode. The mode is internal to Donna (users do not select it directly) and controls how directives are expanded and which metadata is included.
+
+- `view` — default representation used when the CLI loads artifacts for display (`artifacts view`, `artifacts list`, `artifacts validate`). This is the human/agent-facing output.
+- `execute` — representation used when Donna executes workflow operations (`sessions run`). It renders directives with task/work-unit context so the resulting text is actionable for the agent.
+- `analysis` — internal representation used during parsing and validation. It emits `$$donna ... $$` markers so Donna can extract workflow transitions and other structured signals.
 
 ## Structure of a Text Artifact
 
@@ -80,7 +88,7 @@ The configuration block properties format is `property1 property2=value2 propert
 
 The content of the block is parsed according to the primary format and interpreted according its properties.
 
-Configuration blocks are intended to be used by Donna and viewed by developers, so Donna does not render them into most artifact representations.
+Configuration blocks are parsed by Donna and removed from rendered Markdown representations; they remain in the source for editing and inspection (e.g., via `artifacts fetch` or the repository file).
 
 Fences without `donna` keyword are considered regular code blocks and have no special meaning for Donna.
 
@@ -119,10 +127,10 @@ Workflow artifacts describe a sequence of operations that Donna and agents can p
 
 Workflow is a Finite State Machine (FSM) where each tail section describes one operation in the workflow.
 
-Donna do additional work to validate that FSM is correct and that there are no unreachable operations, no dead ends, etc. In case of problems Donna notifies the agent about the issues.
+Donna validates workflows by ensuring the start operation exists, reachable sections are valid operations, final operations have no outgoing transitions, and non-final operations have at least one outgoing transition. It does not currently report unreachable sections.
 
 Workflow start operation MUST be declared in the workflow head-section config via `start_operation_id`
-and MUST reference a tail section whose configuration sets `fsm_mode = "start"`.
+and MUST reference an existing operation section.
 
 Example (`donna` keyword skipped for examples):
 
@@ -160,7 +168,48 @@ Here may be any additional instructions, requirements, notes, references, etc.
 
 **The body of the operation MUST contain a neat strictly defined algorithm for the agent to follow.**
 
-2. `donna.lib.finish` operation kind indicates that the workflow is finished.
+2. `donna.lib.run_script` operation kind executes a script from the operation body without agent/user interaction.
+
+The body of the operation MUST include exactly one fenced code block whose info string includes `<language> donna script`.
+Any other text in the operation body is ignored.
+
+Script example:
+
+```bash donna script
+#!/usr/bin/bash
+
+echo "Hello, World!"
+```
+
+Configuration options:
+
+```toml
+id = "<operation_id>"
+kind = "donna.lib.run_script"
+
+save_stdout_to = "<variable_name>"  # optional
+save_stderr_to = "<variable_name>"  # optional
+
+goto_on_success = "<next_operation_id>"  # required
+goto_on_failure = "<next_operation_id>"  # required
+goto_on_code = {                         # optional
+    "1" = "<next_operation_id_for_code_1>"
+    "2" = "<next_operation_id_for_code_2>"
+}
+
+timeout = 60  # optional, in seconds
+```
+
+Routing rules:
+
+- Exit code `0` routes to `goto_on_success`.
+- Non-zero exit codes first check `goto_on_code`, then fall back to `goto_on_failure`.
+- Timeouts are treated as exit code `124`.
+
+When `save_stdout_to` and/or `save_stderr_to` are set, the operation stores captured output in the task context
+under the specified variable names.
+
+3. `donna.lib.finish` operation kind indicates that the workflow is finished.
 
 Each possible path through the workflow MUST end with this operation kind.
 
@@ -170,5 +219,6 @@ Donna provides multiple directives that MUST be used in the artifact source to e
 
 Here they are:
 
-1. `{{ "{{ donna.lib.view(<full-artifact-id>) }}" }}` — references another artifact. Depending of the rendering mode can be: exect CLI command to view the artifact, specially formatted reference link to the artifact to easier track dependencies.
-2. `{{ "{{ donna.lib.goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. Depending of the rendering mode can be: exect CLI command to push workflow forward, specially formatted reference link to the operation to enable FSM validation of the workflow.
+1. `{{ "{{ donna.lib.view(<full-artifact-id>) }}" }}` — references another artifact. In `view`/`execute` modes it renders an exact CLI command to view the artifact; in `analysis` mode it renders a `$$donna ... $$` marker.
+2. `{{ "{{ donna.lib.goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. In `view`/`execute` modes it renders an exact CLI command to advance the workflow; in `analysis` mode it renders a `$$donna goto ... $$` marker used for transition extraction.
+3. `{{ "{{ donna.lib.task_variable(<variable_name>) }}" }}` — in `view` mode renders a placeholder note about task-variable substitution, in `execute` mode renders the actual task-context value (or an explicit error marker if missing), and in `analysis` mode renders a `$$donna task_variable ... $$` marker.

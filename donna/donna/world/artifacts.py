@@ -1,11 +1,20 @@
 import pathlib
 
+from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import FullArtifactId, FullArtifactIdPattern, WorldId
 from donna.machine.artifacts import Artifact
+from donna.machine.tasks import Task, WorkUnit
 from donna.world import errors
 from donna.world.config import config
+from donna.world.templates import RenderMode
+
+
+class ArtifactRenderContext(BaseEntity):
+    primary_mode: RenderMode
+    current_task: Task | None = None
+    current_work_unit: WorkUnit | None = None
 
 
 class ArtifactUpdateError(errors.WorldError):
@@ -67,7 +76,8 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> Result[None
     if source_config is None:
         return Err([NoSourceForArtifactExtension(artifact_id=full_id, path=input)])
 
-    test_artifact = source_config.construct_artifact_from_bytes(full_id, content_bytes).unwrap()
+    render_context = ArtifactRenderContext(primary_mode=RenderMode.view)
+    test_artifact = source_config.construct_artifact_from_bytes(full_id, content_bytes, render_context).unwrap()
     validation_result = test_artifact.validate_artifact()
 
     validation_result.unwrap()
@@ -77,19 +87,30 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> Result[None
 
 
 @unwrap_to_error
-def load_artifact(full_id: FullArtifactId) -> Result[Artifact, ErrorsList]:
+def load_artifact(
+    full_id: FullArtifactId, render_context: ArtifactRenderContext | None = None
+) -> Result[Artifact, ErrorsList]:
+    if render_context is None:
+        render_context = ArtifactRenderContext(primary_mode=RenderMode.view)
+
     world = config().get_world(full_id.world_id).unwrap()
-    return Ok(world.fetch(full_id.artifact_id).unwrap())
+    return Ok(world.fetch(full_id.artifact_id, render_context).unwrap())
 
 
-def list_artifacts(pattern: FullArtifactIdPattern) -> Result[list[Artifact], ErrorsList]:
+def list_artifacts(  # noqa: CCR001
+    pattern: FullArtifactIdPattern, render_context: ArtifactRenderContext | None = None
+) -> Result[list[Artifact], ErrorsList]:
+
+    if render_context is None:
+        render_context = ArtifactRenderContext(primary_mode=RenderMode.view)
+
     artifacts: list[Artifact] = []
     errors: ErrorsList = []
 
     for world in reversed(config().worlds_instances):
         for artifact_id in world.list_artifacts(pattern):
             full_id = FullArtifactId((world.id, artifact_id))
-            artifact_result = load_artifact(full_id)
+            artifact_result = load_artifact(full_id, render_context)
             if artifact_result.is_err():
                 errors.extend(artifact_result.unwrap_err())
                 continue

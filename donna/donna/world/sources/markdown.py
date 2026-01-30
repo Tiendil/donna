@@ -8,8 +8,9 @@ from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionCo
 from donna.machine.primitives import Primitive, resolve_primitive
 from donna.world import errors as world_errors
 from donna.world import markdown
+from donna.world.artifacts import ArtifactRenderContext
 from donna.world.sources.base import SourceConfig, SourceConstructor
-from donna.world.templates import RenderMode, render, render_mode
+from donna.world.templates import RenderMode, render
 
 
 class MarkdownSectionConstructor(Protocol):
@@ -19,7 +20,7 @@ class MarkdownSectionConstructor(Protocol):
         source: markdown.SectionSource,
         config: dict[str, Any],
         primary: bool = False,
-    ) -> ArtifactSection:
+    ) -> Result[ArtifactSection, ErrorsList]:
         pass
 
 
@@ -29,8 +30,10 @@ class Config(SourceConfig):
     default_section_kind: PythonImportPath = PythonImportPath("donna.lib.text")
     default_primary_section_id: ArtifactSectionId = ArtifactSectionId("primary")
 
-    def construct_artifact_from_bytes(self, full_id: FullArtifactId, content: bytes) -> Result[Artifact, ErrorsList]:
-        return construct_artifact_from_bytes(full_id, content, self)
+    def construct_artifact_from_bytes(
+        self, full_id: FullArtifactId, content: bytes, render_context: ArtifactRenderContext
+    ) -> Result[Artifact, ErrorsList]:
+        return construct_artifact_from_bytes(full_id, content, render_context, self)
 
 
 class MarkdownSourceConstructor(SourceConstructor):
@@ -68,16 +71,17 @@ class MarkdownSectionMixin:
         section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
-    ) -> ArtifactSectionMeta:
-        return ArtifactSectionMeta()
+    ) -> Result[ArtifactSectionMeta, ErrorsList]:
+        return Ok(ArtifactSectionMeta())
 
+    @unwrap_to_error
     def markdown_construct_section(  # noqa: CCR001
         self,
         artifact_id: FullArtifactId,
         source: markdown.SectionSource,
         config: dict[str, Any],
         primary: bool = False,
-    ) -> ArtifactSection:
+    ) -> Result[ArtifactSection, ErrorsList]:
         section_config = self.config_class.parse_obj(config)
 
         title = self.markdown_build_title(
@@ -98,31 +102,35 @@ class MarkdownSectionMixin:
             section_config=section_config,
             description=description,
             primary=primary,
-        )
+        ).unwrap()
 
-        return ArtifactSection(
-            id=section_config.id,
-            artifact_id=artifact_id,
-            kind=section_config.kind,
-            title=title,
-            description=description,
-            primary=primary,
-            meta=meta,
+        return Ok(
+            ArtifactSection(
+                id=section_config.id,
+                artifact_id=artifact_id,
+                kind=section_config.kind,
+                title=title,
+                description=description,
+                primary=primary,
+                meta=meta,
+            )
         )
 
 
 @unwrap_to_error
-def parse_artifact_content(full_id: FullArtifactId, text: str) -> Result[list[markdown.SectionSource], ErrorsList]:
+def parse_artifact_content(
+    full_id: FullArtifactId, text: str, render_context: ArtifactRenderContext
+) -> Result[list[markdown.SectionSource], ErrorsList]:
     # Parsing an artifact two times is not ideal, but it is straightforward approach that works for now.
     # We should consider optimizing this in the future if performance or stability becomes an issue.
     # For now let's wait till we have more artifact analysis logic and till more use cases emerge.
 
-    original_markdown_source = render(full_id, text).unwrap()
+    original_markdown_source = render(full_id, text, render_context).unwrap()
     original_sections = markdown.parse(original_markdown_source, artifact_id=full_id).unwrap()
 
-    with render_mode(RenderMode.analysis):
-        analyzed_markdown_source = render(full_id, text).unwrap()
-        analyzed_sections = markdown.parse(analyzed_markdown_source, artifact_id=full_id).unwrap()
+    analysis_context = render_context.replace(primary_mode=RenderMode.analysis)
+    analyzed_markdown_source = render(full_id, text, analysis_context).unwrap()
+    analyzed_sections = markdown.parse(analyzed_markdown_source, artifact_id=full_id).unwrap()
 
     if len(original_sections) != len(analyzed_sections):
         raise world_errors.MarkdownSectionsCountMismatch(
@@ -142,16 +150,16 @@ def parse_artifact_content(full_id: FullArtifactId, text: str) -> Result[list[ma
 
 
 def construct_artifact_from_bytes(
-    full_id: FullArtifactId, content: bytes, config: Config
+    full_id: FullArtifactId, content: bytes, render_context: ArtifactRenderContext, config: Config
 ) -> Result[Artifact, ErrorsList]:
-    return construct_artifact_from_markdown_source(full_id, content.decode("utf-8"), config)
+    return construct_artifact_from_markdown_source(full_id, content.decode("utf-8"), render_context, config)
 
 
 @unwrap_to_error
 def construct_artifact_from_markdown_source(  # noqa: CCR001
-    full_id: FullArtifactId, content: str, config: Config
+    full_id: FullArtifactId, content: str, render_context: ArtifactRenderContext, config: Config
 ) -> Result[Artifact, ErrorsList]:
-    original_sections = parse_artifact_content(full_id, content).unwrap()
+    original_sections = parse_artifact_content(full_id, content, render_context).unwrap()
     head_config = dict(original_sections[0].merged_configs().unwrap())
     head_kind_value = head_config["kind"]
     if isinstance(head_kind_value, PythonImportPath):
@@ -166,14 +174,16 @@ def construct_artifact_from_markdown_source(  # noqa: CCR001
     _ensure_markdown_constructible(primary_primitive, head_kind).unwrap()
     markdown_primary_primitive = cast(MarkdownSectionMixin, primary_primitive)
 
-    primary_section = markdown_primary_primitive.markdown_construct_section(
+    primary_section_result = markdown_primary_primitive.markdown_construct_section(
         artifact_id=full_id,
         source=original_sections[0],
         config=head_config,
         primary=True,
     )
+    if primary_section_result.is_err():
+        return Err(primary_section_result.unwrap_err())
+    primary_section = primary_section_result.unwrap()
 
-    sections = [primary_section]
     sections = construct_sections_from_markdown(
         artifact_id=full_id,
         sections=original_sections[1:],
@@ -191,6 +201,7 @@ def construct_sections_from_markdown(  # noqa: CCR001
     primitive_overrides: dict[PythonImportPath, Primitive] | None = None,
 ) -> Result[list[ArtifactSection], ErrorsList]:
     constructed: list[ArtifactSection] = []
+    errors: ErrorsList = []
 
     for section in sections:
         data = dict(section.merged_configs().unwrap())
@@ -211,7 +222,14 @@ def construct_sections_from_markdown(  # noqa: CCR001
         _ensure_markdown_constructible(primitive, primitive_id).unwrap()
         markdown_primitive = cast(MarkdownSectionMixin, primitive)
 
-        constructed.append(markdown_primitive.markdown_construct_section(artifact_id, section, data, primary=False))
+        section_result = markdown_primitive.markdown_construct_section(artifact_id, section, data, primary=False)
+        if section_result.is_err():
+            errors.extend(section_result.unwrap_err())
+            continue
+        constructed.append(section_result.unwrap())
+
+    if errors:
+        return Err(errors)
 
     return Ok(constructed)
 

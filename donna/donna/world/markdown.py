@@ -25,6 +25,9 @@ class CodeSource(BaseEntity):
     content: str
 
     def structured_data(self) -> Result[Any, ErrorsList]:
+        if "script" in self.properties:
+            return Ok({})
+
         if self.format == "json":
             import json
 
@@ -91,6 +94,9 @@ class SectionSource(BaseEntity):
 
         return Ok(result)
 
+    def scripts(self) -> list[str]:
+        return [config.content for config in self.configs if "script" in config.properties]
+
 
 def render_back(tokens: list[Token]) -> str:
     renderer = MDRenderer()
@@ -153,7 +159,7 @@ def _parse_heading(
     return Ok(node.next_sibling)
 
 
-def _parse_fence(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:
+def _parse_fence(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:  # noqa: CCR001
     section = sections[-1]
 
     info_parts = node.info.split()

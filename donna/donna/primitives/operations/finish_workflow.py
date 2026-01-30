@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING, ClassVar, Iterator, Literal, cast
 
+from donna.core.errors import ErrorsList
+from donna.core.result import Ok, Result
 from donna.domain.ids import FullArtifactId
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
@@ -30,6 +32,6 @@ class FinishWorkflow(MarkdownSectionMixin, OperationKind):
         section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
-    ) -> ArtifactSectionMeta:
+    ) -> Result[ArtifactSectionMeta, ErrorsList]:
         finish_config = cast(FinishWorkflowConfig, section_config)
-        return OperationMeta(fsm_mode=finish_config.fsm_mode, allowed_transtions=set())
+        return Ok(OperationMeta(fsm_mode=finish_config.fsm_mode, allowed_transtions=set()))

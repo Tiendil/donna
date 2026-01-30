@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, ClassVar, Iterator, cast
 
 import pydantic
 
+from donna.core.errors import ErrorsList
+from donna.core.result import Ok, Result
 from donna.domain import errors as domain_errors
 from donna.domain.ids import ArtifactSectionId, FullArtifactId
 from donna.machine.action_requests import ActionRequest
@@ -58,13 +60,15 @@ class RequestAction(MarkdownSectionMixin, OperationKind):
         section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
-    ) -> ArtifactSectionMeta:
+    ) -> Result[ArtifactSectionMeta, ErrorsList]:
         request_config = cast(RequestActionConfig, section_config)
         analysis = source.as_analysis_markdown(with_title=True)
 
-        return OperationMeta(
-            fsm_mode=request_config.fsm_mode,
-            allowed_transtions=extract_transitions(analysis),
+        return Ok(
+            OperationMeta(
+                fsm_mode=request_config.fsm_mode,
+                allowed_transtions=extract_transitions(analysis),
+            )
         )
 
     def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterator["Change"]:

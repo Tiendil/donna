@@ -1,4 +1,4 @@
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
@@ -11,6 +11,9 @@ from donna.machine.errors import (
 )
 from donna.protocol.cells import Cell
 from donna.protocol.nodes import Node
+
+if TYPE_CHECKING:
+    from donna.world.artifacts import ArtifactRenderContext
 
 
 class ArtifactSectionConfig(BaseEntity):
@@ -185,10 +188,12 @@ class ArtifactSectionNode(Node):
 
 
 @unwrap_to_error
-def resolve(target_id: FullArtifactSectionId) -> Result[ArtifactSection, ErrorsList]:
+def resolve(
+    target_id: FullArtifactSectionId, render_context: "ArtifactRenderContext"
+) -> Result[ArtifactSection, ErrorsList]:
     from donna.world import artifacts as world_artifacts
 
-    artifact = world_artifacts.load_artifact(target_id.full_artifact_id).unwrap()
+    artifact = world_artifacts.load_artifact(target_id.full_artifact_id, render_context).unwrap()
 
     section = artifact.get_section(target_id.local_id).unwrap()
 

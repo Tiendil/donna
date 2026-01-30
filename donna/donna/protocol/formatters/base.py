@@ -9,4 +9,7 @@ class Formatter(ABC):
     def format_cell(self, cell: Cell, single_mode: bool) -> bytes: ...  # noqa: E704
 
     @abstractmethod
+    def format_log(self, cell: Cell, single_mode: bool) -> bytes: ...  # noqa: E704
+
+    @abstractmethod
     def format_cells(self, cells: list[Cell]) -> bytes: ...  # noqa: E704

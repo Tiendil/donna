@@ -4,7 +4,7 @@ from donna.protocol.formatters.base import Formatter as BaseFormatter
 
 class Formatter(BaseFormatter):
 
-    def format_cell(self, cell: Cell, single_mode: bool) -> bytes:
+    def format_cell(self, cell: Cell, single_mode: bool) -> bytes:  # noqa: CCR001
         id = cell.short_id
 
         lines = []
@@ -28,6 +28,10 @@ class Formatter(BaseFormatter):
             lines.append(f"--DONNA-CELL {id} END--")
 
         return "\n".join(lines).strip().encode()
+
+    def format_log(self, cell: Cell, single_mode: bool) -> bytes:
+        message = cell.content.strip() if cell.content else ""
+        return f"DONNA LOG: {message}".strip().encode()
 
     def format_cells(self, cells: list[Cell]) -> bytes:
         single_mode = len(cells) == 1

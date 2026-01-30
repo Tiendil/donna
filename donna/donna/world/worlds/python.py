@@ -8,6 +8,7 @@ from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern, WorldId
 from donna.machine.artifacts import Artifact
 from donna.world import errors as world_errors
+from donna.world.artifacts import ArtifactRenderContext
 from donna.world.artifacts_discovery import ArtifactListingNode, list_artifacts_by_pattern
 from donna.world.worlds.base import World as BaseWorld
 from donna.world.worlds.base import WorldConstructor
@@ -58,8 +59,15 @@ class Python(BaseWorld):
         if not resource_dir.is_dir():
             return Ok(None)
 
+        from donna.world.config import config
+
+        supported_extensions = config().supported_extensions()
         matches = [
-            entry for entry in resource_dir.iterdir() if entry.is_file() and entry.name.startswith(f"{file_name}.")
+            entry
+            for entry in resource_dir.iterdir()
+            if entry.is_file()
+            and entry.name.startswith(f"{file_name}.")
+            and pathlib.Path(entry.name).suffix.lower() in supported_extensions
         ]
 
         if not matches:
@@ -98,7 +106,7 @@ class Python(BaseWorld):
         return resolve_result.unwrap() is not None
 
     @unwrap_to_error
-    def fetch(self, artifact_id: ArtifactId) -> Result[Artifact, ErrorsList]:
+    def fetch(self, artifact_id: ArtifactId, render_context: ArtifactRenderContext) -> Result[Artifact, ErrorsList]:
         resource_path = self._resolve_artifact_file(artifact_id).unwrap()
         if resource_path is None:
             return Err([world_errors.ArtifactNotFound(artifact_id=artifact_id, world_id=self.id)])
@@ -121,7 +129,7 @@ class Python(BaseWorld):
                 ]
             )
 
-        return Ok(source_config.construct_artifact_from_bytes(full_id, content_bytes).unwrap())
+        return Ok(source_config.construct_artifact_from_bytes(full_id, content_bytes, render_context).unwrap())
 
     @unwrap_to_error
     def fetch_source(self, artifact_id: ArtifactId) -> Result[bytes, ErrorsList]:  # noqa: CCR001

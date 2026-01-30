@@ -1,17 +1,11 @@
 
 * TODO freeze pydantic models which are possible
-* TODO codex should explain what it is doing, while executing requests from donna
 * TODO tests
 ** basic / lowest unit tests for primitive operations
 ** domain-level unit tests
 ** intergration tests for workflows/stories/scenarios
 ** header of the module must contain the instruction on how to write tests for it?
 *** maybe just with links to the spec
-* TODO optimize imports by moving most used ones to \__init__.py files
-* TODO virtual persona/roles as spects, so action request can tell whos role should be used to answer or agent could decide by itself
-* TODO unify code of different directives? It is very similar
-** add validation for specificaiton existence in directives
-** Spec rendere can be unified, since its cli command
 * TODO Specification improvements:
 ** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
 ** {{ edit(specification) }} directive?
@@ -33,6 +27,8 @@
 ** Spec-based workflow (like in OpenSpec?)
 ** Example worflow with iterative factorial calculation
 ** Example workflow with recursive factorial calculation
+** Example of simplified groom (without run_script)
+** Example of complex groom (with run_script)
 * TODO possible specifications
 ** how to prepare python package with artifacts for donna
 * TODO Grooming improvements
@@ -40,27 +36,6 @@
 ** Add import/dependency flow restrictions (there were a specialized package for that)
 ** Pyright or BasedPyright
 *** control that returned values are used
-* TODO CLI operation
-** Add a new operation kind, that runs cli commands as part of the workflow.
-** The operation should not requre interaction with the agent or the user.
-** Cli command
-*** should start in the same environment as the donna runs
-*** should be specified as a string and interpreted as a shell command, pipes are allowed
-*** should be specified in a specialized code block
-** We consider those commands save enough, because they will be defined in the workflows (i.e. reviewed by humans and agents).
-** For this operation, specify next operations depending on the cli result code (as a map in the config block)
-*** on success (zero code?)
-*** on failure (none zero code?)
-*** on specific code
-** The next commands should be able to access the cli output (stdout and stderr) via variables.
-*** Use WorkUnit context for this
-** Update artifacts format specification with new operation info
-* TODO We can track causality between artifact sections (what depends on what) as universal functionality of the artifact system. I.e. no need to introduce specialized relations for specialized artifacts.
-* TODO interesting software to integrate with
-** https://github.com/m0n0x41d/quint-code
-** https://github.com/Fission-AI/OpenSpec
-** https://www.reddit.com/r/PKMS/comments/1qdgr5a/would_a_simple_pkm_programming_language_make_sense/
-** https://github.com/d12frosted/vui.el/
 * TODO README.md notes
 ** `No API keys required.` as a feature
 ** `save tokens by taking work from your agent to your code`
@@ -72,7 +47,10 @@
 ** goals:
 *** maximum determinism
 *** maximum introspection
+*** maximum quality
 *** LLMs must do only the work they can do better than code
+*** not a goal: optimizing tokens (however, we do this when we can)
+*** not a goal: optimizing speed (however, we do this when we can)
 ** How Donna help agents to do their work better
 *** Validation of artifacts
 *** Every error is accompanied with the explanation and list of ways to fix it
@@ -80,7 +58,15 @@
 *** Controls meta flow of work, so agent should not think about it
 ** Since the donna is developed with donna, Donna's `.donna` directory is a great example of how to structure donna projects and how to work with it in general.
 ** this is also an experiment on agent-friendly cli tools
-* TODO Request Action: agent has not always use the correctly specified branch, may be we should separate operation with next operation selection?
+** known problems
+*** lack of reporting — when a long chain of automated operations is performed, there is no convenient report/logging of what donna doing
+*** agent tools (like codes) does not properly report what is happening
+**** action requests as a verbose approach vs run_script as a silent approach
+** You can distribute your specs as a separate package or within your own lib and you don't need dependency on donna.
+** list of python packages that support donna
+*** changy
+*** brigid
+*** feeds fun
 * TODO Workflows polishing
 ** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
 ** Declare explicit refining loop
@@ -107,8 +93,8 @@
 *** hard mode — forse agent to work via donna
 ** installing donna cli via online instruction for agents
 ** command to reset session state (without removing artifacts)
+** mention `session clear` command in specs
+** usage:cli — we may want to better specify all possible commands or event to autogenerate them.
+p** completed session keeps work_scope.md and work_scope_execution.md artifacts. We should make smth with that.
+** when the run is finished with error, agent tries to run session status and session continue to continue work because it sees that the session is not finished. What is the correct behavior here?
 * TODO Changy for changelog
-* TODO Donna treat as duplicates temporary files, `like my-file.md~`
-* TODO CLI commands improvements
-** each cli command should have detailed description
-** protect each of cli commands with is_session_exists check

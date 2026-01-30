@@ -36,12 +36,6 @@ class BaseState(BaseEntity):
     started: bool
     last_id: int
 
-    @property
-    def is_completed(self) -> bool:
-        # A state can not consider itself completed if it was never started
-        # it is important to distinguish sessions with unfinished initialization and sessions that are done
-        return not self.tasks and self.started and not self.action_requests
-
     def has_work(self) -> bool:
         return bool(self.work_units)
 
@@ -184,25 +178,59 @@ class StateNode(Node):
         self._state = state
 
     def status(self) -> Cell:
-        if self._state.is_completed:
+        if not self._state.started:
             message = textwrap.dedent(
                 """
-            The session has no active tasks or pending actions.
+            The session has not been started yet. You can safely start a new session and then run a workflow.
+                """
+            )
+
+        elif not self._state.tasks:
+            message = textwrap.dedent(
+                """
+            The session is IDLE. There are no active tasks.
 
             - If the developer asked you to start working on a new task, you can do so by initiating a new workflow.
-            - If you have been working on a task, consider it completed and output the results to the developer.
-            """
+            - If you have been working on a task, consider it completed and REPORT THE RESULTS TO THE DEVELOPER.
+                """
             )
-        else:
+
+        elif self._state.work_units:
             message = textwrap.dedent(
                 """
-            The session is ACTIVE. You have pending tasks to complete.
+            The session has PENDING WORK UNITS. Donna has work to complete.
 
-            - If the developer asked you to start working on a new task, you MUST ask if you should start a new session
-              or run a new workflow in the current one.
-            - If you have been working on a task, you can continue.
+            - If the developer asked you to start working on a new task, you MUST warn that there are pending work
+              units and ask if you should start a new session or continue working on the current work units.
+            - If you have been working on a task, you can continue session.
                 """
             )
+
+        elif self._state.action_requests:
+            message = textwrap.dedent(
+                """
+            The session is AWAITING YOUR ACTION. You have pending action requests to address.
+
+            - If the developer asked you to start working on a new task, you MUST ask if you should start a new session
+              or continue working on the current action requests.
+            - Otherwise, you MUST address the pending action requests before proceeding.
+                """
+            )
+
+        elif self._state.tasks:
+            message = textwrap.dedent(
+                """
+            The session has unfinished TASKS but no pending work units or action requests.
+
+            - If the developer asked you to start working on a new task , you MUST ask if you should start a new
+              session or run a new workflow in the current one.
+            - If you have been working on a task, you can consider it completed and output the results to the
+              developer.
+                """
+            )
+
+        else:
+            raise machine_errors.SessionStateStatusInvalid()
 
         return Cell.build_markdown(
             kind="session__state_status",
@@ -210,7 +238,6 @@ class StateNode(Node):
             tasks=len(self._state.tasks),
             queued_work_units=len(self._state.work_units),
             pending_action_requests=len(self._state.action_requests),
-            is_completed=self._state.is_completed,
         )
 
     def references(self) -> list[Node]:

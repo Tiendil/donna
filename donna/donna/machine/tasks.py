@@ -1,4 +1,5 @@
 import copy
+import sys
 from typing import TYPE_CHECKING, Any
 
 import pydantic
@@ -7,6 +8,8 @@ from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result, unwrap_to_error
 from donna.domain.ids import FullArtifactSectionId, TaskId, WorkUnitId
+from donna.protocol.cells import Cell
+from donna.protocol.modes import get_cell_formatter
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -56,13 +59,31 @@ class WorkUnit(BaseEntity):
 
     @unwrap_to_error
     def run(self, task: Task) -> Result[list["Change"], ErrorsList]:
+        from donna.machine import artifacts as machine_artifacts
         from donna.machine.primitives import resolve_primitive
-        from donna.world import artifacts
+        from donna.world.artifacts import ArtifactRenderContext
+        from donna.world.templates import RenderMode
 
-        workflow = artifacts.load_artifact(self.operation_id.full_artifact_id).unwrap()
-        operation = workflow.get_section(self.operation_id.local_id).unwrap()
+        render_context = ArtifactRenderContext(
+            primary_mode=RenderMode.execute,
+            current_task=task,
+            current_work_unit=self,
+        )
+        operation = machine_artifacts.resolve(self.operation_id, render_context).unwrap()
         operation_kind = resolve_primitive(operation.kind).unwrap()
 
-        cells = list(operation_kind.execute_section(task, self, operation))
+        ##########################
+        # We log each operation here to help agent display the progress to the user
+        # TODO: not a good solution from the agent perspective
+        #       let's hope there will some protocol appear that helps with that later
+        # TODO: not so good place for and way of logging, should do smth with that
+        log_message = f"{self.operation_id}: {operation.title}"
+        log_cell = Cell.build(kind="donna_log", media_type="text/plain", content=log_message)
+        formatter = get_cell_formatter()
+        sys.stdout.buffer.write(formatter.format_log(log_cell, single_mode=True) + b"\n\n")
+        sys.stdout.buffer.flush()
+        ##########################
 
-        return Ok(cells)
+        changes = list(operation_kind.execute_section(task, self, operation))
+
+        return Ok(changes)
