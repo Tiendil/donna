@@ -191,7 +191,7 @@ class StateNode(Node):
             The session is IDLE. There are no active tasks.
 
             - If the developer asked you to start working on a new task, you can do so by initiating a new workflow.
-            - If you have been working on a task, consider it completed and output the results to the developer.
+            - If you have been working on a task, consider it completed and REPORT THE RESULTS TO THE DEVELOPER.
                 """
             )
 
