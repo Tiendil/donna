@@ -1,2 +1,2 @@
 
-No changes.
+- Configured packaging, released on PyPI.

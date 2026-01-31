@@ -13,16 +13,15 @@ echo "Install dependencies"
 
 poetry install
 
-# echo "Update change log"
+echo "Update change log"
 
-# poetry run changy version create $NEXT_VERSION
+poetry run changy version create $NEXT_VERSION
 
-# echo "Generate changelog"
+echo "Generate changelog"
 
-# poetry run changy changelog create
+poetry run changy changelog create
 
-# export COMMIT_BODY=$(poetry run changy version show $NEXT_VERSION)
-export COMMIT_BODY=""
+export COMMIT_BODY=$(poetry run changy version show $NEXT_VERSION)
 
 echo "New version is $NEXT_VERSION"
 echo "New version tag $NEXT_VERSION_TAG"
