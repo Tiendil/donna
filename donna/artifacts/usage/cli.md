@@ -92,15 +92,26 @@ After you started a session:
 
 You MUST continue following Donna's instructions until the workflow is completed.
 
+### Session state
+
+You may run `donna -p <protocol> sessions status` to get the status of the current session.
+
+You may run `donna -p <protocol> sessions details` to get detailed information about the current session, including list of active action requests.
+
 ### Starting work
 
-- If the developer asked you to do something:
-  - run `donna -p <protocol> sessions status` to get the status of the current session.
-  - or run `donna -p <protocol> sessions details` to get detailed information about the current session, including list of active action requests.
-  - If there is no active session, start a new session by calling `donna -p <protocol> sessions start`.
-  - If the session is already active and there are no unfinished work in it, start a new session by calling `donna -p <protocol> sessions start`.
-  - If the session is already active and there are unfinished work in it, you MUST ask the developer whether to continue the work in the current session or start a new one.
-- If the developer asked you to continue your work, you MUST call `donna -p <protocol> sessions continue` to get your instructions on what to do next.
+If the developer asked you to do something new:
+
+- Run `donna -p <protocol> sessions status` to get the status of the current session.
+- If there is no active session, start a new session by calling `donna -p <protocol> sessions start`.
+- If the session is already active and there are no unfinished work in it, start a new session by calling `donna -p <protocol> sessions start`.
+- If the session is already active and there are unfinished work in it, you MUST ask the developer whether to continue the work in the current session or start a new one.
+
+### Continuing work
+
+If the developer asked you to continue your work, you MUST call `donna -p <protocol> sessions continue` to get your instructions on what to do next.
+
+If Donna tells you there is no work left, you MUST inform the developer that there is no work left in the current session.
 
 ### Working with artifacts
 
