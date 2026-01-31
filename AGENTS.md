@@ -12,7 +12,4 @@ Since this is the repository that contains the Donna project itself, you have di
 
 I.e. you develop Donna using Donna.
 
-**ALWAYS** perform the next steps when you start working.
-
-1. Read the specification of how to use Donna: `./bin/donna.sh -p llm artifacts view donna:usage:cli`.
-2. Read the inroduction to the Donna project: `./bin/donna.sh -p llm artifacts view project:intro`.
+**ALWAYS** perform `./bin/donna.sh -p llm artifacts view "*:intro"` when you start working.

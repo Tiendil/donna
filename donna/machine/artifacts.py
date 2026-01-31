@@ -138,12 +138,12 @@ class ArtifactNode(Node):
             return primary_section_result.unwrap_err()[0].node().status()
 
         primary_section = primary_section_result.unwrap()
-        return Cell.build_meta(
+        return Cell.build_markdown(
             kind="artifact_status",
             artifact_id=str(self._artifact.id),
             artifact_kind=str(primary_section.kind),
             artifact_title=primary_section.title,
-            artifact_description=primary_section.description,
+            content=primary_section.description,
         )
 
     def info(self) -> Cell:
@@ -161,8 +161,6 @@ class ArtifactNode(Node):
             content="\n".join(blocks_result.unwrap()),
             artifact_id=str(self._artifact.id),
             artifact_kind=str(primary_section.kind),
-            artifact_title=primary_section.title,
-            artifact_description=primary_section.description,
         )
 
     def components(self) -> list["Node"]:
