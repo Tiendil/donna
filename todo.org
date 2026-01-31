@@ -70,6 +70,8 @@
 ** do not reinitialize project
 ** do not create project inside another donna project
 ** if the project is not found, check for .git directory and offer to create donna project there
+** donna projects initialize -> donna initialize
+** update donna:usage:cli
 * TODO Massive spellcheck
 * TODO Donna-agents integration
 ** Install donna as a skill
