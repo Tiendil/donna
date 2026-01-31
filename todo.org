@@ -68,6 +68,7 @@
 ** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
 ** on initialization donna should create some default workflows based on the project configs (grooming, for example)
 ** create a copy of the default config for the new project
+** autodiscover python worlds among installed packages
 * TODO Massive spellcheck
 * TODO Donna-agents integration
 ** Install donna as a skill
