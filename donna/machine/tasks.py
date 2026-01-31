@@ -2,8 +2,6 @@ import copy
 import sys
 from typing import TYPE_CHECKING, Any
 
-import pydantic
-
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result, unwrap_to_error
@@ -18,9 +16,6 @@ if TYPE_CHECKING:
 class Task(BaseEntity):
     id: TaskId
     context: dict[str, Any]
-
-    # TODO: we may want to make queue items frozen later
-    model_config = pydantic.ConfigDict(frozen=False)
 
     @classmethod
     def build(cls, id: TaskId) -> "Task":
