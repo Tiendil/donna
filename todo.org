@@ -63,9 +63,6 @@
 ** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
 * TODO Donna flow improvements
 ** Each world must provide an intro spec and donna should be able to conviniently output it to the user.
-** usage modes
-*** easy mode — one of possible skills to use
-*** hard mode — forse agent to work via donna
 ** command to reset session state (without removing artifacts)
 ** mention `session clear` command in specs
 ** usage:cli — we may want to better specify all possible commands or event to autogenerate their docs.
@@ -82,3 +79,6 @@
 ** Install donna as a tool
 ** slash commands for donna
 ** installing donna cli via online instruction for agents
+** specify usage modes somewhere:
+*** easy mode — one of possible skills to use
+*** hard mode — forse agent to work via donna
