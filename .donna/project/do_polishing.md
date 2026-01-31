@@ -1,11 +1,11 @@
-# Grooming Workflow
+# Polishing Workflow
 
 ```toml donna
 kind = "donna.lib.workflow"
 start_operation_id = "run_autoflake_script"
 ```
 
-Initiate operations to groom and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc.
+Initiate operations to polish and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc.
 
 ## Run Autoflake
 
