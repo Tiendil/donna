@@ -6,7 +6,6 @@ from donna.cli.application import app
 from donna.cli.types import (
     FullArtifactIdArgument,
     FullArtifactIdPatternArgument,
-    FullArtifactIdPatternOption,
     InputPathArgument,
     OutputPathOption,
 )
@@ -18,6 +17,8 @@ from donna.world import artifacts as world_artifacts
 from donna.world import tmp as world_tmp
 
 artifacts_cli = typer.Typer()
+
+DEFAULT_ARTIFACT_PATTERN = FullArtifactIdPattern.parse("**").unwrap()
 
 
 @artifacts_cli.callback(invoke_without_command=True)
@@ -34,10 +35,7 @@ def initialize(ctx: typer.Context) -> None:
     help="List artifacts matching a pattern and show their status summaries. Lists all all artifacts by default."
 )
 @cells_cli
-def list(pattern: FullArtifactIdPatternOption = None) -> Iterable[Cell]:
-    if pattern is None:
-        pattern = FullArtifactIdPattern.parse("**").unwrap()
-
+def list(pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN) -> Iterable[Cell]:
     artifacts = world_artifacts.list_artifacts(pattern).unwrap()
 
     return [artifact.node().status() for artifact in artifacts]
@@ -97,10 +95,7 @@ def validate(id: FullArtifactIdArgument) -> Iterable[Cell]:
     help="Validate all artifacts matching a pattern (defaults to all artifacts) and return any errors."
 )
 @cells_cli
-def validate_all(pattern: FullArtifactIdPatternOption = None) -> Iterable[Cell]:  # noqa: CCR001
-    if pattern is None:
-        pattern = FullArtifactIdPattern.parse("**").unwrap()
-
+def validate_all(pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN) -> Iterable[Cell]:  # noqa: CCR001
     artifacts = world_artifacts.list_artifacts(pattern).unwrap()
 
     errors = []
