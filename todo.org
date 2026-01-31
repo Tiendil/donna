@@ -1,5 +1,3 @@
-
-* TODO freeze pydantic models which are possible
 * TODO tests
 ** basic / lowest unit tests for primitive operations
 ** domain-level unit tests
