@@ -62,9 +62,9 @@
 ** tune wording of workflows (what to write before goto)
 ** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
 ** completed session keeps work_scope.md and work_scope_execution.md artifacts, we must add cleanup on the first step of planing.
+** on initialization donna should create some default workflows based on the project configs (grooming, for example)
 * TODO Donna project initialization
 ** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
-** on initialization donna should create some default workflows based on the project configs (grooming, for example)
 ** create a copy of the default config for the new project
 ** do not reinitialize project
 ** if the project is not found, check for .git directory and offer to create donna project there
