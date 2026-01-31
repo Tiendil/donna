@@ -40,6 +40,9 @@ Issues = "https://github.com/Tiendil/donna/issues"
 donna = "donna.cli.__main__:app"
 
 [tool.poetry.group.dev.dependencies]
+
+changy = "0.4.*"
+
 isort = "7.0.*"
 black = "25.12.*"
 autoflake = "2.3.*"
