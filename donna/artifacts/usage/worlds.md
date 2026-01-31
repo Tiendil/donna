@@ -34,3 +34,9 @@ By default, worlds are read-only. Besides the next exceptions:
 
 - `session` in the project world is read-write, Donna stores its current state of work here.
 - `project` is read-write when the developer explicitly asks Donna to change it. For example, to add the result of performed work into docs.
+
+## `<world>:intro` artifact
+
+It is a recommended practice to provide a short introductory artifact `intro.md` at the root of each world.
+
+So, the agent can load descriptions of all worlds in a single command like `donna -p llm artifacts view "*:intro"`.
