@@ -31,7 +31,4 @@ def discover_project_dir(donna_dir_name: str) -> Result[pathlib.Path, core_error
     if donna_dir is None:
         return Err([core_errors.ProjectDirNotFound(donna_dir_name=donna_dir_name)])
 
-    if donna_dir == donna_home_dir(donna_dir_name):
-        return Err([core_errors.ProjectDirIsHome(donna_dir_name=donna_dir_name)])
-
     return Ok(donna_dir)
