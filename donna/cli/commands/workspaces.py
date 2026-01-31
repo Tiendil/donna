@@ -4,11 +4,10 @@ from collections.abc import Iterable
 import typer
 
 from donna.cli.application import app
-from donna.cli.utils import cells_cli, try_initialize_donna, initialize_workspace
-from donna.domain.ids import WorldId
+from donna.cli.utils import cells_cli, try_initialize_donna
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
-from donna.workspaces.config import config
+from donna.workspaces.initialization import initialize_workspace
 
 workspaces_cli = typer.Typer()
 
@@ -20,7 +19,7 @@ def initialize_callback(ctx: typer.Context) -> None:
     if cmd is None:
         return
 
-    if cmd in ["initialize"]:
+    if cmd in {"init"}:
         return
 
     try_initialize_donna()
@@ -28,8 +27,8 @@ def initialize_callback(ctx: typer.Context) -> None:
 
 @workspaces_cli.command(help="Initialize Donna workspace.")
 @cells_cli
-def initialize() -> Iterable[Cell]:
-    initialize_workspace.unwrap()
+def init() -> Iterable[Cell]:
+    initialize_workspace(pathlib.Path.cwd()).unwrap()
 
     return [operation_succeeded("Workspace initialized successfully")]
 

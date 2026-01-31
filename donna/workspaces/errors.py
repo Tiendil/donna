@@ -32,6 +32,17 @@ class ConfigValidationFailed(WorldConfigError):
     details: str
 
 
+class WorkspaceAlreadyInitialized(WorldError):
+    code: str = "donna.workspaces.workspace_already_initialized"
+    message: str = "Workspace already initialized at `{error.project_dir}`"
+    ways_to_fix: list[str] = [
+        "Continue using the existing workspace.",
+        "Remove the existing `.donna` directory if you want to reinitialize.",
+        "Choose a different project directory.",
+    ]
+    project_dir: pathlib.Path
+
+
 class WorldNotConfigured(WorldError):
     code: str = "donna.workspaces.world_not_configured"
     message: str = "World with id `{error.world_id}` is not configured"

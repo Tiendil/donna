@@ -21,4 +21,4 @@ We may need coding agents on the each step of the process, but there no reason f
 
 ## Instructions
 
-On start of the session you **MUST** read and understand instruction on using the Donna tool `{{ donna.lib.view("donna:usage:cli") }}`.
+On start of the YOUR session you **MUST** read and understand instruction on using the Donna tool `{{ donna.lib.view("donna:usage:cli") }}`. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.

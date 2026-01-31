@@ -1,13 +1,14 @@
-import tomllib
 import pathlib
+import tomllib
+
 import tomli_w
 
 from donna.core import errors as core_errors
 from donna.core import utils
 from donna.core.result import Err, Ok, Result, unwrap_to_error
+from donna.domain.ids import WorldId
 from donna.workspaces import config
 from donna.workspaces import errors as world_errors
-from donna.domain.ids import WorldId
 
 
 @unwrap_to_error
@@ -31,7 +32,7 @@ def initialize_runtime() -> Result[None, core_errors.ErrorsList]:
         return Ok(None)
 
     try:
-        data = tomllib.loads(config_path.read_text())
+        data = tomllib.loads(config_path.read_text(encoding="utf-8"))
     except tomllib.TOMLDecodeError as e:
         return Err([world_errors.ConfigParseFailed(config_path=config_path, details=str(e))])
 
@@ -47,25 +48,32 @@ def initialize_runtime() -> Result[None, core_errors.ErrorsList]:
 
 @unwrap_to_error
 def initialize_workspace(project_dir: pathlib.Path) -> Result[None, core_errors.ErrorsList]:
-    """Initialize the physical workspace for the project (`.donna` directory).
-    """
+    """Initialize the physical workspace for the project (`.donna` directory)."""
 
-    existed_project_dir_result = utils.discover_project_dir(config.DONNA_DIR_NAME)
+    project_dir = project_dir.resolve()
+    workspace_dir = project_dir / config.DONNA_DIR_NAME
 
-    if existed_project_dir_result.is_ok() and existed_project_dir_result.unwrap() == project_dir:
+    if workspace_dir.exists():
         return Err([world_errors.WorkspaceAlreadyInitialized(project_dir=project_dir)])
 
-    config.config_dir().mkdir(parents=True, exist_ok=True)
+    config.project_dir.set(project_dir)
+    config.config_dir.set(workspace_dir)
 
-    default_config = config.config()
+    workspace_dir.mkdir(parents=True, exist_ok=True)
 
-    with open(config.config_dir() / config.DONNA_CONFIG_NAME, "w") as f:
-        f.write(tomli_w.dumps(default_config.model_dump()))
+    default_config = config.Config()
+    config.config.set(default_config)
 
-    project = default_config().get_world(WorldId("project")).unwrap()
+    config_path = workspace_dir / config.DONNA_CONFIG_NAME
+    config_path.write_text(
+        tomli_w.dumps(default_config.model_dump(mode="json")),
+        encoding="utf-8",
+    )
 
-    project.initialize()
+    project_world = default_config.get_world(WorldId(config.DONNA_WORLD_PROJECT_DIR_NAME)).unwrap()
+    project_world.initialize()
 
-    session = default_config().get_world(WorldId("session")).unwrap()
+    session_world = default_config.get_world(WorldId(config.DONNA_WORLD_SESSION_DIR_NAME)).unwrap()
+    session_world.initialize()
 
-    session.initialize()
+    return Ok(None)
