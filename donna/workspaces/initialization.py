@@ -49,7 +49,6 @@ def initialize_runtime() -> Result[None, core_errors.ErrorsList]:
 @unwrap_to_error
 def initialize_workspace(project_dir: pathlib.Path) -> Result[None, core_errors.ErrorsList]:
     """Initialize the physical workspace for the project (`.donna` directory)."""
-
     project_dir = project_dir.resolve()
     workspace_dir = project_dir / config.DONNA_DIR_NAME
 

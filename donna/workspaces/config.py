@@ -137,7 +137,7 @@ class Config(BaseEntity):
             if world.id == world_id:
                 return Ok(world)
 
-        return Err([world_errors.WorkspaceNotConfigured(world_id=world_id)])
+        return Err([world_errors.WorldNotConfigured(world_id=world_id)])
 
     @property
     def worlds_instances(self) -> list[BaseWorld]:
@@ -152,7 +152,13 @@ class Config(BaseEntity):
             if source.kind == kind:
                 return Ok(source)
 
-        return Err([world_errors.SourceConfigNotConfigured(kind=kind)])
+        return Err(
+            [
+                world_errors.SourceConfigNotConfigured(
+                    kind=kind,
+                )
+            ]
+        )
 
     def find_source_for_extension(self, extension: str) -> SourceConfigValue | None:
         for source in self._sources_instances:

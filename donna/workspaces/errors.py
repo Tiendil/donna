@@ -43,13 +43,22 @@ class WorkspaceAlreadyInitialized(WorkspaceError):
     project_dir: pathlib.Path
 
 
-class WorldNotConfigured(WorldError):
-    code: str = "donna.workspaces.world_not_configured"
-    message: str = "World with id `{error.world_id}` is not configured"
+class WorldError(WorkspaceError):
+    cell_kind: str = "world_error"
     world_id: WorldId
 
 
-class SourceConfigNotConfigured(WorldError):
+class WorldNotConfigured(WorldError):
+    code: str = "donna.workspaces.world_not_configured"
+    message: str = "World with id `{error.world_id}` is not configured"
+
+
+class SourceError(WorkspaceError):
+    cell_kind: str = "source_error"
+    source_id: str
+
+
+class SourceConfigNotConfigured(SourceError):
     code: str = "donna.workspaces.source_config_not_configured"
     message: str = "Source config `{error.kind}` is not configured"
     kind: str
@@ -61,7 +70,6 @@ class WorldReadonly(WorldError):
     ways_to_fix: list[str] = [
         "Use a world configured with readonly = false. Most likely they are `project` and `session`.",
     ]
-    world_id: WorldId
 
 
 class WorldStateStorageUnsupported(WorldError):
@@ -70,7 +78,6 @@ class WorldStateStorageUnsupported(WorldError):
     ways_to_fix: list[str] = [
         "Use the session world.",
     ]
-    world_id: WorldId
 
 
 class ArtifactError(WorkspaceError):
