@@ -10,8 +10,8 @@ from donna.domain.ids import ArtifactSectionId, FullArtifactId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
-from donna.world import markdown
-from donna.world.sources.markdown import MarkdownSectionMixin
+from donna.workspaces import markdown
+from donna.workspaces.sources.markdown import MarkdownSectionMixin
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change

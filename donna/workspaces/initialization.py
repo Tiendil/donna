@@ -3,8 +3,8 @@ import tomllib
 from donna.core import errors as core_errors
 from donna.core import utils
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.world import config
-from donna.world import errors as world_errors
+from donna.workspaces import config
+from donna.workspaces import errors as world_errors
 
 
 @unwrap_to_error

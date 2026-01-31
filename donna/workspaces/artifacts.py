@@ -6,9 +6,9 @@ from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import FullArtifactId, FullArtifactIdPattern, WorldId
 from donna.machine.artifacts import Artifact
 from donna.machine.tasks import Task, WorkUnit
-from donna.world import errors
-from donna.world.config import config
-from donna.world.templates import RenderMode
+from donna.workspaces import errors
+from donna.workspaces.config import config
+from donna.workspaces.templates import RenderMode
 
 
 class ArtifactRenderContext(BaseEntity):
@@ -27,7 +27,7 @@ class ArtifactUpdateError(errors.WorldError):
 
 
 class CanNotUpdateReadonlyWorld(ArtifactUpdateError):
-    code: str = "donna.world.cannot_update_readonly_world"
+    code: str = "donna.workspaces.cannot_update_readonly_world"
     message: str = "Cannot upload artifact to the read-only world `{error.world_id}`"
     world_id: WorldId
 
@@ -41,18 +41,18 @@ class ArtifactRemoveError(errors.WorldError):
 
 
 class CanNotRemoveReadonlyWorld(ArtifactRemoveError):
-    code: str = "donna.world.cannot_remove_readonly_world"
+    code: str = "donna.workspaces.cannot_remove_readonly_world"
     message: str = "Cannot remove artifact from the read-only world `{error.world_id}`"
     world_id: WorldId
 
 
 class InputPathHasNoExtension(ArtifactUpdateError):
-    code: str = "donna.world.input_path_has_no_extension"
+    code: str = "donna.workspaces.input_path_has_no_extension"
     message: str = "Input path has no extension to determine artifact source type"
 
 
 class NoSourceForArtifactExtension(ArtifactUpdateError):
-    code: str = "donna.world.no_source_for_artifact_extension"
+    code: str = "donna.workspaces.no_source_for_artifact_extension"
     message: str = "No source found for artifact extension of input path"
 
 

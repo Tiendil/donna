@@ -67,7 +67,7 @@ Donna renders cells differently, depending on the protocol used.
 
 There are three sets of commands:
 
-- `donna -p <protocol> projects …` — manages projects. Most-likely it will be used once per project to initialize it.
+- `donna -p <protocol> workspaces …` — manages workspaces. Most-likely it will be used once per your project to initialize it.
 - `donna -p <protocol> sessions …` — manages sessions. You will use these commands to start, push forward, and manage your work sessions.
 - `donna -p <protocol> artifacts …` — manages artifacts. You will use these commands to read and update artifacts you are working with.
 

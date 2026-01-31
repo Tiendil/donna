@@ -13,8 +13,8 @@ from donna.cli.utils import cells_cli, try_initialize_donna
 from donna.domain.ids import FullArtifactIdPattern
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
-from donna.world import artifacts as world_artifacts
-from donna.world import tmp as world_tmp
+from donna.workspaces import artifacts as world_artifacts
+from donna.workspaces import tmp as world_tmp
 
 artifacts_cli = typer.Typer()
 

@@ -9,7 +9,7 @@ from donna.core.errors import EnvironmentError
 from donna.core.result import UnwrapError
 from donna.protocol.cells import Cell
 from donna.protocol.modes import get_cell_formatter
-from donna.world.initialization import initialize_runtime
+from donna.workspaces.initialization import initialize_runtime
 
 
 def output_cells(cells: Iterable[Cell]) -> None:

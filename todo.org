@@ -35,7 +35,7 @@
 *** Every error is accompanied with the explanation and list of ways to fix it
 *** Do algorithmic operations without need for LLMs to think about them
 *** Controls meta flow of work, so agent should not think about it
-** Since the donna is developed with donna, Donna's `.donna` directory is a great example of how to structure donna projects and how to work with it in general.
+** Since the donna is developed with donna, Donna's `.donna` directory is a great example of how to structure donna workspaces and how to work with it in general.
 ** this is also an experiment on agent-friendly cli tools
 ** known problems
 *** lack of reporting — when a long chain of automated operations is performed, there is no convenient report/logging of what donna doing
@@ -70,10 +70,7 @@
 ** do not reinitialize project
 ** do not create project inside another donna project
 ** if the project is not found, check for .git directory and offer to create donna project there
-** donna projects initialize -> donna workspace initialize
-** update specs
-*** rename projects -> workspaces
-** donna/world -> donna/workspaces?
+** donna workspaces initialize
 * TODO Massive spellcheck
 * TODO Donna-agents integration
 ** Install donna as a skill

@@ -11,8 +11,8 @@ from donna.machine.artifacts import Artifact
 from donna.machine.primitives import Primitive
 
 if TYPE_CHECKING:
-    from donna.world.artifacts import ArtifactRenderContext
-    from donna.world.config import WorldConfig
+    from donna.workspaces.artifacts import ArtifactRenderContext
+    from donna.workspaces.config import WorldConfig
 
 
 class World(BaseEntity, ABC):

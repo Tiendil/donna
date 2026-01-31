@@ -8,12 +8,12 @@ from donna.cli.utils import cells_cli, try_initialize_donna
 from donna.domain.ids import WorldId
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
-from donna.world.config import config
+from donna.workspaces.config import config
 
-projects_cli = typer.Typer()
+workspaces_cli = typer.Typer()
 
 
-@projects_cli.callback(invoke_without_command=True)
+@workspaces_cli.callback(invoke_without_command=True)
 def initialize_callback(ctx: typer.Context) -> None:
     cmd = ctx.invoked_subcommand
 
@@ -26,7 +26,7 @@ def initialize_callback(ctx: typer.Context) -> None:
     try_initialize_donna()
 
 
-@projects_cli.command(help="Initialize Donna project.")
+@workspaces_cli.command(help="Initialize Donna workspace.")
 @cells_cli
 def initialize() -> Iterable[Cell]:
     # TODO: use workdir attribute
@@ -38,11 +38,11 @@ def initialize() -> Iterable[Cell]:
 
     session.initialize()
 
-    return [operation_succeeded("Project initialized successfully")]
+    return [operation_succeeded("Workspace initialized successfully")]
 
 
 app.add_typer(
-    projects_cli,
-    name="projects",
-    help="Initialize and manage Donna project.",
+    workspaces_cli,
+    name="workspaces",
+    help="Initialize and manage Donna workspace.",
 )

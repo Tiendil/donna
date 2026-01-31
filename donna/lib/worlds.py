@@ -1,7 +1,7 @@
 """Shared world constructor instances for default configuration."""
 
-from donna.world.worlds.filesystem import FilesystemWorldConstructor
-from donna.world.worlds.python import PythonWorldConstructor
+from donna.workspaces.worlds.filesystem import FilesystemWorldConstructor
+from donna.workspaces.worlds.python import PythonWorldConstructor
 
 filesystem = FilesystemWorldConstructor()
 python = PythonWorldConstructor()

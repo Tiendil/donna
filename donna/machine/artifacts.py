@@ -13,7 +13,7 @@ from donna.protocol.cells import Cell
 from donna.protocol.nodes import Node
 
 if TYPE_CHECKING:
-    from donna.world.artifacts import ArtifactRenderContext
+    from donna.workspaces.artifacts import ArtifactRenderContext
 
 
 class ArtifactSectionConfig(BaseEntity):
@@ -189,7 +189,7 @@ class ArtifactSectionNode(Node):
 def resolve(
     target_id: FullArtifactSectionId, render_context: "ArtifactRenderContext"
 ) -> Result[ArtifactSection, ErrorsList]:
-    from donna.world import artifacts as world_artifacts
+    from donna.workspaces import artifacts as world_artifacts
 
     artifact = world_artifacts.load_artifact(target_id.full_artifact_id, render_context).unwrap()
 

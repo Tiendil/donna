@@ -10,7 +10,7 @@ from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import FullArtifactId
-from donna.world import errors as world_errors
+from donna.workspaces import errors as world_errors
 
 
 class SectionLevel(str, enum.Enum):

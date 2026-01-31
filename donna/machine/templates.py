@@ -29,7 +29,7 @@ class Directive(Primitive, ABC):
         context: Context,
         *argv: Any,
     ) -> Result[Any, ErrorsList]:
-        from donna.world import templates as world_templates
+        from donna.workspaces import templates as world_templates
 
         render_mode = context["render_mode"]
         arguments_result = self._prepare_arguments(context, *argv)

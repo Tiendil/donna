@@ -9,10 +9,10 @@ from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
-from donna.world import artifacts
-from donna.world import tmp as world_tmp
-from donna.world.config import config
-from donna.world.worlds.base import World
+from donna.workspaces import artifacts
+from donna.workspaces import tmp as world_tmp
+from donna.workspaces.config import config
+from donna.workspaces.worlds.base import World
 
 
 def _errors_to_cells(errors: ErrorsList) -> list[Cell]:

@@ -8,8 +8,8 @@ from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionCo
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import FsmMode, OperationMeta
 from donna.machine.primitives import Primitive
-from donna.world import markdown
-from donna.world.sources.markdown import MarkdownSectionMixin
+from donna.workspaces import markdown
+from donna.workspaces.sources.markdown import MarkdownSectionMixin
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
