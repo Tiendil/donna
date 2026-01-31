@@ -29,6 +29,8 @@
 ** Example workflow with recursive factorial calculation
 ** Example of simplified groom (without run_script)
 ** Example of complex groom (with run_script)
+** changy.cli
+** changy.summarize_changes
 * TODO possible specifications
 ** how to prepare python package with artifacts for donna
 * TODO Grooming improvements
@@ -97,4 +99,3 @@
 ** usage:cli — we may want to better specify all possible commands or event to autogenerate them.
 p** completed session keeps work_scope.md and work_scope_execution.md artifacts. We should make smth with that.
 ** when the run is finished with error, agent tries to run session status and session continue to continue work because it sees that the session is not finished. What is the correct behavior here?
-* TODO Changy for changelog

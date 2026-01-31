@@ -4,9 +4,9 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "donna"
-version = "0.1.0"
+version = "0.2.0"
 description = "A deterministic workflow and state orchestration engine for LLM agents."
-readme = "README.md"
+readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.12,<4.0"
 license = "BSD-3-Clause"
 authors = [
@@ -17,6 +17,7 @@ classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
   "Intended Audience :: Developers",
+  "License :: OSI Approved :: BSD License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3 :: Only",
@@ -35,11 +36,15 @@ dependencies = [
 Homepage = "https://github.com/Tiendil/donna"
 Repository = "https://github.com/Tiendil/donna"
 Issues = "https://github.com/Tiendil/donna/issues"
+Changelog = "https://github.com/Tiendil/donna/blob/main/CHANGELOG.md"
 
 [project.scripts]
 donna = "donna.cli.__main__:app"
 
 [tool.poetry.group.dev.dependencies]
+
+changy = "0.4.*"
+
 isort = "7.0.*"
 black = "25.12.*"
 autoflake = "2.3.*"

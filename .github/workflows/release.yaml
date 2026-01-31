@@ -29,6 +29,8 @@ jobs:
     environment: release
     permissions:
       contents: write
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
 
     steps:
       - name: Checkout
@@ -36,4 +38,26 @@ jobs:
         with:
           ref: ${{ github.ref }}
           # Use personal access token to trigger other workflows on tag push
-          token: ${{ secrets.TIENDIL_RELEASE_TOKEN }}
+          # token: ${{ secrets.TIENDIL_RELEASE_TOKEN }}
+
+      - name: Setup git user
+        run: |
+          git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
+          git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
+
+      - name: Install poetry
+        run: pip install poetry
+
+      - name: Prepare Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          cache: 'poetry'
+
+      - name: Prepare release
+        run: ./bin/release-prepare.sh ${{ github.event.inputs.bump_version }}
+
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: ./dist/

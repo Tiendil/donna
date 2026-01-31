@@ -25,3 +25,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch_ref }}
+
+      - name: Build containers
+        run: ./bin/dev-build-containers.sh
+
+      - name: Check code formatting
+        run: ./bin/dev-check-formatting.sh
+
+      - name: Check types
+        run: ./bin/dev-check-semantics.sh
+
+      - name: Check runtime
+        run: ./bin/dev-check-runtime.sh
