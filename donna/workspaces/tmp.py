@@ -3,7 +3,7 @@ import shutil
 import time
 
 from donna.cli.types import FullArtifactIdArgument
-from donna.world.config import config, config_dir
+from donna.workspaces.config import config, config_dir
 
 
 def dir() -> pathlib.Path:

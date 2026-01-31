@@ -13,7 +13,7 @@ from donna.protocol.cells import Cell
 from donna.protocol.nodes import Node
 
 if TYPE_CHECKING:
-    from donna.world.artifacts import ArtifactRenderContext
+    from donna.workspaces.artifacts import ArtifactRenderContext
 
 
 class ArtifactSectionConfig(BaseEntity):
@@ -138,12 +138,12 @@ class ArtifactNode(Node):
             return primary_section_result.unwrap_err()[0].node().status()
 
         primary_section = primary_section_result.unwrap()
-        return Cell.build_meta(
+        return Cell.build_markdown(
             kind="artifact_status",
             artifact_id=str(self._artifact.id),
             artifact_kind=str(primary_section.kind),
             artifact_title=primary_section.title,
-            artifact_description=primary_section.description,
+            content=primary_section.description,
         )
 
     def info(self) -> Cell:
@@ -161,8 +161,6 @@ class ArtifactNode(Node):
             content="\n".join(blocks_result.unwrap()),
             artifact_id=str(self._artifact.id),
             artifact_kind=str(primary_section.kind),
-            artifact_title=primary_section.title,
-            artifact_description=primary_section.description,
         )
 
     def components(self) -> list["Node"]:
@@ -191,7 +189,7 @@ class ArtifactSectionNode(Node):
 def resolve(
     target_id: FullArtifactSectionId, render_context: "ArtifactRenderContext"
 ) -> Result[ArtifactSection, ErrorsList]:
-    from donna.world import artifacts as world_artifacts
+    from donna.workspaces import artifacts as world_artifacts
 
     artifact = world_artifacts.load_artifact(target_id.full_artifact_id, render_context).unwrap()
 

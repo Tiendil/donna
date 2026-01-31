@@ -11,8 +11,8 @@ from donna.machine.artifacts import Artifact
 from donna.machine.primitives import Primitive
 
 if TYPE_CHECKING:
-    from donna.world.artifacts import ArtifactRenderContext
-    from donna.world.config import WorldConfig
+    from donna.workspaces.artifacts import ArtifactRenderContext
+    from donna.workspaces.config import WorldConfig
 
 
 class World(BaseEntity, ABC):
@@ -35,6 +35,9 @@ class World(BaseEntity, ABC):
     def update(  # noqa: E704
         self, artifact_id: ArtifactId, content: bytes, extension: str
     ) -> Result[None, ErrorsList]: ...  # noqa: E704
+
+    @abstractmethod
+    def remove(self, artifact_id: ArtifactId) -> Result[None, ErrorsList]: ...  # noqa: E704
 
     @abstractmethod
     def file_extension_for(self, artifact_id: ArtifactId) -> Result[str, ErrorsList]: ...  # noqa: E704

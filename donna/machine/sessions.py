@@ -9,10 +9,10 @@ from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
-from donna.world import artifacts
-from donna.world import tmp as world_tmp
-from donna.world.config import config
-from donna.world.worlds.base import World
+from donna.workspaces import artifacts
+from donna.workspaces import tmp as world_tmp
+from donna.workspaces.config import config
+from donna.workspaces.worlds.base import World
 
 
 def _errors_to_cells(errors: ErrorsList) -> list[Cell]:
@@ -88,6 +88,14 @@ def start() -> list[Cell]:
         return _errors_to_cells(save_result.unwrap_err())
 
     return [operation_succeeded("Started new session.")]
+
+
+def reset() -> list[Cell]:
+    save_result = _save_state(MutableState.build().freeze())
+    if save_result.is_err():
+        return _errors_to_cells(save_result.unwrap_err())
+
+    return [operation_succeeded("Session state reset.")]
 
 
 def clear() -> list[Cell]:

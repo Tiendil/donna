@@ -7,14 +7,14 @@ from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern, WorldId
 from donna.machine.artifacts import Artifact
-from donna.world import errors as world_errors
-from donna.world.artifacts import ArtifactRenderContext
-from donna.world.artifacts_discovery import ArtifactListingNode, list_artifacts_by_pattern
-from donna.world.worlds.base import World as BaseWorld
-from donna.world.worlds.base import WorldConstructor
+from donna.workspaces import errors as world_errors
+from donna.workspaces.artifacts import ArtifactRenderContext
+from donna.workspaces.artifacts_discovery import ArtifactListingNode, list_artifacts_by_pattern
+from donna.workspaces.worlds.base import World as BaseWorld
+from donna.workspaces.worlds.base import WorldConstructor
 
 if TYPE_CHECKING:
-    from donna.world.config import SourceConfigValue, WorldConfig
+    from donna.workspaces.config import SourceConfigValue, WorldConfig
 
 
 class Python(BaseWorld):
@@ -59,7 +59,7 @@ class Python(BaseWorld):
         if not resource_dir.is_dir():
             return Ok(None)
 
-        from donna.world.config import config
+        from donna.workspaces.config import config
 
         supported_extensions = config().supported_extensions()
         matches = [
@@ -81,7 +81,7 @@ class Python(BaseWorld):
     def _get_source_by_filename(
         self, artifact_id: ArtifactId, filename: str
     ) -> Result["SourceConfigValue", ErrorsList]:
-        from donna.world.config import config
+        from donna.workspaces.config import config
 
         extension = pathlib.Path(filename).suffix
         source_config = config().find_source_for_extension(extension)
@@ -115,7 +115,7 @@ class Python(BaseWorld):
         full_id = FullArtifactId((self.id, artifact_id))
 
         extension = pathlib.Path(resource_path.name).suffix
-        from donna.world.config import config
+        from donna.workspaces.config import config
 
         source_config = config().find_source_for_extension(extension)
         if source_config is None:
@@ -140,6 +140,9 @@ class Python(BaseWorld):
         return Ok(resource_path.read_bytes())
 
     def update(self, artifact_id: ArtifactId, content: bytes, extension: str) -> Result[None, ErrorsList]:
+        return Err([world_errors.WorldReadonly(world_id=self.id)])
+
+    def remove(self, artifact_id: ArtifactId) -> Result[None, ErrorsList]:
         return Err([world_errors.WorldReadonly(world_id=self.id)])
 
     @unwrap_to_error

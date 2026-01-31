@@ -122,16 +122,16 @@ kind = "donna.lib.request_action"
 ```
 
 1. Run workflow `session:work_execution` to execute the work according to the plan.
-2. `{{ donna.lib.goto("groom_work") }}`
+2. `{{ donna.lib.goto("polish_work") }}`
 
-## Groom Work
+## Polish Work
 
 ```toml donna
-id = "groom_work"
+id = "polish_work"
 kind = "donna.lib.request_action"
 ```
 
-1. Run the grooming workflow to ensure that the result is polished, clean, and ready for review.
+1. Run the polishing workflow to ensure that the result is polished, clean, and ready for review.
 2. `{{ donna.lib.goto("finish") }}`
 
 ## Finish

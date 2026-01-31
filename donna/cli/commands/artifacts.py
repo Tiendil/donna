@@ -1,17 +1,25 @@
+import builtins
 from collections.abc import Iterable
 
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import FullArtifactIdArgument, FullArtifactIdPatternOption, InputPathArgument, OutputPathOption
+from donna.cli.types import (
+    FullArtifactIdArgument,
+    FullArtifactIdPatternArgument,
+    InputPathArgument,
+    OutputPathOption,
+)
 from donna.cli.utils import cells_cli, try_initialize_donna
 from donna.domain.ids import FullArtifactIdPattern
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
-from donna.world import artifacts as world_artifacts
-from donna.world import tmp as world_tmp
+from donna.workspaces import artifacts as world_artifacts
+from donna.workspaces import tmp as world_tmp
 
 artifacts_cli = typer.Typer()
+
+DEFAULT_ARTIFACT_PATTERN = FullArtifactIdPattern.parse("**").unwrap()
 
 
 @artifacts_cli.callback(invoke_without_command=True)
@@ -28,20 +36,17 @@ def initialize(ctx: typer.Context) -> None:
     help="List artifacts matching a pattern and show their status summaries. Lists all all artifacts by default."
 )
 @cells_cli
-def list(pattern: FullArtifactIdPatternOption = None) -> Iterable[Cell]:
-    if pattern is None:
-        pattern = FullArtifactIdPattern.parse("**").unwrap()
-
+def list(pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN) -> Iterable[Cell]:
     artifacts = world_artifacts.list_artifacts(pattern).unwrap()
 
     return [artifact.node().status() for artifact in artifacts]
 
 
-@artifacts_cli.command(help="Displays a single artifact.")
+@artifacts_cli.command(help="Displays artifacts matching a pattern or a specific id")
 @cells_cli
-def view(id: FullArtifactIdArgument) -> Iterable[Cell]:
-    artifact = world_artifacts.load_artifact(id).unwrap()
-    return [artifact.node().info()]
+def view(pattern: FullArtifactIdPatternArgument) -> Iterable[Cell]:
+    artifacts = world_artifacts.list_artifacts(pattern).unwrap()
+    return [artifact.node().info() for artifact in artifacts]
 
 
 @artifacts_cli.command(
@@ -70,6 +75,19 @@ def update(id: FullArtifactIdArgument, input: InputPathArgument) -> Iterable[Cel
     return [operation_succeeded(f"Artifact `{id}` updated from '{input}'", artifact_id=str(id), input_path=str(input))]
 
 
+@artifacts_cli.command(help="Remove artifacts matching a pattern.")
+@cells_cli
+def remove(pattern: FullArtifactIdPatternArgument) -> Iterable[Cell]:
+    artifacts = world_artifacts.list_artifacts(pattern).unwrap()
+
+    cells: builtins.list[Cell] = []
+    for artifact in artifacts:
+        world_artifacts.remove_artifact(artifact.id).unwrap()
+        cells.append(operation_succeeded(f"Artifact `{artifact.id}` removed", artifact_id=str(artifact.id)))
+
+    return cells
+
+
 @artifacts_cli.command(help="Validate an artifact and return any validation errors.")
 @cells_cli
 def validate(id: FullArtifactIdArgument) -> Iterable[Cell]:
@@ -84,10 +102,7 @@ def validate(id: FullArtifactIdArgument) -> Iterable[Cell]:
     help="Validate all artifacts matching a pattern (defaults to all artifacts) and return any errors."
 )
 @cells_cli
-def validate_all(pattern: FullArtifactIdPatternOption = None) -> Iterable[Cell]:  # noqa: CCR001
-    if pattern is None:
-        pattern = FullArtifactIdPattern.parse("**").unwrap()
-
+def validate_all(pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN) -> Iterable[Cell]:  # noqa: CCR001
     artifacts = world_artifacts.list_artifacts(pattern).unwrap()
 
     errors = []

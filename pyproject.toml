@@ -30,6 +30,7 @@ dependencies = [
   "markdown-it-py>=4.0,<4.1",
   "mdformat>=1.0.0,<1.1.0",
   "jinja2>=3.1,<3.2",
+  "tomli-w>=1.2,<1.3",
 ]
 
 [project.urls]

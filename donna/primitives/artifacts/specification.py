@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 from donna.machine.artifacts import ArtifactSectionConfig
 from donna.machine.primitives import Primitive
-from donna.world.sources.markdown import MarkdownSectionMixin
+from donna.workspaces.sources.markdown import MarkdownSectionMixin
 
 if TYPE_CHECKING:
     pass

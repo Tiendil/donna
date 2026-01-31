@@ -3,7 +3,7 @@ from functools import lru_cache
 from typing import Iterable, Protocol
 
 from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern, WorldId
-from donna.world.config import config
+from donna.workspaces.config import config
 
 
 class ArtifactListingNode(Protocol):

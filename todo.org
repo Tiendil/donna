@@ -1,21 +1,3 @@
-
-* TODO freeze pydantic models which are possible
-* TODO tests
-** basic / lowest unit tests for primitive operations
-** domain-level unit tests
-** intergration tests for workflows/stories/scenarios
-** header of the module must contain the instruction on how to write tests for it?
-*** maybe just with links to the spec
-* TODO Specification improvements:
-** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
-** {{ edit(specification) }} directive?
-** {{ run(workflow) }} directive?
-** remove mention of <DONNA_CMD> from specs
-** "Story" term still in some specs for convienience, we should think of a better naming
-** currently we do not output the whole workflow body on the request of the artifact, only description. Maybe we should output the whole body?
-** When we start the workflow, should we output the head cells before the first operation?
-** mention jinja comments {# ... #} in artifact specification
-** CLI: allow references to sections by full id -> display one specific section of artifact
 * TODO Possible workflows
 ** bootstrap.bootstrap_all.
 ** bootstrap.donna.create_project
@@ -29,15 +11,10 @@
 ** Example workflow with recursive factorial calculation
 ** Example of simplified groom (without run_script)
 ** Example of complex groom (with run_script)
-** changy.cli
 ** changy.summarize_changes
 * TODO possible specifications
 ** how to prepare python package with artifacts for donna
-* TODO Grooming improvements
-** Add spelling validation
-** Add import/dependency flow restrictions (there were a specialized package for that)
-** Pyright or BasedPyright
-*** control that returned values are used
+** changy.cli
 * TODO README.md notes
 ** `No API keys required.` as a feature
 ** `save tokens by taking work from your agent to your code`
@@ -58,7 +35,7 @@
 *** Every error is accompanied with the explanation and list of ways to fix it
 *** Do algorithmic operations without need for LLMs to think about them
 *** Controls meta flow of work, so agent should not think about it
-** Since the donna is developed with donna, Donna's `.donna` directory is a great example of how to structure donna projects and how to work with it in general.
+** Since the donna is developed with donna, Donna's `.donna` directory is a great example of how to structure donna workspaces and how to work with it in general.
 ** this is also an experiment on agent-friendly cli tools
 ** known problems
 *** lack of reporting — when a long chain of automated operations is performed, there is no convenient report/logging of what donna doing
@@ -69,6 +46,11 @@
 *** changy
 *** brigid
 *** feeds fun
+** I don't beliew in manual orchestrators, in the future, agents will be capable of orchestrating their work => donna is developed as a helpfull tool, not as a full-fledged orchestrator.
+* TODO Specification improvements:
+** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
+** {{ edit(specification) }} directive?
+** {{ run(workflow) }} directive?
 * TODO Workflows polishing
 ** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
 ** Declare explicit refining loop
@@ -79,23 +61,14 @@
 *** Approach 3: keep them, but add some meta info on analysis phase that donna can use.
 ** tune wording of workflows (what to write before goto)
 ** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
-* TODO Donna flow improvements
-** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
+** completed session keeps work_scope.md and work_scope_execution.md artifacts, we must add cleanup on the first step of planing.
 ** on initialization donna should create some default workflows based on the project configs (grooming, for example)
-** create a copy of the default config for the new project
-** lock for donna operations on the project
-** donna should be able to continue finished session (somewhow). I.e. when the developer ads new details to it.
-** Agent can not continue work in finished session => remove all artifacts that may be required.
-** Each world must provide an intro spec and donna should be able to conviniently output it to the user.
+* TODO Massive spellcheck
+* TODO Donna-agents integration
 ** Install donna as a skill
 ** Install donna as a tool
-** automatically update all required instructions on donna update
-** usage modes
+** slash commands for donna
+** installing donna cli via online instruction for agents
+** specify usage modes somewhere:
 *** easy mode — one of possible skills to use
 *** hard mode — forse agent to work via donna
-** installing donna cli via online instruction for agents
-** command to reset session state (without removing artifacts)
-** mention `session clear` command in specs
-** usage:cli — we may want to better specify all possible commands or event to autogenerate them.
-p** completed session keeps work_scope.md and work_scope_execution.md artifacts. We should make smth with that.
-** when the run is finished with error, agent tries to run session status and session continue to continue work because it sees that the session is not finished. What is the correct behavior here?

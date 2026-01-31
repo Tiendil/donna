@@ -2,8 +2,6 @@ import copy
 import sys
 from typing import TYPE_CHECKING, Any
 
-import pydantic
-
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result, unwrap_to_error
@@ -18,9 +16,6 @@ if TYPE_CHECKING:
 class Task(BaseEntity):
     id: TaskId
     context: dict[str, Any]
-
-    # TODO: we may want to make queue items frozen later
-    model_config = pydantic.ConfigDict(frozen=False)
 
     @classmethod
     def build(cls, id: TaskId) -> "Task":
@@ -61,8 +56,8 @@ class WorkUnit(BaseEntity):
     def run(self, task: Task) -> Result[list["Change"], ErrorsList]:
         from donna.machine import artifacts as machine_artifacts
         from donna.machine.primitives import resolve_primitive
-        from donna.world.artifacts import ArtifactRenderContext
-        from donna.world.templates import RenderMode
+        from donna.workspaces.artifacts import ArtifactRenderContext
+        from donna.workspaces.templates import RenderMode
 
         render_context = ArtifactRenderContext(
             primary_mode=RenderMode.execute,

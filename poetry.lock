@@ -1222,6 +1222,18 @@ files = [
 ]
 
 [[package]]
+name = "tomli-w"
+version = "1.2.0"
+description = "A lil' TOML writer"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "tomli_w-1.2.0-py3-none-any.whl", hash = "sha256:188306098d013b691fcadc011abd66727d3c414c571bb01b1a174ba8c983cf90"},
+    {file = "tomli_w-1.2.0.tar.gz", hash = "sha256:2dd14fac5a47c27be9cd4c976af5a12d87fb1f0b4512f81d69cce3b35ae25021"},
+]
+
+[[package]]
 name = "typer"
 version = "0.20.1"
 description = "Typer, build great CLIs. Easy to code. Based on Python type hints."
@@ -1281,4 +1293,4 @@ typing-extensions = ">=4.12.0"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "b3d30172b46a6c489a1221547d958f3879a926effff596aa8d6e28b3a000b562"
+content-hash = "7a2aa8339779bf58e28dcf4928c0808c73d5fe97fa72ff1eda70b0b2822ce80f"

@@ -12,8 +12,8 @@ from donna.domain.ids import ArtifactSectionId, FullArtifactId
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta
-from donna.world import markdown
-from donna.world.sources.markdown import MarkdownSectionMixin
+from donna.workspaces import markdown
+from donna.workspaces.sources.markdown import MarkdownSectionMixin
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change

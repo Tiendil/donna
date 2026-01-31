@@ -6,11 +6,11 @@ from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import ArtifactSectionId, FullArtifactId, PythonImportPath
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.primitives import Primitive, resolve_primitive
-from donna.world import errors as world_errors
-from donna.world import markdown
-from donna.world.artifacts import ArtifactRenderContext
-from donna.world.sources.base import SourceConfig, SourceConstructor
-from donna.world.templates import RenderMode, render
+from donna.workspaces import errors as world_errors
+from donna.workspaces import markdown
+from donna.workspaces.artifacts import ArtifactRenderContext
+from donna.workspaces.sources.base import SourceConfig, SourceConstructor
+from donna.workspaces.templates import RenderMode, render
 
 
 class MarkdownSectionConstructor(Protocol):
@@ -257,4 +257,4 @@ def _ensure_markdown_constructible(
 
 
 if TYPE_CHECKING:
-    from donna.world.config import SourceConfig as SourceConfigModel
+    from donna.workspaces.config import SourceConfig as SourceConfigModel

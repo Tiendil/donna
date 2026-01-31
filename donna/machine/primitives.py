@@ -14,10 +14,10 @@ if TYPE_CHECKING:
     from donna.machine.artifacts import Artifact, ArtifactSection
     from donna.machine.changes import Change
     from donna.machine.tasks import Task, WorkUnit
-    from donna.world.config import SourceConfig as SourceConfigModel
-    from donna.world.config import WorldConfig
-    from donna.world.sources.base import SourceConfig as SourceConfigValue
-    from donna.world.worlds.base import World
+    from donna.workspaces.config import SourceConfig as SourceConfigModel
+    from donna.workspaces.config import WorldConfig
+    from donna.workspaces.sources.base import SourceConfig as SourceConfigValue
+    from donna.workspaces.worlds.base import World
 
 
 # TODO: Currently is is a kind of God interface. It is convinient for now.

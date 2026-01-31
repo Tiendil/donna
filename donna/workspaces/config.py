@@ -8,11 +8,11 @@ from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.ids import PythonImportPath, WorldId
 from donna.machine.primitives import resolve_primitive
-from donna.world import errors as world_errors
-from donna.world.sources.base import SourceConfig as SourceConfigValue
-from donna.world.sources.base import SourceConstructor
-from donna.world.worlds.base import World as BaseWorld
-from donna.world.worlds.base import WorldConstructor
+from donna.workspaces import errors as world_errors
+from donna.workspaces.sources.base import SourceConfig as SourceConfigValue
+from donna.workspaces.sources.base import SourceConstructor
+from donna.workspaces.worlds.base import World as BaseWorld
+from donna.workspaces.worlds.base import WorldConstructor
 
 DONNA_DIR_NAME = ".donna"
 DONNA_CONFIG_NAME = "config.toml"
@@ -152,7 +152,14 @@ class Config(BaseEntity):
             if source.kind == kind:
                 return Ok(source)
 
-        return Err([world_errors.SourceConfigNotConfigured(kind=kind)])
+        return Err(
+            [
+                world_errors.SourceConfigNotConfigured(
+                    source_id=kind,
+                    kind=kind,
+                )
+            ]
+        )
 
     def find_source_for_extension(self, extension: str) -> SourceConfigValue | None:
         for source in self._sources_instances:

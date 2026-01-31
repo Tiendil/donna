@@ -4,7 +4,7 @@
 kind = "donna.lib.specification"
 ```
 
-This document describes how agents MUST use Donna to manage and perform their workflows.
+This document describes how agents MUST use Donna CLI to manage and perform their workflows.
 
 **Agents MUST follow the instructions and guidelines outlined in this document precisely.**
 
@@ -12,53 +12,116 @@ This document describes how agents MUST use Donna to manage and perform their wo
 
 `donna` is a CLI tool that helps manage the work of AI agents like OpenAI Codex.
 
-It is designed to invert control flow: instead of agents deciding what to do next, the `donna` tells agents what to do next by following predefined workflows.
+It is designed to invert control flow: instead of agents deciding what to do next, the Donna tells agents what to do. The tool achieves this by following predefined workflows that describe how to perform various tasks. One may look at workflows as hierarchical state machines (HSM) that guide agents through complex processes step by step.
 
-The core idea is that most high-level workflows are more algorithmic than it may seem at first glance. For example, it may be difficult to fix a particular type issue in the codebase, but the overall process of polishing the codebase is quite linear:
+The core idea is that most high-level workflows are more algorithmic than it may seem at first glance. For example, it may be difficult to fix a particular problem in the codebase, but the overall process of polishing it is quite linear:
 
-1. Ensure all tests pass.
-2. Ensure the code is formatted correctly.
-3. Ensure there are no linting errors.
+1. Run tests, if they fail, fix the problems.
+2. Format the code.
+3. Run linters, if there are issues, fix them.
 4. Go to the step 1 if you changed something in the process.
 5. Finish.
 
-We may need coding agents on the each step of the process, but there no reason for agents to manage the whole loop by themselves — it takes longer time, spends tokens and confuses agents.
+We may need coding agents on the each step of the process, but there no reason for agents to manage the whole loop by themselves — it takes longer time, spends tokens and confuses agents because they need to reason over long contexts.
 
-## Primary Rules
+## Primary rules for agents
 
+- Donna stores all project-related data in `.donna` directory in the project root.
 - All work is always done in the context of a session. There is only one active session at a time.
 - You MUST always work on one task assigned to you.
-- If developer asked you to do something and you have no session, you create one with the `donna` tool.
-- If you have a session, you MUST keep all the information about it in your memory. Ask `donna` tool for the session details when you forget something.
+- You MUST keep all the information about the session in your memory.
+- You always can ask the `donna` tool for the session details if you forget something.
 
-## Protocol
+## CLI
+
+### Protocol
 
 Protocol selects the output formatting and behavior of Donna's CLI for different consumers (humans, LLMs, automation).
-When an agent invokes Donna, it SHOULD use the `llm` protocol (`-p llm`) unless the workflow explicitly requires another protocol.
+When an agent invokes Donna, it SHOULD use the `llm` protocol (pass an `-p llm` argument) unless the developer explicitly instructs otherwise.
 
-### Session workflow
+### Protocol cells
 
-- You start session by calling `donna -p <protocol> sessions start`.
-- After you started a session:
-  1. List all possible workflows with command `donna -p <protocol> artifacts list`.
-  2. Choose the most appropriate workflow for the task you are going to work on or ask the developer if you are not sure which workflow to choose.
-  3. Start working by calling `donna -p <protocol> sessions run <workflow-id>`.
-  4. The `donna` tool will output descriptions of all operations it performs to complete the story.
-  5. The `donna` tool will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
-- When you done doing your part, you call `donna -p <protocol> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report that you completed the action request. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>:<artifact>:<operation-id>`.
-- After you report the result:
-  1. The `donna` tool will output what you need to do next.
-  2. You repeat the process until the story is completed.
+Donna communicates its progress and requests by outputting inrofmation organized in "cells". There are two kinds of cells output:
+
+- Log cells — `DONNA LOG: <log-message>` — one line messages describing what Donna is doing. Mostly it is an information about the next operation being executed.
+- Info cells — multiline cells with structured header and freeform body.
+
+An example of an info cell:
+
+```
+--DONNA-CELL eZVkOwNPTHmadXpaHDUBNA BEGIN--
+kind=action_request
+media_type=text/markdown
+action_request_id=AR-65-bd
+
+<here goes the multiline markdown content of the action request>
+
+--DONNA-CELL eZVkOwNPTHmadXpaHDUBNA END--
+```
+
+Donna can ommit log cell start and end markers if a command produces only a single cell.
+
+Donna renders cells differently, depending on the protocol used.
+
+### Commands
+
+There are three sets of commands:
+
+- `donna -p <protocol> workspaces …` — manages workspaces. Most-likely it will be used once per your project to initialize it.
+- `donna -p <protocol> sessions …` — manages sessions. You will use these commands to start, push forward, and manage your work sessions.
+- `donna -p <protocol> artifacts …` — manages artifacts. You will use these commands to read and update artifacts you are working with.
+
+Use:
+
+- `donna -p <protocol> <command> --help` to get the list of available subcommands.
+- `donna -p <protocol> <command> <subcommand> --help` to get the help on specific subcommand.
+
+### Workspaces
+
+Run `donna -p <protocol> workspaces init [<directory-path>]` to initialize Donna workspace in the given directory. If `<directory-path>` is omitted, Donna will initialize workspace in the current working directory.
+
+It is a one time operation you need to perform once per project to create a place where Donna will store all its data.
+
+### Session flow
+
+You start session by calling `donna -p <protocol> sessions start`.
+
+After you started a session:
+
+1. List all possible workflows with command `donna -p <protocol> artifacts list`.
+2. Choose the most appropriate workflow for the task you are going to work on or ask the developer if you are not sure which workflow to choose.
+3. Start choosen workflow by calling `donna -p <protocol> sessions run <workflow-id>`.
+4. Donna will output descriptions of all operations it performs to complete the work.
+5. Donna will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
+6. When you done processing an action request, call `donna -p <protocol> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report request completion. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>:<artifact>:<operation-id>`.
+7. After you complete an action request, Donna will continue workflow execution and outputs what you need to do next.
+
+You MUST continue following Donna's instructions until the workflow is completed.
+
+### Session state
+
+You may run `donna -p <protocol> sessions status` to get the status of the current session.
+
+You may run `donna -p <protocol> sessions details` to get detailed information about the current session, including list of active action requests.
+
+Run `donna -p <protocol> sessions start` to start fully new session. This command resets session state AND removes all session-level artifacts. Use this command when you need to start work from scratch.
+
+Run `donna -p <protocol> sessions reset` to reset the current session. This command resets session state BUT keeps all session-level artifacts. Use this command when you need to restart the worklow but keep all the artifacts you created during the session.
 
 ### Starting work
 
-- If the developer asked you to do something:
-  - run `donna -p <protocol> sessions status` to get the status of the current session.
-  - or run `donna -p <protocol> sessions details` to get detailed information about the current session, including list of active action requests.
-  - If there is no active session, start a new session by calling `donna -p <protocol> sessions start`.
-  - If the session is already active and there are no unfinished work in it, start a new session by calling `donna -p <protocol> sessions start`.
-  - If the session is already active and there are unfinished work in it, you MUST ask the developer whether to continue the work in the current session or start a new one.
-- If the developer asked you to continue your work, you MUST call `donna -p <protocol> sessions continue` to get your instructions on what to do next.
+If the developer asked you to do something new:
+
+- Run `donna -p <protocol> sessions status` to get the status of the current session.
+- If there is no active session, start a new session by calling `donna -p <protocol> sessions start`.
+- If the session is already active and there are no unfinished work in it, start a new session by calling `donna -p <protocol> sessions start`.
+- If the session is already active and there are unfinished work in it, you MUST ask the developer whether to continue the work in the current session or start a new one.
+
+### Continuing work
+
+If the developer asked you to continue your work, you MUST call `donna -p <protocol> sessions continue` to get your instructions on what to do next.
+
+If Donna tells you there is no work left, you MUST inform the developer that there is no work left in the current session.
 
 ### Working with artifacts
 
@@ -66,12 +129,13 @@ An artifact is a markdown document with extra metadata stored in one of the Donn
 
 Use the next commands to work with artifacts
 
-- `donna -p <protocol> artifacts list [--pattern <artifact-pattern>]` — list all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, list all artifacts in all worlds. Use this command when you need to find an artifact or see what artifacts are available.
-- `donna -p <protocol> artifacts view <world>:<artifact>` — get the meaningful (rendered) content of the artifact. This command shows the rendered information about the artifact. Use this command when you need to read the artifact content.
+- `donna -p <protocol> artifacts list [<artifact-pattern>]` — list all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, list all artifacts in all worlds. Use this command when you need to find an artifact or see what artifacts are available.
+- `donna -p <protocol> artifacts view <artifact-pattern>` — get the meaningful (rendered) content of all matching artifacts. This command shows the rendered information about each artifact. Use this command when you need to read artifact content.
 - `donna -p <protocol> artifacts fetch <world>:<artifact>` — download the original source of the artifact content, outputs the file path to the artifact's copy you can change. Use this command when you need to change the content of the artifact.
 - `donna -p <protocol> artifacts update <world>:<artifact> <file-path>` — upload the given file as the artifact. Use this command when you finished changing the content of the artifact.
+- `donna -p <protocol> artifacts remove <artifact-pattern>` — remove artifacts matching a pattern. Use this command when you need to delete artifacts.
 - `donna -p <protocol> artifacts validate <world>:<artifact>` — validate the given artifact to ensure it is correct and has no issues.
-- `donna -p <protocol> artifacts validate-all [--pattern <artifact-pattern>]` — validate all artifacts corresponding to the given pattern.
+- `donna -p <protocol> artifacts validate-all [<artifact-pattern>]` — validate all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, validate all artifacts in all worlds.
 
 The format of `<artifact-pattern>` is as follows:
 
@@ -95,7 +159,7 @@ The format of `<artifact-pattern>` is as follows:
   3. Specifications in `project:` world.
   4. This document.
 
-**All Donna CLI commands MUST include an explicit protocol selection using `-p <mode>`.** Like `donna -p llm <command>`.
+**All Donna CLI commands MUST include an explicit protocol selection using `-p <protocol>`.** Like `donna -p llm <command>`.
 
 **Pass text arguments to the tool in quotes with respect to escaping.** The tool MUST receive the exact text you want to pass as an argument.
 

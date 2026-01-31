@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import functools
-from dataclasses import dataclass
 from typing import Callable, Generic, ParamSpec, TypeVar, cast
 
 from donna.core.errors import InternalError
@@ -25,10 +24,12 @@ class UnwrapErrError(ResultError):
     message: str = "Called unwrap_err on an Ok value."
 
 
-@dataclass(frozen=True, slots=True)
 class Result(Generic[T, E]):
-    _is_ok: bool
-    _value: T | E
+    __slots__ = ("_is_ok", "_value")
+
+    def __init__(self, is_ok: bool, value: T | E) -> None:
+        self._is_ok = is_ok
+        self._value = value
 
     def is_ok(self) -> bool:
         return self._is_ok
@@ -80,10 +81,6 @@ def Ok(value: T) -> Result[T, E]:
 
 def Err(error: E) -> Result[T, E]:
     return Result(False, error)
-
-
-def ok(result: Result[T, E]) -> bool:
-    return result.is_ok()
 
 
 def unwrap_to_error(func: Callable[P, Result[T, E]]) -> Callable[P, Result[T, E]]:

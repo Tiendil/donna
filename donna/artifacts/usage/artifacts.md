@@ -39,6 +39,15 @@ Here are some examples:
 - `{{ "{{ donna.lib.view(<artifact-id>) }}" }}` — references another artifact. In `view`/`execute` modes it renders an exact CLI command to view the artifact; in `analysis` mode it renders a `$$donna ... $$` marker used for internal parsing.
 - `{{ "{{ donna.lib.goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. In `view`/`execute` modes it renders an exact CLI command to advance the workflow; in `analysis` mode it renders a `$$donna goto ... $$` marker used to extract workflow transitions.
 
+## Jinja2 rendering
+
+Donna allows all of Jinja2 expressions in artifact sources, except inheritance-related once: `{{ "{% extends %}" }}` , `{{ "{% block %}" }}`, etc.
+
+Donna intentionally hides some parts of the source in the rendered output, but they remain visible in source views (for example, in `artifacts fetch` output or on GitHub):
+
+- fenced code blocks with the `donna` marker (they contain technical information for the Donna, not information for the agent).
+- Jinja2 comments like `{{ "{# ... #}" }}`.
+
 ## Rendering artifacts
 
 Donna renders the same artifact source into different representations depending on the rendering mode. The mode is internal to Donna (users do not select it directly) and controls how directives are expanded and which metadata is included.
@@ -88,7 +97,7 @@ The configuration block properties format is `property1 property2=value2 propert
 
 The content of the block is parsed according to the primary format and interpreted according its properties.
 
-Configuration blocks are parsed by Donna and removed from rendered Markdown representations; they remain in the source for editing and inspection (e.g., via `artifacts fetch` or the repository file).
+Configuration blocks are parsed by Donna and removed from rendered Markdown representations (see "Jinja2 rendering"); they remain in the source for editing and inspection (e.g., via `artifacts fetch` or the repository file).
 
 Fences without `donna` keyword are considered regular code blocks and have no special meaning for Donna.
 

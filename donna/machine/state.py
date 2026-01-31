@@ -118,8 +118,8 @@ class MutableState(BaseState):
         self.started = True
 
     def add_action_request(self, action_request: ActionRequest) -> None:
-        action_request.id = self.next_action_request_id()
-        self.action_requests.append(action_request)
+        full_request = action_request.replace(id=self.next_action_request_id())
+        self.action_requests.append(full_request)
 
     def add_work_unit(self, work_unit: WorkUnit) -> None:
         self.work_units.append(work_unit)

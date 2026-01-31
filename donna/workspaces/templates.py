@@ -12,10 +12,10 @@ from donna.core.errors import EnvironmentErrorsProxy, ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.ids import FullArtifactId
 from donna.machine.templates import Directive
-from donna.world import errors as world_errors
+from donna.workspaces import errors as world_errors
 
 if TYPE_CHECKING:
-    from donna.world.artifacts import ArtifactRenderContext
+    from donna.workspaces.artifacts import ArtifactRenderContext
 
 
 class RenderMode(enum.Enum):

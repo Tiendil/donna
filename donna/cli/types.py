@@ -73,9 +73,9 @@ FullArtifactIdArgument = Annotated[
 ]
 
 
-FullArtifactIdPatternOption = Annotated[
-    FullArtifactIdPattern | None,
-    typer.Option(
+FullArtifactIdPatternArgument = Annotated[
+    FullArtifactIdPattern,
+    typer.Argument(
         parser=_parse_full_artifact_id_pattern,
         help="Artifact pattern (supports '*' and '**', e.g. 'project:*' or '**:intro').",
     ),
@@ -125,14 +125,13 @@ OutputPathOption = Annotated[
     ),
 ]
 
-
-WorkdirOption = Annotated[
-    pathlib.Path,
-    typer.Option(
-        resolve_path=True,
+ProjectDirArgument = Annotated[
+    pathlib.Path | None,
+    typer.Argument(
         exists=True,
         file_okay=False,
         dir_okay=True,
-        help="Project root directory to initialize (defaults to current working directory).",
+        resolve_path=True,
+        help="Optional project directory. Defaults to the current working directory.",
     ),
 ]

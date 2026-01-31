@@ -21,10 +21,16 @@ def initialize(ctx: typer.Context) -> None:
     try_initialize_donna()
 
 
-@sessions_cli.command(help="Start a new session and emit the initial session status and action requests.")
+@sessions_cli.command(help="Start a new session, reset session state, remove all session artifacts.")
 @cells_cli
 def start() -> Iterable[Cell]:
     return sessions.start()
+
+
+@sessions_cli.command(help="Reset the current session state, keeps session artifacts.")
+@cells_cli
+def reset() -> Iterable[Cell]:
+    return sessions.reset()
 
 
 @sessions_cli.command(
@@ -62,12 +68,6 @@ def action_request_completed(
     request_id: ActionRequestIdArgument, next_operation_id: FullArtifactSectionIdArgument
 ) -> Iterable[Cell]:
     return sessions.complete_action_request(request_id, next_operation_id)
-
-
-@sessions_cli.command(help="Clear the current session state.")
-@cells_cli
-def clear() -> Iterable[Cell]:
-    return sessions.clear()
 
 
 app.add_typer(
