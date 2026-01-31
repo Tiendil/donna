@@ -62,9 +62,6 @@
 ** tune wording of workflows (what to write before goto)
 ** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
 * TODO Donna flow improvements
-** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
-** on initialization donna should create some default workflows based on the project configs (grooming, for example)
-** create a copy of the default config for the new project
 ** Each world must provide an intro spec and donna should be able to conviniently output it to the user.
 ** usage modes
 *** easy mode — one of possible skills to use
@@ -75,6 +72,10 @@
 ** completed session keeps work_scope.md and work_scope_execution.md artifacts. We should make smth with that.
 *** cli command to remove artifacts + step of planing
 ** when the run is finished with error, agent tries to run session status and session continue to continue work because it sees that the session is not finished. What is the correct behavior here?
+* TODO Donna project initialization
+** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
+** on initialization donna should create some default workflows based on the project configs (grooming, for example)
+** create a copy of the default config for the new project
 * TODO Massive spellcheck
 * TODO Donna-agents integration
 ** Install donna as a skill
