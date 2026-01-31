@@ -1,3 +1,4 @@
+import builtins
 from collections.abc import Iterable
 
 import typer
@@ -79,7 +80,7 @@ def update(id: FullArtifactIdArgument, input: InputPathArgument) -> Iterable[Cel
 def remove(pattern: FullArtifactIdPatternArgument) -> Iterable[Cell]:
     artifacts = world_artifacts.list_artifacts(pattern).unwrap()
 
-    cells: list[Cell] = []
+    cells: builtins.list[Cell] = []
     for artifact in artifacts:
         world_artifacts.remove_artifact(artifact.id).unwrap()
         cells.append(operation_succeeded(f"Artifact `{artifact.id}` removed", artifact_id=str(artifact.id)))
