@@ -4,7 +4,7 @@ from collections.abc import Iterable
 import typer
 
 from donna.cli.application import app
-from donna.cli.utils import cells_cli, try_initialize_donna
+from donna.cli.utils import cells_cli, try_initialize_donna, initialize_workspace
 from donna.domain.ids import WorldId
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
@@ -29,14 +29,7 @@ def initialize_callback(ctx: typer.Context) -> None:
 @workspaces_cli.command(help="Initialize Donna workspace.")
 @cells_cli
 def initialize() -> Iterable[Cell]:
-    # TODO: use workdir attribute
-    project = config().get_world(WorldId("project")).unwrap()
-
-    project.initialize()
-
-    session = config().get_world(WorldId("session")).unwrap()
-
-    session.initialize()
+    initialize_workspace.unwrap()
 
     return [operation_succeeded("Workspace initialized successfully")]
 

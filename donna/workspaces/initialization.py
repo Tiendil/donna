@@ -1,15 +1,18 @@
 import tomllib
+import pathlib
+import tomli_w
 
 from donna.core import errors as core_errors
 from donna.core import utils
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.workspaces import config
 from donna.workspaces import errors as world_errors
+from donna.domain.ids import WorldId
 
 
 @unwrap_to_error
 def initialize_runtime() -> Result[None, core_errors.ErrorsList]:
-    """Initialize the environment for the application.
+    """Initialize the runtime environment for the application.
 
     This function MUST be called before any other operations.
     """
@@ -40,3 +43,29 @@ def initialize_runtime() -> Result[None, core_errors.ErrorsList]:
     config.config.set(loaded_config)
 
     return Ok(None)
+
+
+@unwrap_to_error
+def initialzie_workspace(project_dir: pathlib.Path) -> Result[None, core_errors.ErrorsList]:
+    """Initialize the physical workspace for the project (`.donna` directory).
+    """
+
+    existed_project_dir_result = utils.discover_project_dir(config.DONNA_DIR_NAME)
+
+    if existed_project_dir_result.is_ok() and existed_project_dir_result.unwrap() == project_dir:
+        return Err([world_errors.WorkspaceAlreadyInitialized(project_dir=project_dir)])
+
+    config.config_dir().mkdir(parents=True, exist_ok=True)
+
+    default_config = config.config()
+
+    with open(config.config_dir() / config.DONNA_CONFIG_NAME, "w") as f:
+        f.write(tomli_w.dumps(default_config.model_dump()))
+
+    project = default_config().get_world(WorldId("project")).unwrap()
+
+    project.initialize()
+
+    session = default_config().get_world(WorldId("session")).unwrap()
+
+    session.initialize()
