@@ -52,6 +52,7 @@
 ** {{ edit(specification) }} directive?
 ** {{ run(workflow) }} directive?
 * TODO Workflows polishing
+** introduce donna:planing:* namespace
 ** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
 ** Declare explicit refining loop
 ** Add mini workflows to polish each kind of records?
