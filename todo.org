@@ -31,11 +31,6 @@
 ** changy.summarize_changes
 * TODO possible specifications
 ** how to prepare python package with artifacts for donna
-* TODO Grooming improvements
-** Add spelling validation
-** Add import/dependency flow restrictions (there were a specialized package for that)
-** Pyright or BasedPyright
-*** control that returned values are used
 * TODO README.md notes
 ** `No API keys required.` as a feature
 ** `save tokens by taking work from your agent to your code`
