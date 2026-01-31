@@ -16,4 +16,3 @@ I.e. you develop Donna using Donna.
 
 1. Read the specification of how to use Donna: `./bin/donna.sh -p llm artifacts view donna:usage:cli`.
 2. Read the inroduction to the Donna project: `./bin/donna.sh -p llm artifacts view project:intro`.
-3. Remember that for the needs of Donna, value of the `<DONNA_CMD>` placeholder is is `./bin/donna.sh`.
