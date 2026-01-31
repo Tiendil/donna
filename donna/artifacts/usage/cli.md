@@ -84,6 +84,30 @@ The format of `<artifact-pattern>` is as follows:
   - `world:**` — matches all artifacts in the `world` world.
   - `world:**:name` — matches all artifacts with id ending with `:name` in the `world` world.
 
+### Interpreting donna protocol
+
+Donna communicates its progress and requests by outputting inrofmation organized in "cells". There are two kinds of cells output:
+
+- Log cells — `DONNA LOG: <log-message>` — one line messages describing what Donna is doing. Mostly it is an information about the next operation being executed.
+- Info cells — multiline cells with structured header and freeform body.
+
+An example of an info cell:
+
+```
+--DONNA-CELL eZVkOwNPTHmadXpaHDUBNA BEGIN--
+kind=action_request
+media_type=text/markdown
+action_request_id=AR-65-bd
+
+<here goes the multiline markdown content of the action request>
+
+--DONNA-CELL eZVkOwNPTHmadXpaHDUBNA END--
+```
+
+Donna can ommit log cell start and end markers if a command produces only a single cell.
+
+Donna may render cells differently, depending on the protocol used.
+
 ## IMPORTANT ON DONNA TOOL USAGE
 
 **Strictly follow described command syntax**
