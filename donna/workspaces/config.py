@@ -137,7 +137,7 @@ class Config(BaseEntity):
             if world.id == world_id:
                 return Ok(world)
 
-        return Err([world_errors.WorldNotConfigured(world_id=world_id)])
+        return Err([world_errors.WorkspaceNotConfigured(world_id=world_id)])
 
     @property
     def worlds_instances(self) -> list[BaseWorld]:

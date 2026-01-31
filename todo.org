@@ -68,6 +68,7 @@
 ** create a copy of the default config for the new project
 ** do not reinitialize project
 ** if the project is not found, check for .git directory and offer to create donna project there
+** artifacts remove must use pattern instead of explicit id
 * TODO Massive spellcheck
 * TODO Donna-agents integration
 ** Install donna as a skill

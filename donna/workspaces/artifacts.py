@@ -17,7 +17,7 @@ class ArtifactRenderContext(BaseEntity):
     current_work_unit: WorkUnit | None = None
 
 
-class ArtifactUpdateError(errors.WorldError):
+class ArtifactUpdateError(errors.WorkspaceError):
     cell_kind: str = "artifact_update_error"
     artifact_id: FullArtifactId
     path: pathlib.Path
@@ -32,7 +32,7 @@ class CanNotUpdateReadonlyWorld(ArtifactUpdateError):
     world_id: WorldId
 
 
-class ArtifactRemoveError(errors.WorldError):
+class ArtifactRemoveError(errors.WorkspaceError):
     cell_kind: str = "artifact_remove_error"
     artifact_id: FullArtifactId
 

@@ -8,31 +8,31 @@ class InternalError(core_errors.InternalError):
     """Base class for internal errors in donna.workspaces."""
 
 
-class WorldError(core_errors.EnvironmentError):
-    cell_kind: str = "world_error"
+class WorkspaceError(core_errors.EnvironmentError):
+    cell_kind: str = "workspace_error"
 
 
-class WorldConfigError(WorldError):
-    cell_kind: str = "world_config_error"
+class WorkspaceConfigError(WorkspaceError):
+    cell_kind: str = "workspace_config_error"
     config_path: pathlib.Path
 
     def content_intro(self) -> str:
-        return f"Error in world config file '{self.config_path}'"
+        return f"Error in workspace config file '{self.config_path}'"
 
 
-class ConfigParseFailed(WorldConfigError):
+class ConfigParseFailed(WorkspaceConfigError):
     code: str = "donna.workspaces.config_parse_failed"
     message: str = "Failed to parse config file: {error.details}"
     details: str
 
 
-class ConfigValidationFailed(WorldConfigError):
+class ConfigValidationFailed(WorkspaceConfigError):
     code: str = "donna.workspaces.config_validation_failed"
     message: str = "Failed to validate config file: {error.details}"
     details: str
 
 
-class WorkspaceAlreadyInitialized(WorldError):
+class WorkspaceAlreadyInitialized(WorkspaceError):
     code: str = "donna.workspaces.workspace_already_initialized"
     message: str = "Workspace already initialized at `{error.project_dir}`"
     ways_to_fix: list[str] = [
@@ -73,7 +73,7 @@ class WorldStateStorageUnsupported(WorldError):
     world_id: WorldId
 
 
-class ArtifactError(WorldError):
+class ArtifactError(WorkspaceError):
     cell_kind: str = "artifact_error"
     artifact_id: ArtifactId
     world_id: WorldId
@@ -108,7 +108,7 @@ class UnsupportedArtifactSourceExtension(ArtifactError):
     extension: str
 
 
-class MarkdownError(WorldError):
+class MarkdownError(WorkspaceError):
     cell_kind: str = "markdown_error"
     artifact_id: FullArtifactId | None = None
 
@@ -119,7 +119,7 @@ class MarkdownError(WorldError):
         return f"Error in markdown artifact '{self.artifact_id}'"
 
 
-class TemplateDirectiveError(WorldError):
+class TemplateDirectiveError(WorkspaceError):
     cell_kind: str = "template_directive_error"
     artifact_id: FullArtifactId | None = None
 
