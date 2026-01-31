@@ -61,10 +61,9 @@
 *** Approach 3: keep them, but add some meta info on analysis phase that donna can use.
 ** tune wording of workflows (what to write before goto)
 ** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
+** completed session keeps work_scope.md and work_scope_execution.md artifacts, we must add cleanup on the first step of planing.
 * TODO Donna flow improvements
 ** Each world must provide an intro spec and donna should be able to conviniently output it to the user.
-** completed session keeps work_scope.md and work_scope_execution.md artifacts. We should make smth with that.
-*** cli command to remove artifacts + step of planing
 ** when the run is finished with error, agent tries to run session status and session continue to continue work because it sees that the session is not finished. What is the correct behavior here?
 * TODO Donna project initialization
 ** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.

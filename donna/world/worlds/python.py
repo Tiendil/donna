@@ -142,6 +142,9 @@ class Python(BaseWorld):
     def update(self, artifact_id: ArtifactId, content: bytes, extension: str) -> Result[None, ErrorsList]:
         return Err([world_errors.WorldReadonly(world_id=self.id)])
 
+    def remove(self, artifact_id: ArtifactId) -> Result[None, ErrorsList]:
+        return Err([world_errors.WorldReadonly(world_id=self.id)])
+
     @unwrap_to_error
     def file_extension_for(self, artifact_id: ArtifactId) -> Result[str, ErrorsList]:
         resource_path = self._resolve_artifact_file(artifact_id).unwrap()

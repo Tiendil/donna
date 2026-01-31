@@ -124,6 +124,20 @@ class World(BaseWorld):
         return Ok(None)
 
     @unwrap_to_error
+    def remove(self, artifact_id: ArtifactId) -> Result[None, ErrorsList]:
+        if self.readonly:
+            return Err([world_errors.WorldReadonly(world_id=self.id)])
+
+        path = self._resolve_artifact_file(artifact_id).unwrap()
+
+        if path is None:
+            return Ok(None)
+
+        path.unlink()
+
+        return Ok(None)
+
+    @unwrap_to_error
     def file_extension_for(self, artifact_id: ArtifactId) -> Result[str, ErrorsList]:
         path = self._resolve_artifact_file(artifact_id).unwrap()
         if path is None:

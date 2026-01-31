@@ -70,6 +70,13 @@ def update(id: FullArtifactIdArgument, input: InputPathArgument) -> Iterable[Cel
     return [operation_succeeded(f"Artifact `{id}` updated from '{input}'", artifact_id=str(id), input_path=str(input))]
 
 
+@artifacts_cli.command(help="Remove an artifact from the world.")
+@cells_cli
+def remove(id: FullArtifactIdArgument) -> Iterable[Cell]:
+    world_artifacts.remove_artifact(id).unwrap()
+    return [operation_succeeded(f"Artifact `{id}` removed", artifact_id=str(id))]
+
+
 @artifacts_cli.command(help="Validate an artifact and return any validation errors.")
 @cells_cli
 def validate(id: FullArtifactIdArgument) -> Iterable[Cell]:

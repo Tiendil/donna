@@ -127,6 +127,7 @@ Use the next commands to work with artifacts
 - `donna -p <protocol> artifacts view <world>:<artifact>` — get the meaningful (rendered) content of the artifact. This command shows the rendered information about the artifact. Use this command when you need to read the artifact content.
 - `donna -p <protocol> artifacts fetch <world>:<artifact>` — download the original source of the artifact content, outputs the file path to the artifact's copy you can change. Use this command when you need to change the content of the artifact.
 - `donna -p <protocol> artifacts update <world>:<artifact> <file-path>` — upload the given file as the artifact. Use this command when you finished changing the content of the artifact.
+- `donna -p <protocol> artifacts remove <world>:<artifact>` — remove the given artifact from the world. Use this command when you need to delete an artifact.
 - `donna -p <protocol> artifacts validate <world>:<artifact>` — validate the given artifact to ensure it is correct and has no issues.
 - `donna -p <protocol> artifacts validate-all [--pattern <artifact-pattern>]` — validate all artifacts corresponding to the given pattern.
 

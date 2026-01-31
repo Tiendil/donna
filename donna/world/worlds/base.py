@@ -37,6 +37,9 @@ class World(BaseEntity, ABC):
     ) -> Result[None, ErrorsList]: ...  # noqa: E704
 
     @abstractmethod
+    def remove(self, artifact_id: ArtifactId) -> Result[None, ErrorsList]: ...  # noqa: E704
+
+    @abstractmethod
     def file_extension_for(self, artifact_id: ArtifactId) -> Result[str, ErrorsList]: ...  # noqa: E704
 
     @abstractmethod
