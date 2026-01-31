@@ -1,7 +1,6 @@
 import enum
 from typing import Any
 
-import pydantic
 from markdown_it import MarkdownIt
 from markdown_it.token import Token
 from markdown_it.tree import SyntaxTreeNode
@@ -53,8 +52,6 @@ class SectionSource(BaseEntity):
 
     original_tokens: list[Token]
     analysis_tokens: list[Token]
-
-    model_config = pydantic.ConfigDict(frozen=False)
 
     def _as_markdown(self, tokens: list[Token], with_title: bool) -> str:
         parts = []
