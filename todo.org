@@ -2,8 +2,6 @@
 ** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
 ** {{ edit(specification) }} directive?
 ** {{ run(workflow) }} directive?
-** remove mention of <DONNA_CMD> from specs
-** "Story" term still in some specs for convienience, we should think of a better naming
 ** currently we do not output the whole workflow body on the request of the artifact, only description. Maybe we should output the whole body?
 ** When we start the workflow, should we output the head cells before the first operation?
 ** mention jinja comments {# ... #} in artifact specification
