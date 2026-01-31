@@ -263,5 +263,3 @@ def parse(  # noqa: CCR001, CFQ001
         node = node.next_sibling
 
     return Ok(sections)
-
-    return sections
