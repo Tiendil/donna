@@ -3,7 +3,6 @@
 ** {{ edit(specification) }} directive?
 ** {{ run(workflow) }} directive?
 ** mention jinja comments {# ... #} in artifact specification
-** CLI: allow references to sections by full id -> display one specific section of artifact
 * TODO Possible workflows
 ** bootstrap.bootstrap_all.
 ** bootstrap.donna.create_project
