@@ -4,7 +4,7 @@
 kind = "donna.lib.specification"
 ```
 
-This document describes how agents MUST use Donna to manage and perform their workflows.
+This document describes how agents MUST use Donna CLI to manage and perform their workflows.
 
 **Agents MUST follow the instructions and guidelines outlined in this document precisely.**
 
@@ -12,43 +12,85 @@ This document describes how agents MUST use Donna to manage and perform their wo
 
 `donna` is a CLI tool that helps manage the work of AI agents like OpenAI Codex.
 
-It is designed to invert control flow: instead of agents deciding what to do next, the `donna` tells agents what to do next by following predefined workflows.
+It is designed to invert control flow: instead of agents deciding what to do next, the Donna tells agents what to do. The tool achieves this by following predefined workflows that describe how to perform various tasks. One may look at workflows as hierarchical state machines (HSM) that guide agents through complex processes step by step.
 
-The core idea is that most high-level workflows are more algorithmic than it may seem at first glance. For example, it may be difficult to fix a particular type issue in the codebase, but the overall process of polishing the codebase is quite linear:
+The core idea is that most high-level workflows are more algorithmic than it may seem at first glance. For example, it may be difficult to fix a particular problem in the codebase, but the overall process of polishing it is quite linear:
 
-1. Ensure all tests pass.
-2. Ensure the code is formatted correctly.
-3. Ensure there are no linting errors.
+1. Run tests, if they fail, fix the problems.
+2. Format the code.
+3. Run linters, if there are issues, fix them.
 4. Go to the step 1 if you changed something in the process.
 5. Finish.
 
-We may need coding agents on the each step of the process, but there no reason for agents to manage the whole loop by themselves — it takes longer time, spends tokens and confuses agents.
+We may need coding agents on the each step of the process, but there no reason for agents to manage the whole loop by themselves — it takes longer time, spends tokens and confuses agents because they need to reason over long contexts.
 
-## Primary Rules
+## Primary rules for agents
 
+- Donna stores all project-related data in `.donna` directory in the project root.
 - All work is always done in the context of a session. There is only one active session at a time.
 - You MUST always work on one task assigned to you.
-- If developer asked you to do something and you have no session, you create one with the `donna` tool.
-- If you have a session, you MUST keep all the information about it in your memory. Ask `donna` tool for the session details when you forget something.
+- You MUST keep all the information about the session in your memory.
+- You always can ask the `donna` tool for the session details if you forget something.
 
-## Protocol
+## CLI
+
+### Protocol
 
 Protocol selects the output formatting and behavior of Donna's CLI for different consumers (humans, LLMs, automation).
-When an agent invokes Donna, it SHOULD use the `llm` protocol (`-p llm`) unless the workflow explicitly requires another protocol.
+When an agent invokes Donna, it SHOULD use the `llm` protocol (pass an `-p llm` argument) unless the developer explicitly instructs otherwise.
 
-### Session workflow
+### Protocol cells
 
-- You start session by calling `donna -p <protocol> sessions start`.
-- After you started a session:
-  1. List all possible workflows with command `donna -p <protocol> artifacts list`.
-  2. Choose the most appropriate workflow for the task you are going to work on or ask the developer if you are not sure which workflow to choose.
-  3. Start working by calling `donna -p <protocol> sessions run <workflow-id>`.
-  4. The `donna` tool will output descriptions of all operations it performs to complete the work.
-  5. The `donna` tool will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
-- When you done doing your part, you call `donna -p <protocol> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report that you completed the action request. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>:<artifact>:<operation-id>`.
-- After you report the result:
-  1. The `donna` tool will output what you need to do next.
-  2. You repeat the process until the work is completed.
+Donna communicates its progress and requests by outputting inrofmation organized in "cells". There are two kinds of cells output:
+
+- Log cells — `DONNA LOG: <log-message>` — one line messages describing what Donna is doing. Mostly it is an information about the next operation being executed.
+- Info cells — multiline cells with structured header and freeform body.
+
+An example of an info cell:
+
+```
+--DONNA-CELL eZVkOwNPTHmadXpaHDUBNA BEGIN--
+kind=action_request
+media_type=text/markdown
+action_request_id=AR-65-bd
+
+<here goes the multiline markdown content of the action request>
+
+--DONNA-CELL eZVkOwNPTHmadXpaHDUBNA END--
+```
+
+Donna can ommit log cell start and end markers if a command produces only a single cell.
+
+Donna renders cells differently, depending on the protocol used.
+
+### Commands
+
+There are three sets of commands:
+
+- `donna -p <protocol> projects …` — manages projects. Most-likely it will be used once per project to initialize it.
+- `donna -p <protocol> sessions …` — manages sessions. You will use these commands to start, push forward, and manage your work sessions.
+- `donna -p <protocol> artifacts …` — manages artifacts. You will use these commands to read and update artifacts you are working with.
+
+Use:
+
+- `donna -p <protocol> <command> --help` to get the list of available subcommands.
+- `donna -p <protocol> <command> <subcommand> --help` to get the help on specific subcommand.
+
+### Session flow
+
+You start session by calling `donna -p <protocol> sessions start`.
+
+After you started a session:
+
+1. List all possible workflows with command `donna -p <protocol> artifacts list`.
+2. Choose the most appropriate workflow for the task you are going to work on or ask the developer if you are not sure which workflow to choose.
+3. Start choosen workflow by calling `donna -p <protocol> sessions run <workflow-id>`.
+4. Donna will output descriptions of all operations it performs to complete the work.
+5. Donna will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
+6. When you done processing an action request, call `donna -p <protocol> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report request completion. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>:<artifact>:<operation-id>`.
+7. After you complete an action request, Donna will continue workflow execution and outputs what you need to do next.
+
+You MUST continue following Donna's instructions until the workflow is completed.
 
 ### Starting work
 
@@ -83,30 +125,6 @@ The format of `<artifact-pattern>` is as follows:
   - `**:name` — matches all artifacts with id ending with `:name` in all worlds.
   - `world:**` — matches all artifacts in the `world` world.
   - `world:**:name` — matches all artifacts with id ending with `:name` in the `world` world.
-
-### Interpreting donna protocol
-
-Donna communicates its progress and requests by outputting inrofmation organized in "cells". There are two kinds of cells output:
-
-- Log cells — `DONNA LOG: <log-message>` — one line messages describing what Donna is doing. Mostly it is an information about the next operation being executed.
-- Info cells — multiline cells with structured header and freeform body.
-
-An example of an info cell:
-
-```
---DONNA-CELL eZVkOwNPTHmadXpaHDUBNA BEGIN--
-kind=action_request
-media_type=text/markdown
-action_request_id=AR-65-bd
-
-<here goes the multiline markdown content of the action request>
-
---DONNA-CELL eZVkOwNPTHmadXpaHDUBNA END--
-```
-
-Donna can ommit log cell start and end markers if a command produces only a single cell.
-
-Donna may render cells differently, depending on the protocol used.
 
 ## IMPORTANT ON DONNA TOOL USAGE
 
