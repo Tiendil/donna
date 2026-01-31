@@ -155,6 +155,7 @@ class Config(BaseEntity):
         return Err(
             [
                 world_errors.SourceConfigNotConfigured(
+                    source_id=kind,
                     kind=kind,
                 )
             ]
