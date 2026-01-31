@@ -39,6 +39,7 @@ We may need coding agents on the each step of the process, but there no reason f
 - **Story** — a semantically consistent scope of work within a session; a conceptual unit not directly represented in the tool.
 - **Tail section** — each H2 section of an artifact.
 - **World** — a storage namespace (filesystem or other backends) that contains artifacts.
+- **Workspace** — the `.donna` directory in a project root that stores Donna's configuration, worlds, and artifacts for that project.
 - **Workflow** — a `donna.lib.workflow` artifact that encodes a finite-state machine of operations guiding the agent's work.
 - **Workflow operation** — a single step in a workflow, defined by a tail section with an `id`, `kind`, and instructions.
 
