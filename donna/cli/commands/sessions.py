@@ -21,10 +21,16 @@ def initialize(ctx: typer.Context) -> None:
     try_initialize_donna()
 
 
-@sessions_cli.command(help="Start a new session, reset session state, remove all artifacts.")
+@sessions_cli.command(help="Start a new session, reset session state, remove all session artifacts.")
 @cells_cli
 def start() -> Iterable[Cell]:
     return sessions.start()
+
+
+@sessions_cli.command(help="Reset the current session state, keeps session artifacts.")
+@cells_cli
+def reset() -> Iterable[Cell]:
+    return sessions.reset()
 
 
 @sessions_cli.command(

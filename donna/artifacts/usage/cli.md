@@ -98,6 +98,10 @@ You may run `donna -p <protocol> sessions status` to get the status of the curre
 
 You may run `donna -p <protocol> sessions details` to get detailed information about the current session, including list of active action requests.
 
+Run `donna -p <protocol> sessions start` to start fully new session. This command resets session state AND removes all session-level artifacts. Use this command when you need to start work from scratch.
+
+Run `donna -p <protocol> sessions reset` to reset the current session. This command resets session state BUT keeps all session-level artifacts. Use this command when you need to restart the worklow but keep all the artifacts you created during the session.
+
 ### Starting work
 
 If the developer asked you to do something new:

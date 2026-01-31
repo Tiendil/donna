@@ -90,6 +90,14 @@ def start() -> list[Cell]:
     return [operation_succeeded("Started new session.")]
 
 
+def reset() -> list[Cell]:
+    save_result = _save_state(MutableState.build().freeze())
+    if save_result.is_err():
+        return _errors_to_cells(save_result.unwrap_err())
+
+    return [operation_succeeded("Session state reset.")]
+
+
 def clear() -> list[Cell]:
     world_tmp.clear()
     session_result = _session()
