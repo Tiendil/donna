@@ -73,6 +73,15 @@ FullArtifactIdArgument = Annotated[
 ]
 
 
+FullArtifactIdPatternArgument = Annotated[
+    FullArtifactIdPattern,
+    typer.Argument(
+        parser=_parse_full_artifact_id_pattern,
+        help="Artifact pattern (supports '*' and '**', e.g. 'project:*' or '**:intro').",
+    ),
+]
+
+
 FullArtifactIdPatternOption = Annotated[
     FullArtifactIdPattern | None,
     typer.Option(

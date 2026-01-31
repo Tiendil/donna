@@ -3,7 +3,13 @@ from collections.abc import Iterable
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import FullArtifactIdArgument, FullArtifactIdPatternOption, InputPathArgument, OutputPathOption
+from donna.cli.types import (
+    FullArtifactIdArgument,
+    FullArtifactIdPatternArgument,
+    FullArtifactIdPatternOption,
+    InputPathArgument,
+    OutputPathOption,
+)
 from donna.cli.utils import cells_cli, try_initialize_donna
 from donna.domain.ids import FullArtifactIdPattern
 from donna.protocol.cell_shortcuts import operation_succeeded
@@ -37,11 +43,11 @@ def list(pattern: FullArtifactIdPatternOption = None) -> Iterable[Cell]:
     return [artifact.node().status() for artifact in artifacts]
 
 
-@artifacts_cli.command(help="Displays a single artifact.")
+@artifacts_cli.command(help="Displays artifacts matching a pattern or a specific id")
 @cells_cli
-def view(id: FullArtifactIdArgument) -> Iterable[Cell]:
-    artifact = world_artifacts.load_artifact(id).unwrap()
-    return [artifact.node().info()]
+def view(pattern: FullArtifactIdPatternArgument) -> Iterable[Cell]:
+    artifacts = world_artifacts.list_artifacts(pattern).unwrap()
+    return [artifact.node().info() for artifact in artifacts]
 
 
 @artifacts_cli.command(
