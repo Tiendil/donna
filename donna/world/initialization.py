@@ -8,7 +8,7 @@ from donna.world import errors as world_errors
 
 
 @unwrap_to_error
-def initialize_environment() -> Result[None, core_errors.ErrorsList]:
+def initialize_runtime() -> Result[None, core_errors.ErrorsList]:
     """Initialize the environment for the application.
 
     This function MUST be called before any other operations.

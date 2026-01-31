@@ -73,6 +73,7 @@
 ** donna projects initialize -> donna workspace initialize
 ** update specs
 *** rename projects -> workspaces
+** donna/world -> donna/workspaces?
 * TODO Massive spellcheck
 * TODO Donna-agents integration
 ** Install donna as a skill
