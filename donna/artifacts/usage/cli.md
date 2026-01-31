@@ -148,7 +148,7 @@ The format of `<artifact-pattern>` is as follows:
   3. Specifications in `project:` world.
   4. This document.
 
-**All Donna CLI commands MUST include an explicit protocol selection using `-p <mode>`.** Like `donna -p llm <command>`.
+**All Donna CLI commands MUST include an explicit protocol selection using `-p <protocol>`.** Like `donna -p llm <command>`.
 
 **Pass text arguments to the tool in quotes with respect to escaping.** The tool MUST receive the exact text you want to pass as an argument.
 
