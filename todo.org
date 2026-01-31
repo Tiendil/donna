@@ -65,22 +65,19 @@
 ** lack of donna project directory should not lead to exceptions or errors. Donna should try to locate the project directory with workflow from std world and if it is not initialized, it should offer to initialize it.
 ** on initialization donna should create some default workflows based on the project configs (grooming, for example)
 ** create a copy of the default config for the new project
-** lock for donna operations on the project
-** donna should be able to continue finished session (somewhow). I.e. when the developer ads new details to it.
-** Agent can not continue work in finished session => remove all artifacts that may be required.
 ** Each world must provide an intro spec and donna should be able to conviniently output it to the user.
-** Install donna as a skill
-** Install donna as a tool
-** automatically update all required instructions on donna update
 ** usage modes
 *** easy mode — one of possible skills to use
 *** hard mode — forse agent to work via donna
-** installing donna cli via online instruction for agents
 ** command to reset session state (without removing artifacts)
 ** mention `session clear` command in specs
-** usage:cli — we may want to better specify all possible commands or event to autogenerate them.
-p** completed session keeps work_scope.md and work_scope_execution.md artifacts. We should make smth with that.
+** usage:cli — we may want to better specify all possible commands or event to autogenerate their docs.
+** completed session keeps work_scope.md and work_scope_execution.md artifacts. We should make smth with that.
+*** cli command to remove artifacts + step of planing
 ** when the run is finished with error, agent tries to run session status and session continue to continue work because it sees that the session is not finished. What is the correct behavior here?
 * TODO Massive spellcheck
-* TODO Donna agents integration
-** add slash commands?
+* TODO Donna-agents integration
+** Install donna as a skill
+** Install donna as a tool
+** slash commands for donna
+** installing donna cli via online instruction for agents
