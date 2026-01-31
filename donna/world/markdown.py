@@ -110,15 +110,21 @@ def clear_heading(text: str) -> str:
 def _parse_h1(
     sections: list[SectionSource], node: SyntaxTreeNode, artifact_id: FullArtifactId | None
 ) -> Result[SyntaxTreeNode | None, ErrorsList]:
-    section = sections[-1]
-
-    if section.level != SectionLevel.h1:
+    if sections and any(section.level == SectionLevel.h1 for section in sections):
         return Err([world_errors.MarkdownMultipleH1Sections(artifact_id=artifact_id)])
 
-    if section.title is not None:
-        return Err([world_errors.MarkdownMultipleH1Titles(artifact_id=artifact_id)])
+    if sections:
+        return Err([world_errors.MarkdownH1SectionMustBeFirst(artifact_id=artifact_id)])
 
-    section.title = clear_heading(render_back(node.to_tokens()).strip())
+    new_section = SectionSource(
+        level=SectionLevel.h1,
+        title=clear_heading(render_back(node.to_tokens()).strip()),
+        original_tokens=[],
+        analysis_tokens=[],
+        configs=[],
+    )
+
+    sections.append(new_section)
 
     return Ok(node.next_sibling)
 
@@ -126,10 +132,9 @@ def _parse_h1(
 def _parse_h2(
     sections: list[SectionSource], node: SyntaxTreeNode, artifact_id: FullArtifactId | None
 ) -> Result[SyntaxTreeNode | None, ErrorsList]:
-    section = sections[-1]
 
-    if section.title is None:
-        return Err([world_errors.MarkdownH2BeforeH1Title(artifact_id=artifact_id)])
+    if not sections:
+        return Err([world_errors.MarkdownH1SectionMustBeFirst(artifact_id=artifact_id)])
 
     new_section = SectionSource(
         level=SectionLevel.h2,
@@ -147,7 +152,6 @@ def _parse_h2(
 def _parse_heading(
     sections: list[SectionSource], node: SyntaxTreeNode, artifact_id: FullArtifactId | None
 ) -> Result[SyntaxTreeNode | None, ErrorsList]:
-    section = sections[-1]
 
     if node.tag == "h1":
         return _parse_h1(sections, node, artifact_id)
@@ -155,7 +159,11 @@ def _parse_heading(
     if node.tag == "h2":
         return _parse_h2(sections, node, artifact_id)
 
-    section.original_tokens.extend(node.to_tokens())
+    if not sections:
+        return Err([world_errors.MarkdownH1SectionMustBeFirst(artifact_id=artifact_id)])
+
+    sections[-1].original_tokens.extend(node.to_tokens())
+
     return Ok(node.next_sibling)
 
 
@@ -231,15 +239,7 @@ def parse(  # noqa: CCR001, CFQ001
     # we do not need root node
     node: SyntaxTreeNode | None = SyntaxTreeNode(tokens).children[0]
 
-    sections: list[SectionSource] = [
-        SectionSource(
-            level=SectionLevel.h1,
-            title=None,
-            original_tokens=[],
-            analysis_tokens=[],
-            configs=[],
-        )
-    ]
+    sections: list[SectionSource] = []
 
     while node is not None:
 

@@ -187,19 +187,11 @@ class MarkdownMultipleH1Sections(MarkdownError):
     ]
 
 
-class MarkdownMultipleH1Titles(MarkdownError):
-    code: str = "donna.world.markdown_multiple_h1_titles"
-    message: str = "Multiple H1 titles are not supported"
+class MarkdownH1SectionMustBeFirst(MarkdownError):
+    code: str = "donna.world.markdown_h1_section_must_be_first"
+    message: str = "H1 section must be the first section in the artifact"
     ways_to_fix: list[str] = [
-        "Keep a single H1 title in the artifact.",
-    ]
-
-
-class MarkdownH2BeforeH1Title(MarkdownError):
-    code: str = "donna.world.markdown_h2_before_h1_title"
-    message: str = "H2 section found before H1 title"
-    ways_to_fix: list[str] = [
-        "Ensure the first heading is an H1 title before any H2 sections.",
+        "Ensure the H1 section is the first section in the artifact.",
     ]
 
 
