@@ -124,3 +124,15 @@ OutputPathOption = Annotated[
         help="Optional output file path (file only). Defaults to a temporary file if omitted.",
     ),
 ]
+
+ProjectDirArgument = Annotated[
+    pathlib.Path | None,
+    typer.Argument(
+        None,
+        exists=True,
+        file_okay=False,
+        dir_okay=True,
+        resolve_path=True,
+        help="Optional project directory. Defaults to the current working directory.",
+    ),
+]

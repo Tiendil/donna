@@ -76,6 +76,12 @@ Use:
 - `donna -p <protocol> <command> --help` to get the list of available subcommands.
 - `donna -p <protocol> <command> <subcommand> --help` to get the help on specific subcommand.
 
+### Workspaces
+
+Run `donna -p <protocol> workspaces init [<directory-path>]` to initialize Donna workspace in the given directory. If `<directory-path>` is omitted, Donna will initialize workspace in the current working directory.
+
+It is a one time operation you need to perform once per project to create a place where Donna will store all its data.
+
 ### Session flow
 
 You start session by calling `donna -p <protocol> sessions start`.

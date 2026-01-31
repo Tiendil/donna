@@ -4,6 +4,7 @@ from collections.abc import Iterable
 import typer
 
 from donna.cli.application import app
+from donna.cli.types import ProjectDirArgument
 from donna.cli.utils import cells_cli, try_initialize_donna
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
@@ -27,8 +28,9 @@ def initialize_callback(ctx: typer.Context) -> None:
 
 @workspaces_cli.command(help="Initialize Donna workspace.")
 @cells_cli
-def init() -> Iterable[Cell]:
-    initialize_workspace(pathlib.Path.cwd()).unwrap()
+def init(project_dir: ProjectDirArgument = None) -> Iterable[Cell]:
+    target_dir = project_dir or pathlib.Path.cwd()
+    initialize_workspace(target_dir).unwrap()
 
     return [operation_succeeded("Workspace initialized successfully")]
 
