@@ -124,15 +124,3 @@ OutputPathOption = Annotated[
         help="Optional output file path (file only). Defaults to a temporary file if omitted.",
     ),
 ]
-
-
-WorkdirOption = Annotated[
-    pathlib.Path,
-    typer.Option(
-        resolve_path=True,
-        exists=True,
-        file_okay=False,
-        dir_okay=True,
-        help="Project root directory to initialize (defaults to current working directory).",
-    ),
-]

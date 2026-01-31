@@ -4,7 +4,6 @@ from collections.abc import Iterable
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import WorkdirOption
 from donna.cli.utils import cells_cli, try_initialize_donna
 from donna.domain.ids import WorldId
 from donna.protocol.cell_shortcuts import operation_succeeded
@@ -29,7 +28,7 @@ def initialize_callback(ctx: typer.Context) -> None:
 
 @projects_cli.command(help="Initialize Donna project.")
 @cells_cli
-def initialize(workdir: WorkdirOption = pathlib.Path.cwd()) -> Iterable[Cell]:
+def initialize() -> Iterable[Cell]:
     # TODO: use workdir attribute
     project = config().get_world(WorldId("project")).unwrap()
 
