@@ -116,3 +116,4 @@
 *** most-likely we should route to the right workflow based on the input from the developer
 ** formalize expected structure of session: and project: worlds
 ** execution of workflows can produce a lot of artifacts, we may want to improve cleaning up of a session to remove temporary ones but keep important ones (like rfc, specs)
+** command to copy artifacts between worlds
