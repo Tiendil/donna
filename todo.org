@@ -130,6 +130,7 @@
 ** ask agent to define openspec like workflow, using donna
 ** we may need to add `output` operation that just outputs some text to the agent and continues the workflow
 *** or we may add this feature to the finish operation <-- preferable
+** we may need a log artifact of actions/changes/etc. to be able doing replaning based on what has already been done
 * TODO Research loop
 
 ** Single path flow
