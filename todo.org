@@ -147,3 +147,4 @@
 *** implement them
 *** move into todo list of github issues
 *** just remove
+* TODO update config logic to use relative paths for home, project and session
