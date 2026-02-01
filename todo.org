@@ -112,3 +112,4 @@
 **** Risk: “We might be wrong about [assumption], causing [impact].”
 **** Evidence needed: what would convince us?
 **** Mitigation action: prototype / experiment / targeted test / analysis.
+** if the developer ask to implement a particular feature, should be propose alternatives?
