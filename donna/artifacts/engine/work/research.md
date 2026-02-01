@@ -7,6 +7,11 @@ start_operation_id = "start"
 
 Workflow for performing research on a given question/problem/situation. Collects relevant information, analyzes it, synthesizes possible options, and produces an answer/solution/deliverables.
 
+The purpose of this workflow is to provide an information for making decisions or producing solutions based on researched data. It can be used:
+
+- When the developer explicitly asks to make a research.
+- When other workflows need to perform research as a subtask.
+
 ## Start
 
 ```toml donna
