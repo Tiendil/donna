@@ -128,6 +128,8 @@
 *** we may need to unite this functionality with true-tree approach, so we can manipulate lists in a nested sections
 ** an instruction to list workflows `artifacts list '\*\*:work:\*\*'
 ** ask agent to define openspec like workflow, using donna
+** we may need to add `output` operation that just outputs some text to the agent and continues the workflow
+*** or we may add this feature to the finish operation <-- preferable
 * TODO Research loop
 
 ** Single path flow
