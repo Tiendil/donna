@@ -101,3 +101,14 @@
 ** "work-to-do.md" as an intermediate artifact between planning and execution?
 *** may just collect an unsorted list of tasks to do
 ** Folder: `donna:engine:`
+** Ids for list items (we may move this into proposal)
+*** we can add unique ids for list items, like {{donna.lib.uid('ssdsad')}} or `$$uid:<id>$$` or even [uid] — why not?
+*** => donna can filter by them, add them to section, remove them, update them
+*** `donna artifacts list add|update|remove <world>:<artifact>:<section> <item-id> "<item-text>"`
+** Goal to hypothesis mapping
+*** Goal: "what outcome changes if Feature XXX exists?"
+*** Leads to hypothesis: “If we implement XXX, then Y users can do Z, producing outcome W.”
+*** For each assumption behind Feature XXX, write:
+**** Risk: “We might be wrong about [assumption], causing [impact].”
+**** Evidence needed: what would convince us?
+**** Mitigation action: prototype / experiment / targeted test / analysis.
