@@ -83,6 +83,7 @@
 *** a dedicated “risk register” artifact and stage gates based on uncertainty reduction: prototypes, experiments, or targeted tests are first-class deliverables.
 *** https://cse.msu.edu/~cse435/Homework/HW3/boehm.pdf
 *** `risk` can be coupled with `decission`
+*** "have we reduced uncertainty enough to commit?" as a force for planning
 ** use nested directory structure to organize small artifacts, use patterns to extract them
 *** theoretically, we can keep an artifact per requirement, they will just look like `session:planning:requirements:*`
 ** How to regulate complexity of workflows, depending on the task scope?
@@ -97,3 +98,5 @@
 ** log of work?
 ** spec collection in the project: world: work on sessions most likely should update it?
 ** we should strive to implement small workflows which become building blocks for more complex workflows.
+** "work-to-do.md" as an intermediate artifact between planning and execution?
+*** may just collect an unsorted list of tasks to do
