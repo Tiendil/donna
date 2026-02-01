@@ -47,6 +47,7 @@
 *** brigid
 *** feeds fun
 ** I don't beliew in manual orchestrators, in the future, agents will be capable of orchestrating their work => donna is developed as a helpfull tool, not as a full-fledged orchestrator.
+** you can redefine behavior of any primitives: directive, operation, even artifacts (including workflows)
 * TODO Specification improvements:
 ** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
 ** {{ edit(specification) }} directive?
@@ -120,7 +121,14 @@
 ** we may add a "recomendation" cell to the workflow artifacts, that will contain info related to the whole workflow. Can be used to remind agent about the whole context.
 ** donna:engine:intro
 ** donna:engine:specificaton (choose better name)
+** donna:engine:research?
+** project:do_polishing -> project:work:polishing?
 * TODO Decission loop
+
 ** Single path flow
 ** Loopped flow
 ** Recursive flow
+** remove comments from the workflow artifacts:
+*** implement them
+*** move into todo list of github issues
+*** just remove
