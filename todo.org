@@ -135,6 +135,7 @@
 *** any project related data
 *** wikipedia
 *** IETF RFCs: https://www.rfc-editor.org/
+*** Research papers, including arXiv
 *** stack overflow
 ** remove comments from the workflow artifacts:
 *** implement them
