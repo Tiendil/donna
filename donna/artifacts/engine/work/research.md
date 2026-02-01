@@ -52,7 +52,17 @@ kind = "donna.lib.request_action"
 
 1. Using your knowledge about the project and the original problem description, formulate a format description of the problem
 2. Update the artifact with the formalized problem description.
-3. `{{ donna.lib.goto("formulate_goals") }}`
+3. `{{ donna.lib.goto("set_primary_section_of_the_research_artifact") }}`
+
+## Set primary section of the research artifact
+
+```toml donna
+id = "set_primary_section_of_the_research_artifact"
+kind = "donna.lib.request_action"
+```
+
+1. Based on the formalized problem description, update the primary (h1) section of the research artifact to reflect the problem being researched. So the agents can effectively find and understand the research artifact using Donna.
+2. `{{ donna.lib.goto("formulate_goals") }}`
 
 ## Formulate Goals
 
