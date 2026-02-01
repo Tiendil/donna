@@ -124,6 +124,7 @@
 ** project:do_polishing -> project:work:polishing?
 ** we can have cli command to add/update/remove items from lists in artifacts
 *** we may need to unite this functionality with true-tree approach, so we can manipulate lists in a nested sections
+** an instruction to list workflows `artifacts list '\*\*:work:\*\*'
 * TODO Research loop
 
 ** Single path flow
