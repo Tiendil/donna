@@ -44,7 +44,8 @@ id = "prepare_artifact"
 kind = "donna.lib.request_action"
 ```
 
-1. Based on the problem description you have, suggest an artifact name in the format `session:research:<short-problem-related-identifier>`.
+1. Based on the problem description you have, suggest an artifact name in the format `session:research:<short-problem-related-identifier>`. `<short-problem-related-identifier>` MUST be unique within the session.
+{# TODO: we can add donna.lib.list('session:*') here as the command to list all artifacts in session #}
 2. Create the artifact and specify an original problem description in it.
 3. `{{ donna.lib.goto("formalize_research") }}`
 
