@@ -48,6 +48,7 @@
 *** feeds fun
 ** I don't beliew in manual orchestrators, in the future, agents will be capable of orchestrating their work => donna is developed as a helpfull tool, not as a full-fledged orchestrator.
 ** you can redefine behavior of any primitives: directive, operation, even artifacts (including workflows)
+** like OpenSpec, but more hardcore
 * TODO Specification improvements:
 ** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
 ** {{ edit(specification) }} directive?
