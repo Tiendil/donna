@@ -21,7 +21,7 @@ fsm_mode = "start"
 
 ## Ensure problem description exists
 
-```toml
+```toml donna
 id = "ensure_problem_description_exists"
 kind = "donna.lib.request_action"
 ```
