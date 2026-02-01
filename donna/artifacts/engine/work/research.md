@@ -5,7 +5,7 @@ kind = "donna.lib.workflow"
 start_operation_id = "start"
 ```
 
-Workflow for performing research on a given question/problem/situation. Collects relevant information, analyzes it, synthesizes possible options, and produces a list of requested deliverables.
+Workflow for performing research on a given question/problem/situation. Collects relevant information, analyzes it, synthesizes possible options, and produces an answer/solution/deliverables.
 
 ## Start
 
@@ -16,7 +16,7 @@ fsm_mode = "start"
 ```
 
 1. Read the specification `{{ donna.lib.view("donna:usage:artifacts") }}` if you haven't done it yet.
-2. Read the specification `{{ donna.lib.view("donna:specs:research") }}` if you haven't done it yet.
+{# 2. Read the specification `{{ donna.lib.view("donna:specs:research") }}` if you haven't done it yet. #}
 3. `{{ donna.lib.goto("ensure_problem_description_exists") }}`
 
 ## Ensure problem description exists
@@ -63,7 +63,34 @@ kind = "donna.lib.request_action"
 
 1. Based on the formalized problem description, formulate a list of goals that the problem solution should achieve.
 2. Update the artifact with the list of goals.
-3. `{{ donna.lib.goto("describe_information_to_collect") }}`
+3. `{{ donna.lib.goto("fomalize_form_of_final_solution") }}`
+
+## Formalize form of final solution
+
+```toml donna
+id = "fomalize_form_of_final_solution"
+kind = "donna.lib.request_action"
+```
+
+1. Based on the formalized problem description and the list of goals, formulate the desired form of the final solution.
+2. Update the artifact with the desired form of the final solution.
+3. `{{ donna.lib.goto("describe_solution_space") }}`
+
+## Describe solution space
+
+```toml donna
+id = "describe_solution_space"
+kind = "donna.lib.request_action"
+```
+
+To produce solution we should understand how to analyze the data and how to synthesize results into the final solution.
+
+For this we need to list the axes along which we will analyze the data and the dimensions along which we will synthesize the results.
+
+1. List the analysis axes.
+2. List the synthesis dimensions.
+3. Update the artifact with the description of the solution space.
+4. `{{ donna.lib.goto("describe_information_to_collect") }}`
 
 ## Describe information to collect
 
@@ -72,11 +99,11 @@ id = "describe_information_to_collect"
 kind = "donna.lib.request_action"
 ```
 
-1. Based on the formalized problem description and the list of goals, formulate a description of the information that needs to be collected to research the problem.
+1. Based on the formalized problem description and the list of goals, list the information to be collected to research the problem.
 2. Update the artifact with the description of the information to collect.
 3. `{{ donna.lib.goto("list_information_sources") }}`
 
-## List Information Sources
+## List information sources
 
 ```toml donna
 id = "list_information_sources"
@@ -87,7 +114,7 @@ kind = "donna.lib.request_action"
 2. Update the artifact with the list of information sources.
 3. `{{ donna.lib.goto("collect_information") }}`
 
-## Collect Information
+## Collect information
 
 ```toml donna
 id = "collect_information"
@@ -96,13 +123,58 @@ kind = "donna.lib.request_action"
 
 1. For each information source from the list:
    1. For each piece of required information from the description:
-      1. Access the source and collect the required information.
-      2. Update the artifact with the collected information.
+      1. If the source can not provide this piece of information, skip it.
+      2. Access the source and collect the required information.
+      3. Update the artifact with the collected information.
 2. `{{ donna.lib.goto("analyze_information") }}`
 
-## Analyze Information
+## Analyze information
 
 ```toml donna
 id = "analyze_information"
 kind = "donna.lib.request_action"
+```
+
+1. Using the analysis axes from the solution space description, analyze the collected information. Choose the format that best represents the analysis results and suits the the required solution form.
+2. Update the artifact with the analysis results.
+3. `{{ donna.lib.goto("synthesize_solutions") }}`
+
+## Synthesize solutions
+
+```toml donna
+id = "synthesize_solutions"
+kind = "donna.lib.request_action"
+```
+
+1. Using the synthesis dimensions from the solution space description, synthesize possible solutions based on the analysis results. Choose the format that best represents the synthesized solutions and suits the the required solution form.
+2. Update the artifact with the synthesized solutions.
+3. `{{ donna.lib.goto("evaluate_solutions") }}`
+
+## Evaluate solutions
+
+```toml donna
+id = "evaluate_solutions"
+kind = "donna.lib.request_action"
+```
+
+1. Evaluate the synthesized solutions against the goals from the formalized problem description.
+2. Update the artifact with the evaluation results.
+3. `{{ donna.lib.goto("produce_final_solution") }}`
+
+## Produce final solution
+
+```toml donna
+id = "produce_final_solution"
+kind = "donna.lib.request_action"
+```
+
+1. Based on the evaluation results, produce the final solution in the desired form.
+2. Update the artifact with the final solution.
+3. `{{ donna.lib.goto("finish") }}`
+
+## Finish
+
+```toml donna
+id = "finish"
+kind = "donna.lib.finish"
 ```

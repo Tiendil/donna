@@ -89,7 +89,6 @@
 *** theoretically, we can keep an artifact per requirement, they will just look like `session:planning:requirements:*`
 ** How to regulate complexity of workflows, depending on the task scope?
 *** introduce an additional step/workflow to high-level analysis of the task scope and select appropriate workflow complexity
-** How to name the group of workflows/artifacts that will incapulate the whole logic for donna?
 ** `collect-analyze-synthesize->apply` as a separate workflow to work on small tasks? This workflow may take an artifact with the task description as input and produces the report artifact as output. Or just update the original artifact with the report.
 ** Plan and exectute separation
 *** planing -> prepare plan of work
@@ -113,7 +112,7 @@
 **** Risk: “We might be wrong about [assumption], causing [impact].”
 **** Evidence needed: what would convince us?
 **** Mitigation action: prototype / experiment / targeted test / analysis.
-** if the developer ask to implement a particular feature, should be propose alternatives?
+** if the developer ask to implement a particular feature, should we propose alternatives?
 *** most-likely we should route to the right workflow based on the input from the developer
 ** formalize expected structure of session: and project: worlds
 ** execution of workflows can produce a lot of artifacts, we may want to improve cleaning up of a session to remove temporary ones but keep important ones (like rfc, specs)
@@ -123,11 +122,14 @@
 ** donna:engine:specificaton (choose better name)
 ** donna:engine:research?
 ** project:do_polishing -> project:work:polishing?
-* TODO Decission loop
+** we can have cli command to add/update/remove items from lists in artifacts
+*** we may need to unite this functionality with true-tree approach, so we can manipulate lists in a nested sections
+* TODO Research loop
 
 ** Single path flow
 ** Loopped flow
 ** Recursive flow
+** Separate flow to collect information?
 ** donna:engine:specs:research
 ** list of trasted sources for data
 *** project:specs
