@@ -73,3 +73,27 @@
 ** specify usage modes somewhere:
 *** easy mode — one of possible skills to use
 *** hard mode — forse agent to work via donna
+* TODO Workflows notes
+** we need fully automatic workflow, we also need to be able to run subflows manually for better control
+*** => multiple workfows
+*** => operation to run a specific workflow
+** each decomposition artifact/statement must be coupled with verification statement
+** hypothesis generation as a separate workflow/artifact
+** risk-driven approach:
+*** a dedicated “risk register” artifact and stage gates based on uncertainty reduction: prototypes, experiments, or targeted tests are first-class deliverables.
+*** https://cse.msu.edu/~cse435/Homework/HW3/boehm.pdf
+*** `risk` can be coupled with `decission`
+** use nested directory structure to organize small artifacts, use patterns to extract them
+*** theoretically, we can keep an artifact per requirement, they will just look like `session:planning:requirements:*`
+** How to regulate complexity of workflows, depending on the task scope?
+*** introduce an additional step/workflow to high-level analysis of the task scope and select appropriate workflow complexity
+** How to name the group of workflows/artifacts that will incapulate the whole logic for donna?
+** `collect-analyze-synthesize->apply` as a separate workflow to work on small tasks? This workflow may take an artifact with the task description as input and produces the report artifact as output. Or just update the original artifact with the report.
+** Plan and exectute separation
+*** planing -> prepare plan of work
+*** execute one step of work -> analyze -> update plan if required
+*** execute next step of work -> analyze -> update plan if required
+*** …
+** log of work?
+** spec collection in the project: world: work on sessions most likely should update it?
+** we should strive to implement small workflows which become building blocks for more complex workflows.
