@@ -128,6 +128,14 @@
 ** Single path flow
 ** Loopped flow
 ** Recursive flow
+** donna:engine:specs:research
+** list of trasted sources for data
+*** project:specs
+*** any project code
+*** any project related data
+*** wikipedia
+*** IETF RFCs: https://www.rfc-editor.org/
+*** stack overflow
 ** remove comments from the workflow artifacts:
 *** implement them
 *** move into todo list of github issues
