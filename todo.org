@@ -78,64 +78,45 @@
 ** specify usage modes somewhere:
 *** easy mode — one of possible skills to use
 *** hard mode — forse agent to work via donna
-* TODO Workflows notes
+* TODO Workflows improvements
 ** hypothesis-driven approach for workflow or steps
 ** risk-driven approach for workflow or steps
 ** fast track workflow for small tasks
 *** generate plan & execute
-** `collect-analyze-synthesize->apply` as a separate workflow to work on small tasks? This workflow may take an artifact with the task description as input and produces the report artifact as output. Or just update the original artifact with the report.
-** Plan and exectute separation
-*** planing -> prepare plan of work
-*** execute one step of work -> analyze -> update plan if required
-*** execute next step of work -> analyze -> update plan if required
-*** …
-** log of work?
-** spec collection in the project: world: work on sessions most likely should update it?
-** we should strive to implement small workflows which become building blocks for more complex workflows.
-** "work-to-do.md" as an intermediate artifact between planning and execution?
-*** may just collect an unsorted list of tasks to do
-** Folder: `donna:engine:` or `donna:loops`
+** log of work and agent actions
+** implement tags for operations/workflows
+*** remove intermediate folders `specs` & `work`
 ** Ids for list items (we may move this into proposal)
 *** we can add unique ids for list items, like {{donna.lib.uid('ssdsad')}} or `$$uid:<id>$$` or even [uid] — why not?
 *** => donna can filter by them, add them to section, remove them, update them
 *** `donna artifacts list add|update|remove <world>:<artifact>:<section> <item-id> "<item-text>"`
-** Goal to hypothesis mapping
-*** Goal: "what outcome changes if Feature XXX exists?"
-*** Leads to hypothesis: “If we implement XXX, then Y users can do Z, producing outcome W.”
-*** For each assumption behind Feature XXX, write:
-**** Risk: “We might be wrong about [assumption], causing [impact].”
-**** Evidence needed: what would convince us?
-**** Mitigation action: prototype / experiment / targeted test / analysis.
-** if the developer ask to implement a particular feature, should we propose alternatives?
-*** most-likely we should route to the right workflow based on the input from the developer
-** formalize expected structure of session: and project: worlds
+*** track dependencies in artifacts like `{{ donna.lib.depends('ID1', ['ID2', 'ID3']) }}`
+**** alternative `{{ donna.lib.rel('depends_on', 'ID1', ['ID2', 'ID3']) }}`
+**** how to validate them?
+***** each list item must have a record? (configure on the session level?)
+*** *we can have cli command to add/update/remove items from lists in artifacts (proposal)
+**** we may need to unite this functionality with true-tree approach, so we can manipulate lists in a nested sections
+** formalize expected structure of `session:` and `project:` worlds
 ** execution of workflows can produce a lot of artifacts, we may want to improve cleaning up of a session to remove temporary ones but keep important ones (like rfc, specs)
+*** just move RFCs into session:rfc: and plans into session:plans:
 ** command to copy artifacts between worlds
-** we may add a "recomendation" cell to the workflow artifacts, that will contain info related to the whole workflow. Can be used to remind agent about the whole context.
-** donna:engine:intro
-** donna:engine:specificaton (choose better name)
-** donna:engine:research?
-** project:do_polishing -> project:work:polishing?
-** we can have cli command to add/update/remove items from lists in artifacts
-*** we may need to unite this functionality with true-tree approach, so we can manipulate lists in a nested sections
-** an instruction to list workflows `artifacts list '\*\*:work:\*\*'
-** ask agent to define openspec like workflow, using donna
-** we may need to add `output` operation that just outputs some text to the agent and continues the workflow
-*** or we may add this feature to the finish operation <-- preferable
-** we may need a log artifact of actions/changes/etc. to be able doing replaning based on what has already been done
-** operation "view_artifact" to let agent see current state of an artifact or make the list of viewed artifacts an attribute of every operation
-*** mandatory viewing — show each time?
-*** optional viewing — show short message that suggest to view it if required
+** Automatic artifacts output (proposal?)
+*** we may add a "recomendation" cell to the workflow artifacts, that will contain info related to the whole workflow. Can be used to remind agent about the whole context.
+*** we may need to add `output` operation that just outputs some text to the agent and continues the workflow
+*** or we may add this feature to the finish operation
+*** operation "view_artifact" to let agent see current state of an artifact or make the list of viewed artifacts an attribute of every operation
+**** mandatory viewing — show each time?
+**** optional viewing — show short message that suggest to view it if required
+** To the donna:intro add list of workflows/specs
 ** establish process of maintening architectureal documents for the project
+*** spec collection in the project: world: work on sessions most likely should update it?
+**** i.e. we should automaize building of documentation based on changes
+**** add steps to the workflows
 *** to the RFC format add architecture decision records (ADR)
 *** to the RFC workflow add required operations
 *** add definition of architecture as a set of coupled statements
-** track dependencies in artifacts like `{{ donna.lib.depends('ID1', ['ID2', 'ID3']) }}`
-*** alternative `{{ donna.lib.rel('depends_on', 'ID1', ['ID2', 'ID3']) }}`
-*** how to validate them?
-**** each list item must have a record? (configure on the session level?)
-** operation: create an artifact from a template
 ** cli command to request a temporary artifact name (in the workspace tmp directory)
 ** verify workflow before run
 ** improve donna:engine:specs:research
+** add changes to the changelog when implementing changes
 * TODO update config logic to use relative paths for home, project and session
