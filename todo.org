@@ -52,6 +52,8 @@
 *** implement OpenSpec workflows as an example?
 ** most of other tools concentrate on particular flow. With donna you can implement your own flow
 ** All you need is action-request operation, but there are more
+** describe label `proposal`
+** mark some proposals with `good first issue`
 * TODO Specification improvements:
 ** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
 ** {{ edit(specification) }} directive?
