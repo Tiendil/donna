@@ -28,7 +28,7 @@ The RFC document is Donna artifact (check `{{ donna.lib.view("donna:usage:artifa
 - **Constraints** — list of constraints that must be considered while implementing the proposed change.
 - **Requirements** — list of requirements that the proposed change must fulfill.
 - **Acceptance criteria** — list of criteria that define when the proposed change is considered complete and successful.
-- **Final solution** — list of statements about how the final result should look like.
+- **Solution** — list of statements about how the final result should look like.
 - **Verification** — list of statements about how to verify each objective, constraint, requirement, and acceptance criterion.
 - **Deliverables** — list of deliverables that should be produced as part of the proposed change.
 - **Action items** — unordered list of atomic actions/changes that must be performed to implement the proposed change.
@@ -180,7 +180,7 @@ Examples:
 - Good: `- All autotests pass without errors.`
 - Good: `- The tool can run on Python 3.12 without errors.`
 
-## `Final solution` section???
+## `Solution` section
 
 - The section MUST contain a list of statements describing how the system should look like/behave after the proposed changes are implemented.
 - The section MUST NOT establish an order of implementation steps.
@@ -200,6 +200,27 @@ Examples:
 - Good: `- User-facing documentation describes how to configure and use the authentication feature.`
 
 ## `Verification` section
+
+- The section MUST contain a list of checks that MUST be passed to prove that the work is complete and correct.
+- Each verification statement MUST map to a single item from **Objectives**, **Constraints**, **Requirements**, or **Acceptance criteria**.
+- Each **Objective**, **Constraint**, **Requirement**, or **Acceptance criterion** MUST map to a single verification statement.
+- Each verification statement MUST describe *how* the corresponding item can be verified.
+
+Verification quality criteria:
+
+- A verification statement MUST define a concrete verification method.
+- A verification statement MUST be automatable if it is possible.
+- A verification statement SHOULD be verifiable by agents without human intervention.
+- A verification statement MUST result in a boolean outcome (verified / not verified).
+- A verification statement MUST reference specific artifacts, commands, tests, or observable behavior.
+
+Examples:
+
+- Bad: `- Verify that authentication works correctly.`
+- Bad: `- Review the implementation manually.`
+- Good: `- Run test suite `tests/auth/test_login.py`; all tests MUST pass.`
+- Good: `- Inspect artifact `project:specs:authenticationd`; it MUST exist and contain section "Login flow".`
+- Good: `- Execute CLI command `tool login` with invalid credentials; command MUST exit with non-zero code.`
 
 ## `Deliverables` section
 
