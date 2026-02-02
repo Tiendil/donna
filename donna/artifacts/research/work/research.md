@@ -21,7 +21,7 @@ fsm_mode = "start"
 ```
 
 1. Read the specification `{{ donna.lib.view("donna:usage:artifacts") }}` if you haven't done it yet.
-{# 2. Read the specification `{{ donna.lib.view("donna:specs:research") }}` if you haven't done it yet. #}
+2. Read the specification `{{ donna.lib.view("donna:research:specs:report") }}` if you haven't done it yet.
 3. `{{ donna.lib.goto("ensure_problem_description_exists") }}`
 
 ## Ensure problem description exists
