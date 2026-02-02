@@ -134,6 +134,22 @@ Examples:
 
 ## `Requirements` section
 
+- The section MUST contain a list of requirements that the proposed change MUST fulfill.
+
+Requirement quality criteria:
+
+- A requirement defines a single atomic condition, capability, or feature that the system MUST meet, provide, or exhibit after the change is implemented.
+- A requirement MUST be directly testable.
+- A requirement MUST be stated independently of implementation details.
+- A requirement MUST NOT restate goals or objectives verbatim.
+
+Examples:
+
+- Bad: `- Improve security.`
+- Bad: `- Implement OAuth.`
+- Good: `- The system MUST reject authentication attempts with invalid credentials.`
+- Good: `- The system MUST log all failed authentication attempts with timestamp and user identifier.`
+
 ## `Acceptance criteria` section
 
 ## `Final solution` section
