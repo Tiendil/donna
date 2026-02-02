@@ -60,6 +60,16 @@ Common approaches to improve list items:
 - Split a single item with an enumeration into multiple items with single focus.
 - Transform an abstract item into a concrete one by specifying measurable criteria or user-visible behavior.
 
+### Trusted inputs
+
+Some sections of the RFC document MUST be based on trusted inputs. Trusted inputs are:
+
+- Original description from the developer or parent workflow.
+- Statements from the RFC document itself.
+- Existing project documentation, code, and artifacts.
+- External standards when they define constraints or best practices for the project domain.
+- Documentation of third-party libraries, frameworks, or tools when it describes constraints or best practices.
+
 ## `Primary` section
 
 - Title MUST be concise and reflect the essence of the proposed change.
@@ -114,12 +124,12 @@ Examples:
 
 - The section MUST contain a list of constraints that the changes MUST respect.
 - The section MAY be empty only if no constraints are explicitly known.
+- A constraint MUST be derived from trusted inputs. Agents MUST NOT invent constraints.
 
 Constraint quality criteria:
 
 - A constraint defines a hard limit on the solution space.
 - A constraint MUST be externally imposed by technology, policy, compatibility, time, budget, etc.
-- A constraint MUST be derived from explicitly available inputs. Agents MUST NOT invent constraints.
 - A constraint MUST NOT describe desired behavior or outcomes.
 - A constraint MUST be non-negotiable within the scope of the RFC.
 
@@ -152,6 +162,24 @@ Examples:
 
 ## `Acceptance criteria` section
 
+- The section MUST contain a list of acceptance criteria used to determine whether the proposed change is complete and successful.
+- An acceptance criterion MUST be derived explictily from statements in the RFC document. Agents MUST NOT invent acceptance criteria.
+
+Acceptance criteria quality criteria:
+
+- An acceptance criterion MUST define a single atomic check that results in a pass/fail outcome.
+- An acceptance criterion check MUST be about a single artifact: single file exists, single test passes, single behavior observed, etc.
+- An acceptance criterion MUST NOT describe implementation steps, internal design decisions, or "how" to achieve the result.
+
+Examples:
+
+- Bad: `- All requirements are implemented.`
+- Bad: `- The feature works as expected.`
+- Good: `- The artifact with documentation for X exists.`
+- Good: `- The autotest for requirement Y exists.`
+- Good: `- All autotests pass without errors.`
+- Good: `- The tool can run on Python 3.12 without errors.`
+
 ## `Final solution` section
 
 ## `Verification` section
@@ -163,5 +191,6 @@ Examples:
 
 ----------
 
-TODO: each action shoudld produce an artifact?
+TODO: each action should produce an artifact?
 TODO: h3 instead list items?
+TODO: define what statements derived from what?
