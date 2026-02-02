@@ -1,10 +1,12 @@
 
-# Draft an RFC Document
+# Create a Request for Change
 
 ```toml donna
 kind = "donna.lib.workflow"
 start_operation_id = "start"
 ```
+
+This workflow creates a Request for Change (RFC) document based on a description of a problem or changes required.
 
 ## Start Work
 
