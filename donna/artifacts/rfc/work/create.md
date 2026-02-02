@@ -105,7 +105,7 @@ id = "review_rfc_content"
 kind = "donna.lib.request_action"
 ```
 
-1. Read the RFC document and identify any gaps, inconsistencies, or areas for improvement in the content in accordance with the current project context.
+1. Read the RFC document and identify any gaps, inconsistencies, or areas for improvement in the content in accordance with the current project context. Use `{{ donna.lib.view("donna:research:work:research") }}` workflow if you need to take a complex decision.
 2. Make necessary edits to the RFC draft artifact to address identified issues.
 3. If there were changes made on this step or the previous `review_rfc_format` step `{{ donna.lib.goto("review_rfc_format") }}`.
 4. If no changes were made, `{{ donna.lib.goto("finish") }}`.
