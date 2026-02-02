@@ -94,8 +94,8 @@ Some sections of the RFC document MUST be based on trusted inputs. Trusted input
 
 The goal quality criteria:
 
-- A goal describes a desired end state, outcome or result.
-- A goal defines what should ultimately be true, not how to achieve it.
+- A goal MUST be a desired end state, outcome or result.
+- A goal MUST define what ultimately should be true, not how to achieve it.
 
 Examples:
 
@@ -110,7 +110,7 @@ Examples:
 
 Objective quality criteria:
 
-- An objective is a specific, measurable condition that must be true for a goal to be satisfied.
+- An objective MUST be a specific, measurable condition that must be true for a goal to be satisfied.
 - An objective MUST describe an achieved state, capability, artifact, or behavior.
 
 Examples:
@@ -128,7 +128,7 @@ Examples:
 
 Constraint quality criteria:
 
-- A constraint defines a hard limit on the solution space.
+- A constraint MUST be a hard limit on the solution space.
 - A constraint MUST be externally imposed by technology, policy, compatibility, time, budget, etc.
 - A constraint MUST NOT describe desired behavior or outcomes.
 - A constraint MUST be non-negotiable within the scope of the RFC.
@@ -148,7 +148,7 @@ Examples:
 
 Requirement quality criteria:
 
-- A requirement defines a single atomic condition, capability, or feature that the system MUST meet, provide, or exhibit after the change is implemented.
+- A requirement MUST be a single atomic condition, capability, or feature that the system MUST meet, provide, or exhibit after the change is implemented.
 - A requirement MUST be directly testable.
 - A requirement MUST be stated independently of implementation details.
 - A requirement MUST NOT restate goals or objectives verbatim.
@@ -167,7 +167,7 @@ Examples:
 
 Acceptance criteria quality criteria:
 
-- An acceptance criterion MUST define a single atomic check that results in a pass/fail outcome.
+- An acceptance criterion MUST be a single atomic check that results in a pass/fail outcome.
 - An acceptance criterion check MUST be about a single artifact: single file exists, single test passes, single behavior observed, etc.
 - An acceptance criterion MUST NOT describe implementation steps, internal design decisions, or "how" to achieve the result.
 
@@ -188,7 +188,7 @@ Examples:
 
 Solution statement quality criteria:
 
-- A solution statement MUST describe a specific change in a specific artifact, behavior, or capability.
+- A solution statement MUST be a specific change in a specific artifact, behavior, or capability.
 - A solution statement MUST NOT prescribe implementation steps.
 - A solution statement SHOULD be phrased in present tense, describing an achieved state.
 
@@ -208,7 +208,7 @@ Examples:
 
 Verification quality criteria:
 
-- A verification statement MUST define a concrete verification method.
+- A verification statement MUST be a concrete verification step or check.
 - A verification statement MUST be automatable if it is possible.
 - A verification statement SHOULD be verifiable by agents without human intervention.
 - A verification statement MUST result in a boolean outcome (verified / not verified).
@@ -223,6 +223,26 @@ Examples:
 - Good: `- Execute CLI command `tool login` with invalid credentials; command MUST exit with non-zero code.`
 
 ## `Deliverables` section
+
+- The section MUST contain a list of concrete artifacts that MUST exist after the changes are implemented.
+- A deliverable MUST be derived from trusted inputs. Agents MUST NOT invent deliverables.
+
+Deliverable quality criteria:
+
+- A deliverable MUST be a tangible a single artifact or a single part of an artifact, not an activity or process.
+- A deliverable MUST be independently identifiable and verifiable.
+- Each deliverable MUST be phrased as an existence statement using normative
+  language: "MUST include …", "MUST exist …", etc.
+- Explicitly add source files as deliverables only when the task is specifically
+  about creating or modifying those files (e.g., "MUST add docs/cli.md …").
+
+Examples:
+
+- Bad: `- Implement authentication code`
+- Bad: `- Refactor auth module.`
+- Good: `- Module app/auth/authentication.py exists.`
+- Good: `- Donna artifact project:specs:authentication exists.`
+- Good: `- Test suite tests/auth/ exists.`
 
 ## `Action items` section
 
