@@ -40,7 +40,7 @@ id = "prepare_rfc_artifact"
 kind = "donna.lib.request_action"
 ```
 
-1. If the name of artifact is not specified explicitly, assume it to be default for the session: `session:rfc`.
+1. If the name of artifact is not specified explicitly, assume it to be default for the session: `session:rfc`.:
 2. Save the next template into the artifact, replace `<variables>` with appropriate values.
 
 ```
