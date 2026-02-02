@@ -27,7 +27,7 @@ Use `donna:rfc:work:draft_rfc` workflow
 
 ## Formal description
 
-Define semantic tags in artifact metadata (likely in the primary section) and provide deterministic, tag-based discovery in the CLI without replacing existing identifier pattern matching. Agents MUST be able to assign one or more keywords to artifacts and search/list artifacts by repeated `--tag` options, and users MUST have a deterministic way to list all available tags with descriptions via a CLI command or a dedicated specification artifact.
+Define semantic tags in artifact metadata (in the primary section) and provide deterministic, tag-based discovery in the CLI without replacing existing identifier pattern matching. Agents MUST be able to assign one or more keywords to artifacts and search/list artifacts by repeated `--tag` options, and users MUST have a deterministic way to list all available tags with descriptions via a dedicated specification artifact (`donna:specs:artifact_tags`).
 
 ## Goals
 
@@ -37,13 +37,13 @@ Define semantic tags in artifact metadata (likely in the primary section) and pr
 
 ## Objectives
 
-- Artifact primary section metadata supports a `tags` attribute (list of strings) that is persisted and available for search/filtering.
-- Relevant CLI artifact discovery commands accept a repeatable `--tag` option that filters to artifacts containing all specified tags.
-- Tag filtering works independently of artifact identifier hierarchy and can be combined with existing pattern matching.
-- A canonical catalog of available tags with descriptions exists and is accessible via a CLI command or a dedicated specification artifact.
-- User/agent documentation explains how to assign tags and how to discover available tags.
-- Tag matching is exact and deterministic, and no fuzzy or vector search is introduced for tag discovery.
-- Existing pattern-based search behavior remains unchanged when `--tag` is not provided.
+- O1: Artifact primary section metadata supports a `tags` attribute (list of strings) that is persisted and available for search/filtering.
+- O2: `donna -p llm artifacts list` and `donna -p llm artifacts view` accept a repeatable `--tag` option that filters to artifacts containing all specified tags.
+- O3: Tag filtering works independently of artifact identifier hierarchy and can be combined with existing pattern matching.
+- O4: A canonical catalog of available tags with descriptions exists in the specification artifact `donna:specs:artifact_tags`.
+- O5: User/agent documentation explains how to assign tags and how to discover available tags.
+- O6: Tag matching is exact and deterministic, and no fuzzy or vector search is introduced for tag discovery.
+- O7: Existing pattern-based search behavior remains unchanged when `--tag` is not provided.
 
 ## Constraints
 
@@ -51,22 +51,27 @@ Define semantic tags in artifact metadata (likely in the primary section) and pr
 
 ## Requirements
 
-- Artifact metadata MUST support zero or more semantic tags as keywords.
-- Tags MUST be expressible in the artifact primary section metadata.
-- Relevant CLI artifact discovery commands MUST accept a repeatable `--tag` option.
-- When multiple `--tag` values are provided, results MUST include only artifacts that contain all specified tags.
-- Tag filtering MUST be usable together with existing artifact identifier pattern filters.
-- Tag matching MUST be deterministic and based on exact keyword comparison.
-- The system MUST provide a deterministic, user-accessible list of available tags with descriptions.
+- R1: Artifact metadata MUST support zero or more semantic tags as keywords.
+- R2: Tags MUST be expressible in the artifact primary section metadata.
+- R3: `donna -p llm artifacts list` MUST accept a repeatable `--tag` option.
+- R4: `donna -p llm artifacts view` MUST accept a repeatable `--tag` option.
+- R5: When multiple `--tag` values are provided, results MUST include only artifacts that contain all specified tags.
+- R6: Tag filtering MUST be usable together with existing artifact identifier pattern filters.
+- R7: Tag matching MUST be deterministic and based on exact keyword comparison.
+- R8: When `--tag` is not provided, tag filtering MUST NOT be applied.
+- R9: The system MUST provide a deterministic, user-accessible list of available tags with descriptions via `donna:specs:artifact_tags`.
+- R10: The artifact `donna:usage:artifacts` MUST document `tags` metadata and tag-based search.
 
 ## Acceptance criteria
 
-- `donna -p llm artifacts list --help` includes a repeatable `--tag` option.
-- `donna -p llm artifacts view --help` includes a repeatable `--tag` option.
-- `donna -p llm artifacts list --tag workflow` returns only artifacts whose metadata includes the `workflow` tag.
-- `donna -p llm artifacts list --tag workflow --tag specification` returns only artifacts whose metadata includes both tags.
-- `donna -p llm artifacts list "world:pattern" --tag workflow` returns only artifacts that satisfy both the pattern and tag filters.
-- The artifact `donna:specs:artifact_tags` exists and contains tag names with descriptions.
+- A1: `donna -p llm artifacts list --help` includes a repeatable `--tag` option.
+- A2: `donna -p llm artifacts view --help` includes a repeatable `--tag` option.
+- A3: `donna -p llm artifacts list --tag workflow` returns only artifacts whose metadata includes the `workflow` tag.
+- A4: `donna -p llm artifacts list --tag workflow --tag specification` returns only artifacts whose metadata includes both tags.
+- A5: `donna -p llm artifacts list "session:**" --tag workflow` returns only artifacts that satisfy both the pattern and tag filters.
+- A6: `donna -p llm artifacts list "session:**"` returns artifacts based only on the pattern (no tag filtering).
+- A7: The artifact `donna:specs:artifact_tags` exists and contains tag names with descriptions.
+- A8: The artifact `donna:usage:artifacts` documents `tags` metadata and tag-based search.
 
 ## Solution
 
@@ -75,32 +80,38 @@ Define semantic tags in artifact metadata (likely in the primary section) and pr
 - When multiple `--tag` values are provided, the CLI filters to artifacts containing all specified tags.
 - Tag filtering can be combined with existing artifact identifier pattern filters in the same command.
 - Tag matching is exact and deterministic, with no fuzzy or vector search.
+- When `--tag` is not provided, tag filtering is not applied and pattern-only search behavior is preserved.
 - The specification artifact `donna:specs:artifact_tags` exists and documents available tags with descriptions.
-- User-facing documentation describes how to assign tags and how to discover and use tag-based search.
+- User-facing documentation in `donna:usage:artifacts` describes how to assign tags and how to discover and use tag-based search.
 
 ## Verification
 
-- Verify Objective O1: Create a test artifact (e.g., `session:tag-test`) with `tags = ["workflow"]` in the primary section metadata and confirm it appears in `donna -p llm artifacts list --tag workflow`.
-- Verify Objective O2: Run `donna -p llm artifacts list --help` and `donna -p llm artifacts view --help` and confirm both document a repeatable `--tag` option.
-- Verify Objective O3: Run `donna -p llm artifacts list "session:**" --tag workflow` and confirm the results satisfy both the pattern and tag filter.
-- Verify Objective O4: View `donna:specs:artifact_tags` and confirm it contains tag names with descriptions.
-- Verify Objective O5: View `donna:usage:artifacts` and confirm it describes how to assign tags and discover available tags.
-- Verify Objective O6: Inspect the tag filtering implementation and confirm it performs exact string comparison without fuzzy/vector search logic.
-- Verify Objective O7: Run `donna -p llm artifacts list "session:**"` with no `--tag` and confirm it returns artifacts based on pattern matching.
-- Verify Constraint C1: Inspect dependencies and tag filtering code to confirm no vector/fuzzy search libraries or algorithms are introduced.
-- Verify Requirement R1: Add `tags` metadata to an artifact and ensure `donna -p llm artifacts validate <artifact-id>` succeeds.
-- Verify Requirement R2: Inspect an artifact primary section config (or `donna:usage:artifacts`) and confirm tags are declared in the primary section metadata.
-- Verify Requirement R3: Run `donna -p llm artifacts list --help` and confirm the `--tag` option is available and repeatable.
-- Verify Requirement R4: Run `donna -p llm artifacts list --tag workflow --tag specification` and confirm only artifacts containing both tags are returned.
-- Verify Requirement R5: Run `donna -p llm artifacts list "session:**" --tag workflow` and confirm results match both filters.
-- Verify Requirement R6: Create artifacts tagged `work` and `workflow`, then run `donna -p llm artifacts list --tag work` and confirm only the exact `work` tag matches.
-- Verify Requirement R7: View `donna:specs:artifact_tags` and confirm it lists tags with descriptions.
-- Verify Acceptance Criterion A1: Run `donna -p llm artifacts list --help` and confirm the repeatable `--tag` option is documented.
-- Verify Acceptance Criterion A2: Run `donna -p llm artifacts view --help` and confirm the repeatable `--tag` option is documented.
-- Verify Acceptance Criterion A3: Run `donna -p llm artifacts list --tag workflow` and confirm only artifacts with the `workflow` tag are returned.
-- Verify Acceptance Criterion A4: Run `donna -p llm artifacts list --tag workflow --tag specification` and confirm only artifacts with both tags are returned.
-- Verify Acceptance Criterion A5: Run `donna -p llm artifacts list "world:pattern" --tag workflow` and confirm only artifacts that match both filters are returned.
-- Verify Acceptance Criterion A6: View `donna:specs:artifact_tags` and confirm it exists with tag names and descriptions.
+- Verify O1: Create a test artifact (e.g., `session:tag-test`) with `tags = ["workflow"]` in the primary section metadata and confirm it appears in `donna -p llm artifacts list --tag workflow`.
+- Verify O2: Run `donna -p llm artifacts list --tag workflow` and `donna -p llm artifacts view "session:**" --tag workflow` to confirm both commands accept repeatable `--tag` options.
+- Verify O3: Run `donna -p llm artifacts list "session:**" --tag workflow` and confirm each result matches both the pattern and tag filters.
+- Verify O4: View `donna:specs:artifact_tags` and confirm it lists tag names with descriptions.
+- Verify O5: View `donna:usage:artifacts` and confirm it documents how to assign tags and discover available tags.
+- Verify O6: Inspect tag filtering code and confirm it uses exact keyword comparison without fuzzy/vector search logic.
+- Verify O7: Run `donna -p llm artifacts list "session:**"` and confirm results are not filtered by tags.
+- Verify C1: Inspect dependencies and search logic to confirm no vector/fuzzy search libraries or algorithms are introduced.
+- Verify R1: Add `tags` metadata to an artifact and ensure `donna -p llm artifacts validate <artifact-id>` succeeds.
+- Verify R2: Inspect an artifact primary section config and confirm tags are declared in the primary section metadata.
+- Verify R3: Run `donna -p llm artifacts list --help` and confirm the `--tag` option is available and repeatable.
+- Verify R4: Run `donna -p llm artifacts view --help` and confirm the `--tag` option is available and repeatable.
+- Verify R5: Run `donna -p llm artifacts list --tag workflow --tag specification` and confirm only artifacts containing both tags are returned.
+- Verify R6: Run `donna -p llm artifacts list "session:**" --tag workflow` and confirm results match both filters.
+- Verify R7: Create artifacts tagged `work` and `workflow`, then run `donna -p llm artifacts list --tag work` and confirm only the exact `work` tag matches.
+- Verify R8: Run `donna -p llm artifacts list "session:**"` and confirm results are based only on the pattern.
+- Verify R9: View `donna:specs:artifact_tags` and confirm it exists with tag names and descriptions.
+- Verify R10: View `donna:usage:artifacts` and confirm it documents `tags` metadata and tag-based search.
+- Verify A1: Run `donna -p llm artifacts list --help` and confirm the repeatable `--tag` option is documented.
+- Verify A2: Run `donna -p llm artifacts view --help` and confirm the repeatable `--tag` option is documented.
+- Verify A3: Run `donna -p llm artifacts list --tag workflow` and confirm only artifacts with the `workflow` tag are returned.
+- Verify A4: Run `donna -p llm artifacts list --tag workflow --tag specification` and confirm only artifacts with both tags are returned.
+- Verify A5: Run `donna -p llm artifacts list "session:**" --tag workflow` and confirm only artifacts that match both filters are returned.
+- Verify A6: Run `donna -p llm artifacts list "session:**"` and confirm results are based only on the pattern.
+- Verify A7: View `donna:specs:artifact_tags` and confirm it exists with tag names and descriptions.
+- Verify A8: View `donna:usage:artifacts` and confirm it documents `tags` metadata and tag-based search.
 
 ## Deliverables
 
