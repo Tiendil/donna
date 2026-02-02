@@ -44,6 +44,7 @@ The RFC document is Donna artifact (check `{{ donna.lib.view("donna:usage:artifa
 - If a section described as a list, it MUST contain only a single markdown list.
 - Each list item MUST be concise and clear.
 - Each list item SHOULD be atomic and focused on a single aspect.
+- Reviewer MUST be able to tell is the list item statement true or false by inspecting resulting artifacts and behavior.
 
 Examples:
 
@@ -94,13 +95,13 @@ Examples:
 ## `Objectives` section
 
 - The section MUST contain a list of objectives that need to be completed to achieve the goals.
+- Each goal MUST have a set of objectives that, when all achieved, ensure the goal is met.
+- Each goal MUST have 2–6 objectives, unless the goal is demonstrably trivial (≤1 artifact, no dependencies).
 
 Objective quality criteria:
 
 - An objective is a specific, measurable condition that must be true for a goal to be satisfied.
 - An objective MUST describe an achieved state, capability, artifact, or behavior.
-- Each goal MUST have a set of objectives that, when all achieved, ensure the goal is met.
-- Each goal MUST have 2–6 objectives, unless the goal is demonstrably trivial (≤1 artifact, no dependencies).
 
 Examples:
 
@@ -110,6 +111,26 @@ Examples:
 - Good: `- User is able to log in using email and password.`
 
 ## `Constraints` section
+
+- The section MUST contain a list of constraints that the changes MUST respect.
+- The section MAY be empty only if no constraints are explicitly known.
+
+Constraint quality criteria:
+
+- A constraint defines a hard limit on the solution space.
+- A constraint MUST be externally imposed by technology, policy, compatibility, time, budget, etc.
+- A constraint MUST be derived from explicitly available inputs. Agents MUST NOT invent constraints.
+- A constraint MUST NOT describe desired behavior or outcomes.
+- A constraint MUST be non-negotiable within the scope of the RFC.
+
+Examples:
+
+- Bad: `- The system should be easy to maintain.`
+- Bad: `- Use clean architecture.`
+- Good: `- The solution MUST be compatible with Python 3.12.`
+- Good: `- The solution MUST NOT introduce new runtime dependencies.`
+- Good: `- The solution MUST follow specification project:specs:abc`
+- Good: `MUST not change public CLI flags`
 
 ## `Requirements` section
 
