@@ -180,7 +180,24 @@ Examples:
 - Good: `- All autotests pass without errors.`
 - Good: `- The tool can run on Python 3.12 without errors.`
 
-## `Final solution` section
+## `Final solution` section???
+
+- The section MUST contain a list of statements describing how the system should look like/behave after the proposed changes are implemented.
+- The section MUST NOT establish an order of implementation steps.
+- The full solution MUST ensure the truth/validity of all statements in the RFC.
+
+Solution statement quality criteria:
+
+- A solution statement MUST describe a specific change in a specific artifact, behavior, or capability.
+- A solution statement MUST NOT prescribe implementation steps.
+- A solution statement SHOULD be phrased in present tense, describing an achieved state.
+
+Examples:
+
+- Bad: `- First implement the database schema, then add API endpoints.`
+- Bad: `- Use framework X to handle authentication.`
+- Good: `- The system exposes an authentication API that accepts credentials and returns an access token on success.`
+- Good: `- User-facing documentation describes how to configure and use the authentication feature.`
 
 ## `Verification` section
 
@@ -194,3 +211,4 @@ Examples:
 TODO: each action should produce an artifact?
 TODO: h3 instead list items?
 TODO: define what statements derived from what?
+TODO: verify with chatGPT
