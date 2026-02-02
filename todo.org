@@ -132,6 +132,7 @@
 ** we may need to add `output` operation that just outputs some text to the agent and continues the workflow
 *** or we may add this feature to the finish operation <-- preferable
 ** we may need a log artifact of actions/changes/etc. to be able doing replaning based on what has already been done
+** operation "view_artifact" to let agent see current state of an artifact or make the list of viewed artifacts an attribute of every operation
 * TODO Research loop
 
 ** Single path flow
