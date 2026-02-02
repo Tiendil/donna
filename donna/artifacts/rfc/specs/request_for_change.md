@@ -246,10 +246,24 @@ Examples:
 
 ## `Action items` section
 
+- The section MUST contain an unordered list of atomic actions.
 
-----------
+Action item quality criteria:
 
-TODO: each action should produce an artifact?
-TODO: h3 instead list items?
-TODO: define what statements derived from what?
-TODO: verify with chatGPT
+- An action item MUST be a single change that can be applied or executed.
+- An action item MUST be small enough to be completed without further decomposition.
+- An action item MUST be phrased as an imperative sentence.
+- An action item MUST affect a specific artifact, file, config, etc.
+- An action item MUST reference concrete paths, identifiers, or commands.
+- An action item MUST be actionable by an agent.
+
+Examples:
+
+- Bad: `- Work on authentication.`
+- Bad: `- Improve security everywhere.`
+- Bad: `- Fix the bugs A`
+- Good: `- Create an artifact project:specs:authentication with sections "Login flow" and "Token lifecycle".`
+- Good: `- Add test file tests/auth/test_login.py covering invalid credential cases.`
+- Good: `- Implement test tests/auth/test_login.py:TestLogin:test_invalid_credentials.`
+- Good: `- Update CLI help text to include login command description.`
+- Good: `- Implement function app/auth/authentication.py:authenticate_user().`

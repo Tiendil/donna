@@ -163,4 +163,7 @@
 *** implement them
 *** move into todo list of github issues
 *** just remove
+*** h3 instead list items?
+***  what statements derived from what?
+***  with chatGPT
 * TODO update config logic to use relative paths for home, project and session
