@@ -149,10 +149,6 @@
 ** verify workflow before run
 * TODO RFC loop
 
-** Single path flow
-** Loopped flow
-** Recursive flow
-** Separate flow to collect information?
 ** donna:engine:specs:research
 ** a step to polish statements in analysis and synthesis to make them atomic, consise, and clear
 ** list of trasted sources for data
