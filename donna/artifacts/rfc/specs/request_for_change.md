@@ -54,7 +54,32 @@ Examples:
 - Good: `- The interface MUST include button A that triggers action X.`
 - Good: `- The interface MUST include button B that triggers action Y.`
 
+## `Primary` section
+
+## `Original description` section
+
+## `Formal description` section
+
+## `Goals` section
+
+## `Objectives` section
+
+## `Constraints` section
+
+## `Requirements` section
+
+## `Acceptance criteria` section
+
+## `Final solution` section
+
+## `Verification` section
+
+## `Deliverables` section
+
+## `Action items` section
+
 
 ----------
 
 TODO: each action shoudld produce an artifact?
+TODO: h3 instead list items?
