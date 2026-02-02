@@ -139,6 +139,10 @@
 *** to the RFC format add architecture decision records (ADR)
 *** to the RFC workflow add required operations
 *** add definition of architecture as a set of coupled statements
+** track dependencies in artifacts like `{{ donna.lib.depends('ID1', ['ID2', 'ID3']) }}`
+*** alternative `{{ donna.lib.rel('depends_on', 'ID1', ['ID2', 'ID3']) }}`
+*** how to validate them?
+**** each list item must have a record? (configure on the session level?)
 * TODO Research loop
 
 ** Single path flow
