@@ -42,4 +42,4 @@ class View(Directive):
 
     def render_view(self, context: Context, specification_id: FullArtifactId) -> Result[Any, ErrorsList]:
         protocol = mode().value
-        return Ok(f"donna -p {protocol} artifacts view '{specification_id}'")
+        return Ok(f"`{specification_id}` (donna -p {protocol} artifacts view '{specification_id}')")
