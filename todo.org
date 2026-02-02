@@ -121,4 +121,5 @@
 ** verify workflow before run
 ** improve donna:engine:specs:research
 ** add changes to the changelog when implementing changes
+** add polishing step to implementation workflows
 * TODO update config logic to use relative paths for home, project and session
