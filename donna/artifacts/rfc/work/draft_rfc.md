@@ -71,122 +71,46 @@ kind = "donna.lib.request_action"
 ## Action items
 ```
 
-3. `{{ donna.lib.goto("formalize_work_description") }}`
+3. `{{ donna.lib.goto("initial_fill") }}`
 
-## Formalize work description
+## Initial Fill
 
 ```toml donna
-id = "formalize_work_description"
+id = "initial_fill"
 kind = "donna.lib.request_action"
 ```
 
-1. Create a formal description of the requested changes. Use your knowledge of the project and the original problem description.
-2. Update the artifact with the formal description.
-3. `{{ donna.lib.goto("formulate_goals") }}`
+1. Read the specification `{{ donna.lib.view("donna:rfc:specs:request_for_change") }}` if you haven't done it yet.
+2. Analyze the project if needed to understand the context of the requested change.
+3. Based on the problem description you have, fill in all sections of the RFC draft artifact.
+4. `{{ donna.lib.goto("review_rfc_format") }}`
 
-## Formulate Goals
+## Review RFC Format
 
 ```toml donna
-id = "formulate_goals"
+id = "review_rfc_format"
 kind = "donna.lib.request_action"
 ```
 
-1. Formulate a list of goals that the requested changes should achieve. Use your knowledge of the project and the formalized work description.
-2. Update the artifact with the list of goals.
-3. `{{ donna.lib.goto("list_objectives") }}`
+1. List mismatches between the RFC artifact and the RFC specification `{{ donna.lib.view("donna:rfc:specs:request_for_change") }}`.
+2. For each mismatch, make necessary edits to the RFC draft artifact to ensure compliance with the RFC specification.
+3. `{{ donna.lib.goto("review_rfc_content") }}`
 
-## List Objectives
+## Review RFC Content
 
 ```toml donna
-id = "list_objectives"
+id = "review_rfc_content"
 kind = "donna.lib.request_action"
 ```
 
-1. List objectives that need to be achieved to complete each goal. Use your knowledge of the project, formalized work description and the list of goals.
-2. Ensure that each goals has 2-6 associated objectives, unless the goal is trivial and can be achieved with a single objective.
-3. Update the artifact with the list of objectives.
-4. `{{ donna.lib.goto("list_constraints") }}`
-
-## List Constraints
-
-```toml donna
-id = "list_constraints"
-kind = "donna.lib.request_action"
-```
-
-1. List all constraints that affect the requested changes. Use your knowledge of the project, list of goals and list of objectives.
-2. Update the artifact with the list of constraints.
-3. `{{ donna.lib.goto("list_requirements") }}`
-
-## List Requirements
-
-```toml donna
-id = "list_requirements"
-kind = "donna.lib.request_action"
-```
-
-1. List all requirements that need to be fulfilled to achieve the objectives. Use your knowledge of the project, list of goals, list of objectives and list of constraints.
-2. Update the artifact with the list of requirements.
-3. `{{ donna.lib.goto("define_acceptance_criteria") }}`
-
-## Define Acceptance Criteria
-
-```toml donna
-id = "define_acceptance_criteria"
-kind = "donna.lib.request_action"
-```
-
-1. Define acceptance criteria that will be used to verify that the requested changes achieve the objectives, fulfill the requirements, and respect the constraints. Use your knowledge of the project, list of objectives, list of requirements and list of constraints.
-2. Update the artifact with the acceptance criteria.
-3. `{{ donna.lib.goto("describe_solution") }}`
-
-## Describe Solution
-
-```toml donna
-id = "describe_solution"
-kind = "donna.lib.request_action"
-```
-
-1. Describe the solution that will sutisfy the all statements about the requested changes.
-2. Update the artifact with the description of the solution.
-3. `{{ donna.lib.goto("define_verification") }}`
-
-## Define Verification
-
-```toml donna
-id = "define_verification"
-kind = "donna.lib.request_action"
-```
-
-1. Define the verification steps that will be used to ensure that the solution meets the objectives, constraints, requirements, and acceptance criteria.
-2. Update the artifact with the verification steps.
-3. `{{ donna.lib.goto("list_deliverables") }}`
-
-## List Deliverables
-
-```toml donna
-id = "list_deliverables"
-kind = "donna.lib.request_action"
-```
-
-1. List all deliverables that will be produced as part of the requested changes.
-2. Update the artifact with the list of deliverables.
-3. `{{ donna.lib.goto("identify_action_items") }}`
-
-## Identify Action Items
-
-```toml donna
-id = "identify_action_items"
-kind = "donna.lib.request_action"
-```
-
-1. Identify all action items that need to be completed to implement the requested changes.
-2. Update the artifact with the list of action items.
-3. `{{ donna.lib.goto("complete_draft") }}`
+1. Read the RFC document and identify any gaps, inconsistencies, or areas for improvement in the content in accordance with the current project context.
+2. Make necessary edits to the RFC draft artifact to address identified issues.
+3. If there were changes made on this step or the previous `review_rfc_format` step `{{ donna.lib.goto("review_rfc_format") }}`.
+4. If no changes were made, `{{ donna.lib.goto("finish") }}`.
 
 ## Complete Draft
 
 ```toml donna
-id = "complete_draft"
+id = "finish"
 kind = "donna.lib.finish"
 ```
