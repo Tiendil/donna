@@ -145,6 +145,7 @@
 *** how to validate them?
 **** each list item must have a record? (configure on the session level?)
 ** operation: create an artifact from a template
+** cli command to request a temporary artifact name (in the workspace tmp directory)
 * TODO RFC loop
 
 ** Single path flow
