@@ -45,6 +45,7 @@ Donna SHOULD support deterministic, semantic search for artifacts by introducing
 - Artifact primary section metadata MUST support a `tags` field containing a list of tag identifiers.
 - `donna -p llm artifacts list` MUST accept a repeatable `--tag <tag>` option that filters results to artifacts containing all specified tags.
 - `donna -p llm artifacts view` MUST accept a repeatable `--tag <tag>` option that filters rendered artifacts to those containing all specified tags.
+- When multiple `--tag` options are provided, matching MUST require every specified tag to be present.
 - The system MUST provide a discoverable list of all available tags with their descriptions via either a dedicated CLI command or a dedicated specification artifact.
 ## Acceptance criteria
 
@@ -52,6 +53,7 @@ Donna SHOULD support deterministic, semantic search for artifacts by introducing
 - `donna -p llm artifacts view --help` shows a repeatable `--tag` option with a description indicating tag-based filtering.
 - Running `donna -p llm artifacts list --tag <tag>` returns only artifacts whose primary metadata includes `<tag>` in `tags`.
 - Running `donna -p llm artifacts view --tag <tag>` renders only artifacts whose primary metadata includes `<tag>` in `tags`.
+- Running `donna -p llm artifacts list --tag <tag-a> --tag <tag-b>` returns only artifacts whose primary metadata includes both tags.
 - A specification artifact `donna:usage:tags` exists and lists each supported tag with a description.
 ## Solution
 
@@ -61,24 +63,26 @@ Donna SHOULD support deterministic, semantic search for artifacts by introducing
 - A new specification artifact `donna:usage:tags` documents the available tags and their descriptions.
 ## Verification
 
-- Create a test artifact whose primary config includes `tags = ["workflow"]` and run `donna -p llm artifacts list --tag workflow`; the artifact MUST appear in the output.  
-- Run `donna -p llm artifacts list --tag workflow`; every listed artifact MUST have `workflow` in its primary `tags`.  
-- Run `donna -p llm artifacts view "donna:usage:tags"`; the artifact MUST render successfully.  
-- Read `donna:usage:tags`; it MUST describe how an agent finds tag descriptions.  
-- Review tag-filtering implementation or documentation; tag matching MUST be exact and must not use vector or fuzzy search.  
-- Inspect an artifact source with `tags = ["workflow"]`; the primary metadata MUST parse into a tag list in Donna (no validation errors).  
-- Run `donna -p llm artifacts list --tag workflow --tag grooming`; results MUST include only artifacts that have both tags.  
-- Run `donna -p llm artifacts view --tag workflow`; rendered artifacts MUST all include `workflow` in primary `tags`.  
-- Run `donna -p llm artifacts view "donna:usage:tags"`; the output MUST list each supported tag with a description.  
-- Run `donna -p llm artifacts list --help`; the help text MUST document a repeatable `--tag` option.  
-- Run `donna -p llm artifacts view --help`; the help text MUST document a repeatable `--tag` option.  
-- Run `donna -p llm artifacts list --tag workflow`; only artifacts with `workflow` in `tags` MUST be present.  
-- Run `donna -p llm artifacts view --tag workflow`; only artifacts with `workflow` in `tags` MUST be rendered.  
-- Run `donna -p llm artifacts view "donna:usage:tags"`; the artifact MUST list tags and their descriptions.  
+- (O1) Create a test artifact whose primary config includes `tags = ["workflow"]`; run `donna -p llm artifacts list --tag workflow`; the artifact MUST appear in the output.  
+- (O2) Create a second test artifact without the `workflow` tag; run `donna -p llm artifacts view --tag workflow`; only the artifact with `workflow` MUST be rendered.  
+- (O3) Run `donna -p llm artifacts list "donna:usage:tags"`; the artifact MUST exist.  
+- (O4) Run `donna -p llm artifacts view "donna:usage:tags"`; the artifact MUST explain how agents find tag descriptions.  
+- (C1) Review tag-filtering implementation or documentation; tag matching MUST be exact and must not use vector or fuzzy search.  
+- (R1) Create a test artifact whose primary config includes `tags = ["workflow"]`; run `donna -p llm artifacts validate <artifact-id>`; validation MUST succeed.  
+- (R2) Run `donna -p llm artifacts list --tag workflow --tag grooming`; only artifacts whose primary metadata includes both tags MUST be returned.  
+- (R3) Run `donna -p llm artifacts view --tag workflow --tag grooming`; only artifacts whose primary metadata includes both tags MUST be rendered.  
+- (R4) Create an artifact with `tags = ["workflow"]` and another with `tags = ["workflow", "grooming"]`; run `donna -p llm artifacts list --tag workflow --tag grooming`; only the two-tag artifact MUST appear.  
+- (R5) Run `donna -p llm artifacts view "donna:usage:tags"`; the tag registry MUST be accessible via Donna.  
+- (AC1) Run `donna -p llm artifacts list --help`; the help text MUST document a repeatable `--tag` option.  
+- (AC2) Run `donna -p llm artifacts view --help`; the help text MUST document a repeatable `--tag` option.  
+- (AC3) Create a test artifact with `tags = ["specification"]`; run `donna -p llm artifacts list --tag specification`; only artifacts with `specification` MUST be returned.  
+- (AC4) Create a test artifact with `tags = ["specification"]`; run `donna -p llm artifacts view --tag specification`; only artifacts with `specification` MUST be rendered.  
+- (AC5) Create a test artifact with `tags = ["alpha", "beta"]` and another with `tags = ["alpha"]`; run `donna -p llm artifacts list --tag alpha --tag beta`; only the two-tag artifact MUST appear.  
+- (AC6) Run `donna -p llm artifacts view "donna:usage:tags"`; the artifact MUST list each supported tag with a description.  
 ## Deliverables
 
 - Donna specification artifact `donna:usage:tags` exists.
-- Donna artifact documentation includes the `tags` metadata field for primary sections.
+- Donna specification artifact `donna:usage:artifacts` documents the `tags` metadata field for primary sections.
 ## Action items
 
 - Add `tags` metadata parsing and storage for artifact primary sections in the artifact model/index.
