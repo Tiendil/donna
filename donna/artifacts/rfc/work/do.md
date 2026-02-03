@@ -3,7 +3,7 @@
 
 ```toml donna
 kind = "donna.lib.workflow"
-start_operation_id = "create_rfc"
+start_operation_id = "estimate_complexity"
 ```
 
 This workflow uses a description of a problem or changes required from the developer or parent workflow to:
@@ -11,6 +11,35 @@ This workflow uses a description of a problem or changes required from the devel
 1. Create a Request for Change (RFC) artifact.
 2. Plan the work required to implement the RFC.
 3. Execute the planned work.
+
+## Estimate complexity
+
+```toml donna
+id = "estimate_complexity"
+kind = "donna.lib.request_action"
+```
+
+1. Make a rough estimate of the complexity of the requested changes.
+2. If the complexity is small, `{{ donna.lib.goto("fast_planing") }}`.
+3. Otherwise, `{{ donna.lib.goto("create_rfc") }}`.
+
+Examles of changes with small complexity:
+
+- A single file edit with clear instructions.
+- A small addition to an existing function or class.
+- A minor configuration change.
+- A small documentation update.
+- A simple bug fix with a known solution.
+
+## Fast planing
+
+```toml donna
+id = "fast_planing"
+kind = "donna.lib.request_action"
+```
+
+1. Draft a simple plan to implement the requested changes directly, without creating a formal RFC artifact.
+2. `{{ donna.lib.goto("plan_rfc_work") }}`.
 
 ## Create RFC
 
