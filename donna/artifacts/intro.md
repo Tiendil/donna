@@ -46,4 +46,4 @@ We recommend using those tags in `project:` and `session:` worlds as well to kee
 ## Instructions
 
 1. On start of the YOUR session you **MUST** read and understand instruction on using the Donna tool `{{ donna.lib.view("donna:usage:cli") }}`. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
-2. If the developer asks you to perform a work with Donna, you **MUST** select an appropriate Donna workflow to perform the work and run it. If there is no appropriate workflow, ask the developer for a precise instructions on what to do.
+2. If the developer asks you to perform a work with Donna, you **MUST** select an appropriate Donna workflow `{{ donna.lib.list("**", tags=["workflow"]) }}` to perform the work and run it. If there is no appropriate workflow, ask the developer for a precise instructions on what to do.
