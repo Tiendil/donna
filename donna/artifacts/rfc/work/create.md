@@ -116,3 +116,5 @@ kind = "donna.lib.request_action"
 id = "finish"
 kind = "donna.lib.finish"
 ```
+
+RFC draft is complete and ready for planning or review.

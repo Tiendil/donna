@@ -220,7 +220,21 @@ Routing rules:
 When `save_stdout_to` and/or `save_stderr_to` are set, the operation stores captured output in the task context
 under the specified variable names.
 
-3. `donna.lib.finish` operation kind indicates that the workflow is finished.
+3. `donna.lib.output` operation kind emits its body as an output cell and then continues to the configured next step.
+
+The body of the operation is rendered as an output cell during execution.
+
+Configuration options:
+
+```toml
+id = "<operation_id>"
+kind = "donna.lib.output"
+next_operation_id = "<next_operation_id>"  # required
+```
+
+4. `donna.lib.finish` operation kind indicates that the workflow is finished.
+
+The body of the operation is rendered as an output cell before the workflow completes.
 
 Each possible path through the workflow MUST end with this operation kind.
 

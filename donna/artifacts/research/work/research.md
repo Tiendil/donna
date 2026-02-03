@@ -194,3 +194,5 @@ kind = "donna.lib.request_action"
 id = "finish"
 kind = "donna.lib.finish"
 ```
+
+Research workflow completed. Provide the final research output to the developer.
