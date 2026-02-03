@@ -28,11 +28,12 @@ class Directive(Primitive, ABC):
         self,
         context: Context,
         *argv: Any,
+        **kwargs: Any,
     ) -> Result[Any, ErrorsList]:
         from donna.workspaces import templates as world_templates
 
         render_mode = context["render_mode"]
-        arguments_result = self._prepare_arguments(context, *argv)
+        arguments_result = self._prepare_arguments(context, *argv, **kwargs)
         if arguments_result.is_err():
             return arguments_result
 
@@ -52,6 +53,7 @@ class Directive(Primitive, ABC):
         self,
         context: Context,
         *argv: Any,
+        **kwargs: Any,
     ) -> PreparedDirectiveResult:
         return Ok(argv)
 

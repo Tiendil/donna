@@ -21,14 +21,32 @@ class ViewInvalidArguments(EnvironmentError):
     provided_count: int
 
 
+class ViewInvalidKeyword(EnvironmentError):
+    code: str = "donna.directives.view.invalid_keyword"
+    message: str = "View directive accepts only the `tags` keyword argument (got {error.keyword})."
+    ways_to_fix: list[str] = ["Remove unsupported keyword arguments."]
+    keyword: str
+
+
+class ViewInvalidTags(EnvironmentError):
+    code: str = "donna.directives.view.invalid_tags"
+    message: str = "View directive `tags` must be a list of strings."
+    ways_to_fix: list[str] = ["Provide tags as a list of strings, e.g. tags=['tag1', 'tag2']."]
+
+
 class View(Directive):
-    def _prepare_arguments(
+    def _prepare_arguments(  # noqa: CCR001
         self,
         context: Context,
         *argv: Any,
+        **kwargs: Any,
     ) -> PreparedDirectiveResult:
         if argv is None or len(argv) != 1:
             return Err([ViewInvalidArguments(provided_count=0 if argv is None else len(argv))])
+
+        for keyword in kwargs:
+            if keyword != "tags":
+                return Err([ViewInvalidKeyword(keyword=keyword)])
 
         artifact_id_result = FullArtifactId.parse(str(argv[0]))
         errors = artifact_id_result.err()
@@ -38,8 +56,29 @@ class View(Directive):
         artifact_id = artifact_id_result.ok()
         assert artifact_id is not None
 
-        return Ok((artifact_id,))
+        tags = kwargs.get("tags")
+        if tags is None:
+            tags_list: list[str] = []
+        elif isinstance(tags, (list, tuple, set)):
+            tags_list = [str(tag) for tag in tags]
+        else:
+            return Err([ViewInvalidTags()])
 
-    def render_view(self, context: Context, specification_id: FullArtifactId) -> Result[Any, ErrorsList]:
+        return Ok((artifact_id, tags_list))
+
+    def render_view(
+        self, context: Context, specification_id: FullArtifactId, tags: list[str]
+    ) -> Result[Any, ErrorsList]:
         protocol = mode().value
-        return Ok(f"`{specification_id}` (donna -p {protocol} artifacts view '{specification_id}')")
+        tags_args = " ".join(f"--tag '{tag}'" for tag in tags)
+        tag_suffix = f" {tags_args}" if tags_args else ""
+        return Ok(f"`{specification_id}` (donna -p {protocol} artifacts view '{specification_id}'{tag_suffix})")
+
+    def render_analyze(
+        self, context: Context, specification_id: FullArtifactId, tags: list[str]
+    ) -> Result[Any, ErrorsList]:
+        if not tags:
+            return Ok(f"$$donna {self.analyze_id} {specification_id} donna$$")
+
+        tags_marker = ",".join(tags)
+        return Ok(f"$$donna {self.analyze_id} {specification_id} tags={tags_marker} donna$$")
