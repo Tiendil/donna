@@ -55,6 +55,7 @@
 ** describe label `proposal`
 ** mark some proposals with `good first issue`
 ** meta-workflows must select child workflows dynamically.
+** create workflow once and you agent will always behave the same way.
 * TODO Specification improvements:
 ** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
 ** {{ edit(specification) }} directive?

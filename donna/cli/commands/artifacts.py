@@ -75,6 +75,32 @@ def update(id: FullArtifactIdArgument, input: InputPathArgument) -> Iterable[Cel
     return [operation_succeeded(f"Artifact `{id}` updated from '{input}'", artifact_id=str(id), input_path=str(input))]
 
 
+@artifacts_cli.command(help="Copy an artifact to another artifact ID (possibly across worlds).")
+@cells_cli
+def copy(source_id: FullArtifactIdArgument, target_id: FullArtifactIdArgument) -> Iterable[Cell]:
+    world_artifacts.copy_artifact(source_id, target_id).unwrap()
+    return [
+        operation_succeeded(
+            f"Artifact `{source_id}` copied to `{target_id}`",
+            source_id=str(source_id),
+            target_id=str(target_id),
+        )
+    ]
+
+
+@artifacts_cli.command(help="Move an artifact to another artifact ID (possibly across worlds).")
+@cells_cli
+def move(source_id: FullArtifactIdArgument, target_id: FullArtifactIdArgument) -> Iterable[Cell]:
+    world_artifacts.move_artifact(source_id, target_id).unwrap()
+    return [
+        operation_succeeded(
+            f"Artifact `{source_id}` moved to `{target_id}`",
+            source_id=str(source_id),
+            target_id=str(target_id),
+        )
+    ]
+
+
 @artifacts_cli.command(help="Remove artifacts matching a pattern.")
 @cells_cli
 def remove(pattern: FullArtifactIdPatternArgument) -> Iterable[Cell]:

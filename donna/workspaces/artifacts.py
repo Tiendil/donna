@@ -56,6 +56,32 @@ class NoSourceForArtifactExtension(ArtifactUpdateError):
     message: str = "No source found for artifact extension of input path"
 
 
+class ArtifactCopyError(errors.WorkspaceError):
+    cell_kind: str = "artifact_copy_error"
+    source_id: FullArtifactId
+    target_id: FullArtifactId
+
+    def content_intro(self) -> str:
+        return f"Error copying artifact '{self.source_id}' to '{self.target_id}'"
+
+
+class CanNotCopyToReadonlyWorld(ArtifactCopyError):
+    code: str = "donna.workspaces.cannot_copy_to_readonly_world"
+    message: str = "Cannot copy artifact to the read-only world `{error.world_id}`"
+    world_id: WorldId
+
+
+class SourceArtifactHasNoExtension(ArtifactCopyError):
+    code: str = "donna.workspaces.source_artifact_has_no_extension"
+    message: str = "Source artifact has no extension to determine source type"
+
+
+class NoSourceForArtifactExtensionForCopy(ArtifactCopyError):
+    code: str = "donna.workspaces.no_source_for_artifact_extension_for_copy"
+    message: str = "No source found for artifact extension `{error.extension}` when copying"
+    extension: str
+
+
 @unwrap_to_error
 def artifact_file_extension(full_id: FullArtifactId) -> Result[str, ErrorsList]:
     world = config().get_world(full_id.world_id).unwrap()
@@ -98,6 +124,58 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> Result[None
     world.update(full_id.artifact_id, content_bytes, source_suffix).unwrap()
 
     return Ok(None)
+
+
+@unwrap_to_error
+def copy_artifact(source_id: FullArtifactId, target_id: FullArtifactId) -> Result[None, ErrorsList]:
+    source_world = config().get_world(source_id.world_id).unwrap()
+    target_world = config().get_world(target_id.world_id).unwrap()
+
+    if target_world.readonly:
+        return Err(
+            [
+                CanNotCopyToReadonlyWorld(
+                    source_id=source_id,
+                    target_id=target_id,
+                    world_id=target_world.id,
+                )
+            ]
+        )
+
+    content_bytes = source_world.fetch_source(source_id.artifact_id).unwrap()
+    source_extension = source_world.file_extension_for(source_id.artifact_id).unwrap()
+
+    if not source_extension:
+        return Err([SourceArtifactHasNoExtension(source_id=source_id, target_id=target_id)])
+
+    source_extension = source_extension.lower()
+    source_config = config().find_source_for_extension(source_extension)
+    if source_config is None:
+        return Err(
+            [
+                NoSourceForArtifactExtensionForCopy(
+                    source_id=source_id,
+                    target_id=target_id,
+                    extension=source_extension,
+                )
+            ]
+        )
+
+    render_context = ArtifactRenderContext(primary_mode=RenderMode.view)
+    test_artifact = source_config.construct_artifact_from_bytes(target_id, content_bytes, render_context).unwrap()
+    test_artifact.validate_artifact().unwrap()
+
+    target_world.update(target_id.artifact_id, content_bytes, source_extension).unwrap()
+    return Ok(None)
+
+
+@unwrap_to_error
+def move_artifact(source_id: FullArtifactId, target_id: FullArtifactId) -> Result[None, ErrorsList]:
+    copy_result = copy_artifact(source_id, target_id)
+    if copy_result.is_err():
+        return copy_result
+
+    return remove_artifact(source_id)
 
 
 @unwrap_to_error
