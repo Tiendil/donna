@@ -82,8 +82,6 @@
 *** easy mode — one of possible skills to use
 *** hard mode — forse agent to work via donna
 * TODO Workflows improvements
-** hypothesis-driven approach for workflow or steps
-** risk-driven approach for workflow or steps
 ** fast track workflow for small tasks
 *** generate plan & execute
 ** log of work and agent actions
