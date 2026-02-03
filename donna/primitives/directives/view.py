@@ -74,7 +74,7 @@ class View(Directive):
         protocol = mode().value
         tags_args = " ".join(f"--tag '{tag}'" for tag in tags)
         tag_suffix = f" {tags_args}" if tags_args else ""
-        return Ok(f"`{artifact_pattern}` (donna -p {protocol} artifacts view '{artifact_pattern}'{tag_suffix})")
+        return Ok(f"{artifact_pattern} (donna -p {protocol} artifacts view '{artifact_pattern}'{tag_suffix})")
 
     def render_analyze(
         self, context: Context, artifact_pattern: FullArtifactIdPattern, tags: list[str]
