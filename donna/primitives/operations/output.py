@@ -1,4 +1,3 @@
-import sys
 from typing import TYPE_CHECKING, ClassVar, Iterator, cast
 
 from donna.core.errors import ErrorsList
@@ -8,7 +7,7 @@ from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionCo
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta
 from donna.protocol.cells import Cell
-from donna.protocol.modes import get_cell_formatter
+from donna.protocol.utils import instant_output
 from donna.workspaces import markdown
 from donna.workspaces.sources.markdown import MarkdownSectionMixin
 
@@ -70,9 +69,7 @@ class Output(MarkdownSectionMixin, OperationKind):
             content=output_text,
             operation_id=str(unit.operation_id),
         )
-        formatter = get_cell_formatter()
-        sys.stdout.buffer.write(formatter.format_cell(output_cell, single_mode=False) + b"\n\n")
-        sys.stdout.buffer.flush()
+        instant_output([output_cell])
 
         next_operation = meta.next_operation
         assert next_operation is not None
