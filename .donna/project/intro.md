@@ -24,7 +24,10 @@ We may need coding agents on the each step of the process, but there no reason f
 
 ## Primary rules
 
-If the developer asks you to perform a work with Donna, you **MUST** select an appropriate Donna workflow `{{ donna.lib.list("**", tags=["workflow"]) }}` to perform the work and run it. If there is no appropriate workflow, ask the developer for a precise instructions on what to do.
+1. If you need to perform a work with Donna, you **MUST** select an appropriate Donna workflow to perform the work and run it.
+2. If there is no appropriate workflow, ask the developer for a precise instructions on what to do.
+3. List all workflows: `{{ donna.lib.list("**", tags=["workflow"]) }}`
+4. List all specifications: `{{ donna.lib.list("**", tags=["specification"]) }}`
 
 ## Dictionary
 
