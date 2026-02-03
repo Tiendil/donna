@@ -61,16 +61,7 @@
 ** {{ edit(specification) }} directive?
 ** {{ run(workflow) }} directive?
 * TODO Workflows polishing
-** introduce donna:planing:* namespace
-** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
-** Declare explicit refining loop
-** Add mini workflows to polish each kind of records?
-** meta_work_loop.md contains a lot of repetitive commands to read specifications. We should optimize them somehow.
-*** Approach 1: move them to the head section text
-*** Approach 2: move them to the head section config
-*** Approach 3: keep them, but add some meta info on analysis phase that donna can use.
 ** tune wording of workflows (what to write before goto)
-** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
 ** completed session keeps work_scope.md and work_scope_execution.md artifacts, we must add cleanup on the first step of planing.
 ** on initialization donna should create some default workflows based on the project configs (grooming, for example)
 * TODO Massive spellcheck
