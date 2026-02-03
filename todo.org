@@ -74,8 +74,8 @@
 *** easy mode — one of possible skills to use
 *** hard mode — forse agent to work via donna
 * TODO Workflows improvements
-** improve donna:engine:specs:research
 ** add changes to the changelog when implementing changes
+* TODO improve donna:engine:specs:research
 * TODO review donna:* docs
 * TODO change rendering of titles in human output mode?
 * TODO update config logic to use relative paths for home, project and session
