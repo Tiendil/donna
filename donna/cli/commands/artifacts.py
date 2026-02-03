@@ -3,6 +3,7 @@ from collections.abc import Iterable
 
 import typer
 
+from donna.cli import errors as cli_errors
 from donna.cli.application import app
 from donna.cli.types import (
     FullArtifactIdArgument,
@@ -11,6 +12,8 @@ from donna.cli.types import (
     OutputPathOption,
 )
 from donna.cli.utils import cells_cli, try_initialize_donna
+from donna.core.errors import ErrorsList
+from donna.core.result import Err, Ok, Result
 from donna.domain.ids import FullArtifactIdPattern
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
@@ -22,16 +25,16 @@ artifacts_cli = typer.Typer()
 DEFAULT_ARTIFACT_PATTERN = FullArtifactIdPattern.parse("**").unwrap()
 
 
-def _parse_slug_with_extension(value: str) -> tuple[str, str]:
+def _parse_slug_with_extension(value: str) -> Result[tuple[str, str], ErrorsList]:
     normalized = value.strip()
     if "." not in normalized:
-        raise typer.BadParameter("Expected value in the form '<slug>.<extension>'.")
+        return Err([cli_errors.InvalidSlugWithExtension(value=normalized)])
 
     slug, extension = normalized.rsplit(".", 1)
     if not slug or not extension:
-        raise typer.BadParameter("Expected value in the form '<slug>.<extension>'.")
+        return Err([cli_errors.InvalidSlugWithExtension(value=normalized)])
 
-    return slug, extension
+    return Ok((slug, extension))
 
 
 @artifacts_cli.callback(invoke_without_command=True)
@@ -80,12 +83,14 @@ def fetch(id: FullArtifactIdArgument, output: OutputPathOption = None) -> Iterab
     ]
 
 
-@artifacts_cli.command(help="Create a temporary file for artifact-related work and print its path. Use it to create new artifacts")
+@artifacts_cli.command(
+    help="Create a temporary file for artifact-related work and print its path. Use it to create new artifacts"
+)
 @cells_cli
 def tmp(
     slug_with_extension: str = typer.Argument(..., help="Temporary file slug with extension (example: 'draft.md').")
 ) -> Iterable[Cell]:
-    slug, extension = _parse_slug_with_extension(slug_with_extension)
+    slug, extension = _parse_slug_with_extension(slug_with_extension).unwrap()
     output = world_tmp.create_file_for_slug(slug, extension)
 
     return [
