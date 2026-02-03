@@ -103,11 +103,8 @@
 *** to the RFC format add architecture decision records (ADR)
 *** to the RFC workflow add required operations
 *** add definition of architecture as a set of coupled statements
-** cli command to request a temporary artifact name (in the workspace tmp directory)
-** verify workflow before run
 ** improve donna:engine:specs:research
 ** add changes to the changelog when implementing changes
-** add polishing step to implementation workflows
 ** rename specification->doc
 ** meta-workflows must select child workflows dynamically.
 * TODO update config logic to use relative paths for home, project and session

@@ -19,9 +19,11 @@ id = "estimate_complexity"
 kind = "donna.lib.request_action"
 ```
 
-1. Make a rough estimate of the complexity of the requested changes.
-2. If the complexity is small, `{{ donna.lib.goto("fast_planing") }}`.
-3. Otherwise, `{{ donna.lib.goto("create_rfc") }}`.
+1. If the developer or parent workflow explicitly specified that the work is complex, `{{ donna.lib.goto("create_rfc") }}`.
+2. If the developer or parent workflow explicitly specified that the work is simple, `{{ donna.lib.goto("fast_planing") }}`.
+3. Make a rough estimate of the complexity of the requested changes.
+4. If the complexity is small, `{{ donna.lib.goto("fast_planing") }}`.
+5. Otherwise, `{{ donna.lib.goto("create_rfc") }}`.
 
 Examles of changes with small complexity:
 
