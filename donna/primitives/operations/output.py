@@ -63,12 +63,7 @@ class Output(MarkdownSectionMixin, OperationKind):
 
         meta = cast(OutputMeta, operation.meta)
 
-        context: dict[str, object] = {
-            "scheme": operation,
-            "task": task,
-            "work_unit": unit,
-        }
-        output_text = operation.description.format(**context)
+        output_text = operation.description
 
         output_cell = Cell.build_markdown(
             kind="operation_output",

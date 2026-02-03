@@ -24,12 +24,7 @@ class FinishWorkflow(MarkdownSectionMixin, OperationKind):
     def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterator["Change"]:
         from donna.machine.changes import ChangeFinishTask
 
-        context: dict[str, object] = {
-            "scheme": operation,
-            "task": task,
-            "work_unit": unit,
-        }
-        output_text = operation.description.format(**context)
+        output_text = operation.description
 
         output_cell = Cell.build_markdown(
             kind="operation_output",

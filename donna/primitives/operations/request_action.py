@@ -74,13 +74,7 @@ class RequestAction(MarkdownSectionMixin, OperationKind):
     def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterator["Change"]:
         from donna.machine.changes import ChangeAddActionRequest
 
-        context: dict[str, object] = {
-            "scheme": operation,
-            "task": task,
-            "work_unit": unit,
-        }
-
-        request_text = operation.description.format(**context)
+        request_text = operation.description
 
         full_operation_id = unit.operation_id
 
