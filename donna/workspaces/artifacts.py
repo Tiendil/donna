@@ -150,6 +150,7 @@ def copy_artifact(source_id: FullArtifactId, target_id: FullArtifactId) -> Resul
             [
                 NoSourceForArtifactExtension(
                     artifact_id=source_id,
+                    path=pathlib.Path(str(source_id)),
                     extension=source_extension,
                 )
             ]
