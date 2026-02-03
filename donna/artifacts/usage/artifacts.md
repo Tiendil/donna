@@ -39,6 +39,7 @@ Donna provides a set of special directives that can and MUST be used in the arti
 Here are some examples:
 
 - `{{ "{{ donna.lib.view(<artifact-id-pattern>) }}" }}` — references another artifact (supports `*` and `**` wildcard patterns). In `view`/`execute` modes it renders an exact CLI command to view the artifact; in `analysis` mode it renders a `$$donna ... $$` marker used for internal parsing.
+- `{{ "{{ donna.lib.list(<artifact-id-pattern>) }}" }}` — references artifact listing by pattern (supports `*` and `**` wildcard patterns). In `view`/`execute` modes it renders an exact CLI command to list artifacts; in `analysis` mode it renders a `$$donna ... $$` marker used for internal parsing.
 - `{{ "{{ donna.lib.goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. In `view`/`execute` modes it renders an exact CLI command to advance the workflow; in `analysis` mode it renders a `$$donna goto ... $$` marker used to extract workflow transitions.
 
 ## Jinja2 rendering
@@ -253,5 +254,6 @@ Donna provides multiple directives that MUST be used in the artifact source to e
 Here they are:
 
 1. `{{ "{{ donna.lib.view(<artifact-id-pattern>) }}" }}` — references another artifact (supports `*` and `**` wildcard patterns). In `view`/`execute` modes it renders an exact CLI command to view the artifact; in `analysis` mode it renders a `$$donna ... $$` marker.
-2. `{{ "{{ donna.lib.goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. In `view`/`execute` modes it renders an exact CLI command to advance the workflow; in `analysis` mode it renders a `$$donna goto ... $$` marker used for transition extraction.
-3. `{{ "{{ donna.lib.task_variable(<variable_name>) }}" }}` — in `view` mode renders a placeholder note about task-variable substitution, in `execute` mode renders the actual task-context value (or an explicit error marker if missing), and in `analysis` mode renders a `$$donna task_variable ... $$` marker.
+2. `{{ "{{ donna.lib.list(<artifact-id-pattern>) }}" }}` — references artifact listing by pattern (supports `*` and `**` wildcard patterns). In `view`/`execute` modes it renders an exact CLI command to list artifacts; in `analysis` mode it renders a `$$donna ... $$` marker.
+3. `{{ "{{ donna.lib.goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. In `view`/`execute` modes it renders an exact CLI command to advance the workflow; in `analysis` mode it renders a `$$donna goto ... $$` marker used for transition extraction.
+4. `{{ "{{ donna.lib.task_variable(<variable_name>) }}" }}` — in `view` mode renders a placeholder note about task-variable substitution, in `execute` mode renders the actual task-context value (or an explicit error marker if missing), and in `analysis` mode renders a `$$donna task_variable ... $$` marker.
