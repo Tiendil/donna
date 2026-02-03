@@ -6,3 +6,4 @@
 - Introduced `donna artifacts remove` command to delete artifacts from worlds.
 - Introduced the conception of `<world>:intro` artifact that should be used to onboard new agents working with the world.
 - Improved documentation in various places.
+- gh-15 — Added tags for artifacts and artifact sections.

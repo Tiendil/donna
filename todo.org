@@ -77,7 +77,6 @@
 ** formalize expected structure of `session:` and `project:` worlds
 *** execution of workflows can produce a lot of artifacts, we may want to improve cleaning up of a session to remove temporary ones but keep important ones (like rfc, specs)
 *** just move RFCs into session:rfc: and plans into session:plans:
-** To the `donna:intro` add list of workflows/specs
 ** improve donna:engine:specs:research
 ** add changes to the changelog when implementing changes
 ** review donna:* docs
