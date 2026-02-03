@@ -1,6 +1,5 @@
 import builtins
 from collections.abc import Iterable
-from typing import List
 
 import typer
 
@@ -11,6 +10,7 @@ from donna.cli.types import (
     FullArtifactIdPatternArgument,
     InputPathArgument,
     OutputPathOption,
+    TagOption,
 )
 from donna.cli.utils import cells_cli, try_initialize_donna
 from donna.core.errors import ErrorsList
@@ -54,11 +54,7 @@ def initialize(ctx: typer.Context) -> None:
 @cells_cli
 def list(
     pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
-    tags: List[str] | None = typer.Option(
-        None,
-        "--tag",
-        help="Filter artifacts by tag. Repeatable.",
-    ),
+    tags: TagOption = None,
 ) -> Iterable[Cell]:
     artifacts = world_artifacts.list_artifacts(pattern, tags=tags).unwrap()
 
@@ -69,11 +65,7 @@ def list(
 @cells_cli
 def view(
     pattern: FullArtifactIdPatternArgument,
-    tags: List[str] | None = typer.Option(
-        None,
-        "--tag",
-        help="Filter artifacts by tag. Repeatable.",
-    ),
+    tags: TagOption = None,
 ) -> Iterable[Cell]:
     artifacts = world_artifacts.list_artifacts(pattern, tags=tags).unwrap()
     return [artifact.node().info() for artifact in artifacts]
@@ -153,11 +145,7 @@ def move(source_id: FullArtifactIdArgument, target_id: FullArtifactIdArgument) -
 @cells_cli
 def remove(
     pattern: FullArtifactIdPatternArgument,
-    tags: List[str] | None = typer.Option(
-        None,
-        "--tag",
-        help="Filter artifacts by tag. Repeatable.",
-    ),
+    tags: TagOption = None,
 ) -> Iterable[Cell]:
     artifacts = world_artifacts.list_artifacts(pattern, tags=tags).unwrap()
 
@@ -185,11 +173,7 @@ def validate(id: FullArtifactIdArgument) -> Iterable[Cell]:
 @cells_cli
 def validate_all(
     pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
-    tags: List[str] | None = typer.Option(
-        None,
-        "--tag",
-        help="Filter artifacts by tag. Repeatable.",
-    ),
+    tags: TagOption = None,
 ) -> Iterable[Cell]:  # noqa: CCR001
     artifacts = world_artifacts.list_artifacts(pattern, tags=tags).unwrap()
 

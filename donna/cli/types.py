@@ -81,6 +81,14 @@ FullArtifactIdPatternArgument = Annotated[
     ),
 ]
 
+TagOption = Annotated[
+    list[str] | None,
+    typer.Option(
+        "--tag",
+        help="Filter artifacts by tag. Repeatable.",
+    ),
+]
+
 
 FullArtifactSectionIdArgument = Annotated[
     FullArtifactSectionId,
