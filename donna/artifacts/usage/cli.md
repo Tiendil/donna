@@ -140,6 +140,8 @@ Use the next commands to work with artifacts
 - `donna -p <protocol> artifacts validate <world>:<artifact>` — validate the given artifact to ensure it is correct and has no issues.
 - `donna -p <protocol> artifacts validate-all [<artifact-pattern>]` — validate all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, validate all artifacts in all worlds.
 
+Commands that accept an artifact pattern (`artifacts list`, `artifacts view`, `artifacts remove`, `artifacts validate-all`) also accept a repeatable `--tag <tag>` option to filter by artifact tags. When multiple tags are provided, only artifacts that include **all** specified tags are matched.
+
 The format of `<artifact-pattern>` is as follows:
 
 - full artifact identifier: `<world>:<artifact>`

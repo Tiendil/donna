@@ -112,6 +112,14 @@ When a section contains multiple configuration blocks, Donna merges them in docu
 - The merge is shallow: if a key maps to a nested object, a later block replaces the whole value (there is no deep merge).
 - Config blocks in subsections (H3 and below) belong to their parent H2 tail section and are merged into that section's configuration.
 
+### Artifact Tags
+
+Artifacts can include semantic tags via a `tags` field in the section configuration. Tags are a list of strings and default to an empty list `[]` when omitted.
+
+Tags are used for deterministic artifact filtering and discovery (for example, via `donna -p <protocol> artifacts list ... --tag <tag>`). Tags are typically attached to the primary section and describe the artifact as a whole.
+
+The canonical list of standard tags is documented in `donna:intro`.
+
 ## Section Kinds, Their Formats and Behaviors
 
 ### Header section
