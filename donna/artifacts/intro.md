@@ -28,20 +28,7 @@ Artifact type tags:
 - `workflow` — workflow artifact — is set automatically by Donna.
 - `specification` — specification artifact — is set automatically by Donna.
 
-Stage tags:
-
-- `stage-research` — research stage artifacts.
-- `stage-design` — design stage artifacts.
-- `stage-plan` — planning stage artifacts.
-- `stage-polish` — polishing stage artifacts.
-- `stage-document` — documentation stage artifacts.
-
-Extra tags:
-
-- `meta-workflow` — workflows that orchestrate other workflows.
-- `meta-specification` — specifications that describe or aggregate other specifications.
-
-We recommend using those tags in `project:` and `session:` worlds as well to keep consistency.
+{# We recommend using those tags in `project:` and `session:` worlds as well to keep consistency. #}
 
 ## Instructions
 
