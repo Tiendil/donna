@@ -196,11 +196,14 @@ def load_artifact(
 
 
 def list_artifacts(  # noqa: CCR001
-    pattern: FullArtifactIdPattern, render_context: ArtifactRenderContext | None = None
+    pattern: FullArtifactIdPattern,
+    render_context: ArtifactRenderContext | None = None,
+    tags: list[str] | None = None,
 ) -> Result[list[Artifact], ErrorsList]:
-
     if render_context is None:
         render_context = ArtifactRenderContext(primary_mode=RenderMode.view)
+
+    tag_filters = tags or []
 
     artifacts: list[Artifact] = []
     errors: ErrorsList = []
@@ -212,9 +215,24 @@ def list_artifacts(  # noqa: CCR001
             if artifact_result.is_err():
                 errors.extend(artifact_result.unwrap_err())
                 continue
-            artifacts.append(artifact_result.unwrap())
+            artifact = artifact_result.unwrap()
+            if tag_filters and not _artifact_matches_tags(artifact, tag_filters):
+                continue
+            artifacts.append(artifact)
 
     if errors:
         return Err(errors)
 
     return Ok(artifacts)
+
+
+def _artifact_matches_tags(artifact: Artifact, tags: list[str]) -> bool:
+    if not tags:
+        return True
+
+    primary_result = artifact.primary_section()
+    if primary_result.is_err():
+        return False
+
+    primary = primary_result.unwrap()
+    return all(tag in primary.tags for tag in tags)

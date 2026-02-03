@@ -1,5 +1,6 @@
 import builtins
 from collections.abc import Iterable
+from typing import List
 
 import typer
 
@@ -51,16 +52,30 @@ def initialize(ctx: typer.Context) -> None:
     help="List artifacts matching a pattern and show their status summaries. Lists all all artifacts by default."
 )
 @cells_cli
-def list(pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN) -> Iterable[Cell]:
-    artifacts = world_artifacts.list_artifacts(pattern).unwrap()
+def list(
+    pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
+    tags: List[str] | None = typer.Option(
+        None,
+        "--tag",
+        help="Filter artifacts by tag. Repeatable.",
+    ),
+) -> Iterable[Cell]:
+    artifacts = world_artifacts.list_artifacts(pattern, tags=tags).unwrap()
 
     return [artifact.node().status() for artifact in artifacts]
 
 
 @artifacts_cli.command(help="Displays artifacts matching a pattern or a specific id")
 @cells_cli
-def view(pattern: FullArtifactIdPatternArgument) -> Iterable[Cell]:
-    artifacts = world_artifacts.list_artifacts(pattern).unwrap()
+def view(
+    pattern: FullArtifactIdPatternArgument,
+    tags: List[str] | None = typer.Option(
+        None,
+        "--tag",
+        help="Filter artifacts by tag. Repeatable.",
+    ),
+) -> Iterable[Cell]:
+    artifacts = world_artifacts.list_artifacts(pattern, tags=tags).unwrap()
     return [artifact.node().info() for artifact in artifacts]
 
 
@@ -136,8 +151,15 @@ def move(source_id: FullArtifactIdArgument, target_id: FullArtifactIdArgument) -
 
 @artifacts_cli.command(help="Remove artifacts matching a pattern.")
 @cells_cli
-def remove(pattern: FullArtifactIdPatternArgument) -> Iterable[Cell]:
-    artifacts = world_artifacts.list_artifacts(pattern).unwrap()
+def remove(
+    pattern: FullArtifactIdPatternArgument,
+    tags: List[str] | None = typer.Option(
+        None,
+        "--tag",
+        help="Filter artifacts by tag. Repeatable.",
+    ),
+) -> Iterable[Cell]:
+    artifacts = world_artifacts.list_artifacts(pattern, tags=tags).unwrap()
 
     cells: builtins.list[Cell] = []
     for artifact in artifacts:
@@ -161,8 +183,15 @@ def validate(id: FullArtifactIdArgument) -> Iterable[Cell]:
     help="Validate all artifacts matching a pattern (defaults to all artifacts) and return any errors."
 )
 @cells_cli
-def validate_all(pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN) -> Iterable[Cell]:  # noqa: CCR001
-    artifacts = world_artifacts.list_artifacts(pattern).unwrap()
+def validate_all(
+    pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
+    tags: List[str] | None = typer.Option(
+        None,
+        "--tag",
+        help="Filter artifacts by tag. Repeatable.",
+    ),
+) -> Iterable[Cell]:  # noqa: CCR001
+    artifacts = world_artifacts.list_artifacts(pattern, tags=tags).unwrap()
 
     errors = []
 
