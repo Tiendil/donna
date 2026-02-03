@@ -18,6 +18,8 @@ The text artifact has a source and one or more rendered representations, produce
 
 To change the artifact, developers and agents edit its source.
 
+When you need a scratch file for artifact-related work, use `donna -p <protocol> artifacts tmp '<slug>.<extension>'` to create a temporary file in the workspace temp directory.
+
 To get information from the artifact, developers, agents and Donna view one of its representations (typically via the view rendering mode).
 
 **If you need an information from the artifact, you MUST view its representation**. Artifact sources are only for editing.

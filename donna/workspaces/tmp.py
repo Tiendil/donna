@@ -29,5 +29,23 @@ def file_for_artifact(artifact_id: FullArtifactIdArgument, extention: str) -> pa
     return directory / artifact_file_name
 
 
+def file_for_slug(slug: str, extension: str) -> pathlib.Path:
+    directory = dir()
+
+    directory.mkdir(parents=True, exist_ok=True)
+
+    normalized_slug = slug.replace("/", ".").replace("\\", ".")
+    normalized_extension = extension.lstrip(".")
+    artifact_file_name = f"{normalized_slug}.{int(time.time() * 1000)}.{normalized_extension}"
+
+    return directory / artifact_file_name
+
+
+def create_file_for_slug(slug: str, extension: str) -> pathlib.Path:
+    path = file_for_slug(slug, extension)
+    path.touch()
+    return path
+
+
 def clear() -> None:
     shutil.rmtree(dir())

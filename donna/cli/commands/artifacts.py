@@ -22,6 +22,18 @@ artifacts_cli = typer.Typer()
 DEFAULT_ARTIFACT_PATTERN = FullArtifactIdPattern.parse("**").unwrap()
 
 
+def _parse_slug_with_extension(value: str) -> tuple[str, str]:
+    normalized = value.strip()
+    if "." not in normalized:
+        raise typer.BadParameter("Expected value in the form '<slug>.<extension>'.")
+
+    slug, extension = normalized.rsplit(".", 1)
+    if not slug or not extension:
+        raise typer.BadParameter("Expected value in the form '<slug>.<extension>'.")
+
+    return slug, extension
+
+
 @artifacts_cli.callback(invoke_without_command=True)
 def initialize(ctx: typer.Context) -> None:
     cmd = ctx.invoked_subcommand
@@ -65,6 +77,22 @@ def fetch(id: FullArtifactIdArgument, output: OutputPathOption = None) -> Iterab
 
     return [
         operation_succeeded(f"Artifact `{id}` fetched to '{output}'", artifact_id=str(id), output_path=str(output))
+    ]
+
+
+@artifacts_cli.command(help="Create a temporary file for artifact-related work and print its path. Use it to create new artifacts")
+@cells_cli
+def tmp(
+    slug_with_extension: str = typer.Argument(..., help="Temporary file slug with extension (example: 'draft.md').")
+) -> Iterable[Cell]:
+    slug, extension = _parse_slug_with_extension(slug_with_extension)
+    output = world_tmp.create_file_for_slug(slug, extension)
+
+    return [
+        operation_succeeded(
+            f"Temporary file created at '{output}'",
+            output_path=str(output),
+        )
     ]
 
 
