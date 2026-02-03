@@ -80,7 +80,5 @@
 ** To the `donna:intro` add list of workflows/specs
 ** improve donna:engine:specs:research
 ** add changes to the changelog when implementing changes
-** rename specification->doc
-** meta-workflows must select child workflows dynamically.
-** review docs
+** review donna:* docs
 * TODO update config logic to use relative paths for home, project and session
