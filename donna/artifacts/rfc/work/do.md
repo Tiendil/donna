@@ -20,8 +20,9 @@ kind = "donna.lib.request_action"
 fsm_mode = "start"
 ```
 
-1. Run the workflow `donna:rfc:work:create` to create or update the RFC artifact.
-2. After completing the workflow, return here and `{{ donna.lib.goto("plan_rfc_work") }}`.
+1. Choose a workflow to create an RFC artifact.
+2. Run the chosen workflow.
+2. After completing the workflow `{{ donna.lib.goto("plan_rfc_work") }}`.
 
 ## Plan RFC work
 
@@ -30,9 +31,10 @@ id = "plan_rfc_work"
 kind = "donna.lib.request_action"
 ```
 
-1. Run the workflow `donna:rfc:work:plan` to create the execution workflow for the RFC.
-2. Ensure you know the workflow id created in the previous step (default is `session:exectute_rfc` if not specified).
-3. After completing the workflow, return here and `{{ donna.lib.goto("execute_rfc_work") }}`.
+1. Choose the workflow to plan the work required to implement the RFC created on the previous step.
+2. Run the chosen workflow.
+3. Ensure you know the workflow id created in the previous step (default is `session:exectute_rfc` if not specified).
+4. After completing the workflow `{{ donna.lib.goto("execute_rfc_work") }}`.
 
 ## Execute RFC work
 
@@ -42,7 +44,18 @@ kind = "donna.lib.request_action"
 ```
 
 1. Run the workflow created by the plan step (default: `session:exectute_rfc`) and complete it.
-2. After completing the workflow, return here and `{{ donna.lib.goto("finish") }}`.
+2. After completing the workflow `{{ donna.lib.goto("polish_changes") }}`.
+
+## Polish changes
+
+```toml donna
+id = "polish_changes"
+kind = "donna.lib.request_action"
+```
+
+1. Choose the workflow to polish the changes made.
+2. Run the chosen workflow.
+3. After completing the workflow `{{ donna.lib.goto("finish") }}`.
 
 ## Finish
 
