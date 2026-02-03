@@ -1,20 +1,3 @@
-* TODO Possible workflows
-** bootstrap.bootstrap_all.
-** bootstrap.donna.create_project
-** bootstrap.donna.craete_specifications
-** bootstrap.python.create_grooming_workflow
-** bootstrap.python.create_project
-** morphologica_analysis — workflow for explicit morphological analysis
-** simple_task — workflow for simple tasks to not bother with complex story workflows
-** Spec-based workflow (like in OpenSpec?)
-** Example worflow with iterative factorial calculation
-** Example workflow with recursive factorial calculation
-** Example of simplified groom (without run_script)
-** Example of complex groom (with run_script)
-** changy.summarize_changes
-* TODO possible specifications
-** how to prepare python package with artifacts for donna
-** changy.cli
 * TODO README.md notes
 ** `No API keys required.` as a feature
 ** `save tokens by taking work from your agent to your code`
@@ -73,8 +56,7 @@
 ** specify usage modes somewhere:
 *** easy mode — one of possible skills to use
 *** hard mode — forse agent to work via donna
-* TODO Workflows improvements
-** the developer must choose wether to start new session
+* TODO the developer must choose wether to start new session
 * TODO improve donna:engine:specs:research
 * TODO review donna:* docs
 * TODO change rendering of titles in human output mode?
