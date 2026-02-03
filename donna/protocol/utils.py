@@ -12,6 +12,7 @@ def instant_output(cells: list[Cell]) -> None:
 
     formatted_cells: list[bytes] = []
     for cell in cells:
+        # TODO: we should refactor that hardcoded check somehow
         if cell.kind == "donna_log":
             formatted_cells.append(formatter.format_log(cell, single_mode=True))
         else:
