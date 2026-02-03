@@ -81,4 +81,5 @@
 ** improve donna:engine:specs:research
 ** add changes to the changelog when implementing changes
 ** review donna:* docs
+* TODO change rendering of titles in human output mode?
 * TODO update config logic to use relative paths for home, project and session
