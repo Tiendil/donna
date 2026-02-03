@@ -5,7 +5,7 @@ from jinja2.runtime import Context
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
-from donna.domain.ids import FullArtifactId
+from donna.domain.ids import FullArtifactIdPattern
 from donna.machine.templates import Directive, PreparedDirectiveResult
 from donna.protocol.modes import mode
 
@@ -17,9 +17,9 @@ class EnvironmentError(core_errors.EnvironmentError):
 class ViewInvalidArguments(EnvironmentError):
     code: str = "donna.directives.view.invalid_arguments"
     message: str = (
-        "View directive requires exactly one positional argument: specification_id (got {error.provided_count})."
+        "View directive requires exactly one positional argument: artifact_id_pattern (got {error.provided_count})."
     )
-    ways_to_fix: list[str] = ["Provide exactly one argument: specification_id."]
+    ways_to_fix: list[str] = ["Provide exactly one argument: artifact_id_pattern."]
     provided_count: int
 
 
@@ -50,13 +50,13 @@ class View(Directive):
             if keyword != "tags":
                 return Err([ViewInvalidKeyword(keyword=keyword)])
 
-        artifact_id_result = FullArtifactId.parse(str(argv[0]))
-        errors = artifact_id_result.err()
+        artifact_pattern_result = FullArtifactIdPattern.parse(str(argv[0]))
+        errors = artifact_pattern_result.err()
         if errors is not None:
             return Err(errors)
 
-        artifact_id = artifact_id_result.ok()
-        assert artifact_id is not None
+        artifact_pattern = artifact_pattern_result.ok()
+        assert artifact_pattern is not None
 
         tags = kwargs.get("tags")
         if tags is None:
@@ -66,21 +66,21 @@ class View(Directive):
         else:
             return Err([ViewInvalidTags()])
 
-        return Ok((artifact_id, tags_list))
+        return Ok((artifact_pattern, tags_list))
 
     def render_view(
-        self, context: Context, specification_id: FullArtifactId, tags: list[str]
+        self, context: Context, artifact_pattern: FullArtifactIdPattern, tags: list[str]
     ) -> Result[Any, ErrorsList]:
         protocol = mode().value
         tags_args = " ".join(f"--tag '{tag}'" for tag in tags)
         tag_suffix = f" {tags_args}" if tags_args else ""
-        return Ok(f"`{specification_id}` (donna -p {protocol} artifacts view '{specification_id}'{tag_suffix})")
+        return Ok(f"`{artifact_pattern}` (donna -p {protocol} artifacts view '{artifact_pattern}'{tag_suffix})")
 
     def render_analyze(
-        self, context: Context, specification_id: FullArtifactId, tags: list[str]
+        self, context: Context, artifact_pattern: FullArtifactIdPattern, tags: list[str]
     ) -> Result[Any, ErrorsList]:
         if not tags:
-            return Ok(f"$$donna {self.analyze_id} {specification_id} donna$$")
+            return Ok(f"$$donna {self.analyze_id} {artifact_pattern} donna$$")
 
         tags_marker = ",".join(tags)
-        return Ok(f"$$donna {self.analyze_id} {specification_id} tags={tags_marker} donna$$")
+        return Ok(f"$$donna {self.analyze_id} {artifact_pattern} tags={tags_marker} donna$$")
