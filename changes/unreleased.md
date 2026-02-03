@@ -1,3 +1,4 @@
+## Changes
 
 - Added `project:work:log_changes` workflow for recording unreleased changes with Changy.
 - Configured packaging, released on PyPI.
@@ -8,3 +9,7 @@
 - Introduced the conception of `<world>:intro` artifact that should be used to onboard new agents working with the world.
 - Improved documentation in various places.
 - gh-15 — Added tags for artifacts and artifact sections.
+- Standardized workflows and expanded Donna artifacts/CLI support.
+  - Added workflows for research and RFC creation/planning/execution, plus updated polishing guidance.
+  - Introduced new operations and directives (output, finish_workflow, list) and improved artifact/template handling across CLI and workspace layers.
+  - Reorganized and expanded artifact documentation, specs, and intro materials across `project:` and `donna:` worlds.
