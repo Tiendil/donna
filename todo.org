@@ -85,9 +85,6 @@
 * TODO Workflows improvements
 ** fast track workflow for small tasks
 *** generate plan & execute
-** log of work and agent actions
-** implement tags for operations/workflows
-*** remove intermediate folders `specs` & `work`
 ** Ids for list items (we may move this into proposal)
 *** we can add unique ids for list items, like {{donna.lib.uid('ssdsad')}} or `$$uid:<id>$$` or even [uid] — why not?
 *** => donna can filter by them, add them to section, remove them, update them
