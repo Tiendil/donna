@@ -123,4 +123,5 @@
 ** add changes to the changelog when implementing changes
 ** add polishing step to implementation workflows
 ** rename specification->doc
+** meta-workflows must select child workflows dynamically.
 * TODO update config logic to use relative paths for home, project and session
