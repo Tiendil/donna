@@ -1,4 +1,5 @@
 
+- Added `project:work:log_changes` workflow for recording unreleased changes with Changy.
 - Configured packaging, released on PyPI.
 - `donna.world` now `donna.workspace`. All code, docs, and CLI commands updated accordingly.
 - `donna artifacts view` now supports artifact patterns with `*` and `**` wildcards.
