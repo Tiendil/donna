@@ -48,7 +48,6 @@
 *** easy mode — one of possible skills to use
 *** hard mode — forse agent to work via donna
 * TODO the developer must choose wether to start new session
-* TODO change rendering of titles in human output mode?
 * TODO update config logic to use relative paths for home, project and session
 * TODO Bootstrap workflows
 ** on initialization donna should create some default workflows based on the project configs (planing, for example)
