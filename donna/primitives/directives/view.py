@@ -16,7 +16,7 @@ class EnvironmentError(core_errors.EnvironmentError):
 
 class ViewInvalidArguments(EnvironmentError):
     code: str = "donna.directives.view.invalid_arguments"
-    message: str = "View directive requires exactly one argument: specification_id (got {error.provided_count})."
+    message: str = "View directive requires exactly one positional argument: specification_id (got {error.provided_count})."
     ways_to_fix: list[str] = ["Provide exactly one argument: specification_id."]
     provided_count: int
 
