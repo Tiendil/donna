@@ -39,15 +39,6 @@
 ** mark some proposals with `good first issue`
 ** meta-workflows must select child workflows dynamically.
 ** create workflow once and you agent will always behave the same way.
-* TODO Specification improvements:
-** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
-** {{ edit(specification) }} directive?
-** {{ run(workflow) }} directive?
-* TODO Workflows polishing
-** tune wording of workflows (what to write before goto)
-** completed session keeps work_scope.md and work_scope_execution.md artifacts, we must add cleanup on the first step of planing.
-** on initialization donna should create some default workflows based on the project configs (grooming, for example)
-* TODO Massive spellcheck
 * TODO Donna-agents integration
 ** Install donna as a skill
 ** Install donna as a tool
@@ -57,7 +48,17 @@
 *** easy mode — one of possible skills to use
 *** hard mode — forse agent to work via donna
 * TODO the developer must choose wether to start new session
-* TODO improve donna:engine:specs:research
-* TODO review donna:* docs
 * TODO change rendering of titles in human output mode?
 * TODO update config logic to use relative paths for home, project and session
+* TODO Bootstrap workflows
+** on initialization donna should create some default workflows based on the project configs (planing, for example)
+* TODO Example workflows
+** Example worflow with iterative factorial calculation
+** Example workflow with recursive factorial calculation
+** Example of simplified groom (without run_script)
+** Example of complex groom (with run_script)
+* TODO Review docs
+** review donna:* docs
+** improve donna:engine:specs:research
+** Massive spellcheck
+** tune wording of workflows (what to write before goto)
