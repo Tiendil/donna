@@ -27,7 +27,7 @@ id = "prepare_workflow_artifact"
 kind = "donna.lib.request_action"
 ```
 
-1. If the name of artifact is not specified explicitly, assume it to `session:exectute_rfc`.
+1. If the name of artifact is not specified explicitly, assume it to `session:plans:<short-id-equal-to-rfc-slug>`.
 2. Create a workflow with the next operations:
    - Start
    - A step for each action point in the RFC, ordered to minimize dependencies between steps and introduce changes incrementally.

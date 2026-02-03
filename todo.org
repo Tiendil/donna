@@ -74,11 +74,8 @@
 *** easy mode — one of possible skills to use
 *** hard mode — forse agent to work via donna
 * TODO Workflows improvements
-** formalize expected structure of `session:` and `project:` worlds
-*** execution of workflows can produce a lot of artifacts, we may want to improve cleaning up of a session to remove temporary ones but keep important ones (like rfc, specs)
-*** just move RFCs into session:rfc: and plans into session:plans:
 ** improve donna:engine:specs:research
 ** add changes to the changelog when implementing changes
-** review donna:* docs
+* TODO review donna:* docs
 * TODO change rendering of titles in human output mode?
 * TODO update config logic to use relative paths for home, project and session

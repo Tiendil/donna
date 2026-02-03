@@ -30,7 +30,7 @@ kind = "donna.lib.request_action"
 At this point you SHOULD have a clear description of the problem in your context. I.e. you know what you need to do in this workflow.
 
 1. If you have a problem description in your context, `{{ donna.lib.goto("prepare_rfc_artifact") }}`.
-2. If you have no problem description in your context, but you know it is in one of `session:*` artifacts, find and view it. Then `{{ donna.lib.goto("prepare_rfc_artifact") }}`.
+2. If you have no problem description in your context, but you know it is in one of `{{ donna.lib.list("session:**") }}` artifacts, find and view it. Then `{{ donna.lib.goto("prepare_rfc_artifact") }}`.
 3. If you have no problem description in your context, and you don't know where it is, ask the developer to provide it. After you get the problem description, `{{ donna.lib.goto("prepare_rfc_artifact") }}`.
 
 ## Prepare RFC artifact
@@ -40,7 +40,7 @@ id = "prepare_rfc_artifact"
 kind = "donna.lib.request_action"
 ```
 
-1. If the name of artifact is not specified explicitly, assume it to be default for the session: `session:rfc`.:
+1. If the name of artifact is not specified explicitly, assume it to be `session:rfc:<short-problem-related-identifier>`, where `<short-problem-related-identifier>` MUST be unique within the session.
 2. Save the next template into the artifact, replace `<variables>` with appropriate values.
 
 ```

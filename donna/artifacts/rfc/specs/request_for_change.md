@@ -10,7 +10,9 @@ This document describes the format and structure of a Request for Change (RFC) d
 
 Donna introduces a group of workflows located in `donna:rfc:*` namespace that organize the process of proposing, reviewing, and implementing changes to a project via RFC documents.
 
-If there is not specified otherwise, active session have a single artifact `session:rfc`.
+You create RFC documents to propose changes to the project
+
+If there is not specified otherwise, RFC documents for the session MUST be stored as `session:rfc:<short-problem-related-identifier>` artifacts in the session world.
 
 Agent (via workflows) creates that artifact and polishes it iteratively as the RFC process goes on.
 
