@@ -1,5 +1,4 @@
 import copy
-import sys
 from typing import TYPE_CHECKING, Any
 
 from donna.core.entities import BaseEntity
@@ -7,7 +6,7 @@ from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result, unwrap_to_error
 from donna.domain.ids import FullArtifactSectionId, TaskId, WorkUnitId
 from donna.protocol.cells import Cell
-from donna.protocol.modes import get_cell_formatter
+from donna.protocol.utils import instant_output
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -67,17 +66,9 @@ class WorkUnit(BaseEntity):
         operation = machine_artifacts.resolve(self.operation_id, render_context).unwrap()
         operation_kind = resolve_primitive(operation.kind).unwrap()
 
-        ##########################
-        # We log each operation here to help agent display the progress to the user
-        # TODO: not a good solution from the agent perspective
-        #       let's hope there will some protocol appear that helps with that later
-        # TODO: not so good place for and way of logging, should do smth with that
         log_message = f"{self.operation_id}: {operation.title}"
         log_cell = Cell.build(kind="donna_log", media_type="text/plain", content=log_message)
-        formatter = get_cell_formatter()
-        sys.stdout.buffer.write(formatter.format_log(log_cell, single_mode=True) + b"\n\n")
-        sys.stdout.buffer.flush()
-        ##########################
+        instant_output([log_cell])
 
         changes = list(operation_kind.execute_section(task, self, operation))
 

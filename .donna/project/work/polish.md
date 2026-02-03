@@ -195,3 +195,5 @@ Changes you are not allowed to make:
 id = "finish"
 kind = "donna.lib.finish"
 ```
+
+Polishing workflow completed. Report the results and any remaining issues to the developer.

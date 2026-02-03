@@ -1,20 +1,3 @@
-* TODO Possible workflows
-** bootstrap.bootstrap_all.
-** bootstrap.donna.create_project
-** bootstrap.donna.craete_specifications
-** bootstrap.python.create_grooming_workflow
-** bootstrap.python.create_project
-** morphologica_analysis — workflow for explicit morphological analysis
-** simple_task — workflow for simple tasks to not bother with complex story workflows
-** Spec-based workflow (like in OpenSpec?)
-** Example worflow with iterative factorial calculation
-** Example workflow with recursive factorial calculation
-** Example of simplified groom (without run_script)
-** Example of complex groom (with run_script)
-** changy.summarize_changes
-* TODO possible specifications
-** how to prepare python package with artifacts for donna
-** changy.cli
 * TODO README.md notes
 ** `No API keys required.` as a feature
 ** `save tokens by taking work from your agent to your code`
@@ -47,23 +30,15 @@
 *** brigid
 *** feeds fun
 ** I don't beliew in manual orchestrators, in the future, agents will be capable of orchestrating their work => donna is developed as a helpfull tool, not as a full-fledged orchestrator.
-* TODO Specification improvements:
-** do we need to explicitly reference `session.specification.work_scope.md` if its name has already specified in donna.specifications.planning?
-** {{ edit(specification) }} directive?
-** {{ run(workflow) }} directive?
-* TODO Workflows polishing
-** Improve planing instuction to explictitly polish list of items (goals, etc.) base on other items forward and backward.
-** Declare explicit refining loop
-** Add mini workflows to polish each kind of records?
-** meta_work_loop.md contains a lot of repetitive commands to read specifications. We should optimize them somehow.
-*** Approach 1: move them to the head section text
-*** Approach 2: move them to the head section config
-*** Approach 3: keep them, but add some meta info on analysis phase that donna can use.
-** tune wording of workflows (what to write before goto)
-** Planing loop improvement: before initial planing and on each loop try to found uncertain parts of tasks and ask developer to clarify them. Like in deep research.
-** completed session keeps work_scope.md and work_scope_execution.md artifacts, we must add cleanup on the first step of planing.
-** on initialization donna should create some default workflows based on the project configs (grooming, for example)
-* TODO Massive spellcheck
+** you can redefine behavior of any primitives: directive, operation, even artifacts (including workflows)
+** like OpenSpec, but more hardcore and much more powerful (?).
+*** implement OpenSpec workflows as an example?
+** most of other tools concentrate on particular flow. With donna you can implement your own flow
+** All you need is action-request operation, but there are more
+** describe label `proposal`
+** mark some proposals with `good first issue`
+** meta-workflows must select child workflows dynamically.
+** create workflow once and you agent will always behave the same way.
 * TODO Donna-agents integration
 ** Install donna as a skill
 ** Install donna as a tool
@@ -72,3 +47,17 @@
 ** specify usage modes somewhere:
 *** easy mode — one of possible skills to use
 *** hard mode — forse agent to work via donna
+* TODO the developer must choose wether to start new session
+* TODO update config logic to use relative paths for home, project and session
+* TODO Bootstrap workflows
+** on initialization donna should create some default workflows based on the project configs (planing, for example)
+* TODO Example workflows
+** Example worflow with iterative factorial calculation
+** Example workflow with recursive factorial calculation
+** Example of simplified groom (without run_script)
+** Example of complex groom (with run_script)
+* TODO Review docs
+** review donna:* docs
+** improve donna:engine:specs:research
+** Massive spellcheck
+** tune wording of workflows (what to write before goto)

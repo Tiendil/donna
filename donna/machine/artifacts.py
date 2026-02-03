@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING, Any
 
+import pydantic
+
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
@@ -19,6 +21,7 @@ if TYPE_CHECKING:
 class ArtifactSectionConfig(BaseEntity):
     id: ArtifactSectionId
     kind: PythonImportPath
+    tags: list[str] = pydantic.Field(default_factory=list)
 
 
 class ArtifactSectionMeta(BaseEntity):
@@ -32,6 +35,7 @@ class ArtifactSection(BaseEntity):
     kind: PythonImportPath
     title: str
     description: str
+    tags: list[str] = pydantic.Field(default_factory=list)
     primary: bool = False
 
     meta: ArtifactSectionMeta

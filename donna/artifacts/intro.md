@@ -19,6 +19,21 @@ The core idea is that most of high-level workflows are more algorithmic than it 
 
 We may need coding agents on the each step of the process, but there no reason for agents to manage the whole grooming loop by themselves — it take longer time, spends tokens and may lead to confusion of agents.
 
+## Artifact Tags
+
+To simplicity searching of artifacts by their semantics, Donna allows tagging artifacts with semantically valuable keywords. Artifacts in `donna:*` world use the next set of tags.
+
+Artifact type tags:
+
+- `workflow` — workflow artifact — is set automatically by Donna.
+- `specification` — specification artifact — is set automatically by Donna.
+
+{# We recommend using those tags in `project:` and `session:` worlds as well to keep consistency. #}
+
 ## Instructions
 
-On start of the YOUR session you **MUST** read and understand instruction on using the Donna tool `{{ donna.lib.view("donna:usage:cli") }}`. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
+1. On start of the YOUR session you **MUST** read and understand instruction on using the Donna tool `{{ donna.lib.view("donna:usage:cli") }}`. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
+2. If you need to perform a work with Donna, you **MUST** select an appropriate Donna workflow to perform the work and run it.
+3. If there is no appropriate workflow, ask the developer for a precise instructions on what to do.
+4. List all workflows: `{{ donna.lib.list("**", tags=["workflow"]) }}`
+5. List all specifications: `{{ donna.lib.list("**", tags=["specification"]) }}`
