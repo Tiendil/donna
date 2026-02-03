@@ -54,6 +54,7 @@ class InputPathHasNoExtension(ArtifactUpdateError):
 class NoSourceForArtifactExtension(ArtifactUpdateError):
     code: str = "donna.workspaces.no_source_for_artifact_extension"
     message: str = "No source found for artifact extension of input path"
+    extension: str
 
 
 class ArtifactCopyError(errors.WorkspaceError):
@@ -74,12 +75,6 @@ class CanNotCopyToReadonlyWorld(ArtifactCopyError):
 class SourceArtifactHasNoExtension(ArtifactCopyError):
     code: str = "donna.workspaces.source_artifact_has_no_extension"
     message: str = "Source artifact has no extension to determine source type"
-
-
-class NoSourceForArtifactExtensionForCopy(ArtifactCopyError):
-    code: str = "donna.workspaces.no_source_for_artifact_extension_for_copy"
-    message: str = "No source found for artifact extension `{error.extension}` when copying"
-    extension: str
 
 
 @unwrap_to_error
@@ -114,7 +109,7 @@ def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> Result[None
 
     source_config = config().find_source_for_extension(source_suffix)
     if source_config is None:
-        return Err([NoSourceForArtifactExtension(artifact_id=full_id, path=input)])
+        return Err([NoSourceForArtifactExtension(artifact_id=full_id, path=input, extension=source_suffix)])
 
     render_context = ArtifactRenderContext(primary_mode=RenderMode.view)
     test_artifact = source_config.construct_artifact_from_bytes(full_id, content_bytes, render_context).unwrap()
@@ -153,9 +148,8 @@ def copy_artifact(source_id: FullArtifactId, target_id: FullArtifactId) -> Resul
     if source_config is None:
         return Err(
             [
-                NoSourceForArtifactExtensionForCopy(
-                    source_id=source_id,
-                    target_id=target_id,
+                NoSourceForArtifactExtension(
+                    artifact_id=source_id,
                     extension=source_extension,
                 )
             ]
