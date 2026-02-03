@@ -77,13 +77,8 @@
 ** formalize expected structure of `session:` and `project:` worlds
 *** execution of workflows can produce a lot of artifacts, we may want to improve cleaning up of a session to remove temporary ones but keep important ones (like rfc, specs)
 *** just move RFCs into session:rfc: and plans into session:plans:
-** Automatic artifacts output (proposal?)
-*** we may add a "recomendation" cell to the workflow artifacts, that will contain info related to the whole workflow. Can be used to remind agent about the whole context.
-*** we may need to add `output` operation that just outputs some text to the agent and continues the workflow
+** we may need to add `output` operation that just outputs some text to the agent and continues the workflow
 *** or we may add this feature to the finish operation
-*** operation "view_artifact" to let agent see current state of an artifact or make the list of viewed artifacts an attribute of every operation
-**** mandatory viewing — show each time?
-**** optional viewing — show short message that suggest to view it if required
 ** To the `donna:intro` add list of workflows/specs
 ** establish process of maintening architectureal documents for the project
 *** spec collection in the project: world: work on sessions most likely should update it?
