@@ -1,4 +1,16 @@
-# State Machines for your AI Agents
+
+# [FSM](https://en.wikipedia.org/wiki/Finite-state_machine) Driven Development
+
+Your agent will generate state machines while executing state machines that are created by state machines.
+
+## Features
+
+-
+
+Deterministic behavior, state machines, artifact management, and meta programming for your coding agent
+
+
+## State Machines for your AI Agents
 
 `Donna` is a CLI tool that helps manage the work of AI agents like Codex.
 
@@ -13,3 +25,7 @@ The core idea is that most of high-level workflows are more algorithmic than it 
 5. Finish.
 
 We may need coding agents on the each step of the process, but there no reason for agents to manage the whole grooming loop by themselves — it take longer time, spends tokens and may lead to confusion of agents.
+
+## Notes
+
+- FSM term is too nurrow, soon, with a few fixes, Donna may become a Turing complete system for agent control. "FSM Driven Development" sounds funnier than "Turing Complete System Driven Development" :)
