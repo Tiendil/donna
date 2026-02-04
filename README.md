@@ -395,6 +395,8 @@ donna_artifacts_root = "donna.artifacts"
 
 After that, you can install your package and add the world into the `.donna/config.toml` file of your project.
 
+And, what is important, **you package is not dependent on Donna itself — no additional dependencies are required.**
+
 ## Feedback wanted
 
 Donna is still young, have multiple experimental features and not so much real life cases.
