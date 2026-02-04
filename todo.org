@@ -1,34 +1,8 @@
 * TODO README.md notes
-** compare to https://github.com/Fission-AI/OpenSpec
-*** fsms instead of plain texts
-*** "better" Markdown
-** every error is accompanied with the ways to fix it
-** goals:
-*** maximum determinism
-*** maximum introspection
-*** maximum quality
-*** LLMs must do only the work they can do better than code
-*** not a goal: optimizing tokens (however, we do this when we can)
-*** not a goal: optimizing speed (however, we do this when we can)
-** How Donna help agents to do their work better
-*** Validation of artifacts
-*** Every error is accompanied with the explanation and list of ways to fix it
-*** Do algorithmic operations without need for LLMs to think about them
-*** Controls meta flow of work, so agent should not think about it
-** this is also an experiment on agent-friendly cli tools
-** known problems
-*** lack of reporting — when a long chain of automated operations is performed, there is no convenient report/logging of what donna doing
-*** agent tools (like codes) does not properly report what is happening
-**** action requests as a verbose approach vs run_script as a silent approach
-** You can distribute your specs as a separate package or within your own lib and you don't need dependency on donna.
 ** list of python packages that support donna
 *** changy
 *** brigid
 *** feeds fun
-** you can redefine behavior of any primitives: directive, operation, even artifacts (including workflows)
-** like OpenSpec, but more hardcore and much more powerful (?).
-*** implement OpenSpec workflows as an example?
-** most of other tools concentrate on particular flow. With donna you can implement your own flow
 ** All you need is action-request operation, but there are more
 ** meta-workflows must select child workflows dynamically.
 ** place for feedback — github discussions?

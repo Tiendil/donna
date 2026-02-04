@@ -155,9 +155,9 @@ The documentation below covers aspects that are important for Humans and partial
 
 ## Batteries Included
 
-Donna comes with a set of pre-defined workflows and specifications that empower agents to work in a Donna way.
+Donna comes with a set of pre-defined workflows and specifications that empower agents to work in a smart way.
 
-However, **I encourage you to experiment and implement your own workflows**.
+However, **I encourage you to experiment and implement your own workflows**. Meta programming is fun, specialized workflows are more efficient.
 
 By default, Donna uses the next approach to introduce changes in your project:
 
