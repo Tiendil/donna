@@ -3,8 +3,6 @@
 *** changy
 *** brigid
 *** feeds fun
-** All you need is action-request operation, but there are more
-** meta-workflows must select child workflows dynamically.
 ** place for feedback — github discussions?
 *** feedback is also required because the donna is an experiment
 *** describe label `proposal`
