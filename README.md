@@ -177,7 +177,22 @@ Points of interests:
 
 ## Artifacts and Worlds
 
-** .donna directory layout
+- Artifacts is something that Donna owns. Currently it is a Markdown files with workflows and specifications.
+- World is a storage for artifacts. Currently, Donna supports two types of worlds:
+    - `donna.lib.worlds.filesystem` — a folder on the filesystem.
+    - `donna.lib.worlds.python` — a Python package subfolder.
+
+**Please, tell if you need other world types.** It looks interesting to have `http`, `s3`, `git`, `sql` worlds.
+
+By default, Donna uses the next worlds:
+
+- `donna` — artifacts provided by Donna itself;
+- `home` — user-level donna artifacts in `<HOME>/.donna/` folder;
+- `project` — project-level donna artifacts in `<project-root>/.donna/project/` folder;
+- `session` — session-level donna artifacts in `<project-root>/.donna/session/` folder.
+
+Besides that, there is `<project-root>/.donna/tmp` folder used to store temporary files.
+
 
 ## Sessions
 
