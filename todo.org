@@ -1,11 +1,7 @@
 * TODO README.md notes
-** `No API keys required.` as a feature
-** `save tokens by taking work from your agent to your code`
 ** compare to https://github.com/Fission-AI/OpenSpec
 *** fsms instead of plain texts
 *** "better" Markdown
-** you can deliver instructions and operations for your package with your package
-** batteries included, but you are encoraged to create your own specs and workflows
 ** every error is accompanied with the ways to fix it
 ** goals:
 *** maximum determinism
@@ -19,7 +15,6 @@
 *** Every error is accompanied with the explanation and list of ways to fix it
 *** Do algorithmic operations without need for LLMs to think about them
 *** Controls meta flow of work, so agent should not think about it
-** Since the donna is developed with donna, Donna's `.donna` directory is a great example of how to structure donna workspaces and how to work with it in general.
 ** this is also an experiment on agent-friendly cli tools
 ** known problems
 *** lack of reporting — when a long chain of automated operations is performed, there is no convenient report/logging of what donna doing
@@ -30,23 +25,16 @@
 *** changy
 *** brigid
 *** feeds fun
-** I don't beliew in manual orchestrators, in the future, agents will be capable of orchestrating their work => donna is developed as a helpfull tool, not as a full-fledged orchestrator.
 ** you can redefine behavior of any primitives: directive, operation, even artifacts (including workflows)
 ** like OpenSpec, but more hardcore and much more powerful (?).
 *** implement OpenSpec workflows as an example?
 ** most of other tools concentrate on particular flow. With donna you can implement your own flow
 ** All you need is action-request operation, but there are more
-** describe label `proposal`
-** mark some proposals with `good first issue`
 ** meta-workflows must select child workflows dynamically.
-** create workflow once and you agent will always behave the same way.
-** .donna directory layout
 ** place for feedback — github discussions?
 *** feedback is also required because the donna is an experiment
-** Your agent will generate state machines while executing state machines that are created by state machines.
-*** Welcome to the worlf of self(?) modifiying verifiable meta instructions.
-*** FSM driven development
-** extending donna
+*** describe label `proposal`
+*** mark some proposals with `good first issue`
 * TODO Example workflows
 ** Example worflow with iterative factorial calculation
 ** Example workflow with recursive factorial calculation
