@@ -128,6 +128,8 @@ cd <your-project-root>
 donna -p human workspaces init
 ```
 
+Donna will create a `.donna/` folder in your project root with a default configuration in `.donna/config.toml`.
+
 2. Add short instruction into your `AGENT.md` file.
 
 ```markdown
@@ -144,6 +146,7 @@ Use `donna --help` if you need a quick reference.
 
 You find detailed documentation in the agent instructions — they are readable and always accurate:
 
+- [Intro](./donna/artifacts/intro.md) — introduction to Donna tool.
 - [Full CLI specification](./donna/artifacts/usage/cli.md) — full list of commands and how to use them.
 - [Artifacts](./donna/artifacts/usage/artifacts.md) — what is Donna artifact and how to use them.
 - [Worlds](./donna/artifacts/usage/worlds.md) — how Donna discovers and manages its artifacts.
@@ -180,7 +183,7 @@ Points of interests:
 - Artifacts is something that Donna owns. Currently it is a Markdown files with workflows and specifications.
 - World is a storage for artifacts. Currently, Donna supports two types of worlds:
     - `donna.lib.worlds.filesystem` — a folder on the filesystem.
-    - `donna.lib.worlds.python` — a Python package subfolder.
+    - `donna.lib.worlds.python` — a Python package.
 
 **Please, tell if you need other world types.** It looks interesting to have `http`, `s3`, `git`, `sql` worlds.
 
@@ -205,7 +208,45 @@ On upload Donna validates the artifact and accept it only when there are no erro
 
 ### Artifacts Discovery
 
+Artifact is identified by its id: `<world>:<colon-spearated-path>`, for example, `donna:usage:cli`.
+
+You and agents can `list` artifacts and `view` them.
+
+- `donna -p llm artifacts list <pattern>` — shows a short description from its h1 section.
+- `donna -p llm artifacts view <pattern>` — shows the full content of the artifact with proper rendering.
+
+Both commands accept both precise artifact ids and glob patterns. Patterns allow using:
+
+- `*` to replace a single path segment;
+- `**` to replace multiple path segments.
+
+Examples:
+
+- `*:artifact:name` — matches all artifacts named `artifact:name` in all worlds.
+- `world:*:name` — matches all artifacts with id `something:name` in the `world` world.
+- `**:name` — matches all artifacts with id ending with `:name` in all worlds.
+- `world:**` — matches all artifacts in the `world` world.
+- `world:**:name` — matches all artifacts with id ending with `:name` in the `world` world.
+
+Both commands also accept `--tag <tag>` option to filter artifacts by their tags.
+
+Currently Donna supports two artifact types:
+
+- `workflow` — workflow artifact — is set automatically by Donna.
+- `specification` — specification artifact — is set automatically by Donna.
+
+So, you can find all workflows with the command `donna -p llm artifacts list '**' --tag workflow`.
+
 ## Sessions
+
+`session` world contains the current state of work performed by Donna: all documents and workflows that are created during work and should not be stored permanently in the project.
+
+The developer is responsible for staring/reseting sessions with commands from `donna -p human sessions` group.
+
+- On session start Donna removes everything from the previous session and creates a fresh `session` world.
+- On session reset donna resets the state of the current session (tasks, action requests, etc.), but keeps artifacts.
+
+Agent is encoraged to not manage sessions directly, because it doen't have enough context to decide when session artifacts may be safely removed.
 
 ## Workflows
 
