@@ -101,11 +101,12 @@ Polishing is complete.
 
 What you may notice:
 
-1. The workflow is a Markdown file.
-2. Each h1 and h2 section has a config block which is a TOML in code fences with `donna` marker.
-3. The workflow has 3 `donna.lib.request_action` operations: `run_black`, `run_mypy` and `finish`.
-4. Transitions between operations are defined via `{{ goto("operation_id") }}` Jinja2 calls in the body of operations.
-5. `donna.lib.request_action` is an operation that tells Donna to display instructions to the agent and wait for the agent to complete them. That allows agent to focus on short precise intructions, perform them and push workflow forward.
+1. The workflow has a loop.
+2. The workflow is a Markdown file.
+3. Each h1 and h2 section has a config block which is a TOML in code fences with `donna` marker.
+4. The workflow has 3 `donna.lib.request_action` operations: `run_black`, `run_mypy` and `finish`.
+5. Transitions between operations are defined via `{{ goto("operation_id") }}` Jinja2 calls in the body of operations.
+6. `donna.lib.request_action` is an operation that tells Donna to display instructions to the agent and wait for the agent to complete them. That allows agent to focus on short precise intructions, perform them and push workflow forward.
 
 Directives, like `{{ goto("operation_id") }}`, render itself depending on the context:
 
