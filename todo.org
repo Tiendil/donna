@@ -49,8 +49,6 @@
 *** hard mode — forse agent to work via donna
 * TODO the developer must choose wether to start new session
 * TODO update config logic to use relative paths for home, project and session
-* TODO Bootstrap workflows
-** on initialization donna should create some default workflows based on the project configs (planing, for example)
 * TODO Example workflows
 ** Example worflow with iterative factorial calculation
 ** Example workflow with recursive factorial calculation
