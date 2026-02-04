@@ -206,6 +206,12 @@ Agents are not allowed to edit artifacts directly, because artifacts consistency
 
 On upload Donna validates the artifact and accept it only when there are no errors. For example, Donna will not accept a broken FSM as a workflow.
 
+### Rendering
+
+Markdown artifacts treated as a Jinja2 templates and rendered right after loading. There are multiple rendering modes that Donna uses for different purposes.
+
+More about Jinja2 rendering is described below.
+
 ### Artifacts Discovery
 
 Artifact is identified by its id: `<world>:<colon-spearated-path>`, for example, `donna:usage:cli`.
@@ -321,7 +327,34 @@ However, it is not very agile. Instead I suggest you to describe changes you wan
 
 For example, you can have two workflows `project:work:write-backend-test` and `project:work:write-frontend-test` and your operation can just say `Run the workflow that can help to write a test for the current change` and the agent will choose the most suitable workflow based on the current context and the workflow descriptions.
 
-## Directives
+## Jinja2 rendering
+
+Markdown artifacts treated as a Jinja2 templates and rendered right after loading.
+
+There are multiple rendering modes that Donna uses for different purposes:
+
+1. `view` — artifact is rendered for displaying to the agent or the developer.
+2. `execute` — artifact is rendered for execution. For example, to substitute a variable from the task context into operation instructions.
+3. `analyze` — artifact is rendered to be analyzed by Donna itself. For example, to extract `goto` directives from operation bodies and validate the workflow structure.
+
+All Jinja2 rendering is supported, except template inheritance related features. So, an artifact is self contained template.
+
+The rendering is performed before processing Markdown, so you can use Jinja2 features (like loops, conditionals, etc) to generate complex artifacts.
+
+### Directives
+
+Donna goes with a set of built-in Jinja2 directives that provide artifacts their special capabilities.
+
+Directives are used like `{{ python.import.path(<args>) }}` calls in Jinja2 templates.
+
+You can find a detailed documentation of all built-in directives in the [artifacts documentation](./donna/artifacts/usage/artifacts.md).
+
+Here they are:
+
+1. `donna.lib.view` — references another artifact. In `view`/`execute` modes it renders an exact CLI command to view the artifact; In analysis mode will be used to validate existence of the artifact and track dependencies between artifacts.
+2. `donna.lib.list` — references artifact listing by pattern. In `view`/`execute` modes it renders an exact CLI command to list artifacts; In analysis mode will be used to validate existence of the artifacts and track dependencies between artifacts.
+3. `donna.lib.goto` — references the next workflow operation to execute. In `view`/`execute` modes it renders an exact CLI command to advance the workflow; in `analysis` mode it used to construct FSM for the workflow.
+4. `donna.lib.task_variable` — in `view` mode renders a placeholder note about task-variable substitution, in `execute` mode renders the actual task-context value. In `analysis` will be used to control set of variables used in the artifact.
 
 ## Specifications
 
