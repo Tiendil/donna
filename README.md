@@ -72,7 +72,7 @@ id = "run_black"
 kind = "donna.lib.request_action"
 ```
 
-1. Run `poetry run black .` to format the codebase.
+1. Run `black .` to format the codebase.
 2. `{{ goto("run_mypy") }}`
 
 ## Run Mypy
@@ -82,7 +82,7 @@ id = "run_mypy"
 kind = "donna.lib.request_action"
 ```
 
-1. Run `poetry run mypy .` to check the codebase for type annotation issues.
+1. Run `mypy .` to check the codebase for type annotation issues.
 2. If there are issues found that you can fix, fix them.
 3. Ask developer to fix any remaining issues manually.
 4. If you made changes `{{ goto("run_black") }}`.
