@@ -3,22 +3,9 @@
 *** changy
 *** brigid
 *** feeds fun
-** place for feedback — github discussions?
-*** feedback is also required because the donna is an experiment
-*** describe label `proposal`
-*** mark some proposals with `good first issue`
-** tags
 ** need a real exampl of how to tell agent to do smth with donna
-** session state: tasks, work units, action requests
-** section/passage about meta workflows (generating workflows)
-* TODO Example workflows
-** Example worflow with iterative factorial calculation
-** Example workflow with recursive factorial calculation
-** Example of simplified groom (without run_script)
-** Example of complex groom (with run_script)
 * TODO Review docs
 ** review donna:* docs
 ** improve donna:engine:specs:research
 ** Massive spellcheck
 ** tune wording of workflows (what to write before goto)
-* TODO next_operation -> next_operation_id for output operation

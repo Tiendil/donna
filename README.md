@@ -394,3 +394,21 @@ donna_artifacts_root = "donna.artifacts"
 ```
 
 After that, you can install your package and add the world into the `.donna/config.toml` file of your project.
+
+## Feedback wanted
+
+Donna is still young, have multiple experimental features and not so much real life cases.
+
+I really appreciate any feedback, ideas and contributions to make Donna better.
+
+Especially it would be nice to hear about
+
+- problems with configuration and usage;
+- real-life use cases, especially with meta programming: workflows that generate workflows and so on;
+- your particular needs that Donna potentially can cover, but lacks some functionality now.
+
+How to reach me:
+
+- Create an [issue](https://github.com/Tiendil/donna/issues). Any format and theme is welcome.
+- Comment on one of existing issues. Fedback especially wanted for [issues marked as proposal](https://github.com/Tiendil/donna/issues?q=is%3Aissue%20state%3Aopen%20label%3Aproposal).
+- Start a [discussion](https://github.com/Tiendil/donna/discussions).
