@@ -39,7 +39,54 @@ So, Donna executes such loops for the agents and therefore saves time, context a
 
 ## Example
 
-...
+Donna is developed via Donna itself. So, you can find real life examples of workflows and specifications in the [.donna](./.donna) folder of this repository.
+
+The example below is a simplified version of the polishing workflow that formats code, runs linters and fixes found problems untill all checks pass. It uses the single operaton type `donna.lib.request_action` to ask the agent to perform specific instructions.
+
+You can find a more complex implementaion of the same workflow in the [.donna/project/work/polish.md](./.donna/project/work/polish.md) file, with demonstrations of other Donna operations such as running the scripts directly, branching, etc.
+
+~~~
+# Polishing Workflow
+
+```toml donna
+kind = "donna.lib.workflow"
+start_operation_id = "run_black"
+```
+
+Initiate operations to polish and refine the codebase: …
+
+## Run Black
+
+```toml donna
+id = "run_black"
+kind = "request_action"
+```
+
+1. Run `poetry run black .` to format the codebase.
+2. `{{ goto("run_mypy") }}`
+
+## Run Mypy
+
+```toml donna
+id = "run_mypy"
+kind = "request_action"
+```
+
+1. Run `poetry run mypy .` to check the codebase for type annotation issues.
+2. If there are issues found that you can fix, fix them.
+3. Ask developer to fix any remaining issues manually.
+4. If you made changes `{{ goto("run_black") }}`.
+5. If no issues are found `{{ goto("finish") }}`.
+
+## Finish
+
+```toml donna
+id = "finish"
+kind = "finish_workflow"
+```
+
+Polishing is complete.
+~~~
 
 ## Installation
 
