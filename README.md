@@ -59,9 +59,8 @@ graph TD;
 ```
 
 ```
-                               no issues
-[ run_black ] ──▶ [ run_mypy ] ─────────▶ [ finish ]
-      ▲                │
+[ run_black ] ──▶ [ run_mypy ] ───────────▶ [ finish ]
+      ▲                │        no issues
       │  issues fixed  │
       └────────────────┘
 ```
