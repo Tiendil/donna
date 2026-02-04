@@ -280,7 +280,46 @@ Here is a short list of them:
 
 ### Error handling
 
+Donna can detect errors (in artifacts, in execution, etc). If the error can be fixed by the agent or the developer, Donna will output a detailed error description with a list of ways to fix it.
+
+Example:
+
+```bash
+$ donna -p llm sessions run project:work:polish
+
+kind=artifact_validation_error
+media_type=text/markdown
+artifact_id=project:work:polish
+error_code=donna.artifacts.section_not_found
+section_id=run_autoflake_scriptx
+
+Error in artifact 'project:work:polish', section 'run_autoflake_scriptx': Section `run_autoflake_scriptx` is not available in artifact `project:work:polish`.
+
+Ways to fix:
+
+- Check the section id for typos.
+- Ensure the section exists in the artifact
+```
+
 ### Generating workflows
+
+The power of Donna comes from the ability of to create workflows on the fly and execute them immediately. So, you can create a workflow that creates a workflow that creates a workflow that does something useful :)
+
+You can even modify the workflow while it is running, the only requirement is to not lose the ids of the currently executing/waiting operations.
+
+The simplest example of such generation is currently used as a primary way for Donna to work on the current project:
+
+1. Create a document with a changes description.
+2. Generate a workflow to implement the changes described in the document.
+3. Execute the generated workflow.
+
+### Discovering workflow
+
+If you want to run a child workflow from an operation, you can just tell Donna something like `Run the workflow project:work:my-cool-workflow` and Donna will find it and run.
+
+However, it is not very agile. Instead I suggest you to describe changes you want to make and let the agent find most suitable workflow for the them. In that case you'll be able to define customized workflows for specific types of changes and let the agent choose the best one for the current situation.
+
+For example, you can have two workflows `project:work:write-backend-test` and `project:work:write-frontend-test` and your operation can just say `Run the workflow that can help to write a test for the current change` and the agent will choose the most suitable workflow based on the current context and the workflow descriptions.
 
 ## Directives
 
