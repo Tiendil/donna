@@ -17,19 +17,19 @@ if TYPE_CHECKING:
 
 
 class OutputMissingNextOperation(ArtifactValidationError):
-    code: str = "donna.workflows.output_missing_next_operation"
-    message: str = "Output operation `{error.section_id}` must define `next_operation`."
+    code: str = "donna.workflows.output_missing_next_operation_id"
+    message: str = "Output operation `{error.section_id}` must define `next_operation_id`."
     ways_to_fix: list[str] = [
-        'Add `next_operation = "<next_operation>"` to the operation config block.',
+        'Add `next_operation_id = "<next_operation_id>"` to the operation config block.',
     ]
 
 
 class OutputConfig(OperationConfig):
-    next_operation: ArtifactSectionId | None = None
+    next_operation_id: ArtifactSectionId | None = None
 
 
 class OutputMeta(OperationMeta):
-    next_operation: ArtifactSectionId | None = None
+    next_operation_id: ArtifactSectionId | None = None
 
 
 class Output(MarkdownSectionMixin, OperationKind):
@@ -46,14 +46,14 @@ class Output(MarkdownSectionMixin, OperationKind):
         output_config = cast(OutputConfig, section_config)
 
         allowed_transitions: set[ArtifactSectionId] = set()
-        if output_config.next_operation is not None:
-            allowed_transitions.add(output_config.next_operation)
+        if output_config.next_operation_id is not None:
+            allowed_transitions.add(output_config.next_operation_id)
 
         return Ok(
             OutputMeta(
                 fsm_mode=output_config.fsm_mode,
                 allowed_transtions=allowed_transitions,
-                next_operation=output_config.next_operation,
+                next_operation_id=output_config.next_operation_id,
             )
         )
 
@@ -71,9 +71,9 @@ class Output(MarkdownSectionMixin, OperationKind):
         )
         instant_output([output_cell])
 
-        next_operation = meta.next_operation
-        assert next_operation is not None
-        full_operation_id = unit.operation_id.full_artifact_id.to_full_local(next_operation)
+        next_operation_id = meta.next_operation_id
+        assert next_operation_id is not None
+        full_operation_id = unit.operation_id.full_artifact_id.to_full_local(next_operation_id)
 
         yield ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id)
 
@@ -81,7 +81,7 @@ class Output(MarkdownSectionMixin, OperationKind):
         section = artifact.get_section(section_id).unwrap()
         meta = cast(OutputMeta, section.meta)
 
-        if meta.next_operation is None:
+        if meta.next_operation_id is None:
             return Err([OutputMissingNextOperation(artifact_id=artifact.id, section_id=section_id)])
 
         return Ok(None)
