@@ -152,6 +152,29 @@ The documentation below covers aspects that are important for Humans and partial
 
 ## Batteries Included
 
+Donna comes with a set of pre-defined workflows and specifications that empower agents to work in a Donna way.
+
+However, **I encourage you to experiment and implement your own workflows**.
+
+By default, Donna uses the next approach to introduce changes in your project:
+
+1. Prepare a Request for Comments (RFC) document that describes the required changes.
+2. Create a workflow that implements the changes described in the RFC.
+3. Execute new workflow.
+
+Additionaly, Donna will:
+
+- choose fast or slow route depending on the complexity of the changes required;
+- find and run polishing workflow to ensure the codebase is in a good state after the changes;
+- find and run workflow to update your changelog.
+
+Points of interests:
+
+- [donna:rfc:specs:request_for_change](./donna/artifacts/rfc/specs/request_for_change.md) — specification of the RFC document.
+- [donna:rfc:work:create](./donna/artifacts/rfc/work/create.md) — workflow to create a RFC document.
+- [donna:rfc:work:plan](./donna/artifacts/rfc/work/plan.md) — workflow to plan work on a RFC — creates a new workflow.
+- [donna:rfc:work:do](./donna/artifacts/rfc/work/do.md) — meta workflow to implement chanages from a developer request to the changelog update.
+
 ## Artifacts and Worlds
 
 ** .donna directory layout

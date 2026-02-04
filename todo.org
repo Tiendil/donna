@@ -35,6 +35,8 @@
 *** feedback is also required because the donna is an experiment
 *** describe label `proposal`
 *** mark some proposals with `good first issue`
+** tags
+** need a real exampl of how to tell agent to do smth with donna
 * TODO Example workflows
 ** Example worflow with iterative factorial calculation
 ** Example workflow with recursive factorial calculation
