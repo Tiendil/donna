@@ -1,5 +1,3 @@
-* TODO README.md notes
-** need a real exampl of how to tell agent to do smth with donna
 * TODO Review docs
 ** review donna:* docs
 ** improve donna:engine:specs:research
