@@ -173,7 +173,7 @@ Points of interests:
 - [donna:rfc:specs:request_for_change](./donna/artifacts/rfc/specs/request_for_change.md) — specification of the RFC document.
 - [donna:rfc:work:create](./donna/artifacts/rfc/work/create.md) — workflow to create a RFC document.
 - [donna:rfc:work:plan](./donna/artifacts/rfc/work/plan.md) — workflow to plan work on a RFC — creates a new workflow.
-- [donna:rfc:work:do](./donna/artifacts/rfc/work/do.md) — meta workflow to implement chanages from a developer request to the changelog update.
+- [donna:rfc:work:do](./donna/artifacts/rfc/work/do.md) — meta workflow to automate the whole way from a developer request to a changelog update.
 
 ## Artifacts and Worlds
 
