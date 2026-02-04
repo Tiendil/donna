@@ -42,6 +42,7 @@
 ** create workflow once and you agent will always behave the same way.
 ** .donna directory layout
 ** place for feedback — github discussions?
+*** feedback is also required because the donna is an experiment
 ** Your agent will generate state machines while executing state machines that are created by state machines.
 *** Welcome to the worlf of self(?) modifiying verifiable meta instructions.
 *** FSM driven development

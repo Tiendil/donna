@@ -36,6 +36,10 @@ So, Donna executes such loops for the agents and therefore saves time, context a
 - **Artifact distribution** — install your docs/workflows/skills as Python packages.
 - **Agent-centric behavior** with clear instructions, suggestions on fixing mistakes.
 
+## Example
+
+...
+
 ## Installation
 
 1. Install `donna` package.
@@ -67,7 +71,40 @@ Detailed instructions can be found in specifications for agents:
 - [Artifacts](./donna/artifacts/usage/artifacts.md) — what is Donna artifact and how to use them.
 - [Worlds](./donna/artifacts/usage/worlds.md) — how Donna discovers and manages its artifacts.
 
+The most important concepts.
 
+### Communication protocol
+
+Donna outputs data depending on who uses it. There are three protocols:
+
+- `donna -p llm ...` — for agents — full details with strong separation of pieces of information.
+- `donna -p human ...` — for humans — simplified rendering with less details and better formatting.
+- `donna -p automation ...` — for automation scripts — JSON per line.
+
+Donna outputs information in Cells. Each cell contains a self-contained piece of information with clear boundaries. A cell can be a full body of specification, short (header) record for workflow, description of an error, instruction for the agent, etc.
+
+A cell consists of structured header and free-form body. Example:
+
+~~~
+--DONNA-CELL -2C0oDVmQ7CjpGqJs14n0g BEGIN--
+kind=action_request
+media_type=text/markdown
+action_request_id=AR-9-j
+
+**This is an action request for the agent. You MUST follow the instructions below.**
+
+```
+donna/cli/commands/artifacts.py:66: error: Function is missing a return type annotation  [no-untyped-def]
+Found 1 error in 1 file (checked 77 source files)
+```
+
+1. Fix the mypy issues based on the output above that you are allowed to fix.
+1. Ask the developer to fix any remaining issues manually.
+1. Ensure your changes are saved.
+1. `donna -p llm sessions action-request-completed <action-request-id> 'project:work:polish:run_autoflake_script'`
+
+... Here goes more detailed instructions ...
+~~~
 
 ## Notes
 
