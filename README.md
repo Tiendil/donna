@@ -35,6 +35,7 @@ So, Donna executes such loops for the agents and therefore saves time, context a
 - **Artifact management** — non-fuzzy navigation and smart agent-focused rendering of specs.
 - **Artifact distribution** — install your docs/workflows/skills as Python packages.
 - **Agent-centric behavior** with clear instructions, suggestions on fixing mistakes.
+- **Extensible architecture** — implement your own operations, validators, renderers; add support for new artifact formats and storages (worlds).
 
 ## Example
 
@@ -58,6 +59,20 @@ donna -p human workspaces init
 
 **ALWAYS** run `donna -p llm artifacts view '*:intro'` when you start working on the projct. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
 ```
+
+## Concepts
+
+### Artifacts
+
+### Worlds
+
+### Sessions
+
+### Workflows
+
+### Specifications
+
+### Errors/mistakes
 
 ## Usage
 
