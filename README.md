@@ -32,6 +32,7 @@ So, Donna executes such loops for the agents and therefore saves time, context a
 
 - **Deterministic workflows** — fixed & validated control flows.
 - **Saves context, tokens and time** — agents do not need to think when thinking is not required.
+- **Readable artifacts** — all workflows and specifications are pure Markdown files with some [Jinja2](https://github.com/pallets/jinja) templating.
 - **Artifact management** — non-fuzzy navigation and smart agent-focused rendering of specs.
 - **Artifact distribution** — install your docs/workflows/skills as Python packages.
 - **Agent-centric behavior** with clear instructions, suggestions on fixing mistakes.
@@ -39,7 +40,7 @@ So, Donna executes such loops for the agents and therefore saves time, context a
 
 ## Example
 
-Donna is developed via Donna itself. So, you can find real life examples of workflows and specifications in the [.donna](./.donna) folder of this repository.
+Donna is developed via Donna itself. So, you can find real life examples of workflows and specifications in the [.donna/project](./.donna/project) folder of this repository.
 
 The example below is a simplified version of the polishing workflow that formats code, runs linters and fixes found problems untill all checks pass. It uses the single operaton type `donna.lib.request_action` to ask the agent to perform specific instructions.
 
@@ -68,7 +69,7 @@ Initiate operations to polish and refine the codebase: …
 
 ```toml donna
 id = "run_black"
-kind = "request_action"
+kind = "donna.lib.request_action"
 ```
 
 1. Run `poetry run black .` to format the codebase.
@@ -78,7 +79,7 @@ kind = "request_action"
 
 ```toml donna
 id = "run_mypy"
-kind = "request_action"
+kind = "donna.lib.request_action"
 ```
 
 1. Run `poetry run mypy .` to check the codebase for type annotation issues.
@@ -96,6 +97,20 @@ kind = "finish_workflow"
 
 Polishing is complete.
 ~~~
+
+What you may notice:
+
+1. The workflow is a Markdown file.
+2. Each h1 and h2 section has a config block which is a TOML in code fences with `donna` marker.
+3. The workflow has 3 `donna.lib.request_action` operations: `run_black`, `run_mypy` and `finish`.
+4. Transitions between operations are defined via `{{ goto("operation_id") }}` Jinja2 calls in the body of operations.
+5. `donna.lib.request_action` is an operation that tells Donna to display instructions to the agent and wait for the agent to complete them. That allows agent to focus on short precise intructions, perform them and push workflow forward.
+
+Directives, like `{{ goto("operation_id") }}`, render itself depending on the context:
+
+- For the agent they render an exect CLI command to run, such as `donna -p llm sessions action-request-completed <action-request-id> 'artifact_id:operation_id'`.
+- For Donna they render a specific marker, that can be extracted and used to analyze an artifact. For example, Donna uses `goto` directives to build a FSM model of the workflow and validate it before running: does each operation exist, is there a way to finish the workflow, are there unreachable operations, etc.
+
 </details>
 
 You can find a more complex implementaion of the same workflow in the [polish.md](./.donna/project/work/polish.md) file. It demonstrates other Donna operations such as running the scripts directly, branching, etc.
@@ -128,6 +143,8 @@ donna -p human workspaces init
 ### Sessions
 
 ### Workflows
+
+verification
 
 ### Specifications
 
