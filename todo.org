@@ -41,6 +41,7 @@
 ** meta-workflows must select child workflows dynamically.
 ** create workflow once and you agent will always behave the same way.
 ** .donna directory layout
+** place for feedback — github discussions?
 * TODO Example workflows
 ** Example worflow with iterative factorial calculation
 ** Example workflow with recursive factorial calculation
