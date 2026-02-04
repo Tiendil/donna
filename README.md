@@ -358,6 +358,37 @@ Here they are:
 
 ## Specifications
 
+Specifications can per perceived just as documentation. There is no special handling for them.
+
+Later they will be validated like workflows, but for now it is just docs.
+
 ## Extending Donna
 
+All Donna logic is referenced by true Python import paths. That means:
+
+- You can implement you own functionality and use it with Donna.
+- You can enrich your Python packages with additional code to work with Donna.
+- You can distribute your Donna artifacts as Python packages.
+
+What you can implement:
+
+- Custom sections (including operations) for Donna artifacts. Check [./donna/primitives/artifacts](./donna/primitives/artifacts) and [./donna/primitives/operations](./donna/primitives/operations) subpackages for examples.
+- Custom rendering directives. Check [./donna/primitives/directives](./donna/primitives/directives) subpackage for examples.
+- Custom worlds. Check [./donna/workspaces/worlds](./donna/workspaces/worlds) subpackage for examples.
+- Custom parsers for artifacts. Checl [./donna/workspaces/sources](./donna/workspaces/sources) subpackage for examples.
+
+Worlds and sources are configured in the `.donna/config.toml` file of your project.
+
+Sections and directives are used directly in artifacts by their Python import paths.
+
 ## Distribute Your Artifacts
+
+To define a Donna world in you package you must point a variable `donna_artifacts_root` in your package `__init__.py` file to the root subpackage with your artifacts.
+
+On the example of Donna:
+
+```python
+donna_artifacts_root = "donna.artifacts"
+```
+
+After that, you can install your package and add the world into the `.donna/config.toml` file of your project.
