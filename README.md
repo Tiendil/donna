@@ -193,6 +193,15 @@ By default, Donna uses the next worlds:
 
 Besides that, there is `<project-root>/.donna/tmp` folder used to store temporary files.
 
+World can be readonly. By default, writable worlds are `session` (when agent to regular work) and `project` (when agent needs to permanently save resulted artifacts).
+
+Agents are not allowed to edit artifacts directly, because artifacts consistency is important. Instead they follow the next algorithm:
+
+- Featch an artifact with the command `donna -p llm artifacts fetch ...` into the temporary file.
+- Edit the temporary file.
+- Upload an artifact with the command `donna -p llm artifacts upload ...`.
+
+On upload Donna validates the artifact and accept it only when there are no errors. For example, Donna will not accept a broken FSM as a workflow.
 
 ## Sessions
 
