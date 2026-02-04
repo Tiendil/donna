@@ -57,3 +57,4 @@
 ** Massive spellcheck
 ** tune wording of workflows (what to write before goto)
 * TODO task to allow agents to edit task state
+* TODO next_operation -> next_operation_id for output operation
