@@ -203,6 +203,8 @@ Agents are not allowed to edit artifacts directly, because artifacts consistency
 
 On upload Donna validates the artifact and accept it only when there are no errors. For example, Donna will not accept a broken FSM as a workflow.
 
+### Artifacts Discovery
+
 ## Sessions
 
 ## Workflows
