@@ -250,9 +250,30 @@ Agent is encoraged to not manage sessions directly, because it doen't have enoug
 
 ## Workflows
 
+Workflows are [state machines](https://en.wikipedia.org/wiki/Finite-state_machine), they defined in Markdown files by an h1 section with `donna.lib.workflow` kind and multiple h2 sections that implement operations.
+
+Donna tracks dependencies between operations and validates the workflow before running it. So, if you or agent do something wrong, you'll get a clear error message from Donna.
+
+You can run workflow as `donna -p llm sessions run <artifact-id>`.
+
+To exectute a workflow, Donna uses a simplified virtual machine (VM) that manages the current state of all executed workflows in the current session.
+
+<details>
+<summary><strong>What you may want to know about workflows implementation</strong></summary>
+- `.donna/session/state.json` file contains the current state of all running workflows in the current session.
+- Each workflow executes in the context of its own task which is distant analog of a call stack frame. So, we may look at workflows as a functions.
+- Of course, workflows may call other workflows as subroutines. At the moment only last executed workflow is active.
+- Task has a context that is accessible by operations. There are an issue [command to read/write task context](https://github.com/Tiendil/donna/issues/47) to allow agents and humans to edit task context.
+- The internal VM operates in terms of work units. An operation can produce multiple work units, so it should be possible different interesting scenarios, however, I don't tested them yet.
+</details>
+
 ### Operations
 
 ### Error handling
+
+### Generating workflows
+
+## Directives
 
 ## Specifications
 

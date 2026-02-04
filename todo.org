@@ -38,6 +38,7 @@
 ** tags
 ** need a real exampl of how to tell agent to do smth with donna
 ** session state: tasks, work units, action requests
+** section/passage about meta workflows (generating workflows)
 * TODO Example workflows
 ** Example worflow with iterative factorial calculation
 ** Example workflow with recursive factorial calculation
