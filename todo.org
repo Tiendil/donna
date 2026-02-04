@@ -39,14 +39,6 @@
 ** mark some proposals with `good first issue`
 ** meta-workflows must select child workflows dynamically.
 ** create workflow once and you agent will always behave the same way.
-* TODO Donna-agents integration
-** Install donna as a skill
-** Install donna as a tool
-** slash commands for donna
-** installing donna cli via online instruction for agents
-** specify usage modes somewhere:
-*** easy mode — one of possible skills to use
-*** hard mode — forse agent to work via donna
 * TODO Example workflows
 ** Example worflow with iterative factorial calculation
 ** Example workflow with recursive factorial calculation
