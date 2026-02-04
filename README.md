@@ -58,6 +58,14 @@ graph TD;
    +-----------------+
 ```
 
+```
+                               no issues
+[ run_black ] ──▶ [ run_mypy ] ─────────▶ [ finish ]
+      ▲                │
+      │  issues fixed  │
+      └────────────────┘
+```
+
 ~~~
 # Polishing Workflow
 
