@@ -1,8 +1,4 @@
 * TODO README.md notes
-** list of python packages that support donna
-*** changy
-*** brigid
-*** feeds fun
 ** need a real exampl of how to tell agent to do smth with donna
 * TODO Review docs
 ** review donna:* docs
