@@ -195,9 +195,15 @@ class FilesystemWorldConstructor(WorldConstructor):
         if path_value is None:
             raise ValueError(f"World config '{config.id}' does not define a filesystem path")
 
+        from donna.workspaces.config import project_dir
+
+        path = pathlib.Path(path_value).expanduser()
+        if not path.is_absolute():
+            path = project_dir() / path
+
         return World(
             id=config.id,
-            path=pathlib.Path(path_value),
+            path=path.resolve(),
             readonly=config.readonly,
             session=config.session,
         )
