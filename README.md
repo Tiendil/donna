@@ -30,30 +30,44 @@ So, Donna executes such loops for the agents and therefore saves time, context a
 
 ## Features
 
-- **Deterministic workflows** — fixed & validated control flow.
+- **Deterministic workflows** — fixed & validated control flows.
 - **Saves context, tokens and time** — agents do not need to think when thinking is not required.
-- **Artifact management** — non-fuzzy navigation and smart agent-focused rendering.
+- **Artifact management** — non-fuzzy navigation and smart agent-focused rendering of specs.
 - **Artifact distribution** — install your docs/workflows/skills as Python packages.
 - **Agent-centric behavior** with clear instructions, suggestions on fixing mistakes.
 
-Deterministic behavior, state machines, artifact management, and meta programming for your coding agent
+## Installation
+
+1. Install `donna` package.
+
+```bash
+pip install donna
+
+cd <your-project-root>
+donna -p human workspaces init
+```
+
+2. Add short instruction into your `AGENT.md` file.
+
+```markdown
+**Use `donna` tool to work on this project.**
+
+**ALWAYS** run `donna -p llm artifacts view '*:intro'` when you start working on the projct. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
+```
+
+## Usage
+
+**Donna is a CLI tool for agents.** You rarery need to use it directly, however, there are some concepts you should be aware of.
+
+Use `donna --help` if you need a quick reference.
+
+Detailed instructions can be found in specifications for agents:
+
+- [Full CLI specification](./donna/artifacts/usage/cli.md) — full list of commands and how to use them.
+- [Artifacts](./donna/artifacts/usage/artifacts.md) — what is Donna artifact and how to use them.
+- [Worlds](./donna/artifacts/usage/worlds.md) — how Donna discovers and manages its artifacts.
 
 
-## State Machines for your AI Agents
-
-`Donna` is a CLI tool that helps manage the work of AI agents like Codex.
-
-It is designed to to invert control flow: instead of agents deciding what to do next, the `donna` tells agents what to do next by following predefined workflows.
-
-The core idea is that most of high-level workflows are more algorithmic than it may seem at first glance. For example, it may be difficult to fix a particular type issue in the codebase, but the overall process of polishing the codebase is quite linear:
-
-1. Ensure all tests pass.
-2. Ensure the code is formatted correctly.
-3. Ensure there are no linting errors.
-4. Go to the step 1 if you changed something in the process.
-5. Finish.
-
-We may need coding agents on the each step of the process, but there no reason for agents to manage the whole grooming loop by themselves — it take longer time, spends tokens and may lead to confusion of agents.
 
 ## Notes
 
