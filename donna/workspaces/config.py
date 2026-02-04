@@ -46,7 +46,7 @@ def _default_sources() -> list[SourceConfig]:
     ]
 
 
-def _create_default_worlds(project_dir: pathlib.Path) -> list[WorldConfig]:
+def _create_default_worlds() -> list[WorldConfig]:
     return [
         WorldConfig.model_validate(
             {
@@ -63,7 +63,7 @@ def _create_default_worlds(project_dir: pathlib.Path) -> list[WorldConfig]:
                 "kind": "donna.lib.worlds.filesystem",
                 "readonly": True,
                 "session": False,
-                "path": pathlib.Path.home() / DONNA_DIR_NAME / DONNA_WORLD_HOME_DIR_NAME,
+                "path": f"~/{DONNA_DIR_NAME}/{DONNA_WORLD_HOME_DIR_NAME}",
             }
         ),
         WorldConfig.model_validate(
@@ -72,7 +72,7 @@ def _create_default_worlds(project_dir: pathlib.Path) -> list[WorldConfig]:
                 "kind": "donna.lib.worlds.filesystem",
                 "readonly": False,
                 "session": False,
-                "path": project_dir / DONNA_DIR_NAME / DONNA_WORLD_PROJECT_DIR_NAME,
+                "path": pathlib.Path(DONNA_DIR_NAME) / DONNA_WORLD_PROJECT_DIR_NAME,
             }
         ),
         WorldConfig.model_validate(
@@ -81,14 +81,14 @@ def _create_default_worlds(project_dir: pathlib.Path) -> list[WorldConfig]:
                 "kind": "donna.lib.worlds.filesystem",
                 "readonly": False,
                 "session": True,
-                "path": project_dir / DONNA_DIR_NAME / DONNA_WORLD_SESSION_DIR_NAME,
+                "path": pathlib.Path(DONNA_DIR_NAME) / DONNA_WORLD_SESSION_DIR_NAME,
             }
         ),
     ]
 
 
 def _default_worlds() -> list[WorldConfig]:
-    return _create_default_worlds(project_dir())
+    return _create_default_worlds()
 
 
 class Config(BaseEntity):
