@@ -47,7 +47,7 @@ def _save_state(state: ConsistentState) -> Result[None, ErrorsList]:
 @unwrap_to_error
 def _state_run(mutator: MutableState) -> Result[None, ErrorsList]:
     while mutator.has_work():
-        mutator.exectute_next_work_unit().unwrap()
+        mutator.execute_next_work_unit().unwrap()
         _save_state(mutator.freeze()).unwrap()
 
     return Ok(None)

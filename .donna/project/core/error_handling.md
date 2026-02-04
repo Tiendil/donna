@@ -41,7 +41,7 @@ class InternalError(core_errors.InternalError):
     pass
 
 class SomethingGoneWrong(InternalError):
-    """Indicates that something went wrong in donna.xxx submodule in a single specifc case."""
+    """Indicates that something went wrong in donna.xxx submodule in a single specific case."""
     pass
 
 class DomainOrEntityError(InternalError):
@@ -151,15 +151,15 @@ def validate_artifact(self) -> Result[None, ErrorsList]:
 
 ## Naming error classes
 
-Follow this guidelines when naming error classes:
+Follow these guidelines when naming error classes:
 
 - Try to keep names short but descriptive.
-- Prefere not to use `Error`, `Exception`, `Failure` suffixes if possible.
-- Prefere not to use `Internal` or `Environment` in the class names.
+- Prefer not to use `Error`, `Exception`, `Failure` suffixes if possible.
+- Prefer not to use `Internal` or `Environment` in the class names.
 
 ## Exceptions besides `InternalError`
 
-- **Use only `InternalError` for all Donna's internal exceptions, untill the developer or the specification explicitly requires otherwise.**
+- **Use only `InternalError` for all Donna's internal exceptions, until the developer or the specification explicitly requires otherwise.**
 - You MAY use other exception types if the third-party library you are working with requires it. For example, Pydantic models require `ValidationError` exceptions.
 - You MAY use `NotImplementedError` as temporary code when:
   - You need a temporary placeholder for the code that is not implemented yet, but will be in the scope of the current task.
@@ -185,7 +185,7 @@ Don't use `assert` statements for any other purpose, replace them with proper er
 
 ### Update all calls up the call stack
 
-If you modify funtion to return environment errors, you **MUST** update all functions up the call stack that call this function to handle the returned errors properly: process, propagate or output (accoring to the context).
+If you modify function to return environment errors, you **MUST** update all functions up the call stack that call this function to handle the returned errors properly: process, propagate or output (according to the context).
 
 ### Long error definitions — short construction
 

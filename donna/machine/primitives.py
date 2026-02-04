@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from donna.workspaces.worlds.base import World
 
 
-# TODO: Currently is is a kind of God interface. It is convinient for now.
+# TODO: Currently it is a kind of God interface. It is convenient for now.
 #       However, in future we should move these methods into specific subclasses.
 class Primitive(BaseEntity):
     config_class: ClassVar[type[ArtifactSectionConfig]] = ArtifactSectionConfig

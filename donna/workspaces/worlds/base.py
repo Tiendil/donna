@@ -50,7 +50,7 @@ class World(BaseEntity, ABC):
     # For the artifact: uniform API for storing/loading data
     # Against the artifact:
     # - session data MUST be accessible only by Donna => no one should be able to read/write/list it
-    # - session data will require an additonal kind(s) of artifact(s) just for that purpose
+    # - session data will require an additional kind(s) of artifact(s) just for that purpose
     # - session data may change more frequently than regular artifacts
 
     @abstractmethod

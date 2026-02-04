@@ -5,7 +5,7 @@ Your agent will generate [state machines](https://en.wikipedia.org/wiki/Finite-s
 
 ## What is Donna?
 
-Donna is a CLI tool that helps coding agents like Codex to behave deterministically and focus on the perfomed work.
+Donna is a CLI tool that helps coding agents like Codex to behave deterministically and focus on the performed work.
 
 It is designed to invert control flow: instead of agent deciding what to do and in which order, Donna dictates what should be done on each step of work, so the agent can focus on the actual piece of work.
 
@@ -24,7 +24,7 @@ For example, it may be non-trivial to fix a particular unit test, but the overal
 4. Go to the step 1 if you changed something in the process.
 5. Finish.
 
-Coding agents show greate results on each separate step of the process, however they often struggle to manage meta-loops in deterministic maner — they forget steps, misinterpret results, use wrong ways to run tools, etc.
+Coding agents show great results on each separate step of the process, however they often struggle to manage meta-loops in deterministic manner — they forget steps, misinterpret results, use wrong ways to run tools, etc.
 
 So, Donna executes such loops for the agents and therefore saves time, context and tokens simultaneously increasing the overall quality of work.
 
@@ -43,7 +43,7 @@ So, Donna executes such loops for the agents and therefore saves time, context a
 
 Donna is developed via Donna itself. So, you can find real life examples of workflows and specifications in the [.donna/project](./.donna/project) folder of this repository.
 
-The example below is a simplified version of the polishing workflow that formats code, runs linters and fixes found problems untill all checks pass. It uses the single operaton type `donna.lib.request_action` to ask the agent to perform specific instructions.
+The example below is a simplified version of the polishing workflow that formats code, runs linters and fixes found problems until all checks pass. It uses the single operation type `donna.lib.request_action` to ask the agent to perform specific instructions.
 
 ```
                                 no issues
@@ -107,17 +107,17 @@ What you may notice:
 3. Each h1 and h2 section has a config block which is a TOML in code fences with `donna` marker. Those configs are invisible to the agent, but Donna uses them to understand the artifact structure.
 4. The workflow has two `donna.lib.request_action` operations (`run_black`, `run_mypy`) and one `donna.lib.finish` (`finish`).
 5. Transitions between operations are defined via `{{ goto("operation_id") }}` Jinja2 calls in the body of operations.
-6. `donna.lib.request_action` is an operation that tells Donna to display instructions to the agent and wait for the agent to complete them. That allows agent to focus on short precise intructions, perform them and push workflow forward.
+6. `donna.lib.request_action` is an operation that tells Donna to display instructions to the agent and wait for the agent to complete them. That allows agent to focus on short precise instructions, perform them and push workflow forward.
 7. `kind` attributes of sections are valid Python import paths, so you can easily extend Donna with your own logic.
 
 Directives, like `{{ goto("operation_id") }}`, render itself depending on the context:
 
-- For the agent they render an exect CLI command to run, such as `donna -p llm sessions action-request-completed <action-request-id> 'artifact_id:operation_id'`.
+- For the agent they render an exact CLI command to run, such as `donna -p llm sessions action-request-completed <action-request-id> 'artifact_id:operation_id'`.
 - For Donna they render a specific marker, that can be extracted and used to analyze an artifact. For example, Donna uses `goto` directives to build a FSM model of the workflow and validate it before running: does each operation exist, is there a way to finish the workflow, are there unreachable operations, etc.
 
-Generally speaking, **all you need is `donna.lib.request_action` operation** — it is enough to achieave a great deal of automation by delegating some decisions to the agent. However, there are some more specific operations that simplify things, make workflows more agile or more performant.
+Generally speaking, **all you need is `donna.lib.request_action` operation** — it is enough to achieve a great deal of automation by delegating some decisions to the agent. However, there are some more specific operations that simplify things, make workflows more agile or more performant.
 
-You can find a more complex implementaion of the same workflow in the [polish.md](./.donna/project/work/polish.md) file. It demonstrates other Donna operations such as running the scripts directly, branching, etc.
+You can find a more complex implementation of the same workflow in the [polish.md](./.donna/project/work/polish.md) file. It demonstrates other Donna operations such as running the scripts directly, branching, etc.
 
 ## Installation
 
@@ -137,7 +137,7 @@ Donna will create a `.donna/` folder in your project root with a default configu
 ```markdown
 **Use `donna` tool to work on this project.**
 
-**ALWAYS** run `donna -p llm artifacts view '*:intro'` when you start working on the projct. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
+**ALWAYS** run `donna -p llm artifacts view '*:intro'` when you start working on the project. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
 ```
 
 3. Ask your agent to do something like `Polish the project codebase`. The agent will discover appropriate workflow and run it.
@@ -169,7 +169,7 @@ By default, Donna uses the next approach to introduce changes in your project:
 2. Create a workflow that implements the changes described in the RFC.
 3. Execute new workflow.
 
-Additionaly, Donna will:
+Additionally, Donna will:
 
 - choose fast or slow route depending on the complexity of the changes required;
 - find and run polishing workflow to ensure the codebase is in a good state after the changes;
@@ -204,7 +204,7 @@ World can be readonly. By default, writable worlds are `session` (when agent to 
 
 Agents are not allowed to edit artifacts directly, because artifacts consistency is important. Instead they follow the next algorithm:
 
-- Featch an artifact with the command `donna -p llm artifacts fetch ...` into the temporary file.
+- Fetch an artifact with the command `donna -p llm artifacts fetch ...` into the temporary file.
 - Edit the temporary file.
 - Upload an artifact with the command `donna -p llm artifacts upload ...`.
 
@@ -251,12 +251,12 @@ So, you can find all workflows with the command `donna -p llm artifacts list '**
 
 `session` world contains the current state of work performed by Donna: all documents and workflows that are created during work and should not be stored permanently in the project.
 
-The developer is responsible for staring/reseting sessions with commands from `donna -p human sessions` group.
+The developer is responsible for starting/resetting sessions with commands from `donna -p human sessions` group.
 
 - On session start Donna removes everything from the previous session and creates a fresh `session` world.
 - On session reset donna resets the state of the current session (tasks, action requests, etc.), but keeps artifacts.
 
-Agent is encoraged to not manage sessions directly, because it doen't have enough context to decide when session artifacts may be safely removed.
+Agent is encouraged to not manage sessions directly, because it doesn't have enough context to decide when session artifacts may be safely removed.
 
 ## Workflows
 
@@ -266,7 +266,7 @@ Donna tracks dependencies between operations and validates the workflow before r
 
 You can run workflow as `donna -p llm sessions run <artifact-id>`.
 
-To exectute a workflow, Donna uses a simplified virtual machine (VM) that manages the current state of all executed workflows in the current session.
+To execute a workflow, Donna uses a simplified virtual machine (VM) that manages the current state of all executed workflows in the current session.
 
 <details>
 <summary><strong>What you may want to know about workflows implementation</strong></summary>
@@ -379,7 +379,7 @@ What you can implement:
 - Custom sections (including operations) for Donna artifacts. Check [./donna/primitives/artifacts](./donna/primitives/artifacts) and [./donna/primitives/operations](./donna/primitives/operations) subpackages for examples.
 - Custom rendering directives. Check [./donna/primitives/directives](./donna/primitives/directives) subpackage for examples.
 - Custom worlds. Check [./donna/workspaces/worlds](./donna/workspaces/worlds) subpackage for examples.
-- Custom parsers for artifacts. Checl [./donna/workspaces/sources](./donna/workspaces/sources) subpackage for examples.
+- Custom parsers for artifacts. Check [./donna/workspaces/sources](./donna/workspaces/sources) subpackage for examples.
 
 Worlds and sources are configured in the `.donna/config.toml` file of your project.
 

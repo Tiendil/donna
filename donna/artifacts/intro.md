@@ -1,4 +1,4 @@
-# Intoduction to the Donna tool
+# Introduction to the Donna tool
 
 ```toml donna
 kind = "donna.lib.specification"

@@ -165,7 +165,7 @@ Examples:
 ## `Acceptance criteria` section
 
 - The section MUST contain a list of acceptance criteria used to determine whether the proposed change is complete and successful.
-- An acceptance criterion MUST be derived explictily from statements in the RFC document. Agents MUST NOT invent acceptance criteria.
+- An acceptance criterion MUST be derived explicitly from statements in the RFC document. Agents MUST NOT invent acceptance criteria.
 
 Acceptance criteria quality criteria:
 

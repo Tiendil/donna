@@ -141,7 +141,7 @@ def parse_artifact_content(
         )
 
     if not original_sections:
-        # return Envrironment errors
+        # return Environment errors
         return Err([world_errors.MarkdownArtifactWithoutSections(artifact_id=full_id)])
 
     for original, analyzed in zip(original_sections, analyzed_sections):

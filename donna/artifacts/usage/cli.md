@@ -59,7 +59,7 @@ action_request_id=AR-65-bd
 --DONNA-CELL eZVkOwNPTHmadXpaHDUBNA END--
 ```
 
-Donna can ommit log cell start and end markers if a command produces only a single cell.
+Donna can omit log cell start and end markers if a command produces only a single cell.
 
 Donna renders cells differently, depending on the protocol used.
 
@@ -99,7 +99,7 @@ After the session is started you MUST follow the next workflow to perform your w
 
 1. List all possible workflows with command `donna -p <protocol> artifacts list`.
 2. Choose the most appropriate workflow for the task you are going to work on or ask the developer if you are not sure which workflow to choose.
-3. Start choosen workflow by calling `donna -p <protocol> sessions run <workflow-id>`.
+3. Start chosen workflow by calling `donna -p <protocol> sessions run <workflow-id>`.
 4. Donna will output descriptions of all operations it performs to complete the work.
 5. Donna will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
 6. When you done processing an action request, call `donna -p <protocol> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report request completion. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>:<artifact>:<operation-id>`.

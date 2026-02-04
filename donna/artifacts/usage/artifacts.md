@@ -32,7 +32,7 @@ The source of the text artifact is a Jinja2-template of Markdown document.
 
 When rendering the artifact, Donna processes the Jinja2 template with a predefined context (at minimum `render_mode` and `artifact_id`, and optionally `current_task`/`current_work_unit` during workflow execution), then renders the resulting Markdown content into the desired representation based on the selected rendering mode.
 
-**Artifact source should not use Jinja2 inheretance features** like `{{ "{% extends %}" }}` and `{{ "{% block %}" }}`.
+**Artifact source should not use Jinja2 inheritance features** like `{{ "{% extends %}" }}` and `{{ "{% block %}" }}`.
 
 Donna provides a set of special directives that can and MUST be used in the artifact source to enhance its behavior. Some of these directives are valid for all artifacts, some are valid only for specific section kinds.
 
@@ -63,11 +63,11 @@ Donna renders the same artifact source into different representations depending 
 
 Technically, any valid Markdown document is a valid text artifact.
 
-However, Donna assignes special meaning to some elements of the Markdown document to provide enhanced behavior and capabilities.
+However, Donna assigns special meaning to some elements of the Markdown document to provide enhanced behavior and capabilities.
 
 ### Sections
 
-Artifact is devided into multiple sections:
+Artifact is divided into multiple sections:
 
 - H1 header and all text till the first H2 header is considered the `head section` of the artifact.
 - Each H2 header and all text till the next H2 header (or end of document) is considered a `tail section` of the artifact.

@@ -20,12 +20,12 @@ kind = "donna.lib.request_action"
 ```
 
 1. If the developer or parent workflow explicitly specified that the work is complex, `{{ donna.lib.goto("create_rfc") }}`.
-2. If the developer or parent workflow explicitly specified that the work is simple, `{{ donna.lib.goto("fast_planing") }}`.
+2. If the developer or parent workflow explicitly specified that the work is simple, `{{ donna.lib.goto("fast_planning") }}`.
 3. Make a rough estimate of the complexity of the requested changes.
-4. If the complexity is small, `{{ donna.lib.goto("fast_planing") }}`.
+4. If the complexity is small, `{{ donna.lib.goto("fast_planning") }}`.
 5. Otherwise, `{{ donna.lib.goto("create_rfc") }}`.
 
-Examles of changes with small complexity:
+Examples of changes with small complexity:
 
 - A single file edit with clear instructions.
 - A small addition to an existing function or class.
@@ -33,10 +33,10 @@ Examles of changes with small complexity:
 - A small documentation update.
 - A simple bug fix with a known solution.
 
-## Fast planing
+## Fast planning
 
 ```toml donna
-id = "fast_planing"
+id = "fast_planning"
 kind = "donna.lib.request_action"
 ```
 
@@ -64,7 +64,7 @@ kind = "donna.lib.request_action"
 
 1. Choose the workflow to plan the work required to implement the RFC created on the previous step.
 2. Run the chosen workflow.
-3. Ensure you know the workflow id created in the previous step (default is `session:exectute_rfc` if not specified).
+3. Ensure you know the workflow id created in the previous step (default is `session:execute_rfc` if not specified).
 4. After completing the workflow `{{ donna.lib.goto("execute_rfc_work") }}`.
 
 ## Execute RFC work
@@ -74,7 +74,7 @@ id = "execute_rfc_work"
 kind = "donna.lib.request_action"
 ```
 
-1. Run the workflow created by the plan step (default: `session:exectute_rfc`) and complete it.
+1. Run the workflow created by the plan step (default: `session:execute_rfc`) and complete it.
 2. After completing the workflow `{{ donna.lib.goto("polish_changes") }}`.
 
 ## Polish changes
