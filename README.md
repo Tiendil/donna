@@ -269,6 +269,15 @@ To exectute a workflow, Donna uses a simplified virtual machine (VM) that manage
 
 ### Operations
 
+You can find detailed docs of built-in operations in the [artifacts documentation](./donna/artifacts/usage/operations.md).
+
+Here is a short list of them:
+
+- `donna.lib.request_action` — request the agent to perform specific instructions.
+- `donna.lib.run_script` — run a script from the environment Donna is running in. Choose the next operation based on the return code. Can store `stdout` and `stderr` in the task context.
+- `donna.lib.output` — output a cell with specific content and immediately goes to the next operation.
+- `donna.lib.finish` — finish the workflow. This operation always MUST be present in the workflow and MUST end all possible execution paths.
+
 ### Error handling
 
 ### Generating workflows
