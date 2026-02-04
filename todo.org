@@ -5,6 +5,7 @@
 *** fsms instead of plain texts
 *** "better" Markdown
 ** you can deliver instructions and operations for your package with your package
+** batteries included, but you are encoraged to create your own specs and workflows
 ** every error is accompanied with the ways to fix it
 ** goals:
 *** maximum determinism
