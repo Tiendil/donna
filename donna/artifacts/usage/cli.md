@@ -68,7 +68,7 @@ Donna renders cells differently, depending on the protocol used.
 There are three sets of commands:
 
 - `donna -p <protocol> workspaces …` — manages workspaces. Most-likely it will be used once per your project to initialize it.
-- `donna -p <protocol> sessions …` — manages sessions. You will use these commands to start, push forward, and manage your work sessions.
+- `donna -p <protocol> sessions …` — manages sessions. You will use these commands to start, push forward, and manage your work.
 - `donna -p <protocol> artifacts …` — manages artifacts. You will use these commands to read and update artifacts you are working with.
 
 Use:
@@ -82,11 +82,20 @@ Run `donna -p <protocol> workspaces init [<directory-path>]` to initialize Donna
 
 It is a one time operation you need to perform once per project to create a place where Donna will store all its data.
 
-### Session flow
+### Starting sessions
+
+The developer is responsible for starting a new session.
+
+You are allowed to start a new session in the next cases:
+
+1. There is no active session.
+2. The developer explicitly instructed you to start a new session.
 
 You start session by calling `donna -p <protocol> sessions start`.
 
-After you started a session:
+### Session flow
+
+After the session is started you MUST follow the next workflow to perform your work:
 
 1. List all possible workflows with command `donna -p <protocol> artifacts list`.
 2. Choose the most appropriate workflow for the task you are going to work on or ask the developer if you are not sure which workflow to choose.
@@ -100,13 +109,10 @@ You MUST continue following Donna's instructions until the workflow is completed
 
 ### Session state
 
-You may run `donna -p <protocol> sessions status` to get the status of the current session.
-
-You may run `donna -p <protocol> sessions details` to get detailed information about the current session, including list of active action requests.
-
-Run `donna -p <protocol> sessions start` to start fully new session. This command resets session state AND removes all session-level artifacts. Use this command when you need to start work from scratch.
-
-Run `donna -p <protocol> sessions reset` to reset the current session. This command resets session state BUT keeps all session-level artifacts. Use this command when you need to restart the worklow but keep all the artifacts you created during the session.
+- `donna -p <protocol> sessions status` — get the status of the current session.
+- `donna -p <protocol> sessions details` — get detailed information about the current session, including list of active action requests.
+- `donna -p <protocol> sessions start` — start a new session. This command resets session state AND removes all session-level artifacts.
+- Run `donna -p <protocol> sessions reset` to reset the current session. This command resets session state BUT keeps all session-level artifacts. Use this command when you need to restart the worklow but keep all the artifacts you created during the session.
 
 ### Starting work
 
@@ -114,8 +120,8 @@ If the developer asked you to do something new:
 
 - Run `donna -p <protocol> sessions status` to get the status of the current session.
 - If there is no active session, start a new session by calling `donna -p <protocol> sessions start`.
-- If the session is already active and there are no unfinished work in it, start a new session by calling `donna -p <protocol> sessions start`.
-- If the session is already active and there are unfinished work in it, you MUST ask the developer whether to continue the work in the current session or start a new one.
+- If the session is active and there are unfinished work in it, you MUST ask the developer whether to continue the work in the current session or start a new one.
+- If the session is active and there are no unfinished work in it, follow the instructions in the `Session flow` section to choose and start a new workflow.
 
 ### Continuing work
 
