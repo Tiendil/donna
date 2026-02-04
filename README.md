@@ -135,69 +135,30 @@ donna -p human workspaces init
 **ALWAYS** run `donna -p llm artifacts view '*:intro'` when you start working on the projct. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
 ```
 
-## Concepts
-
-### Artifacts
-
-### Worlds
-
-### Sessions
-
-### Workflows
-
-verification
-
-### Specifications
-
-### Errors/mistakes
-
 ## Usage
 
-**Donna is a CLI tool for agents.** You rarery need to use it directly, however, there are some concepts you should be aware of.
+**Donna is a CLI tool for agents.** You rarery need to use it directly.
 
 Use `donna --help` if you need a quick reference.
 
-Detailed instructions can be found in specifications for agents:
+You find detailed documentation in the agent instructions — they are readable and always accurate:
 
 - [Full CLI specification](./donna/artifacts/usage/cli.md) — full list of commands and how to use them.
 - [Artifacts](./donna/artifacts/usage/artifacts.md) — what is Donna artifact and how to use them.
 - [Worlds](./donna/artifacts/usage/worlds.md) — how Donna discovers and manages its artifacts.
 
-The most important concepts.
+The documentation below covers aspects that are important for Humans and partially duplicates the agent instructions.
 
-### Communication protocol
+## Artifacts and Worlds
 
-Donna outputs data depending on who uses it. There are three protocols:
+## Sessions
 
-- `donna -p llm ...` — for agents — full details with strong separation of pieces of information.
-- `donna -p human ...` — for humans — simplified rendering with less details and better formatting.
-- `donna -p automation ...` — for automation scripts — JSON per line.
+## Workflows
 
-Donna outputs information in Cells. Each cell contains a self-contained piece of information with clear boundaries. A cell can be a full body of specification, short (header) record for workflow, description of an error, instruction for the agent, etc.
+### Operations
 
-A cell consists of structured header and free-form body. Example:
+### Error handling
 
-~~~
---DONNA-CELL -2C0oDVmQ7CjpGqJs14n0g BEGIN--
-kind=action_request
-media_type=text/markdown
-action_request_id=AR-9-j
+## Specifications
 
-**This is an action request for the agent. You MUST follow the instructions below.**
-
-```
-donna/cli/commands/artifacts.py:66: error: Function is missing a return type annotation  [no-untyped-def]
-Found 1 error in 1 file (checked 77 source files)
-```
-
-1. Fix the mypy issues based on the output above that you are allowed to fix.
-1. Ask the developer to fix any remaining issues manually.
-1. Ensure your changes are saved.
-1. `donna -p llm sessions action-request-completed <action-request-id> 'project:work:polish:run_autoflake_script'`
-
-... Here goes more detailed instructions ...
-~~~
-
-## Notes
-
-- FSM term is too nurrow, soon, with a few fixes, Donna may become a Turing complete system for agent control. "FSM Driven Development" sounds funnier than "Turing Complete System Driven Development" :)
+## Extending Donna
