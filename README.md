@@ -44,7 +44,7 @@ Donna is developed via Donna itself. So, you can find real life examples of work
 The example below is a simplified version of the polishing workflow that formats code, runs linters and fixes found problems untill all checks pass. It uses the single operaton type `donna.lib.request_action` to ask the agent to perform specific instructions.
 
 ```mermaid
-graph Polishing;
+graph TD;
     run_black --> run_mypy;
     run_mypy -->|issues found and fixed| run_black;
     run_mypy -->|no issues found| finish;
