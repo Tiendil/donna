@@ -140,6 +140,8 @@ Donna will create a `.donna/` folder in your project root with a default configu
 **ALWAYS** run `donna -p llm artifacts view '*:intro'` when you start working on the projct. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
 ```
 
+3. Ask your agent to do something like `Polish the project codebase`. The agent will discover appropriate workflow and run it.
+
 ## Usage
 
 **Donna is a CLI tool for agents.** You rarery need to use it directly.
