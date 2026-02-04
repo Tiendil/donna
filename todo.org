@@ -44,6 +44,7 @@
 ** place for feedback — github discussions?
 ** Your agent will generate state machines while executing state machines that are created by state machines.
 *** Welcome to the worlf of self(?) modifiying verifiable meta instructions.
+*** FSM driven development
 * TODO Example workflows
 ** Example worflow with iterative factorial calculation
 ** Example workflow with recursive factorial calculation
