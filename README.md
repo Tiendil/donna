@@ -182,15 +182,15 @@ By default, Donna uses the next approach to introduce changes in your project:
 Additionally, Donna will:
 
 - choose fast or slow route depending on the complexity of the changes required;
-- find and run polishing workflow to ensure the codebase is in a good state after the changes;
-- find and run workflow to update your changelog.
+- find and run (if any) polishing workflow to ensure the codebase is in a good state after the changes;
+- find and run (if any) workflow to update your changelog.
 
 Points of interests:
 
 - [donna:rfc:specs:request_for_change](./donna/artifacts/rfc/specs/request_for_change.md) — specification of the RFC document.
 - [donna:rfc:work:create](./donna/artifacts/rfc/work/create.md) — workflow to create a RFC document.
 - [donna:rfc:work:plan](./donna/artifacts/rfc/work/plan.md) — workflow to plan work on a RFC — creates a new workflow.
-- [donna:rfc:work:do](./donna/artifacts/rfc/work/do.md) — meta workflow to automate the whole way from a developer request to a changelog update.
+- [donna:rfc:work:do](./donna/artifacts/rfc/work/do.md) — meta workflow to automate the whole work from a developer request to a changelog update.
 
 ## Artifacts and Worlds
 
