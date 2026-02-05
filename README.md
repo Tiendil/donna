@@ -10,8 +10,8 @@ However, Donna is not an orchestrator; it is a tool for an agent — it can be u
 
 The core idea:
 
-- **Most high-level work are more algorithmic than it may seem at first glance.**
-- **Most low-level work are less algorithmic than it may seem at first glance.**
+- **Most high-level work is more algorithmic than it may seem at first glance.**
+- **Most low-level work is less algorithmic than it may seem at first glance.**
 
 For example, it may be non-trivial to fix a particular unit test, but the overall process of polishing the codebase is quite linear:
 
@@ -31,7 +31,7 @@ Donna executes such loops for the agents, thereby saving time, context, and toke
 - **Saves context, tokens and time** — agents do not need to think when thinking is not required.
 - **Readable artifacts** — all workflows and specifications are pure Markdown files with some [Jinja2](https://github.com/pallets/jinja) templating.
 - **Artifact management** — non-fuzzy navigation and smart agent-focused rendering of artifacts.
-- **Artifact distribution** — install your docs/workflows/skills as a Python lib;  with your Python lib.
+- **Artifact distribution** — install your docs/workflows/skills as a Python lib.
 - **Agent-centric behavior** Donna helps agents with clear instructions, suggestions on fixing mistakes.
 - **Extensible architecture** — implement your own operations, validators, renderers; add support for new artifact formats and storages (worlds).
 - **Batteries included** — Donna goes with a set of pre-defined workflows, so you can start using it right away.
@@ -143,11 +143,11 @@ Donna will create a `.donna/` folder in your project root with a default configu
 It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
 ```
 
-3. Ask your agent to do something like `Add a button that …`. The agent will discover the appropriate workflow and run it.
+4. Ask your agent to do something like `Add a button that …`. The agent will discover the appropriate workflow and run it.
 
 ## Usage
 
-**Donna is a CLI tool for agents.** You rarery need to use it directly.
+**Donna is a CLI tool for agents.** You rarely need to use it directly.
 
 Commands you may need:
 
@@ -174,7 +174,7 @@ However, **I encourage you to experiment and implement your own workflows**. Met
 
 By default, Donna uses the next approach to introduce changes in your project:
 
-1. Prepare a Request for Comments (RFC) document that describes the required changes.
+1. Prepare a Request for Change (RFC) document that describes the required changes.
 2. Create a workflow that implements the changes described in the RFC.
 3. Execute new workflow.
 
@@ -229,7 +229,7 @@ More about Jinja2 rendering is described a bit further.
 
 ### Artifacts Discovery
 
-Artifact is identified by its id: `<world>:<colon-spearated-path>`, for example, `donna:usage:cli`.
+Artifact is identified by its id: `<world>:<colon-separated-path>`, for example, `donna:usage:cli`.
 
 You and agents can `list` artifacts and `view` them.
 
@@ -267,7 +267,7 @@ The developer is responsible for starting/resetting sessions with commands from 
 - On session start, Donna removes everything from the previous session and creates a fresh `session` world.
 - On session reset donna resets the state of the current session (tasks, action requests, etc.), but keeps artifacts.
 
-The agent is encouraged not manage sessions directly, because it doesn't have enough context to decide when session artifacts may be safely removed.
+The agent is encouraged not to manage sessions directly, because it doesn't have enough context to decide when session artifacts may be safely removed.
 
 ## Workflows
 
