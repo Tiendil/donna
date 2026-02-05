@@ -96,7 +96,6 @@ kind = "donna.lib.finish"
 
 Polishing is complete.
 ~~~
-</details>
 
 What you may notice:
 
@@ -114,6 +113,8 @@ Directives, like `{{ goto("operation_id") }}`, render itself depending on the co
 - For Donna they render a specific marker, that can be extracted and used to analyze an artifact. For example, Donna uses `goto` directives to build a FSM of the workflow and validate it before running: does each operation exist, is there a way to finish the workflow, are there unreachable operations, etc.
 
 Generally speaking, **all you need is `donna.lib.request_action` operation** — it is enough to achieve a great deal of automation by delegating some decisions to the agent. However, there are some more specific operations that simplify things, make workflows more agile or more performant.
+
+</details>
 
 You can find a more complex implementation of the same workflow in the [polish.md](./.donna/project/work/polish.md) file. It demonstrates other Donna operations such as running the scripts directly, branching, etc.
 
