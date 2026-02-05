@@ -39,7 +39,7 @@ Donna executes such loops for the agents and, therefore, saves time, context, an
 
 ## Example
 
-Donna is developed via Donna itself. So, you can find real life examples of workflows and specifications in the [.donna/project](./.donna/project) folder of this repository.
+Donna is developed via Donna itself. You can find real life examples of workflows and specifications in the [.donna/project](./.donna/project) folder of this repository.
 
 The example below is a simplified version of the polishing workflow that formats code, runs linters and fixes found problems until all checks pass. It uses the single operation type `donna.lib.request_action` to ask the agent to perform specific instructions.
 
@@ -62,7 +62,7 @@ kind = "donna.lib.workflow"
 start_operation_id = "run_black"
 ```
 
-Initiate operations to polish and refine the codebase: …
+Polish and refine the codebase.
 
 ## Run Black
 
@@ -106,12 +106,12 @@ What you may notice:
 4. The workflow has two `donna.lib.request_action` operations (`run_black`, `run_mypy`) and one `donna.lib.finish` (`finish`).
 5. Transitions between operations are defined via `{{ goto("operation_id") }}` Jinja2 calls in the body of operations.
 6. `donna.lib.request_action` is an operation that tells Donna to display instructions to the agent and wait for the agent to complete them. That allows agent to focus on short precise instructions, perform them and push workflow forward.
-7. `kind` attributes of sections are valid Python import paths, so you can easily extend Donna with your own logic.
+7. `kind` attributes of sections are valid Python import paths, so you can easily extend Donna with your own code.
 
 Directives, like `{{ goto("operation_id") }}`, render itself depending on the context:
 
 - For the agent they render an exact CLI command to run, such as `donna -p llm sessions action-request-completed <action-request-id> 'artifact_id:operation_id'`.
-- For Donna they render a specific marker, that can be extracted and used to analyze an artifact. For example, Donna uses `goto` directives to build a FSM model of the workflow and validate it before running: does each operation exist, is there a way to finish the workflow, are there unreachable operations, etc.
+- For Donna they render a specific marker, that can be extracted and used to analyze an artifact. For example, Donna uses `goto` directives to build a FSM of the workflow and validate it before running: does each operation exist, is there a way to finish the workflow, are there unreachable operations, etc.
 
 Generally speaking, **all you need is `donna.lib.request_action` operation** — it is enough to achieve a great deal of automation by delegating some decisions to the agent. However, there are some more specific operations that simplify things, make workflows more agile or more performant.
 
