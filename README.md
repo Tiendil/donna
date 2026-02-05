@@ -124,22 +124,27 @@ You can find a more complex implementation of the same workflow in the [polish.m
 
 ```bash
 pip install donna
+```
 
+2. Initialize Donna in your project.
+
+```bash
 cd <your-project-root>
 donna -p human workspaces init
 ```
 
 Donna will create a `.donna/` folder in your project root with a default configuration in `.donna/config.toml`.
 
-2. Add short instruction into your `AGENT.md` file.
+3. Add short instruction into your `AGENT.md` file.
 
 ```markdown
 **Use `donna` tool to work on this project.**
 
-**ALWAYS** run `donna -p llm artifacts view '*:intro'` when you start working on the project. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
+**ALWAYS** run `donna -p llm artifacts view '*:intro'` when you start working on the project.
+It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
 ```
 
-3. Ask your agent to do something like `Polish the project codebase`. The agent will discover appropriate workflow and run it.
+3. Ask your agent to do something like `Add a button that …`. The agent will discover appropriate workflow and run it.
 
 ## Usage
 
