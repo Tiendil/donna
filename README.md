@@ -153,7 +153,7 @@ It **MUST** be a one time operation. Do not repeat it unless you forget how to u
 Commands you may need:
 
 - `donna -p human workspaces init` — initialize Donna in your project.
-- `donna -p human sessions start` — start a new working session, removed everything from the previous session.
+- `donna -p human sessions start` — start a new working session, remove everything from the previous session.
 - `donna -p human artifacts list <pattern>` — list artifacts with short descriptions.
 
 Use `donna --help` if you need a quick reference.
