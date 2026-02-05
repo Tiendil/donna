@@ -1,7 +1,7 @@
+import pathlib
 from collections.abc import Iterable
 
 import typer
-import pathlib
 
 from donna.cli.application import app
 from donna.cli.utils import cells_cli
@@ -9,7 +9,6 @@ from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
 from donna.workspaces import config as workspace_config
 from donna.workspaces.initialization import initialize_workspace
-from donna.workspaces import errors as workspace_errors
 
 workspaces_cli = typer.Typer()
 
