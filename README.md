@@ -362,28 +362,28 @@ The rendering is performed before processing Markdown, so you can use Jinja2 fea
 
 ### Directives
 
-Donna goes with a set of built-in Jinja2 directives that provide artifacts their special capabilities.
+Donna goes with a set of built-in Jinja2 functions that provide artifacts their special capabilities. Such functions are called directives.
 
-Directives are used like `{{ python.import.path(<args>) }}` calls in Jinja2 templates.
+Directives are used in the next way: `{{ python.import.path(<args>) }}`.
 
 You can find a detailed documentation of all built-in directives in the [artifacts documentation](./donna/artifacts/usage/artifacts.md).
 
 Here they are:
 
-1. `donna.lib.view` — references another artifact. In `view`/`execute` modes it renders an exact CLI command to view the artifact; In analysis mode will be used to validate existence of the artifact and track dependencies between artifacts.
-2. `donna.lib.list` — references artifact listing by pattern. In `view`/`execute` modes it renders an exact CLI command to list artifacts; In analysis mode will be used to validate existence of the artifacts and track dependencies between artifacts.
-3. `donna.lib.goto` — references the next workflow operation to execute. In `view`/`execute` modes it renders an exact CLI command to advance the workflow; in `analysis` mode it used to construct FSM for the workflow.
-4. `donna.lib.task_variable` — in `view` mode renders a placeholder note about task-variable substitution, in `execute` mode renders the actual task-context value. In `analysis` will be used to control set of variables used in the artifact.
+1. `donna.lib.view` — references another artifact. In `view`/`execute` modes it renders an exact CLI command to view the artifact; In analysis mode it will be used to validate existence of the artifact and track dependencies between artifacts.
+2. `donna.lib.list` — references artifact listing. In `view`/`execute` modes it renders an exact CLI command to list artifacts; In analysis mode it will be used to validate existence of the artifacts and track dependencies between artifacts.
+3. `donna.lib.goto` — references the next workflow operation to execute. In `view`/`execute` modes it renders an exact CLI command to advance the workflow; in `analysis` mode it used to construct and validate a FSM for the workflow.
+4. `donna.lib.task_variable` — in `view` mode renders a placeholder with note about task-variable substitution, in `execute` mode renders the actual task-context value. In `analysis` will be used to control set of variables used in the artifact.
 
 ## Specifications
 
-Specifications can per perceived just as documentation. There is no special handling for them.
+Specifications can be perceived just as documentation. There is no special handling for them.
 
 Later they will be validated like workflows, but for now it is just docs.
 
 ## Extending Donna
 
-All Donna logic is referenced by true Python import paths. That means:
+All Donna logic is referenced by Python import paths. That means:
 
 - You can implement you own functionality and use it with Donna.
 - You can enrich your Python packages with additional code to work with Donna.
@@ -402,7 +402,9 @@ Sections and directives are used directly in artifacts by their Python import pa
 
 ## Distribute Your Artifacts
 
-To define a Donna world in you package you must point a variable `donna_artifacts_root` in your package `__init__.py` file to the root subpackage with your artifacts.
+Since Donna world can be a Python lib, you can distribute your artifacts as a Python packages.
+
+To define a Donna world in you package you must place a variable `donna_artifacts_root` in your package `__init__.py` file with a import path to the root subpackage with your artifacts.
 
 On the example of Donna:
 
@@ -412,18 +414,16 @@ donna_artifacts_root = "donna.artifacts"
 
 After that, you can install your package and add the world into the `.donna/config.toml` file of your project.
 
-And, what is important, **you package is not dependent on Donna itself — no additional dependencies are required.**
+Since you distribute text files, **you package is not dependent on Donna itself — no additional dependencies are required.**
 
 ## Feedback wanted
 
-Donna is still young, have multiple experimental features and not so much real life cases.
-
-I really appreciate any feedback, ideas and contributions to make Donna better.
+Donna is still young, have multiple experimental features — I really appreciate any feedback, ideas and contributions to make Donna better.
 
 Especially it would be nice to hear about
 
 - problems with configuration and usage;
-- real-life use cases, especially with meta programming: workflows that generate workflows and so on;
+- real-life use cases, especially with meta programming: fun workflows that generate workflows and so on;
 - your particular needs that Donna potentially can cover, but lacks some functionality now.
 
 How to reach me:
