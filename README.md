@@ -272,7 +272,7 @@ Agent is encouraged to not manage sessions directly, because it doesn't have eno
 
 ## Workflows
 
-Workflows are [state machines](https://en.wikipedia.org/wiki/Finite-state_machine), they defined in Markdown files by an h1 section with `donna.lib.workflow` kind and multiple h2 sections that implement operations.
+Workflows are [state machines](https://en.wikipedia.org/wiki/Finite-state_machine), they are defined in Markdown files by an h1 section with `donna.lib.workflow` kind and multiple h2 sections that implement operations.
 
 Donna tracks dependencies between operations and validates the workflow before running it. So, if you or agent do something wrong, you'll get a clear error message from Donna.
 
@@ -284,14 +284,14 @@ To execute a workflow, Donna uses a simplified virtual machine (VM) that manages
 <summary><strong>What you may want to know about workflows implementation</strong></summary>
 - `.donna/session/state.json` file contains the current state of all running workflows in the current session.
 - Each workflow executes in the context of its own task which is distant analog of a call stack frame. So, we may look at workflows as a functions.
-- Of course, workflows may call other workflows as subroutines. At the moment only last executed workflow is active.
+- Of course, workflows may call other workflows as subroutines. At any moment only last executed workflow is active.
 - Task has a context that is accessible by operations. There are an issue [command to read/write task context](https://github.com/Tiendil/donna/issues/47) to allow agents and humans to edit task context.
 - The internal VM operates in terms of work units. An operation can produce multiple work units, so it should be possible different interesting scenarios, however, I don't tested them yet.
 </details>
 
 ### Operations
 
-You can find detailed docs of built-in operations in the [artifacts documentation](./donna/artifacts/usage/operations.md).
+You can find detailed docs on built-in operations in the [artifacts documentation](./donna/artifacts/usage/operations.md).
 
 Here is a short list of them:
 
@@ -302,10 +302,10 @@ Here is a short list of them:
 
 ### Error handling
 
-Donna can detect errors (in artifacts, in execution, etc). If the error can be fixed by the agent or the developer, Donna will output a detailed error description with a list of ways to fix it.
+Donna can detect errors (in artifacts, in execution, etc). If an error can be fixed by the agent or the developer, Donna will output a detailed error description with a list of ways to fix it.
 
-Example:
-
+<details>
+<summary><strong>Example of error message from Donna</strong></summary>
 ```bash
 $ donna -p llm sessions run project:work:polish
 
@@ -322,6 +322,7 @@ Ways to fix:
 - Check the section id for typos.
 - Ensure the section exists in the artifact
 ```
+</details>
 
 ### Generating workflows
 
