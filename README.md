@@ -52,7 +52,7 @@ The example below is a simplified version of the polishing workflow that formats
 ```
 
 <details>
-<summary><strong>Example source and comments</strong></summary>
+<summary><strong>An example source and comments</strong></summary>
 
 ~~~
 # Polishing Workflow
@@ -305,7 +305,7 @@ Here is a short list of them:
 Donna can detect errors (in artifacts, in execution, etc). If an error can be fixed by the agent or the developer, Donna will output a detailed error description with a list of ways to fix it.
 
 <details>
-<summary><strong>Example of error message from Donna</strong></summary>
+<summary><strong>An example of error message from Donna</strong></summary>
 
 ```bash
 $ donna -p llm sessions run project:work:polish
@@ -328,23 +328,23 @@ Ways to fix:
 
 ### Generating workflows
 
-The power of Donna comes from the ability of to create workflows on the fly and execute them immediately. So, you can create a workflow that creates a workflow that creates a workflow that does something useful :)
+The power of Donna comes from the ability to create workflows on the fly and execute them immediately. So, you can create a workflow that creates a workflow that creates a workflow that does something useful :)
 
-You can even modify the workflow while it is running, the only requirement is to not lose the ids of the currently executing/waiting operations.
+You can even modify the workflow while it is executed, the only requirement is to not lose the ids of the operations referenced in action requests.
 
 The simplest example of such generation is currently used as a primary way for Donna to work on the current project:
 
 1. Create a document with a changes description.
-2. Generate a workflow to implement the changes described in the document.
+2. Generate a workflow that defines an order of applying changes.
 3. Execute the generated workflow.
 
-### Discovering workflow
+### Discovering workflows
 
-If you want to run a child workflow from an operation, you can just tell Donna something like `Run the workflow project:work:my-cool-workflow` and Donna will find it and run.
+If you want to run a child workflow from an operation, you can just instruct an agent like `Run the workflow project:work:my-cool-workflow` and the agent will find it and run.
 
-However, it is not very agile. Instead I suggest you to describe changes you want to make and let the agent find most suitable workflow for the them. In that case you'll be able to define customized workflows for specific types of changes and let the agent choose the best one for the current situation.
+However, it is not very agile. Instead, I suggest you to describe a desired outcome and let the agent find most suitable workflow for it. In that case you'll be able to define customized workflows for specific types of changes and let the agent choose the best one for the current situation.
 
-For example, you can have two workflows `project:work:write-backend-test` and `project:work:write-frontend-test` and your operation can just say `Run the workflow that can help to write a test for the current change` and the agent will choose the most suitable workflow based on the current context and the workflow descriptions.
+For example, you can have two workflows `project:work:write-backend-test` and `project:work:write-frontend-test` and your operation can say `Run the workflow that will write a test for the current change` and the agent will choose the most suitable workflow based on the context and the workflow descriptions.
 
 ## Jinja2 rendering
 
