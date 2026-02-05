@@ -199,26 +199,28 @@ Points of interests:
     - `donna.lib.worlds.filesystem` — a folder on the filesystem.
     - `donna.lib.worlds.python` — a Python package.
 
-**Please, tell if you need other world types.** It looks interesting to have `http`, `s3`, `git`, `sql` worlds.
+**Please, tell if you need other world types.** It looks interesting to have `http`, `s3`, `git`, `sql` worlds. How about `email` world that allow you to send a workflow to someone agent and get the results back in your mailbox?
+
+A world is a first part of artifact id, for example `donna:usage:cli` artifact resides in the `donna` world.
 
 By default, Donna uses the next worlds:
 
 - `donna` — artifacts provided by Donna itself;
-- `home` — user-level donna artifacts in `<HOME>/.donna/` folder;
-- `project` — project-level donna artifacts in `<project-root>/.donna/project/` folder;
-- `session` — session-level donna artifacts in `<project-root>/.donna/session/` folder.
+- `home` — user-level artifacts in `<HOME>/.donna/` folder;
+- `project` — project-level artifacts in `<project-root>/.donna/project/` folder;
+- `session` — session-level artifacts in `<project-root>/.donna/session/` folder.
 
 Besides that, there is `<project-root>/.donna/tmp` folder used to store temporary files.
 
-World can be readonly. By default, writable worlds are `session` (when agent to regular work) and `project` (when agent needs to permanently save resulted artifacts).
+World can be readonly. By default, writable worlds are `session` (current work scope) and `project` (prject scope).
 
 Agents are not allowed to edit artifacts directly, because artifacts consistency is important. Instead they follow the next algorithm:
 
-- Fetch an artifact with the command `donna -p llm artifacts fetch ...` into the temporary file.
+- Fetch an artifact into the temporary file with the command `donna -p llm artifacts fetch ...`.
 - Edit the temporary file.
 - Upload an artifact with the command `donna -p llm artifacts upload ...`.
 
-On upload Donna validates the artifact and accept it only when there are no errors. For example, Donna will not accept a broken FSM as a workflow.
+On upload Donna validates the artifact and accept it only when there are no errors. For example, Donna will not accept a workflow that can not be finised.
 
 ### Rendering
 
