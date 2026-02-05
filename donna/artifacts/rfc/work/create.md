@@ -6,7 +6,7 @@ kind = "donna.lib.workflow"
 start_operation_id = "start"
 ```
 
-This workflow creates a Request for Change (RFC) document based on a description of a problem or changes required.
+This workflow creates a Request for Change (RFC) document based on a description of the problem or the required changes.
 
 ## Start Work
 
@@ -27,7 +27,7 @@ id = "ensure_work_description_exists"
 kind = "donna.lib.request_action"
 ```
 
-At this point you SHOULD have a clear description of the problem in your context. I.e. you know what you need to do in this workflow.
+At this point, you SHOULD have a clear description of the problem in your context. I.e. you know what you need to do in this workflow.
 
 1. If you have a problem description in your context, `{{ donna.lib.goto("prepare_rfc_artifact") }}`.
 2. If you have no problem description in your context, but you know it is in one of `{{ donna.lib.list("session:**") }}` artifacts, find and view it. Then `{{ donna.lib.goto("prepare_rfc_artifact") }}`.
@@ -40,7 +40,7 @@ id = "prepare_rfc_artifact"
 kind = "donna.lib.request_action"
 ```
 
-1. If the name of artifact is not specified explicitly, assume it to be `session:rfc:<short-problem-related-identifier>`, where `<short-problem-related-identifier>` MUST be unique within the session.
+1. If the name of the artifact is not specified explicitly, assume it to be `session:rfc:<short-problem-related-identifier>`, where `<short-problem-related-identifier>` MUST be unique within the session.
 2. Save the next template into the artifact, replace `<variables>` with appropriate values.
 
 ```
@@ -105,7 +105,7 @@ id = "review_rfc_content"
 kind = "donna.lib.request_action"
 ```
 
-1. Read the RFC document and identify any gaps, inconsistencies, or areas for improvement in the content in accordance with the current project context. Use `{{ donna.lib.view("donna:research:work:research") }}` workflow if you need to take a complex decision.
+1. Read the RFC document and identify any gaps, inconsistencies, or areas for improvement in the content in accordance with the current project context. Use `{{ donna.lib.view("donna:research:work:research") }}` workflow if you need to make a complex decision.
 2. Make necessary edits to the RFC draft artifact to address identified issues.
 3. If there were changes made on this step or the previous `review_rfc_format` step `{{ donna.lib.goto("review_rfc_format") }}`.
 4. If no changes were made, `{{ donna.lib.goto("finish") }}`.

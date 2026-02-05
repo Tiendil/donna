@@ -10,13 +10,13 @@ This document describes the format and structure of a Request for Change (RFC) d
 
 Donna introduces a group of workflows located in `donna:rfc:*` namespace that organize the process of proposing, reviewing, and implementing changes to a project via RFC documents.
 
-You create RFC documents to propose changes to the project
+You create RFC documents to propose changes to the project.
 
-If there is not specified otherwise, RFC documents for the session MUST be stored as `session:rfc:<short-problem-related-identifier>` artifacts in the session world.
+If not otherwise specified, RFC documents for the session MUST be stored as `session:rfc:<short-problem-related-identifier>` artifacts in the session world.
 
-Agent (via workflows) creates that artifact and polishes it iteratively as the RFC process goes on.
+The agent (via workflows) creates the artifact and polishes it iteratively as the RFC process progresses.
 
-After the RFC is completed, agent (via workflows) MAY implement changes directly or by creating and executing a workflow based on the RFC content.
+After the RFC is completed, the agent (via workflows) MAY implement changes directly or create and execute a workflow based on the RFC content.
 
 ## RFC structure
 
@@ -43,23 +43,23 @@ The RFC document is Donna artifact (check `{{ donna.lib.view("donna:usage:artifa
 
 ### List format
 
-- If a section described as a list, it MUST contain only a single markdown list.
+- If a section is described as a list, it MUST contain only a single markdown list.
 - Each list item MUST be concise and clear.
 - Each list item SHOULD be atomic and focused on a single aspect.
-- Reviewer MUST be able to tell is the list item statement true or false by inspecting resulting artifacts and behavior.
+- Reviewer MUST be able to tell whether the list item statement is true or false by inspecting the resulting artifacts and behavior.
 
 Examples:
 
 - Bad: `- Improve performance and fix bugs.`
 - Bad: `- The interface MUST include button A, button B, and dropdown C.`
 - Good: `- Performance test MUST show at least 20% improvement in response time under load.`
-- Good: `- Fix bug A causing crash when input is empty.`
+- Good: `- Fix bug A causing a crash when input is empty.`
 - Good: `- The interface MUST include button A that triggers action X.`
 - Good: `- The interface MUST include button B that triggers action Y.`
 
 Common approaches to improve list items:
 
-- Split a single item with an enumeration into multiple items with single focus.
+- Split a single item with an enumeration into multiple items with a single focus.
 - Transform an abstract item into a concrete one by specifying measurable criteria or user-visible behavior.
 
 ### Trusted inputs
@@ -69,8 +69,8 @@ Some sections of the RFC document MUST be based on trusted inputs. Trusted input
 - Original description from the developer or parent workflow.
 - Statements from the RFC document itself.
 - Existing project documentation, code, and artifacts.
-- External standards when they define constraints or best practices for the project domain.
-- Documentation of third-party libraries, frameworks, or tools when it describes constraints or best practices.
+- External standards, when they define constraints or best practices for the project domain.
+- Documentation of third-party libraries, frameworks, or tools when they describe constraints or best practices.
 
 ## `Primary` section
 
@@ -84,10 +84,9 @@ Some sections of the RFC document MUST be based on trusted inputs. Trusted input
 
 ## `Formal description` section
 
-- The section MUST contain a clear professional high-level description of the work to be done based
-  on the developer's request.
+- The section MUST contain a clear professional high-level description of the work to be done based on the developer's request.
 - The section MUST be limited to a single paragraph with a few sentences.
-- The sectino MUST explain what someone gains after these changes and how they can see it working.
+- The section MUST explain what someone gains after these changes and how they can see it working.
   State the user-visible behavior the change will enable.
 
 ## `Goals` section
@@ -96,7 +95,7 @@ Some sections of the RFC document MUST be based on trusted inputs. Trusted input
 
 The goal quality criteria:
 
-- A goal MUST be a desired end state, outcome or result.
+- A goal MUST be a desired end state, outcome, or result.
 - A goal MUST define what ultimately should be true, not how to achieve it.
 
 Examples:
@@ -141,7 +140,7 @@ Examples:
 - Bad: `- Use clean architecture.`
 - Good: `- The solution MUST be compatible with Python 3.12.`
 - Good: `- The solution MUST NOT introduce new runtime dependencies.`
-- Good: `- The solution MUST follow specification project:specs:abc`
+- Good: `- The solution MUST follow the specification project:specs:abc`
 - Good: `MUST not change public CLI flags`
 
 ## `Requirements` section
@@ -170,7 +169,7 @@ Examples:
 Acceptance criteria quality criteria:
 
 - An acceptance criterion MUST be a single atomic check that results in a pass/fail outcome.
-- An acceptance criterion check MUST be about a single artifact: single file exists, single test passes, single behavior observed, etc.
+- An acceptance criterion check MUST be about a single artifact: a single file exists, a single test passes, a single behavior observed, etc.
 - An acceptance criterion MUST NOT describe implementation steps, internal design decisions, or "how" to achieve the result.
 
 Examples:
@@ -192,7 +191,7 @@ Solution statement quality criteria:
 
 - A solution statement MUST be a specific change in a specific artifact, behavior, or capability.
 - A solution statement MUST NOT prescribe implementation steps.
-- A solution statement SHOULD be phrased in present tense, describing an achieved state.
+- A solution statement SHOULD be phrased in the present tense, describing an achieved state.
 
 Examples:
 
@@ -231,7 +230,7 @@ Examples:
 
 Deliverable quality criteria:
 
-- A deliverable MUST be a tangible a single artifact or a single part of an artifact, not an activity or process.
+- A deliverable MUST be a tangible, single artifact or a single part of an artifact, not an activity or process.
 - A deliverable MUST be independently identifiable and verifiable.
 - Each deliverable MUST be phrased as an existence statement using normative
   language: "MUST include …", "MUST exist …", etc.

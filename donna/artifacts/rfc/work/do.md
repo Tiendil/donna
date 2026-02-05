@@ -62,7 +62,7 @@ id = "plan_rfc_work"
 kind = "donna.lib.request_action"
 ```
 
-1. Choose the workflow to plan the work required to implement the RFC created on the previous step.
+1. Choose the workflow to plan the work required to implement the RFC created in the previous step.
 2. Run the chosen workflow.
 3. Ensure you know the workflow id created in the previous step (default is `session:execute_rfc` if not specified).
 4. After completing the workflow `{{ donna.lib.goto("execute_rfc_work") }}`.

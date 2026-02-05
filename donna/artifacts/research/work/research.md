@@ -9,7 +9,7 @@ Workflow for performing research on a given question/problem/situation. Collects
 
 The purpose of this workflow is to provide an information for making decisions or producing solutions based on researched data. It can be used:
 
-- When the developer explicitly asks to make a research.
+- When the developer explicitly asks to conduct research.
 - When other workflows need to perform research as a subtask.
 
 ## Start
@@ -31,7 +31,7 @@ id = "ensure_problem_description_exists"
 kind = "donna.lib.request_action"
 ```
 
-At this point you SHOULD have a clear description of the problem in your context. I.e. you know what you need to do in this workflow.
+At this point, you SHOULD have a clear description of the problem in your context. I.e., you know what you need to do in this workflow.
 
 1. If you have a problem description in your context, `{{ donna.lib.goto("prepare_artifact") }}`.
 2. If you have no problem description in your context, but you know it is in one of `session:*` artifacts, find and view it. Then `{{ donna.lib.goto("prepare_artifact") }}`.
@@ -99,9 +99,9 @@ id = "describe_solution_space"
 kind = "donna.lib.request_action"
 ```
 
-To produce solution we should understand how to analyze the data and how to synthesize results into the final solution.
+To produce a solution, we should understand how to analyze the data and how to synthesize results into the final solution.
 
-For this we need to list the axes along which we will analyze the data and the dimensions along which we will synthesize the results.
+For this, we need to list the axes along which we will analyze the data and the dimensions along which we will synthesize the results.
 
 1. List the analysis axes.
 2. List the synthesis dimensions.
@@ -151,7 +151,7 @@ id = "analyze_information"
 kind = "donna.lib.request_action"
 ```
 
-1. Using the analysis axes from the solution space description, analyze the collected information. Choose the format that best represents the analysis results and suits the the required solution form.
+1. Using the analysis axes from the solution space description, analyze the collected information. Choose the format that best represents the analysis results and suits the required solution form.
 2. Update the artifact with the analysis results.
 3. `{{ donna.lib.goto("synthesize_solutions") }}`
 
@@ -162,7 +162,7 @@ id = "synthesize_solutions"
 kind = "donna.lib.request_action"
 ```
 
-1. Using the synthesis dimensions from the solution space description, synthesize possible solutions based on the analysis results. Choose the format that best represents the synthesized solutions and suits the the required solution form.
+1. Using the synthesis dimensions from the solution space description, synthesize possible solutions based on the analysis results. Choose the format that best represents the synthesized solutions and suits the required solution form.
 2. Update the artifact with the synthesized solutions.
 3. `{{ donna.lib.goto("evaluate_solutions") }}`
 
