@@ -13,7 +13,7 @@ from donna.workspaces import errors as world_errors
 
 
 @unwrap_to_error
-def initialize_runtime(
+def initialize_runtime(  # noqa: CCR001
     root_dir: pathlib.Path | None = None,
     protocol: Mode | None = None,
 ) -> Result[None, core_errors.ErrorsList]:

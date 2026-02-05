@@ -6,12 +6,10 @@ from typing import Callable, ParamSpec
 
 import typer
 
-from donna.core import errors as core_errors
 from donna.core.errors import EnvironmentError
 from donna.core.result import UnwrapError
 from donna.protocol.cells import Cell
 from donna.protocol.modes import Mode, get_cell_formatter
-from donna.workspaces import errors as workspace_errors
 from donna.workspaces.initialization import initialize_runtime
 
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pathlib
 from typing import TYPE_CHECKING, Any
 
@@ -206,4 +208,4 @@ class GlobalConfig[V]():
 project_dir = GlobalConfig[pathlib.Path]()
 config_dir = GlobalConfig[pathlib.Path]()
 config = GlobalConfig[Config]()
-protocol = GlobalConfig["Mode"]()
+protocol: GlobalConfig["Mode"] = GlobalConfig()

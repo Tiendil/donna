@@ -100,7 +100,7 @@ FullArtifactSectionIdArgument = Annotated[
 
 
 ProtocolModeOption = Annotated[
-    Mode | None,
+    Mode,
     typer.Option(
         "--protocol",
         "-p",
