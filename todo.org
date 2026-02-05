@@ -1,5 +1,0 @@
-* TODO Review docs
-** review donna:* docs
-** improve donna:engine:specs:research
-** Massive spellcheck
-** tune wording of workflows (what to write before goto)
