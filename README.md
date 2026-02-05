@@ -150,16 +150,22 @@ It **MUST** be a one time operation. Do not repeat it unless you forget how to u
 
 **Donna is a CLI tool for agents.** You rarery need to use it directly.
 
+Commands you may need:
+
+- `donna -p human workspaces init` — initialize Donna in your project.
+- `donna -p human sessions start` — start a new working session, removed everything from the previous session.
+- `donna -p human artifacts list <pattern>` — list artifacts with short descriptions.
+
 Use `donna --help` if you need a quick reference.
 
 You find detailed documentation in the agent instructions — they are readable and always accurate:
 
 - [Intro](./donna/artifacts/intro.md) — introduction to Donna tool.
-- [Full CLI specification](./donna/artifacts/usage/cli.md) — full list of commands and how to use them.
+- [CLI specification](./donna/artifacts/usage/cli.md) — full list of commands and how to use them.
 - [Artifacts](./donna/artifacts/usage/artifacts.md) — what is Donna artifact and how to use them.
 - [Worlds](./donna/artifacts/usage/worlds.md) — how Donna discovers and manages its artifacts.
 
-The documentation below covers aspects that are important for Humans and partially duplicates the agent instructions.
+The documentation below covers aspects that are important for humans and partially duplicates the agent instructions.
 
 ## Batteries Included
 
