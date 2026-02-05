@@ -11,6 +11,7 @@ from donna.core.result import UnwrapError
 from donna.protocol.cells import Cell
 from donna.protocol.modes import Mode, get_cell_formatter
 from donna.workspaces.initialization import initialize_runtime
+from donna.workspaces import config as workspace_config
 
 
 def output_cells(cells: Iterable[Cell]) -> None:
@@ -54,6 +55,9 @@ def _is_workspace_init_command() -> bool:
 
 def try_initialize_donna(project_dir: pathlib.Path | None, protocol: Mode) -> None:
     if _is_workspace_init_command():
+        workspace_config.protocol.set(protocol)
+        if project_dir is not None:
+            workspace_config.project_dir.set(project_dir)
         return
 
     result = initialize_runtime(root_dir=project_dir, protocol=protocol)
