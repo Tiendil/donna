@@ -18,12 +18,12 @@ def dir() -> pathlib.Path:
     return tmp_path
 
 
-def file_for_artifact(artifact_id: FullArtifactIdArgument, extention: str) -> pathlib.Path:
+def file_for_artifact(artifact_id: FullArtifactIdArgument, extension: str) -> pathlib.Path:
     directory = dir()
 
     directory.mkdir(parents=True, exist_ok=True)
 
-    normalized_extension = extention.lstrip(".")
+    normalized_extension = extension.lstrip(".")
     artifact_file_name = f"{str(artifact_id).replace('/', '.')}.{int(time.time() * 1000)}.{normalized_extension}"
 
     return directory / artifact_file_name

@@ -160,7 +160,7 @@ class MutableState(BaseState):
         self.apply_changes(changes)
 
     @unwrap_to_error
-    def exectute_next_work_unit(self) -> Result[None, ErrorsList]:
+    def execute_next_work_unit(self) -> Result[None, ErrorsList]:
         next_work_unit = self.get_next_work_unit()
         assert next_work_unit is not None
 

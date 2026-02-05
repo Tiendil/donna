@@ -54,7 +54,7 @@ def details() -> Iterable[Cell]:
     return sessions.details()
 
 
-@sessions_cli.command(help="Run a workflow fron an artifact to drive the current session forward.")
+@sessions_cli.command(help="Run a workflow from an artifact to drive the current session forward.")
 @cells_cli
 def run(workflow_id: FullArtifactIdArgument) -> Iterable[Cell]:
     return sessions.start_workflow(workflow_id)

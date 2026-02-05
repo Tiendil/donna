@@ -1,5 +1,5 @@
 
-# Intoduction to the Donna development
+# Introduction to the Donna development
 
 ```toml donna
 kind = "donna.lib.specification"
@@ -10,9 +10,9 @@ This document provides an introduction to the Donna project for agents and devel
 
 `Donna` is a CLI tool that helps manage the work of AI agents like Codex.
 
-It is designed to to invert control flow: instead of agents deciding what to do next, the `donna` tells agents what to do next by following predefined workflows.
+It is designed to invert control flow: instead of agents deciding what to do next, the `donna` tells agents what to do next by following predefined workflows.
 
-The core idea is that most of high-level workflows are more algorithmic than it may seem at first glance. For example, it may be difficult to fix a particular type issue in the codebase, but the overall process of polishing the codebase is quite linear:
+The core idea is that most high-level workflows are more algorithmic than it may seem at first glance. For example, it may be difficult to fix a particular type issue in the codebase, but the overall process of polishing the codebase is quite linear:
 
 1. Ensure all tests pass.
 2. Ensure the code is formatted correctly.
@@ -20,7 +20,7 @@ The core idea is that most of high-level workflows are more algorithmic than it 
 4. Go to the step 1 if you changed something in the process.
 5. Finish.
 
-We may need coding agents on the each step of the process, but there no reason for agents to manage the whole grooming loop by themselves — it take longer time, spends tokens and may lead to confusion of agents.
+We may need coding agents on each step of the process, but there is no reason for agents to manage the whole grooming loop by themselves — it takes longer time, spends tokens and may lead to confusion of agents.
 
 ## Primary rules
 

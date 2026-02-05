@@ -76,7 +76,7 @@ kind = "donna.lib.request_action"
 id = "run_black_script"
 kind = "donna.lib.run_script"
 save_stdout_to = "black_output"
-goto_on_success = "run_flake8_script"
+goto_on_success = "run_codespell_script"
 goto_on_failure = "fix_black"
 ```
 
@@ -98,6 +98,37 @@ kind = "donna.lib.request_action"
 ```
 
 1. Fix the Black issues based on the output above.
+2. Ensure your changes are saved.
+3. `{{ donna.lib.goto("run_autoflake_script") }}`
+
+## Run Codespell
+
+```toml donna
+id = "run_codespell_script"
+kind = "donna.lib.run_script"
+save_stdout_to = "codespell_output"
+goto_on_success = "run_flake8_script"
+goto_on_failure = "fix_codespell"
+```
+
+```bash donna script
+#!/usr/bin/env bash
+
+codespell ./donna 2>&1
+```
+
+## Fix Codespell Issues
+
+```toml donna
+id = "fix_codespell"
+kind = "donna.lib.request_action"
+```
+
+```
+{{ donna.lib.task_variable("codespell_output") }}
+```
+
+1. Fix the codespell issues based on the output above.
 2. Ensure your changes are saved.
 3. `{{ donna.lib.goto("run_autoflake_script") }}`
 

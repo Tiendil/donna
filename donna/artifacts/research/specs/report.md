@@ -12,7 +12,7 @@ Donna introduces a group of workflows located in `donna:research:*` namespace th
 
 Session-related research artifacts MUST be stored as `session:research:<short-problem-related-identifier>`, unless the developer or parent workflow specifies a different location. The `<short-problem-related-identifier>` MUST be unique within the session.
 
-Agent (via workflows) creates that artifact and updates it iteratively as the research process goes on.
+The agent (via workflows) creates the artifact and updates it iteratively as the research process progresses.
 
 ## Research report structure
 
@@ -40,14 +40,14 @@ The research report is a Donna artifact (check `{{ donna.lib.view("donna:usage:a
 
 ### List format
 
-- If a section described as a list, it MUST contain only a single markdown list.
+- If a section is described as a list, it MUST contain only a single markdown list.
 - Each list item MUST be concise and clear.
 - Each list item SHOULD be atomic and focused on a single aspect.
-- Reviewer MUST be able to tell if the list item statement is true or false by inspecting resulting artifacts and behavior.
+- Reviewer MUST be able to tell if the list item statement is true or false by inspecting the resulting artifacts and behavior.
 
 Common approaches to improve list items:
 
-- Split a single item with an enumeration into multiple items with single focus.
+- Split a single item with an enumeration into multiple items with a single focus.
 - Transform an abstract item into a concrete one by referencing specific artifacts, measurable criteria, verifiable conditions, etc.
 
 ### Trusted inputs
@@ -57,9 +57,9 @@ Some sections of the research report MUST be based on trusted inputs. Trusted in
 - Original problem description from the developer or parent workflow.
 - Statements from the research report itself.
 - Existing project documentation, code, and artifacts.
-- External standards when they define constraints or best practices for the project domain.
-- Documentation of third-party libraries, frameworks, or tools when it describes constraints or best practices.
-- Primary research sources (datasets, reports, official publications) used to collect the required information.
+- External standards, when they define constraints or best practices for the project domain.
+- Documentation of third-party libraries, frameworks, or tools when they describe constraints or best practices.
+- Primary research sources (datasets, reports, official publications) were used to collect the required information.
 
 ## `Primary` section
 
