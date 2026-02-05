@@ -21,7 +21,7 @@ We may need coding agents on the each step of the process, but there no reason f
 
 ## Artifact Tags
 
-To simplicity searching of artifacts by their semantics, Donna allows tagging artifacts with semantically valuable keywords. Artifacts in `donna:*` world use the next set of tags.
+To simplify searching for artifacts by their semantics, Donna allows tagging artifacts with semantically valuable keywords. Artifacts in `donna:*` world use the next set of tags.
 
 Artifact type tags:
 

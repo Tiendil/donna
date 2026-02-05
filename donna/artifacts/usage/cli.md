@@ -95,7 +95,7 @@ You start session by calling `donna -p <protocol> sessions start`.
 
 ### Session flow
 
-After the session is started you MUST follow the next workflow to perform your work:
+After the session starts you MUST follow the next workflow to perform your work:
 
 1. List all possible workflows with command `donna -p <protocol> artifacts list`.
 2. Choose the most appropriate workflow for the task you are going to work on or ask the developer if you are not sure which workflow to choose.
@@ -103,7 +103,7 @@ After the session is started you MUST follow the next workflow to perform your w
 4. Donna will output descriptions of all operations it performs to complete the work.
 5. Donna will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
 6. When you done processing an action request, call `donna -p <protocol> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report request completion. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>:<artifact>:<operation-id>`.
-7. After you complete an action request, Donna will continue workflow execution and outputs what you need to do next.
+7. After you complete an action request, Donna will continue workflow execution and output what you need to do next.
 
 You MUST continue following Donna's instructions until the workflow is completed.
 
@@ -133,11 +133,11 @@ If Donna tells you there is no work left, you MUST inform the developer that the
 
 An artifact is a markdown document with extra metadata stored in one of the Donna's worlds.
 
-Use the next commands to work with artifacts
+Use the next commands to work with artifacts:
 
 - `donna -p <protocol> artifacts list [<artifact-pattern>]` — list all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, list all artifacts in all worlds. Use this command when you need to find an artifact or see what artifacts are available.
 - `donna -p <protocol> artifacts view <artifact-pattern>` — get the meaningful (rendered) content of all matching artifacts. This command shows the rendered information about each artifact. Use this command when you need to read artifact content.
-- `donna -p <protocol> artifacts fetch <world>:<artifact>` — download the original source of the artifact content, outputs the file path to the artifact's copy you can change. Use this command when you need to change the content of the artifact.
+- `donna -p <protocol> artifacts fetch <world>:<artifact>` — download the original source of the artifact content, outputs the file path to the artifact's copy, you can change. Use this command when you need to change the content of the artifact.
 - `donna -p <protocol> artifacts tmp <slug>.<extension>` — create a temporary file for artifact-related work and output its path.
 - `donna -p <protocol> artifacts update <world>:<artifact> <file-path>` — upload the given file as the artifact. Use this command when you finished changing the content of the artifact.
 - `donna -p <protocol> artifacts copy <artifact-id-from> <artifact-id-to>` — copy an artifact source to another artifact ID (can be in a different world). This overwrites the destination if it exists.
