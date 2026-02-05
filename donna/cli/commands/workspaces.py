@@ -17,9 +17,9 @@ workspaces_cli = typer.Typer()
 @workspaces_cli.command(help="Initialize Donna workspace.")
 @cells_cli
 def init() -> Iterable[Cell]:
-    try:
+    if workspace_config.project_dir.is_set():
         target_dir = workspace_config.project_dir()
-    except workspace_errors.GlobalConfigNotSet:
+    else:
         target_dir = pathlib.Path.cwd()
 
     initialize_workspace(target_dir).unwrap()

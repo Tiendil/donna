@@ -201,6 +201,9 @@ class GlobalConfig[V]():
 
         return self._value
 
+    def is_set(self) -> bool:
+        return self._value is not None
+
     def __call__(self) -> V:
         return self.get()
 

@@ -67,7 +67,9 @@ def initialize_workspace(project_dir: pathlib.Path) -> Result[None, core_errors.
     if workspace_dir.exists():
         return Err([world_errors.WorkspaceAlreadyInitialized(project_dir=project_dir)])
 
-    config.project_dir.set(project_dir)
+    if not config.project_dir.is_set():
+        config.project_dir.set(project_dir)
+
     config.config_dir.set(workspace_dir)
 
     workspace_dir.mkdir(parents=True, exist_ok=True)
