@@ -52,7 +52,7 @@ The example below is a simplified version of the polishing workflow that formats
 ```
 
 <details>
-<summary><strong>Example of a simple workflow</strong></summary>
+<summary><strong>Example source and comments</strong></summary>
 
 ~~~
 # Polishing Workflow
