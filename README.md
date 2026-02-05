@@ -289,7 +289,7 @@ To execute a workflow, Donna uses a simplified virtual machine (VM) that maintai
 
 ### Operations
 
-You can find detailed docs on built-in operations in the [artifacts documentation](./donna/artifacts/usage/operations.md).
+You can find detailed docs on built-in operations in the [artifacts documentation](./donna/artifacts/usage/artifacts.md).
 
 Here is a short list of them:
 
