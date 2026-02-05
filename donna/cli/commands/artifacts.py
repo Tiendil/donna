@@ -12,7 +12,7 @@ from donna.cli.types import (
     OutputPathOption,
     TagOption,
 )
-from donna.cli.utils import cells_cli, try_initialize_donna
+from donna.cli.utils import cells_cli
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.ids import FullArtifactIdPattern
@@ -36,16 +36,6 @@ def _parse_slug_with_extension(value: str) -> Result[tuple[str, str], ErrorsList
         return Err([cli_errors.InvalidSlugWithExtension(value=normalized)])
 
     return Ok((slug, extension))
-
-
-@artifacts_cli.callback(invoke_without_command=True)
-def initialize(ctx: typer.Context) -> None:
-    cmd = ctx.invoked_subcommand
-
-    if cmd is None:
-        return
-
-    try_initialize_donna()
 
 
 @artifacts_cli.command(

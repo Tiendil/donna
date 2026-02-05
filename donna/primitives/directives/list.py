@@ -7,7 +7,6 @@ from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.ids import FullArtifactIdPattern
 from donna.machine.templates import Directive, PreparedDirectiveResult
-from donna.protocol.modes import mode
 from donna.workspaces import config as workspace_config
 
 
@@ -72,7 +71,7 @@ class List(Directive):
     def render_view(
         self, context: Context, artifact_pattern: FullArtifactIdPattern, tags: list[str]
     ) -> Result[Any, ErrorsList]:
-        protocol = mode().value
+        protocol = workspace_config.protocol().value
         root_dir = workspace_config.project_dir()
         tags_args = " ".join(f"--tag '{tag}'" for tag in tags)
         tag_suffix = f" {tags_args}" if tags_args else ""

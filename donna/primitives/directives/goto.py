@@ -7,7 +7,6 @@ from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.ids import FullArtifactSectionId
 from donna.machine.templates import Directive, PreparedDirectiveResult
-from donna.protocol.modes import mode
 from donna.workspaces import config as workspace_config
 
 
@@ -38,7 +37,7 @@ class GoTo(Directive):
         return Ok((next_operation_id,))
 
     def render_view(self, context: Context, next_operation_id: FullArtifactSectionId) -> Result[Any, ErrorsList]:
-        protocol = mode().value
+        protocol = workspace_config.protocol().value
         root_dir = workspace_config.project_dir()
         return Ok(
             f"donna -p {protocol} -r '{root_dir}' "

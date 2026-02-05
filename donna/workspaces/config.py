@@ -1,5 +1,5 @@
 import pathlib
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pydantic
 
@@ -13,6 +13,9 @@ from donna.workspaces.sources.base import SourceConfig as SourceConfigValue
 from donna.workspaces.sources.base import SourceConstructor
 from donna.workspaces.worlds.base import World as BaseWorld
 from donna.workspaces.worlds.base import WorldConstructor
+
+if TYPE_CHECKING:
+    from donna.protocol.modes import Mode
 
 DONNA_DIR_NAME = ".donna"
 DONNA_CONFIG_NAME = "config.toml"
@@ -203,3 +206,8 @@ class GlobalConfig[V]():
 project_dir = GlobalConfig[pathlib.Path]()
 config_dir = GlobalConfig[pathlib.Path]()
 config = GlobalConfig[Config]()
+protocol = GlobalConfig["Mode"]()
+
+
+def set_mode(mode: "Mode") -> None:
+    protocol.set(mode)
