@@ -12,12 +12,17 @@ from donna.workspaces import errors as world_errors
 
 
 @unwrap_to_error
-def initialize_runtime() -> Result[None, core_errors.ErrorsList]:
+def initialize_runtime(root_dir: pathlib.Path | None = None) -> Result[None, core_errors.ErrorsList]:
     """Initialize the runtime environment for the application.
 
     This function MUST be called before any other operations.
     """
-    project_dir = utils.discover_project_dir(config.DONNA_DIR_NAME).unwrap()
+    if root_dir is None:
+        project_dir = utils.discover_project_dir(config.DONNA_DIR_NAME).unwrap()
+    else:
+        project_dir = root_dir.resolve()
+        if not (project_dir / config.DONNA_DIR_NAME).is_dir():
+            return Err([core_errors.ProjectDirNotFound(donna_dir_name=config.DONNA_DIR_NAME)])
 
     config.project_dir.set(project_dir)
 

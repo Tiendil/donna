@@ -110,6 +110,23 @@ ProtocolModeOption = Annotated[
 ]
 
 
+RootOption = Annotated[
+    pathlib.Path | None,
+    typer.Option(
+        "--root",
+        "-r",
+        resolve_path=True,
+        file_okay=False,
+        dir_okay=True,
+        exists=True,
+        help=(
+            "Optional project root directory. "
+            "If omitted, Donna discovers it by searching parent directories for the workspace."
+        ),
+    ),
+]
+
+
 InputPathArgument = Annotated[
     pathlib.Path,
     typer.Argument(

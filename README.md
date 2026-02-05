@@ -139,9 +139,11 @@ Donna will create a `.donna/` folder in your project root with a default configu
 ```markdown
 **Use `donna` tool to work on this project.**
 
-**ALWAYS** run `donna -p llm artifacts view '*:intro'` when you start working on the project.
+**ALWAYS** run `donna -p llm -r <project-root> artifacts view '*:intro'` when you start working on the project.
 It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
 ```
+
+`-r <project-root>` is optional. If you run Donna from the project root or any subdirectory, it will discover the root automatically.
 
 4. Ask your agent to do something like `Add a button that …`. The agent will discover the appropriate workflow and run it.
 
