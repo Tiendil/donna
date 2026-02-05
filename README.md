@@ -224,9 +224,9 @@ On upload Donna validates the artifact and accept it only when there are no erro
 
 ### Rendering
 
-Markdown artifacts treated as a Jinja2 templates and rendered right after loading. There are multiple rendering modes that Donna uses for different purposes.
+Markdown artifacts are Jinja2 templates. There are multiple rendering modes that Donna uses for different purposes.
 
-More about Jinja2 rendering is described below.
+More about Jinja2 rendering is described a bit furzer.
 
 ### Artifacts Discovery
 
