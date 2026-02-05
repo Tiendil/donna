@@ -5,6 +5,7 @@ from typing import Callable, ParamSpec
 
 import pathlib
 import typer
+import click
 
 from donna.core.errors import EnvironmentError
 from donna.core.result import UnwrapError
@@ -45,7 +46,7 @@ def cells_cli(func: Callable[P, Iterable[Cell]]) -> Callable[P, None]:
 
 def root_dir_from_context() -> pathlib.Path | None:
     try:
-        ctx = typer.get_current_context()
+        ctx = click.get_current_context()
     except RuntimeError:
         return None
 
