@@ -252,12 +252,12 @@ Examples:
 
 Both commands also accept `--tag <tag>` option to filter artifacts by their tags.
 
-Currently Donna supports two artifact types:
+Currently Donna supports two artifact tags:
 
-- `workflow` — workflow artifact — is set automatically by Donna.
-- `specification` — specification artifact — is set automatically by Donna.
+- `workflow` — marks a workflow artifact — is set automatically by Donna.
+- `specification` — marks a specification artifact — is set automatically by Donna.
 
-So, you can find all workflows with the command `donna -p llm artifacts list '**' --tag workflow`.
+You can find all workflows with the command `donna -p llm artifacts list '**' --tag workflow`.
 
 ## Sessions
 
