@@ -32,7 +32,7 @@ Donna executes such loops for the agents, thereby saving time, context, and toke
 - **Readable artifacts** — all workflows and specifications are pure Markdown files with some [Jinja2](https://github.com/pallets/jinja) templating.
 - **Artifact management** — non-fuzzy navigation and smart agent-focused rendering of artifacts.
 - **Artifact distribution** — install your docs/workflows/skills as a Python lib.
-- **Agent-centric behavior** Donna helps agents with clear instructions, suggestions on fixing mistakes.
+- **Agent-centric behavior** — Donna guides agents through workflows, helps them be on the path, and fixes mistakes.
 - **Extensible architecture** — implement your own operations, validators, renderers; add support for new artifact formats and storages (worlds).
 - **Batteries included** — Donna goes with a set of pre-defined workflows, so you can start using it right away.
 
