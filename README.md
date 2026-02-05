@@ -348,15 +348,15 @@ For example, you can have two workflows `project:work:write-backend-test` and `p
 
 ## Jinja2 rendering
 
-Markdown artifacts treated as a Jinja2 templates and rendered right after loading.
+Markdown artifacts are Jinja2 templates and rendered right after loading, before parsing Markdown.
 
 There are multiple rendering modes that Donna uses for different purposes:
 
 1. `view` — artifact is rendered for displaying to the agent or the developer.
-2. `execute` — artifact is rendered for execution. For example, to substitute a variable from the task context into operation instructions.
+2. `execute` — artifact is rendered for execution. This mode has access to the current task context, so we can add a variable from it into operation instructions.
 3. `analyze` — artifact is rendered to be analyzed by Donna itself. For example, to extract `goto` directives from operation bodies and validate the workflow structure.
 
-All Jinja2 rendering is supported, except template inheritance related features. So, an artifact is self contained template.
+All Jinja2 rendering is supported, except inheritance-related features. So, an artifact is self contained template.
 
 The rendering is performed before processing Markdown, so you can use Jinja2 features (like loops, conditionals, etc) to generate complex artifacts.
 
