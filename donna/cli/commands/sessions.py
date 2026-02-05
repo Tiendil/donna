@@ -4,21 +4,11 @@ import typer
 
 from donna.cli.application import app
 from donna.cli.types import ActionRequestIdArgument, FullArtifactIdArgument, FullArtifactSectionIdArgument
-from donna.cli.utils import cells_cli, try_initialize_donna
+from donna.cli.utils import cells_cli
 from donna.machine import sessions
 from donna.protocol.cells import Cell
 
 sessions_cli = typer.Typer()
-
-
-@sessions_cli.callback(invoke_without_command=True)
-def initialize(ctx: typer.Context) -> None:
-    cmd = ctx.invoked_subcommand
-
-    if cmd is None:
-        return
-
-    try_initialize_donna()
 
 
 @sessions_cli.command(help="Start a new session, reset session state, remove all session artifacts.")

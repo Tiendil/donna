@@ -100,12 +100,29 @@ FullArtifactSectionIdArgument = Annotated[
 
 
 ProtocolModeOption = Annotated[
-    Mode | None,
+    Mode,
     typer.Option(
         "--protocol",
         "-p",
         parser=_parse_protocol_mode,
         help="Protocol mode to use (required). Examples: --protocol=llm, -p llm.",
+    ),
+]
+
+
+RootOption = Annotated[
+    pathlib.Path | None,
+    typer.Option(
+        "--root",
+        "-r",
+        resolve_path=True,
+        file_okay=False,
+        dir_okay=True,
+        exists=True,
+        help=(
+            "Optional project root directory. "
+            "If omitted, Donna discovers it by searching parent directories for the workspace."
+        ),
     ),
 ]
 

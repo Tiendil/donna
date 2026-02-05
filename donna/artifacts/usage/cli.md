@@ -39,6 +39,12 @@ We may need coding agents on the each step of the process, but there no reason f
 Protocol selects the output formatting and behavior of Donna's CLI for different consumers (humans, LLMs, automation).
 When an agent invokes Donna, it SHOULD use the `llm` protocol (pass an `-p llm` argument) unless the developer explicitly instructs otherwise.
 
+### Project root
+
+`-r <project-root>` sets the project root explicitly for any command (long form: `--root`).
+If it is omitted, Donna discovers the project root by searching from the current working directory upwards for the `.donna` workspace directory.
+Use this option when you run Donna from outside the project tree or when you want to target a specific project.
+
 ### Protocol cells
 
 Donna communicates its progress and requests by outputting inrofmation organized in "cells". There are two kinds of cells output:
@@ -171,6 +177,10 @@ The format of `<artifact-pattern>` is as follows:
   4. This document.
 
 **All Donna CLI commands MUST include an explicit protocol selection using `-p <protocol>`.** Like `donna -p llm <command>`.
+
+**All Donna CLI commands MUST be run from the project root or its subdirectories unless you pass `-r <project-root>`.**
+
+If you are not running from the project root or its subdirectories, add `-r <project-root>` to point Donna to the correct project.
 
 **Pass text arguments to the tool in quotes with respect to escaping.** The tool MUST receive the exact text you want to pass as an argument.
 

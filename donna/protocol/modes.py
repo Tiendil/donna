@@ -1,10 +1,11 @@
 import enum
 
-from donna.protocol.errors import ModeNotSet, UnsupportedFormatterMode
+from donna.protocol.errors import UnsupportedFormatterMode
 from donna.protocol.formatters.automation import Formatter as AutomationFormatter
 from donna.protocol.formatters.base import Formatter
 from donna.protocol.formatters.human import Formatter as HumanFormatter
 from donna.protocol.formatters.llm import Formatter as LLMFormatter
+from donna.workspaces.config import protocol as protocol_mode
 
 
 class Mode(enum.StrEnum):
@@ -13,23 +14,8 @@ class Mode(enum.StrEnum):
     automation = "automation"
 
 
-_MODE: Mode | None = None
-
-
-def set_mode(mode: Mode) -> None:
-    global _MODE
-    _MODE = mode
-
-
-def mode() -> Mode:
-    if _MODE is None:
-        raise ModeNotSet()
-
-    return _MODE
-
-
 def get_cell_formatter() -> Formatter:
-    match mode():
+    match protocol_mode():
         case Mode.human:
             return HumanFormatter()
         case Mode.llm:
@@ -37,4 +23,4 @@ def get_cell_formatter() -> Formatter:
         case Mode.automation:
             return AutomationFormatter()
         case _:
-            raise UnsupportedFormatterMode(mode=mode())
+            raise UnsupportedFormatterMode(mode=protocol_mode())

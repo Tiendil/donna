@@ -7,17 +7,29 @@ from donna.core import errors as core_errors
 from donna.core import utils
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import WorldId
+from donna.protocol.modes import Mode
 from donna.workspaces import config
 from donna.workspaces import errors as world_errors
 
 
 @unwrap_to_error
-def initialize_runtime() -> Result[None, core_errors.ErrorsList]:
+def initialize_runtime(  # noqa: CCR001
+    root_dir: pathlib.Path | None = None,
+    protocol: Mode | None = None,
+) -> Result[None, core_errors.ErrorsList]:
     """Initialize the runtime environment for the application.
 
     This function MUST be called before any other operations.
     """
-    project_dir = utils.discover_project_dir(config.DONNA_DIR_NAME).unwrap()
+    if protocol is not None:
+        config.protocol.set(protocol)
+
+    if root_dir is None:
+        project_dir = utils.discover_project_dir(config.DONNA_DIR_NAME).unwrap()
+    else:
+        project_dir = root_dir.resolve()
+        if not (project_dir / config.DONNA_DIR_NAME).is_dir():
+            return Err([core_errors.ProjectDirNotFound(donna_dir_name=config.DONNA_DIR_NAME)])
 
     config.project_dir.set(project_dir)
 
@@ -55,7 +67,9 @@ def initialize_workspace(project_dir: pathlib.Path) -> Result[None, core_errors.
     if workspace_dir.exists():
         return Err([world_errors.WorkspaceAlreadyInitialized(project_dir=project_dir)])
 
-    config.project_dir.set(project_dir)
+    if not config.project_dir.is_set():
+        config.project_dir.set(project_dir)
+
     config.config_dir.set(workspace_dir)
 
     workspace_dir.mkdir(parents=True, exist_ok=True)

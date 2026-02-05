@@ -12,4 +12,4 @@ Since this is the repository that contains the Donna project itself, you have di
 
 I.e. you develop Donna using Donna.
 
-**ALWAYS** run `./bin/donna.sh -p llm artifacts view '*:intro'` when you start working. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
+**ALWAYS** run `./bin/donna.sh -p llm -r <project-root> artifacts view '*:intro'` when you start working. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.

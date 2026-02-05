@@ -85,6 +85,11 @@ kind = "donna.lib.request_action"
 3. Add sub-items for all major changes in behavior, architecture, or code.
 4. `{{ donna.lib.goto("update_breaking_changes_section") }}`
 
+Notes:
+
+- Use past tense (`Added …`, `Fixed …`, etc.)
+- Be concise.
+
 ## Update breaking changes section
 
 ```toml donna
@@ -95,6 +100,11 @@ kind = "donna.lib.request_action"
 1. If there are breaking changes, add or update the `### Breaking Changes` section with the relevant entries.
 2. If there are no breaking changes, do not add the section.
 3. `{{ donna.lib.goto("update_migration_section") }}`
+
+Notes:
+
+- Use past tense (`Added …`, `Fixed …`) or present tense (`X is now …`).
+- Be concise.
 
 ## Update migration section
 
@@ -107,6 +117,11 @@ kind = "donna.lib.request_action"
 2. If no migrations are needed, do not add the section.
 3. `{{ donna.lib.goto("update_deprecations_section") }}`
 
+Notes:
+
+- Use past tense (`Added …`, `Fixed …`) or present tense (`X is now …`).
+- Be concise.
+
 ## Update deprecations section
 
 ```toml donna
@@ -118,6 +133,11 @@ kind = "donna.lib.request_action"
 2. If no deprecations are introduced, do not add the section.
 3. `{{ donna.lib.goto("update_removals_section") }}`
 
+Notes:
+
+- Use past tense (`Added …`, `Fixed …`) or present tense (`X is now …`).
+- Be concise.
+
 ## Update removals section
 
 ```toml donna
@@ -128,6 +148,11 @@ kind = "donna.lib.request_action"
 1. If functionality removals occur, add or update the `### Removals` section with the relevant entries.
 2. If no removals occur, do not add the section.
 3. `{{ donna.lib.goto("validate_changelog") }}`
+
+Notes:
+
+- Use past tense (`Added …`, `Fixed …`) or present tense (`X is now …`).
+- Be concise.
 
 ## Validate changelog
 
