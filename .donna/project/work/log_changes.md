@@ -78,7 +78,7 @@ id = "update_changes_section"
 kind = "donna.lib.request_action"
 ```
 
-1. Add a new entry under the `## Changes` section (create the section if missing).
+1. Add a new entry under the `### Changes` section (create the section if missing).
 2. Format the main entry:
    - With task id: `- <short-id> <short-changes-description>`
    - Without task id: `- <short-changes-description>`
@@ -92,7 +92,7 @@ id = "update_breaking_changes_section"
 kind = "donna.lib.request_action"
 ```
 
-1. If there are breaking changes, add or update the `## Breaking Changes` section with the relevant entries.
+1. If there are breaking changes, add or update the `### Breaking Changes` section with the relevant entries.
 2. If there are no breaking changes, do not add the section.
 3. `{{ donna.lib.goto("update_migration_section") }}`
 
@@ -103,7 +103,7 @@ id = "update_migration_section"
 kind = "donna.lib.request_action"
 ```
 
-1. If migrations are needed, add or update the `## Migration` section with the relevant entries.
+1. If migrations are needed, add or update the `### Migration` section with the relevant entries.
 2. If no migrations are needed, do not add the section.
 3. `{{ donna.lib.goto("update_deprecations_section") }}`
 
@@ -114,7 +114,7 @@ id = "update_deprecations_section"
 kind = "donna.lib.request_action"
 ```
 
-1. If deprecations are introduced, add or update the `## Deprecations` section with the relevant entries.
+1. If deprecations are introduced, add or update the `### Deprecations` section with the relevant entries.
 2. If no deprecations are introduced, do not add the section.
 3. `{{ donna.lib.goto("update_removals_section") }}`
 
@@ -125,7 +125,7 @@ id = "update_removals_section"
 kind = "donna.lib.request_action"
 ```
 
-1. If functionality removals occur, add or update the `## Removals` section with the relevant entries.
+1. If functionality removals occur, add or update the `### Removals` section with the relevant entries.
 2. If no removals occur, do not add the section.
 3. `{{ donna.lib.goto("validate_changelog") }}`
 
