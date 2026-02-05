@@ -103,7 +103,7 @@ kind = "donna.lib.request_action"
 
 Notes:
 
-- Use past tense (`Added …`, `Fixed …`, etc.)
+- Use past tense (`Added …`, `Fixed …`) or present tense (`X is now …`).
 - Be concise.
 
 ## Update migration section
@@ -119,7 +119,7 @@ kind = "donna.lib.request_action"
 
 Notes:
 
-- Use past tense (`Added …`, `Fixed …`, etc.)
+- Use past tense (`Added …`, `Fixed …`) or present tense (`X is now …`).
 - Be concise.
 
 ## Update deprecations section
@@ -135,7 +135,7 @@ kind = "donna.lib.request_action"
 
 Notes:
 
-- Use past tense (`Added …`, `Fixed …`, etc.)
+- Use past tense (`Added …`, `Fixed …`) or present tense (`X is now …`).
 - Be concise.
 
 ## Update removals section
@@ -151,7 +151,7 @@ kind = "donna.lib.request_action"
 
 Notes:
 
-- Use past tense (`Added …`, `Fixed …`, etc.)
+- Use past tense (`Added …`, `Fixed …`) or present tense (`X is now …`).
 - Be concise.
 
 ## Validate changelog
