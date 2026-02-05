@@ -7,16 +7,23 @@ from donna.core import errors as core_errors
 from donna.core import utils
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import WorldId
+from donna.protocol.modes import Mode
 from donna.workspaces import config
 from donna.workspaces import errors as world_errors
 
 
 @unwrap_to_error
-def initialize_runtime(root_dir: pathlib.Path | None = None) -> Result[None, core_errors.ErrorsList]:
+def initialize_runtime(
+    root_dir: pathlib.Path | None = None,
+    protocol: Mode | None = None,
+) -> Result[None, core_errors.ErrorsList]:
     """Initialize the runtime environment for the application.
 
     This function MUST be called before any other operations.
     """
+    if protocol is not None:
+        config.protocol.set(protocol)
+
     if root_dir is None:
         project_dir = utils.discover_project_dir(config.DONNA_DIR_NAME).unwrap()
     else:

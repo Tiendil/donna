@@ -207,7 +207,3 @@ project_dir = GlobalConfig[pathlib.Path]()
 config_dir = GlobalConfig[pathlib.Path]()
 config = GlobalConfig[Config]()
 protocol = GlobalConfig["Mode"]()
-
-
-def set_mode(mode: "Mode") -> None:
-    protocol.set(mode)
