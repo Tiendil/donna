@@ -129,7 +129,7 @@ pip install donna
 
 ```bash
 cd <your-project-root>
-donna -p human workspaces init
+donna workspaces init
 ```
 
 Donna will create a `.donna/` folder in your project root with a default configuration in `.donna/config.toml`.
