@@ -159,7 +159,6 @@ Use `donna --help` for a quick reference.
 
 You find detailed documentation in the agent instructions — they are readable and always accurate:
 
-- [Intro](./donna/artifacts/intro.md) — introduction to Donna tool.
 - [CLI specification](./donna/artifacts/usage/cli.md) — full list of commands and how to use them.
 - [Artifacts](./donna/artifacts/usage/artifacts.md) — what are Donna artifact and how to use them.
 - [Worlds](./donna/artifacts/usage/worlds.md) — how Donna discovers and manages its artifacts.
