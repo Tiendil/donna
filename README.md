@@ -5,16 +5,14 @@ Your agent will generate [state machines](https://en.wikipedia.org/wiki/Finite-s
 
 ## What is Donna?
 
-Donna is a CLI tool that helps coding agents like Codex to behave deterministically and focus on the performed work.
+Donna is a CLI tool that helps coding agents like Codex focus on the task at hand by keeping high-level control flow in explicit Donna workflows. Donna dictates what should be done on each step of work, so the agent can focus on the actual piece of it.
 
-It is designed to invert control flow: instead of agent deciding what to do and in which order, Donna dictates what should be done on each step of work, so the agent can focus on the actual piece of work.
-
-However, Donna is not an orchestrator, it is a tool to be used by agent, so, it can be used with any agent and does not require API keys or any other credentials. You may look at a donna like on the work diary or personal secretary for your agent.
+However, Donna is not an orchestrator, it is a tool to be used by agent, so, it can be used with any agent and does not require API keys or any other credentials. You may look at a Donna like at the work diary or personal secretary for your agent.
 
 The core idea:
 
 - **Most high-level work are more algorithmic than it may seem at first glance.**
-- **Most low-level workf are less algorithmic than it may seem at first glance.**
+- **Most low-level work are less algorithmic than it may seem at first glance.**
 
 For example, it may be non-trivial to fix a particular unit test, but the overall process of polishing the codebase is quite linear:
 
@@ -24,18 +22,18 @@ For example, it may be non-trivial to fix a particular unit test, but the overal
 4. Go to the step 1 if you changed something in the process.
 5. Finish.
 
-Coding agents show great results on each separate step of the process, however they often struggle to manage meta-loops in deterministic manner — they forget steps, misinterpret results, use wrong ways to run tools, etc.
+Coding agents show great results on each separate step of the process, however they often struggle to manage meta-loops — they forget steps, misinterpret results, use wrong ways to run tools, etc.
 
-So, Donna executes such loops for the agents and therefore saves time, context and tokens simultaneously increasing the overall quality of work.
+Donna executes such loops for the agents and, therefore, saves time, context, and tokens simultaneously increasing the overall quality of work.
 
 ## Features
 
-- **Deterministic workflows** — fixed & validated control flows.
+- **Deterministic workflows** — define fixed & validated control flow for agents to follow.
 - **Saves context, tokens and time** — agents do not need to think when thinking is not required.
 - **Readable artifacts** — all workflows and specifications are pure Markdown files with some [Jinja2](https://github.com/pallets/jinja) templating.
-- **Artifact management** — non-fuzzy navigation and smart agent-focused rendering of specs.
-- **Artifact distribution** — install your docs/workflows/skills as (with) your Python package.
-- **Agent-centric behavior** with clear instructions, suggestions on fixing mistakes.
+- **Artifact management** — non-fuzzy navigation and smart agent-focused rendering of artifacts.
+- **Artifact distribution** — install your docs/workflows/skills as a Python lib;  with your Python lib.
+- **Agent-centric behavior** Donna helps agents with clear instructions, suggestions on fixing mistakes.
 - **Extensible architecture** — implement your own operations, validators, renderers; add support for new artifact formats and storages (worlds).
 - **Batteries included** — Donna goes with a set of pre-defined workflows, so you can start using it right away.
 
