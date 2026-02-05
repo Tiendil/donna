@@ -7,3 +7,4 @@
     - Default workspace configs emit relative filesystem world paths for project and session worlds.
     - Filesystem world resolution expands `~` and resolves relative paths against the workspace root.
 - Updated instructions to make session starting/resetting process dependent on a developer, not an agent.
+- Filled README.md with detailed docs.
