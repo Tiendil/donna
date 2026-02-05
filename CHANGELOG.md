@@ -13,7 +13,7 @@ No changes.
 
 ## 0.2.2 on 2026-02-05
 
-## Changes
+### Changes
 
 - Add codespell to the polishing workflow.
     - Add `codespell` as a dev dependency.
@@ -26,7 +26,7 @@ No changes.
 
 ## 0.2.1 on 2026-02-03
 
-## Changes
+### Changes
 
 - Added `project:work:log_changes` workflow for recording unreleased changes with Changy.
 - Configured packaging, released on PyPI.
