@@ -306,6 +306,7 @@ Donna can detect errors (in artifacts, in execution, etc). If an error can be fi
 
 <details>
 <summary><strong>Example of error message from Donna</strong></summary>
+
 ```bash
 $ donna -p llm sessions run project:work:polish
 
@@ -322,6 +323,7 @@ Ways to fix:
 - Check the section id for typos.
 - Ensure the section exists in the artifact
 ```
+
 </details>
 
 ### Generating workflows
