@@ -122,7 +122,9 @@ You can find a more complex implementation of the same workflow in the [polish.m
 1. Install `donna` package.
 
 ```bash
-pip install donna
+uv tool install donna
+
+# pipx install donna
 ```
 
 2. Initialize Donna in your project.
