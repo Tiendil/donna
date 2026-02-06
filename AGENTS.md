@@ -10,7 +10,7 @@ Every agent MUST follow the rules and guidelines outlined in this document when 
 
 Since this is the repository that contains the Donna project itself, you have direct access to the Donna CLI tool via `./bin/donna.sh` script. I.e. you develop Donna using Donna.
 
-**The next instructions take precedence over all other instructions**, unless the developer explicitly instructs you to do otherwise.
+**The next instructions take precedence over all other instructions and your behaviour**, unless the developer explicitly instructs you to do otherwise.
 
 1. You **MUST** run `./bin/donna.sh -p llm -r <project-root> artifacts view '*:intro'` when you start working.
 2. You **MUST** strictly follow the instructions provided by Donna.
