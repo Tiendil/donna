@@ -137,6 +137,8 @@ Donna will create a `.donna/` folder in your project root with a default configu
 3. Add a short instruction into your `AGENT.md` file.
 
 ```markdown
+## First actions
+
 **Use `donna` tool to work on this project.**
 
 **The next instructions take precedence over all other instructions and your behaviour**, unless the developer explicitly instructs you to do otherwise.
