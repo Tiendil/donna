@@ -172,7 +172,7 @@ kind = "donna.lib.request_action"
 
 ##### `donna.lib.request_action`
 
-`donna.lib.request_action` operation kind indicates that Donna will request the agent to perform some action.
+`donna.lib.request_action` operation indicates that Donna will request the agent to perform some action.
 
 The content of the tail section is the text instructions for the agent on what to do.
 
@@ -192,7 +192,7 @@ Here may be any additional instructions, requirements, notes, references, etc.
 
 ##### `donna.lib.run_script`
 
-`donna.lib.run_script` operation kind executes a script from the operation body without agent/user interaction.
+`donna.lib.run_script` operation executes a script from the operation body without agent/user interaction.
 
 The body of the operation MUST include exactly one fenced code block whose info string includes `<language> donna script`.
 Any other text in the operation body is ignored.
@@ -230,12 +230,14 @@ Routing rules:
 - Non-zero exit codes first check `goto_on_code`, then fall back to `goto_on_failure`.
 - Timeouts are treated as exit code `124`.
 
+Scripts are executed with the current project root as working directory.
+
 When `save_stdout_to` and/or `save_stderr_to` are set, the operation stores captured output in the task context
 under the specified variable names.
 
 ##### `donna.lib.output`
 
-`donna.lib.output` operation kind emits its body as an output cell and then continues to the configured next step.
+`donna.lib.output` operation emits its body as an output cell and then continues to the configured next step.
 
 The body of the operation is rendered as an output cell during execution.
 
@@ -249,11 +251,11 @@ next_operation_id = "<next_operation_id>"  # required
 
 ##### `donna.lib.finish`
 
-`donna.lib.finish` operation kind indicates that the workflow is finished.
+`donna.lib.finish` operation indicates that the workflow is finished.
 
 The body of the operation is rendered as an output cell before the workflow completes.
 
-Each possible path through the workflow MUST end with this operation kind.
+Each possible path through the workflow MUST end with this operation.
 
 ## Directives
 

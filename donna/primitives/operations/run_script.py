@@ -1,4 +1,5 @@
 import os
+import pathlib
 import subprocess  # noqa: S404
 import tempfile
 from typing import TYPE_CHECKING, ClassVar, Iterator, cast
@@ -12,6 +13,7 @@ from donna.domain.ids import ArtifactSectionId, FullArtifactId
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta
+from donna.workspaces import config as workspace_config
 from donna.workspaces import markdown
 from donna.workspaces.sources.markdown import MarkdownSectionMixin
 
@@ -155,7 +157,11 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         script = meta.script
         assert script is not None
 
-        stdout, stderr, exit_code = _run_script(script, meta.timeout)
+        stdout, stderr, exit_code = _run_script(
+            script=script,
+            timeout=meta.timeout,
+            project_dir=workspace_config.project_dir(),
+        )
 
         if meta.save_stdout_to is not None:
             yield ChangeSetTaskContext(task_id=task.id, key=meta.save_stdout_to, value=stdout)
@@ -205,7 +211,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         return Ok(None)
 
 
-def _run_script(script: str, timeout: int) -> tuple[str, str, int]:  # noqa: CCR001
+def _run_script(script: str, timeout: int, project_dir: pathlib.Path) -> tuple[str, str, int]:  # noqa: CCR001
     temp_path = None
 
     try:
@@ -221,6 +227,7 @@ def _run_script(script: str, timeout: int) -> tuple[str, str, int]:  # noqa: CCR
                 [temp_path],
                 capture_output=True,
                 text=True,
+                cwd=project_dir,
                 env=os.environ.copy(),
                 stdin=subprocess.DEVNULL,
                 timeout=timeout,
