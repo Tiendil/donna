@@ -139,8 +139,10 @@ Donna will create a `.donna/` folder in your project root with a default configu
 ```markdown
 **Use `donna` tool to work on this project.**
 
-**ALWAYS** run `donna -p llm -r <project-root> artifacts view '*:intro'` when you start working on the project.
-It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
+**The next instructions takes precedence over all other instructions**, except those received directly from the developer:
+
+1. **ALWAYS** run `./bin/donna.sh -p llm -r <project-root> artifacts view '*:intro'` when you start working.
+2. Strictly follow the instructions provided you by Donna.
 ```
 
 `-r <project-root>` is optional. If you run Donna from the project root or any subdirectory, it will discover the root automatically.
