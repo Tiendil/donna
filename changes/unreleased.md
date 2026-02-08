@@ -1,7 +1,7 @@
 ### Changes
 
 - Improved template for RFC draft artifact — added the `kind` config to the header section.
+- Added `donna workspaces update` command to update project workspace after Donna is updated.
 - Added workspace skill synchronization for `donna workspaces init` and `donna workspaces update`.
-  - Added `donna workspaces update` command.
-  - Added `--no-skills` and `--no-skils` options for `init` and `update` to skip skill updates.
-  - Added Donna skill fixture copy from `donna/fixtures/skills/donna` to `<project-root>/.agents/skills/donna`.
+  - Both commands now install donna skills `donna-do`, `donna-start` and `donna-stop` into `.agents/skills/` directory.
+  - Added `--no-skilks` option for `init` and `update` to skip skill updates.
