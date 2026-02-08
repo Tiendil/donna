@@ -1,4 +1,6 @@
+import importlib.resources
 import pathlib
+import shutil
 import tomllib
 
 import tomli_w
@@ -10,6 +12,23 @@ from donna.domain.ids import WorldId
 from donna.protocol.modes import Mode
 from donna.workspaces import config
 from donna.workspaces import errors as world_errors
+
+SKILLS_ROOT_DIR = pathlib.Path(".agents") / "skills"
+DONNA_SKILL_ID = "donna"
+DONNA_SKILL_FIXTURE_DIR = pathlib.Path("fixtures") / "skills" / DONNA_SKILL_ID
+
+
+def _sync_donna_skill(project_dir: pathlib.Path) -> None:
+    source = importlib.resources.files("donna").joinpath(*DONNA_SKILL_FIXTURE_DIR.parts)
+
+    with importlib.resources.as_file(source) as source_dir:
+        target_dir = project_dir / SKILLS_ROOT_DIR / DONNA_SKILL_ID
+        target_dir.parent.mkdir(parents=True, exist_ok=True)
+
+        if target_dir.exists():
+            shutil.rmtree(target_dir)
+
+        shutil.copytree(source_dir, target_dir, dirs_exist_ok=True)
 
 
 @unwrap_to_error
@@ -59,7 +78,9 @@ def initialize_runtime(  # noqa: CCR001
 
 
 @unwrap_to_error
-def initialize_workspace(project_dir: pathlib.Path) -> Result[None, core_errors.ErrorsList]:
+def initialize_workspace(
+    project_dir: pathlib.Path, install_skills: bool = True
+) -> Result[None, core_errors.ErrorsList]:
     """Initialize the physical workspace for the project (`.donna` directory)."""
     project_dir = project_dir.resolve()
     workspace_dir = project_dir / config.DONNA_DIR_NAME
@@ -88,5 +109,22 @@ def initialize_workspace(project_dir: pathlib.Path) -> Result[None, core_errors.
 
     session_world = default_config.get_world(WorldId(config.DONNA_WORLD_SESSION_DIR_NAME)).unwrap()
     session_world.initialize()
+
+    if install_skills:
+        _sync_donna_skill(project_dir)
+
+    return Ok(None)
+
+
+@unwrap_to_error
+def update_workspace(project_dir: pathlib.Path, install_skills: bool = True) -> Result[None, core_errors.ErrorsList]:
+    project_dir = project_dir.resolve()
+    workspace_dir = project_dir / config.DONNA_DIR_NAME
+
+    if not workspace_dir.exists():
+        return Err([core_errors.ProjectDirNotFound(donna_dir_name=config.DONNA_DIR_NAME)])
+
+    if install_skills:
+        _sync_donna_skill(project_dir)
 
     return Ok(None)
