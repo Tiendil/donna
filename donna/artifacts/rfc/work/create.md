@@ -43,8 +43,12 @@ kind = "donna.lib.request_action"
 1. If the name of the artifact is not specified explicitly, assume it to be `session:rfc:<short-problem-related-identifier>`, where `<short-problem-related-identifier>` MUST be unique within the session.
 2. Save the next template into the artifact, replace `<variables>` with appropriate values.
 
-```
+~~~
 # <Title>
+
+```toml donna
+kind = "donna.lib.specification"
+```
 
 <short description of the proposed change>
 
@@ -71,7 +75,7 @@ kind = "donna.lib.request_action"
 ## Deliverables
 
 ## Action items
-```
+~~~
 
 3. `{{ donna.lib.goto("initial_fill") }}`
 
