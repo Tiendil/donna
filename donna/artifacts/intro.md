@@ -28,13 +28,11 @@ Artifact type tags:
 - `workflow` — workflow artifact — is set automatically by Donna.
 - `specification` — specification artifact — is set automatically by Donna.
 
-{# We recommend using those tags in `project:` and `session:` worlds as well to keep consistency. #}
-
 ## Instructions
 
 1. On start of the YOUR session you **MUST** read and understand instruction on using the Donna tool `{{ donna.lib.view("donna:usage:cli") }}`. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
 2. If you need to perform a work with Donna, you **MUST** select an appropriate Donna workflow to perform the work and run it.
 3. If there is no appropriate workflow, ask the developer for a precise instructions on what to do.
-4. If you are executing a workflow operation and need to perform a complex action or changes, you SHOULD search for an appropriate workflow and run it (as a child workflow) — it is the intended way to use Donna.
-5. List all workflows: `{{ donna.lib.list("**", tags=["workflow"]) }}`
-6. List all specifications: `{{ donna.lib.list("**", tags=["specification"]) }}`
+4. If you are executing a workflow operation and need to perform a complex action or changes, you SHOULD search for an appropriate workflow and run it as a child workflow — it is the intended way to use Donna.
+5. Run to list all workflows: `{{ donna.lib.list("**", tags=["workflow"]) }}`
+6. Run to list all specifications: `{{ donna.lib.list("**", tags=["specification"]) }}`

@@ -22,13 +22,6 @@ The core idea is that most high-level workflows are more algorithmic than it may
 
 We may need coding agents on each step of the process, but there is no reason for agents to manage the whole grooming loop by themselves — it takes longer time, spends tokens and may lead to confusion of agents.
 
-## Primary rules
-
-1. If you need to perform a work with Donna, you **MUST** select an appropriate Donna workflow to perform the work and run it.
-2. If there is no appropriate workflow, ask the developer for a precise instructions on what to do.
-3. List all workflows: `{{ donna.lib.list("**", tags=["workflow"]) }}`
-4. List all specifications: `{{ donna.lib.list("**", tags=["specification"]) }}`
-
 ## Dictionary
 
 - **Action request** — an instruction to the agent (who runs Donna) to perform the specified operations. Action requests are created by operations, like `donna.lib.request_action`. After finishing following the instructions of an action request, the agent MUST report back to Donna specifying the next operation to continue with. The list of next operations is specified in the action request itself.
