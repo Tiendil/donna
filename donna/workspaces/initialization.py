@@ -14,21 +14,26 @@ from donna.workspaces import config
 from donna.workspaces import errors as world_errors
 
 SKILLS_ROOT_DIR = pathlib.Path(".agents") / "skills"
-DONNA_SKILL_ID = "donna"
-DONNA_SKILL_FIXTURE_DIR = pathlib.Path("fixtures") / "skills" / DONNA_SKILL_ID
+DONNA_SKILL_FIXTURE_DIR = pathlib.Path("fixtures") / "skills"
+
+# this list must only increase in size,
+# do not remove old items from it, since users may upgrade from older versions of Donna
+# where these skills were installed
+DONNA_SKILL_CLEANUP_LIST = ["donna", "donna-do", "donna-start", "donna-stop"]
 
 
 def _sync_donna_skill(project_dir: pathlib.Path) -> None:
     source = importlib.resources.files("donna").joinpath(*DONNA_SKILL_FIXTURE_DIR.parts)
 
-    with importlib.resources.as_file(source) as source_dir:
-        target_dir = project_dir / SKILLS_ROOT_DIR / DONNA_SKILL_ID
-        target_dir.parent.mkdir(parents=True, exist_ok=True)
-
+    # cleanup
+    for skill_id in DONNA_SKILL_CLEANUP_LIST:
+        target_dir = project_dir / SKILLS_ROOT_DIR / skill_id
         if target_dir.exists():
             shutil.rmtree(target_dir)
 
-        shutil.copytree(source_dir, target_dir, dirs_exist_ok=True)
+    # copy all content of fixtures/skills to the skills directory
+    with importlib.resources.as_file(source) as source_dir:
+        shutil.copytree(source_dir, project_dir / SKILLS_ROOT_DIR, dirs_exist_ok=True)
 
 
 @unwrap_to_error
