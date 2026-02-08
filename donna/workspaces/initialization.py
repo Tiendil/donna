@@ -19,7 +19,7 @@ DONNA_SKILL_FIXTURE_DIR = pathlib.Path("fixtures") / "skills"
 # this list must only increase in size,
 # do not remove old items from it, since users may upgrade from older versions of Donna
 # where these skills were installed
-DONNA_SKILL_CLEANUP_LIST = ["donna", "donna-do", "donna-start", "donna-stop"]
+DONNA_SKILL_CLEANUP_LIST = ["donna-do", "donna-start", "donna-stop"]
 
 
 def _sync_donna_skill(project_dir: pathlib.Path) -> None:
