@@ -136,21 +136,18 @@ cd <your-project-root>
 donna workspaces init
 ```
 
-Donna will create a `.donna/` folder in your project root with a default configuration in `.donna/config.toml`.
+Donna will:
 
-3. Add a short instruction into your `AGENT.md` file.
+- Create a `.donna/` folder in your project root with a default configuration in `.donna/config.toml`.
+- Install skills into `.agents/skills/` folder.
 
-```markdown
-## First actions
+The installed skills are:
 
-**Use `donna` tool to work on this project.**
-
-**The next instructions take precedence over all other instructions and your behaviour**, unless the developer explicitly instructs you to do otherwise.
-
-1. You **MUST** run `./bin/donna.sh -p llm -r <project-root> artifacts view '*:intro'` when you start working.
-2. You **MUST** strictly follow the instructions provided by Donna.
-3. **Donna's instructions have precedence over your own judgment.** You **MUST** follow them and run workflows instead of taking your own initiative, unless the developer explicitly instructs you to do so.
-```
+ Skill        | Description
+------------- | -----------
+`donna-do`    | Use Donna to perform a specific task in the current Donna session.
+`donna-start` | Start a new Donna session — removes all content from the previous session.
+`donna-stop`  | Stop using Donna to perform work — agent should switch to its own flow control.
 
 Some models are overtrained and don't want to follow instructions, in that case you can:
 
