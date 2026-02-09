@@ -141,11 +141,11 @@ Donna will:
 - Create a `.donna/` folder in your project root with a default configuration in `.donna/config.toml`.
 - Install skills into `.agents/skills/` folder.
 
- Skill        | Description
-------------- | -----------
-`donna-do`    | Use Donna to perform a specific task in the current Donna session. Creates a new session if there is no one.
-`donna-start` | Start a new Donna session and tell the agent to use Donna to perform all further work. Removes all content from the previous session.
-`donna-stop`  | Stop using Donna to perform work — the agent should switch to its own flow control.
+Skills:
+
+- `donna-do` — use Donna to perform a specific task in the current Donna session. Creates a new session if there is no one.
+- `donna-start` — start a new Donna session and tell the agent to use Donna to perform all further work. Removes all content from the previous session.
+- `donna-stop` — stop using Donna to perform work — the agent should switch to its own flow control.
 
 3. Ask your agent to do something like `$donna-do Add a button that …`. The agent will discover the appropriate workflow and execute it.
 
