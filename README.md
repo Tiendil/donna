@@ -437,3 +437,7 @@ How to reach me:
 - Create an [issue](https://github.com/Tiendil/donna/issues). Any format and theme is welcome.
 - Comment on one of the existing issues. Feedback, especially on [proposals](https://github.com/Tiendil/donna/issues?q=is%3Aissue%20state%3Aopen%20label%3Aproposal).
 - Start a [discussion](https://github.com/Tiendil/donna/discussions).
+
+## Projects that use Donna
+
+- [Feeds Fun](https://github.com/Tiendil/feeds.fun) — news reader with tags, scoring, and AI.
