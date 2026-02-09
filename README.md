@@ -100,13 +100,15 @@ Polishing is complete.
 
 What you may notice:
 
-1. The workflow has a loop.
-2. The workflow is a Markdown file.
-3. Each h1 and h2 section has a config block, which is a TOML in code fences with `donna` marker. Those configs are invisible to the agent, but Donna uses them to understand the artifact structure.
-4. The workflow has two `donna.lib.request_action` operations (`run_black`, `run_mypy`) and one `donna.lib.finish` (`finish`).
-5. Transitions between operations are defined via `{{ goto("operation_id") }}` Jinja2 calls in the body of operations.
-6. `donna.lib.request_action` is an operation that tells Donna to display instructions to the agent and wait for the agent to complete them. That allows the agent to focus on short, precise instructions, perform them, and push workflow forward.
-7. `kind` attributes of sections are valid Python import paths, so you can easily extend Donna with your own code.
+- The workflow is described in a readable Markdown file.
+- The workflow has a loop.
+- Each H1 and H2 section has a config block, which is a TOML in code fences with `donna` marker. Those configs are invisible to the agent, but Donna uses them to understand the artifact structure.
+- H1 section describes the workflow as a whole.
+- H2 sections describe workflow operations.
+- The workflow has two `donna.lib.request_action` operations (`run_black`, `run_mypy`) and one `donna.lib.finish` (`finish`).
+- Transitions between operations are defined via `{{ goto("operation_id") }}` Jinja2 calls in the body of operations.
+- `donna.lib.request_action` is an operation that tells Donna to display instructions to the agent and wait for the agent to complete them. That allows the agent to focus on short, precise instructions, execute them, and advance the workflow.
+- `kind` attributes of sections are valid Python import paths, so you can easily extend Donna with your own code.
 
 Directives, like `{{ goto("operation_id") }}`, render itself depending on the context:
 
