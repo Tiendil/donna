@@ -1,4 +1,6 @@
 import builtins
+import pathlib
+import sys
 from collections.abc import Iterable
 
 import typer
@@ -6,6 +8,7 @@ import typer
 from donna.cli import errors as cli_errors
 from donna.cli.application import app
 from donna.cli.types import (
+    ExtensionOption,
     FullArtifactIdArgument,
     FullArtifactIdPatternArgument,
     InputPathArgument,
@@ -98,11 +101,30 @@ def tmp(
     ]
 
 
-@artifacts_cli.command(help="Create or replace the artifact with the contents of a file.")
+@artifacts_cli.command(help="Create or replace an artifact from a file path or stdin.")
 @cells_cli
-def update(id: FullArtifactIdArgument, input: InputPathArgument) -> Iterable[Cell]:
-    world_artifacts.update_artifact(id, input).unwrap()
-    return [operation_succeeded(f"Artifact `{id}` updated from '{input}'", artifact_id=str(id), input_path=str(input))]
+def update(
+    id: FullArtifactIdArgument,
+    input: InputPathArgument,
+    extension: ExtensionOption = None,
+) -> Iterable[Cell]:
+    if input == pathlib.Path("-"):
+        tmp_extension = extension or "tmp"
+        input_path = world_tmp.file_for_artifact(id, tmp_extension)
+        input_path.write_bytes(sys.stdin.buffer.read())
+        input_display = "stdin"
+    else:
+        input_path = input
+        input_display = str(input)
+
+    world_artifacts.update_artifact(id, input_path, extension=extension).unwrap()
+    return [
+        operation_succeeded(
+            f"Artifact `{id}` updated from '{input_display}'",
+            artifact_id=str(id),
+            input_path=str(input_path),
+        )
+    ]
 
 
 @artifacts_cli.command(help="Copy an artifact to another artifact ID (possibly across worlds).")
