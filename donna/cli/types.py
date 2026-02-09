@@ -1,4 +1,5 @@
 import pathlib
+import re
 from typing import Annotated
 
 import typer
@@ -53,6 +54,36 @@ def _parse_protocol_mode(value: str) -> Mode:
     except ValueError as exc:
         allowed = ", ".join(mode.value for mode in Mode)
         raise typer.BadParameter(f"Unsupported protocol mode '{value}'. Expected one of: {allowed}.") from exc
+
+
+def _parse_extension(value: str) -> str:
+    normalized = value.strip().lower().lstrip(".")
+    if not normalized:
+        raise typer.BadParameter("Extension must not be empty.")
+
+    if re.fullmatch(r"[a-z0-9][a-z0-9_-]*", normalized) is None:
+        raise typer.BadParameter(
+            "Invalid extension format. Use letters, digits, underscore, and dash (for example: md, yaml)."
+        )
+
+    return normalized
+
+
+def _parse_input_path(value: str) -> pathlib.Path:
+    normalized = value.strip()
+    if normalized == "-":
+        return pathlib.Path("-")
+
+    path = pathlib.Path(normalized).expanduser()
+    if not path.exists():
+        raise typer.BadParameter(f"Input path '{value}' does not exist.")
+    if not path.is_file():
+        raise typer.BadParameter(f"Input path '{value}' is not a file.")
+
+    if not path.is_absolute():
+        path = path.resolve()
+
+    return path
 
 
 ActionRequestIdArgument = Annotated[
@@ -126,16 +157,33 @@ RootOption = Annotated[
     ),
 ]
 
+SkillsOption = Annotated[
+    bool,
+    typer.Option(
+        "--skills/--no-skills",
+        help="Enable or disable skills updates in `.agents/skills`.",
+    ),
+]
+
+
+ExtensionOption = Annotated[
+    str | None,
+    typer.Option(
+        "--extension",
+        parser=_parse_extension,
+        help=(
+            "Optional artifact source extension to use for update "
+            "(for example: md, yaml). Accepts values with or without leading dot."
+        ),
+    ),
+]
+
 
 InputPathArgument = Annotated[
     pathlib.Path,
     typer.Argument(
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-        resolve_path=True,
-        help="Path to an existing local file used as input.",
+        parser=_parse_input_path,
+        help="Path to an existing local file used as input, or '-' to read from stdin.",
     ),
 ]
 

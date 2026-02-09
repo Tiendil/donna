@@ -46,9 +46,27 @@ class CanNotRemoveReadonlyWorld(ArtifactRemoveError):
     world_id: WorldId
 
 
-class InputPathHasNoExtension(ArtifactUpdateError):
-    code: str = "donna.workspaces.input_path_has_no_extension"
-    message: str = "Input path has no extension to determine artifact source type"
+class ArtifactExtensionCannotBeInferred(ArtifactUpdateError):
+    code: str = "donna.workspaces.artifact_extension_cannot_be_inferred"
+    message: str = "Cannot infer artifact extension. Provide `--extension` or update an existing artifact."
+    ways_to_fix: list[str] = [
+        "Pass `--extension <extension>` when updating the artifact.",
+        "Create/update an artifact that already exists and has a known extension.",
+    ]
+
+
+class ArtifactExtensionMismatch(ArtifactUpdateError):
+    code: str = "donna.workspaces.artifact_extension_mismatch"
+    message: str = (
+        "Provided extension `{error.provided_extension}` does not match existing artifact extension "
+        "`{error.existing_extension}`"
+    )
+    provided_extension: str
+    existing_extension: str
+    ways_to_fix: list[str] = [
+        "Use the existing artifact extension.",
+        "Omit `--extension` to use extension inferred from the existing artifact.",
+    ]
 
 
 class NoSourceForArtifactExtension(ArtifactUpdateError):
@@ -95,28 +113,54 @@ def fetch_artifact(full_id: FullArtifactId, output: pathlib.Path) -> Result[None
 
 
 @unwrap_to_error
-def update_artifact(full_id: FullArtifactId, input: pathlib.Path) -> Result[None, ErrorsList]:
+def update_artifact(  # noqa: CCR001
+    full_id: FullArtifactId, input: pathlib.Path, extension: str | None = None
+) -> Result[None, ErrorsList]:
     world = config().get_world(full_id.world_id).unwrap()
 
     if world.readonly:
         return Err([CanNotUpdateReadonlyWorld(artifact_id=full_id, path=input, world_id=world.id)])
 
-    source_suffix = input.suffix.lower()
     content_bytes = input.read_bytes()
 
-    if not source_suffix:
-        return Err([InputPathHasNoExtension(artifact_id=full_id, path=input)])
+    expected_extension = artifact_file_extension(full_id).unwrap_or(None)
 
-    source_config = config().find_source_for_extension(source_suffix)
+    requested_extension = extension.lstrip(".").lower() if extension is not None else None
+
+    if expected_extension is None and requested_extension is None:
+        return Err([ArtifactExtensionCannotBeInferred(artifact_id=full_id, path=input)])
+
+    if expected_extension is None and requested_extension is not None:
+        source_suffix = requested_extension
+    elif expected_extension is not None and requested_extension is None:
+        source_suffix = expected_extension
+    elif expected_extension != requested_extension:
+        return Err(
+            [
+                ArtifactExtensionMismatch(
+                    artifact_id=full_id,
+                    path=input,
+                    provided_extension=requested_extension or "",
+                    existing_extension=expected_extension or "",
+                )
+            ]
+        )
+    else:
+        assert expected_extension is not None
+        source_suffix = expected_extension
+
+    normalized_source_suffix = f".{source_suffix}"
+
+    source_config = config().find_source_for_extension(normalized_source_suffix)
     if source_config is None:
-        return Err([NoSourceForArtifactExtension(artifact_id=full_id, path=input, extension=source_suffix)])
+        return Err([NoSourceForArtifactExtension(artifact_id=full_id, path=input, extension=normalized_source_suffix)])
 
     render_context = ArtifactRenderContext(primary_mode=RenderMode.view)
     test_artifact = source_config.construct_artifact_from_bytes(full_id, content_bytes, render_context).unwrap()
     validation_result = test_artifact.validate_artifact()
 
     validation_result.unwrap()
-    world.update(full_id.artifact_id, content_bytes, source_suffix).unwrap()
+    world.update(full_id.artifact_id, content_bytes, normalized_source_suffix).unwrap()
 
     return Ok(None)
 

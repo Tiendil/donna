@@ -8,4 +8,4 @@ services:
       dockerfile: ./docker/Dockerfile
 
     volumes:
-      - ${PWD}/donna:/repository/donna
+      - ${PWD}:/repository

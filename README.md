@@ -100,13 +100,15 @@ Polishing is complete.
 
 What you may notice:
 
-1. The workflow has a loop.
-2. The workflow is a Markdown file.
-3. Each h1 and h2 section has a config block, which is a TOML in code fences with `donna` marker. Those configs are invisible to the agent, but Donna uses them to understand the artifact structure.
-4. The workflow has two `donna.lib.request_action` operations (`run_black`, `run_mypy`) and one `donna.lib.finish` (`finish`).
-5. Transitions between operations are defined via `{{ goto("operation_id") }}` Jinja2 calls in the body of operations.
-6. `donna.lib.request_action` is an operation that tells Donna to display instructions to the agent and wait for the agent to complete them. That allows the agent to focus on short, precise instructions, perform them, and push workflow forward.
-7. `kind` attributes of sections are valid Python import paths, so you can easily extend Donna with your own code.
+- The workflow is described in a readable Markdown file.
+- The workflow has a loop.
+- Each H1 and H2 section has a config block, which is a TOML in code fences with `donna` marker. Those configs are invisible to the agent, but Donna uses them to understand the artifact structure.
+- H1 section describes the workflow as a whole.
+- H2 sections describe workflow operations.
+- The workflow has two `donna.lib.request_action` operations (`run_black`, `run_mypy`) and one `donna.lib.finish` (`finish`).
+- Transitions between operations are defined via `{{ goto("operation_id") }}` Jinja2 calls in the body of operations.
+- `donna.lib.request_action` is an operation that tells Donna to display instructions to the agent and wait for the agent to complete them. That allows the agent to focus on short, precise instructions, execute them, and advance the workflow.
+- `kind` attributes of sections are valid Python import paths, so you can easily extend Donna with your own code.
 
 Directives, like `{{ goto("operation_id") }}`, render itself depending on the context:
 
@@ -136,28 +138,18 @@ cd <your-project-root>
 donna workspaces init
 ```
 
-Donna will create a `.donna/` folder in your project root with a default configuration in `.donna/config.toml`.
+Donna will:
 
-3. Add a short instruction into your `AGENT.md` file.
+- Create a `.donna/` folder in your project root with a default configuration in `.donna/config.toml`.
+- Install skills into `.agents/skills/` folder.
 
-```markdown
-## First actions
+3. Ask your agent to do something like `$donna-do Add a button that …`. The agent will discover the appropriate workflow and execute it.
 
-**Use `donna` tool to work on this project.**
+## Skills
 
-**The next instructions take precedence over all other instructions and your behaviour**, unless the developer explicitly instructs you to do otherwise.
-
-1. You **MUST** run `./bin/donna.sh -p llm -r <project-root> artifacts view '*:intro'` when you start working.
-2. You **MUST** strictly follow the instructions provided by Donna.
-3. **Donna's instructions have precedence over your own judgment.** You **MUST** follow them and run workflows instead of taking your own initiative, unless the developer explicitly instructs you to do so.
-```
-
-Some models are overtrained and don't want to follow instructions, in that case you can:
-
-- Switch to a more smart model, for example, from `gpt-5.3-codex (medium)` to `gpt-5.3-codex (high)`.
-- Tune instructions to make them more suitable for the particular model.
-
-4. Ask your agent to do something like `Add a button that …`. The agent will discover the appropriate workflow and run it.
+- `donna-do` — use Donna to perform a specific task in the current Donna session. Creates a new session if there is no one.
+- `donna-start` — start a new Donna session and tell the agent to use Donna to perform all further work. Removes all content from the previous session.
+- `donna-stop` — stop using Donna to perform work — the agent should switch to its own flow control.
 
 ## Usage
 
@@ -196,6 +188,8 @@ Additionally, Donna will:
 - choose fast or slow route depending on the complexity of the changes required;
 - find and run (if any) polishing workflow to ensure the codebase is in a good state after the changes;
 - find and run (if any) workflow to update your changelog.
+
+Note that the default Donna workflows are designed to be reliable and useful for a wide range of projects. They may not be optimal in terms of token usage or speed for your particular project. The intended use of Donna is to implement your own workflows that account for your project's specifics.
 
 Points of interest:
 
@@ -443,3 +437,7 @@ How to reach me:
 - Create an [issue](https://github.com/Tiendil/donna/issues). Any format and theme is welcome.
 - Comment on one of the existing issues. Feedback, especially on [proposals](https://github.com/Tiendil/donna/issues?q=is%3Aissue%20state%3Aopen%20label%3Aproposal).
 - Start a [discussion](https://github.com/Tiendil/donna/discussions).
+
+## Projects that use Donna
+
+- [Feeds Fun](https://github.com/Tiendil/feeds.fun) — news reader with tags, scoring, and AI.
