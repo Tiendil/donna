@@ -145,16 +145,11 @@ The installed skills are:
 
  Skill        | Description
 ------------- | -----------
-`donna-do`    | Use Donna to perform a specific task in the current Donna session.
-`donna-start` | Start a new Donna session — removes all content from the previous session.
-`donna-stop`  | Stop using Donna to perform work — agent should switch to its own flow control.
+`donna-do`    | Use Donna to perform a specific task in the current Donna session. Creates a new session if there is no one.
+`donna-start` | Start a new Donna session and tell the agent to use Donna to perform all further work. Removes all content from the previous session.
+`donna-stop`  | Stop using Donna to perform work — the agent should switch to its own flow control.
 
-Some models are overtrained and don't want to follow instructions, in that case you can:
-
-- Switch to a more smart model, for example, from `gpt-5.3-codex (medium)` to `gpt-5.3-codex (high)`.
-- Tune instructions to make them more suitable for the particular model.
-
-4. Ask your agent to do something like `Add a button that …`. The agent will discover the appropriate workflow and run it.
+3. Ask your agent to do something like `$donna-do Add a button that …`. The agent will discover the appropriate workflow and execute it.
 
 ## Usage
 
