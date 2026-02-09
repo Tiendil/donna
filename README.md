@@ -189,6 +189,8 @@ Additionally, Donna will:
 - find and run (if any) polishing workflow to ensure the codebase is in a good state after the changes;
 - find and run (if any) workflow to update your changelog.
 
+Note that the default Donna workflows are designed to be reliable and useful for a wide range of projects. They may not be optimal in terms of token usage or speed for your particular project. The intended use of Donna is to implement your own workflows that account for your project's specifics.
+
 Points of interest:
 
 - [donna:rfc:specs:request_for_change](./donna/artifacts/rfc/specs/request_for_change.md) — specification of the RFC document.
