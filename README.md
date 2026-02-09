@@ -141,8 +141,6 @@ Donna will:
 - Create a `.donna/` folder in your project root with a default configuration in `.donna/config.toml`.
 - Install skills into `.agents/skills/` folder.
 
-The installed skills are:
-
  Skill        | Description
 ------------- | -----------
 `donna-do`    | Use Donna to perform a specific task in the current Donna session. Creates a new session if there is no one.
