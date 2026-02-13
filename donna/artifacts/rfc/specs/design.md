@@ -4,7 +4,7 @@
 kind = "donna.lib.specification"
 ```
 
-This document describes the format and structure of a Design document used to design changes to a project proposed in a Request for Change (RFC). This document is an input for planing and will be treated as strong recommendations for the implementation of the proposed change.
+This document describes the format and structure of a Design document used to design changes to a project proposed in a Request for Change (RFC). This document is an input for planning and will be treated as strong recommendations for the implementation of the proposed change.
 
 ## Overview
 
@@ -18,7 +18,7 @@ If not otherwise specified, Design documents for the session MUST be stored as `
 
 **The Design document MAY skip implementation details.** E.g. it may skip the exact implementation of a function body, but it should specify the function signature and its purpose; It may use pseudocode to describe the logic of a function, but it should not skip describing the logic at all.
 
-The Design document MUST NOT be a high-level description of the problem and solution. High-level description of the problem and solution should be provided in the RFC document.
+The Design document MUST NOT be a high-level description of the problem and solution. A high-level description of the problem and solution should be provided in the RFC document.
 
 **Identifiers in this document MUST follow project-specific naming conventions.** Before working on a Design document, you should read the artifacts with project guidlines for naming and code style, if any exist.
 
@@ -32,8 +32,8 @@ The RFC document is Donna artifact (check `{{ donna.lib.view("donna:usage:artifa
 - **Highlevel code changes** — list of high-level code changes that MUST be implemented: modules to add/modify, functions to add/modify, classes to add/modify, etc. This section should not include low-level implementation details, but it should include enough details to understand the scope of the change and its impact on the project.
 - **Data structure changes** — list of changes to data structures that MUST be implemented.
 - **Interface changes** — list of changes to interfaces (e.g. function signatures, API endpoints, etc.) that MUST be implemented.
-- **Tests changes** — list of autotests that MUST be implemented/updated/removed. Only if the project already uses autotests. If the project does not use autotests, this section should be skipped.
-- **Documentation changes** — list of changes in the documentation. Only if the project already has documentation. If the project does not have documentation, this section should be skipped.
+- **Tests changes** — list of autotests that MUST be implemented/updated/removed. Only if the project already uses autotests.
+- **Documentation changes** — list of changes in the documentation. Only if the project already has documentation.
 - **Other changes** — list of other changes that do not fit into the previous sections, but are still relevant for the proposed change.
 - **Order of implementation** — a proposed order of implementation of the changes listed in the previous sections. This section should be treated as a recommendation (from the author of the Design document), not a strict requirement.
 
@@ -52,11 +52,11 @@ The RFC document is Donna artifact (check `{{ donna.lib.view("donna:usage:artifa
 
 Examples:
 
-- Bad: `- Implement a new module`
+- Bad: `- Implement a new module.`
 - Bad: `- The interface MUST include button A, button B, and dropdown C.`
-- Good: `- Implament a module "a.b.c" that is responsible for X, Y, and Z.`
+- Good: `- Implement a module "a.b.c" that is responsible for X, Y, and Z.`
 - Good: `- Add a button class "ButtonA" to the module "a.b.c"`
-- Good: `- "ButtonA" class MUST has a method "click()" that performs action X when called.`
+- Good: `- "ButtonA" class MUST have a method "click()" that performs action X when called.`
 
 Common approaches to improve list items:
 
@@ -70,25 +70,25 @@ Common approaches to improve list items:
 
 ## `Inputs` section
 
-- The section MUST contain a list of documents that are relevant for the proposed change.
+- The section MUST contain a list of documents that are relevant to the proposed change.
 - The first item in the list MUST be the original RFC document that describes the problem and the proposed solution.
-- Other items in the list MAY include other documentation, code files, external links, etc. that are relevant for the proposed change.
+- Other items in the list MAY include other documentation, code files, external links, etc., that are relevant for the proposed change.
 
 ## `Architecture changes` section
 
 - The section MUST contain a free-form but precise and grounded description of the high-level architectural changes that MUST be implemented.
 - Along the text, you may add code snippets, diagrams, and other visual aids to make the description clearer and more precise.
 
-## `Highlevel code changes` section
+## `High-level code changes` section
 
 - The section MUST contain a list of high-level changes in the code.
 - The level of abstraction: `add a module A`, `remove the class B`, `change the implementation of a function C`.
-- The section MUST list only most important changes, that are significant cornerstones of the proposed change.
+- The section MUST list only the most important changes that are significant cornerstones of the proposed change.
 - The section MAY omit low-level details, such as the small or utilitarian functions, minor refactorings, etc.
 
 ## `Data structure changes` section
 
-- The section MUST list an exact changes to data structures that MUST be implemented.
+- The section MUST list exact changes to data structures that MUST be implemented.
 - Each change MUST be accompanied by a description of the purpose of the change and its impact on the project.
 
 Examples of statements about structure changes:
@@ -101,7 +101,7 @@ Examples of statements about structure changes:
 
 ## `Interface changes` section
 
-- The section MUST list an exact changes to interfaces that MUST be implemented.
+- The section MUST list exact changes to interfaces that MUST be implemented.
 - Each change MUST be accompanied by a description of the purpose of the change and its impact on the project.
 
 Examples of statements about interface changes:
@@ -118,7 +118,7 @@ Examples of statements about interface changes:
 - Each changes piece of logic MUST have at least one corresponding autotest that verifies its correctness and prevents regressions in the future.
 - Each added/updated branch of logic MUST have at least one corresponding autotest that verifies its correctness and prevents regressions in the future.
 
-Examples of statements about tests changes:
+Examples of statements about test changes:
 
 - Bad: `- Add tests for the new module.`
 - Bad: `- Update tests for the changed function.`
@@ -133,9 +133,9 @@ Examples of statements about tests changes:
 ## `Other changes` section
 
 - The section MAY contain a list of other changes that do not fit into the previous sections, but are still relevant for the proposed change.
-- The section MUST be a single statement `No other changes are required, since all relevant changes are covered in the previous sections.` if there are no other changes to mention.
+- The section MUST be a single statement: `No other changes are required, since all relevant changes are covered in the previous sections.` if there are no other changes to mention.
 
 ## `Order of implementation` section
 
 - The section MUST contain a proposed order of implementation of the changes listed in the previous sections.
-- The section MUST refer only identifiers mentioned in the previous sections, and it MUST NOT introduce new identifiers or entities that are not mentioned in the previous sections.
+- The section MUST refer only to identifiers mentioned in the previous sections, and it MUST NOT introduce new identifiers or entities that are not mentioned in the previous sections.
