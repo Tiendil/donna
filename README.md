@@ -194,7 +194,7 @@ Note that the default Donna workflows are designed to be reliable and useful for
 Points of interest:
 
 - [donna:rfc:specs:request_for_change](./donna/artifacts/rfc/specs/request_for_change.md) — specification of the RFC document.
-- [donna:rfc:work:create](./donna/artifacts/rfc/work/create.md) — workflow to create a RFC document.
+- [donna:rfc:work:request](./donna/artifacts/rfc/work/request.md) — workflow to create a RFC document.
 - [donna:rfc:work:plan](./donna/artifacts/rfc/work/plan.md) — workflow to plan work on an RFC — creates a new workflow.
 - [donna:rfc:work:do](./donna/artifacts/rfc/work/do.md) — meta workflow to automate the whole work from a developer request to a changelog update.
 
