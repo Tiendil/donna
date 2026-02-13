@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, ClassVar, Iterable, cast
+from typing import TYPE_CHECKING, ClassVar, cast
 
 import pydantic
 
@@ -20,10 +20,6 @@ if TYPE_CHECKING:
 
 class InternalError(core_errors.InternalError):
     """Base class for internal errors in donna.primitives.artifacts.workflow."""
-
-
-class WorkflowSectionMissingMetadata(InternalError):
-    message: str = "Workflow section is missing workflow metadata."
 
 
 class WrongStartOperation(ArtifactValidationError):
@@ -128,15 +124,18 @@ class Workflow(MarkdownSectionMixin, Primitive):
         workflow_config = cast(WorkflowConfig, section_config)
         return Ok(WorkflowMeta(start_operation_id=workflow_config.start_operation_id))
 
-    def execute_section(self, task: "Task", unit: "WorkUnit", section: ArtifactSection) -> Iterable["Change"]:
+    @unwrap_to_error
+    def execute_section(
+        self, task: "Task", unit: "WorkUnit", section: ArtifactSection
+    ) -> Result[list["Change"], ErrorsList]:
         from donna.machine.changes import ChangeAddWorkUnit
 
         if not isinstance(section.meta, WorkflowMeta):
-            raise WorkflowSectionMissingMetadata()
+            return Err([WorkflowSectionNotWorkflow(artifact_id=section.artifact_id, section_id=section.id)])
 
         full_id = section.artifact_id.to_full_local(section.meta.start_operation_id)
 
-        yield ChangeAddWorkUnit(task_id=task.id, operation_id=full_id)
+        return Ok([ChangeAddWorkUnit(task_id=task.id, operation_id=full_id)])
 
     @unwrap_to_error
     def validate_section(  # noqa: CCR001, CFQ001

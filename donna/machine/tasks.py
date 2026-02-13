@@ -76,6 +76,6 @@ class WorkUnit(BaseEntity):
 
         instant_output(journal_record)
 
-        changes = list(operation_kind.execute_section(task, self, operation))
+        changes = operation_kind.execute_section(task, self, operation).unwrap()
 
         return Ok(changes)

@@ -21,13 +21,22 @@
   - Updated `format_journal` to accept `JournalRecord` instead of `Cell`.
   - Updated automation formatter to output serialized journal JSON via `serialize_record(record)`.
   - Updated human and llm formatters to output `<timestamp> [<actor_id>] [<current_task_id>/<current_work_unit_id>] <message>`.
+- gh-35 Updated workflow operation execution to propagate `execute_section` errors explicitly.
+  - Changed `Primitive.execute_section` and all implementations to return `Result[list[Change], ErrorsList]`.
+  - Updated all `execute_section` implementations to use `@unwrap_to_error` and removed direct fallback
+    `machine_journal.JournalRecord` construction in error paths.
+  - Updated work-unit execution to propagate `execute_section` `ErrorsList` and keep failed work units uncompleted.
 
 ### Breaking Changes
 
 - gh-35 Formatter protocol implementations must now implement `format_journal(record: JournalRecord, ...)` instead of
   `format_log(cell: Cell, ...)`.
+- gh-35 Primitive and operation `execute_section` implementations must now return `Result[list[Change], ErrorsList]`
+  instead of yielding changes directly.
 
 ### Migration
 
 - gh-35 Renamed custom formatter hooks from `format_log` to `format_journal` and switched parameter type from `Cell`
   to `JournalRecord`.
+- gh-35 Updated custom primitives and operations to return `Ok([Change...])`/`Err(ErrorsList)` from `execute_section`
+  and use `@unwrap_to_error` for unwrap-based propagation.

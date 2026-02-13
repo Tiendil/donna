@@ -1,7 +1,7 @@
-from typing import TYPE_CHECKING, ClassVar, Iterator, Literal, cast
+from typing import TYPE_CHECKING, ClassVar, Literal, cast
 
 from donna.core.errors import ErrorsList
-from donna.core.result import Ok, Result
+from donna.core.result import Ok, Result, unwrap_to_error
 from donna.domain.ids import FullArtifactId
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
@@ -19,31 +19,23 @@ class FinishWorkflowConfig(OperationConfig):
 
 
 class FinishWorkflow(MarkdownSectionMixin, OperationKind):
-    def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterator["Change"]:
-        from donna.machine.changes import ChangeFinishTask
+    @unwrap_to_error
+    def execute_section(
+        self, task: "Task", unit: "WorkUnit", operation: ArtifactSection
+    ) -> Result[list["Change"], ErrorsList]:
         from donna.machine import journal as machine_journal
+        from donna.machine.changes import ChangeFinishTask
 
-        journal_record_result = machine_journal.add(
+        journal_record = machine_journal.add(
             actor_id="donna",
             message=operation.description.strip(),
             current_task_id=str(task.id),
             current_work_unit_id=str(unit.id),
-        )
-
-        if journal_record_result.is_ok():
-            journal_record = journal_record_result.unwrap()
-        else:
-            journal_record = machine_journal.JournalRecord(
-                timestamp=machine_journal.now_timestamp(),
-                actor_id="donna",
-                message=operation.description.strip(),
-                current_task_id=str(task.id),
-                current_work_unit_id=str(unit.id),
-            )
+        ).unwrap()
 
         instant_output(journal_record)
 
-        yield ChangeFinishTask(task_id=task.id)
+        return Ok([ChangeFinishTask(task_id=task.id)])
 
     config_class: ClassVar[type[FinishWorkflowConfig]] = FinishWorkflowConfig
 

@@ -1,7 +1,7 @@
-from typing import TYPE_CHECKING, ClassVar, Iterator, cast
+from typing import TYPE_CHECKING, ClassVar, cast
 
 from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
+from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import ArtifactSectionId, FullArtifactId
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
@@ -56,29 +56,21 @@ class Output(MarkdownSectionMixin, OperationKind):
             )
         )
 
-    def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterator["Change"]:
-        from donna.machine.changes import ChangeAddWorkUnit
+    @unwrap_to_error
+    def execute_section(
+        self, task: "Task", unit: "WorkUnit", operation: ArtifactSection
+    ) -> Result[list["Change"], ErrorsList]:
         from donna.machine import journal as machine_journal
+        from donna.machine.changes import ChangeAddWorkUnit
 
         meta = cast(OutputMeta, operation.meta)
 
-        journal_record_result = machine_journal.add(
+        journal_record = machine_journal.add(
             actor_id="donna",
             message=operation.description.strip(),
             current_task_id=str(task.id),
             current_work_unit_id=str(unit.id),
-        )
-
-        if journal_record_result.is_ok():
-            journal_record = journal_record_result.unwrap()
-        else:
-            journal_record = machine_journal.JournalRecord(
-                timestamp=machine_journal.now_timestamp(),
-                actor_id="donna",
-                message=operation.description.strip(),
-                current_task_id=str(task.id),
-                current_work_unit_id=str(unit.id),
-            )
+        ).unwrap()
 
         instant_output(journal_record)
 
@@ -86,7 +78,7 @@ class Output(MarkdownSectionMixin, OperationKind):
         assert next_operation_id is not None
         full_operation_id = unit.operation_id.full_artifact_id.to_full_local(next_operation_id)
 
-        yield ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id)
+        return Ok([ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id)])
 
     def validate_section(self, artifact: Artifact, section_id: ArtifactSectionId) -> Result[None, ErrorsList]:
         section = artifact.get_section(section_id).unwrap()

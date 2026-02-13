@@ -1,5 +1,5 @@
 import importlib
-from typing import TYPE_CHECKING, Any, ClassVar, Iterable
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from jinja2.runtime import Context
 
@@ -28,7 +28,9 @@ class Primitive(BaseEntity):
     def validate_section(self, artifact: "Artifact", section_id: ArtifactSectionId) -> Result[None, ErrorsList]:
         return Ok(None)
 
-    def execute_section(self, task: "Task", unit: "WorkUnit", section: "ArtifactSection") -> Iterable["Change"]:
+    def execute_section(
+        self, task: "Task", unit: "WorkUnit", section: "ArtifactSection"
+    ) -> Result[list["Change"], ErrorsList]:
         raise machine_errors.PrimitiveMethodUnsupported(
             primitive_name=self.__class__.__name__, method_name="execute_section()"
         )
