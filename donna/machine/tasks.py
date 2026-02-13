@@ -67,7 +67,13 @@ class WorkUnit(BaseEntity):
         operation_kind = resolve_primitive(operation.kind).unwrap()
 
         log_message = f"{self.operation_id}: {operation.title}"
-        log_cell = Cell.build(kind="donna_log", media_type="text/plain", content=log_message)
+        log_cell = Cell.build(
+            kind="donna_log",
+            media_type="text/plain",
+            content=log_message,
+            current_task_id=task.id,
+            current_work_unit_id=self.id,
+        )
         instant_output([log_cell])
 
         changes = list(operation_kind.execute_section(task, self, operation))

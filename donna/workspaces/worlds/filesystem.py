@@ -1,5 +1,7 @@
 import pathlib
 import shutil
+import time
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, cast
 
 from donna.core.errors import ErrorsList
@@ -18,6 +20,10 @@ if TYPE_CHECKING:
 
 class World(BaseWorld):
     path: pathlib.Path
+    _journal_file_name = "journal.jsonl"
+
+    def _journal_path(self) -> pathlib.Path:
+        return self.path / self._journal_file_name
 
     def _artifact_listing_root(self) -> ArtifactListingNode | None:
         if not self.path.exists():
@@ -167,6 +173,88 @@ class World(BaseWorld):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)
         return Ok(None)
+
+    def journal_reset(self) -> Result[None, ErrorsList]:
+        if self.readonly:
+            return Err([world_errors.WorldReadonly(world_id=self.id)])
+
+        if not self.session:
+            return Err([world_errors.WorldStateStorageUnsupported(world_id=self.id)])
+
+        path = self._journal_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"")
+        return Ok(None)
+
+    def journal_add(self, content: bytes) -> Result[None, ErrorsList]:
+        if self.readonly:
+            return Err([world_errors.WorldReadonly(world_id=self.id)])
+
+        if not self.session:
+            return Err([world_errors.WorldStateStorageUnsupported(world_id=self.id)])
+
+        path = self._journal_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        with path.open("ab") as stream:
+            stream.write(content.rstrip(b"\n"))
+            stream.write(b"\n")
+
+        return Ok(None)
+
+    def _journal_read_all(self, path: pathlib.Path) -> list[bytes]:
+        if not path.exists():
+            return []
+
+        with path.open("rb") as stream:
+            return [line.rstrip(b"\n") for line in stream if line.strip()]
+
+    def _journal_follow(  # noqa: CCR001
+        self,
+        poll_interval: float = 0.25,
+    ) -> Iterable[Result[bytes, ErrorsList]]:
+        path = self._journal_path()
+
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        if not path.exists():
+            path.touch(exist_ok=True)
+
+        with path.open("rb") as stream:
+            stream.seek(0, 2)
+
+            while True:
+                line = stream.readline()
+                if line:
+                    line = line.rstrip(b"\n")
+                    if line.strip():
+                        yield Ok(line)
+                    continue
+
+                time.sleep(poll_interval)
+
+    def _journal_read_some(self, lines: int | None = None) -> Iterable[Result[bytes, ErrorsList]]:
+        path = self._journal_path()
+
+        records = self._journal_read_all(path)
+
+        if lines is not None:
+            records = records[-lines:] if lines > 0 else []
+
+        for record in records:
+            yield Ok(record)
+
+    def journal_read(self, lines: int | None = None, follow: bool = False) -> Iterable[Result[bytes, ErrorsList]]:
+        if not self.session:
+            yield Err([world_errors.WorldStateStorageUnsupported(world_id=self.id)])
+            return
+
+        yield from self._journal_read_some(lines=lines)
+
+        if not follow:
+            return
+
+        yield from self._journal_follow()
 
     def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
         return list_artifacts_by_pattern(

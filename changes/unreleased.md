@@ -11,3 +11,8 @@
 - gh-35 Updated RFC orchestration to include design-first planning.
   - Added `design` step to `donna:rfc:work:do` between RFC creation and planning.
   - Updated `donna:rfc:work:plan` to use Design documents as the primary planning input, with RFC as optional helper context.
+- gh-35 Added session actions journal and CLI journal commands.
+  - Added JSONL session journal storage with world-level APIs and reset-on-session-start behavior.
+  - Added `donna journal write` and `donna journal view [--lines N] [--follow]` commands.
+  - Added automatic journal records for `donna_log` instant output with task/work-unit context metadata.
+  - Updated `donna:usage:cli` documentation with journal command usage.

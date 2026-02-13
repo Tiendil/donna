@@ -71,11 +71,12 @@ Donna renders cells differently, depending on the protocol used.
 
 ### Commands
 
-There are three sets of commands:
+There are four sets of commands:
 
 - `donna -p <protocol> workspaces …` — manages workspaces. Most-likely it will be used once per your project to initialize it.
 - `donna -p <protocol> sessions …` — manages sessions. You will use these commands to start, push forward, and manage your work.
 - `donna -p <protocol> artifacts …` — manages artifacts. You will use these commands to read and update artifacts you are working with.
+- `donna -p <protocol> journal …` — manages session actions journal. You will use these commands to log and inspect the history of actions performed during the session.
 
 Use:
 
@@ -164,6 +165,13 @@ The format of `<artifact-pattern>` is as follows:
   - `**:name` — matches all artifacts with id ending with `:name` in all worlds.
   - `world:**` — matches all artifacts in the `world` world.
   - `world:**:name` — matches all artifacts with id ending with `:name` in the `world` world.
+
+### Working with journal
+
+Use the next commands to work with session journal:
+
+- `donna -p <protocol> journal write <actor-id> <message>` — record a single new entry to the journal with the given `actor-id` and `message`. Donna automatically adds a timestamp and other relevant information to the journal entry.
+- `donna -p <protocol> journal view [--lines N] [--follow]` — display journal records.
 
 ## IMPORTANT ON DONNA TOOL USAGE
 

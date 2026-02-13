@@ -3,16 +3,16 @@ from typing import Callable, ParamSpec
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactSectionId, WorldId
+from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactSectionId
 from donna.machine import errors as machine_errors
+from donna.machine import journal as machine_journal
 from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
 from donna.workspaces import artifacts
 from donna.workspaces import tmp as world_tmp
-from donna.workspaces.config import config
-from donna.workspaces.worlds.base import World
+from donna.workspaces import utils as workspace_utils
 
 
 def _errors_to_cells(errors: ErrorsList) -> list[Cell]:
@@ -20,18 +20,8 @@ def _errors_to_cells(errors: ErrorsList) -> list[Cell]:
 
 
 @unwrap_to_error
-def _session() -> Result[World, ErrorsList]:
-    world = config().get_world(WorldId("session")).unwrap()
-
-    if not world.is_initialized():
-        world.initialize(reset=False)
-
-    return Ok(world)
-
-
-@unwrap_to_error
 def _load_state() -> Result[ConsistentState, ErrorsList]:
-    content = _session().unwrap().read_state("state.json").unwrap()
+    content = workspace_utils.session_world().unwrap().read_state("state.json").unwrap()
     if content is None:
         return Err([machine_errors.SessionStateNotInitialized()])
 
@@ -40,7 +30,7 @@ def _load_state() -> Result[ConsistentState, ErrorsList]:
 
 @unwrap_to_error
 def _save_state(state: ConsistentState) -> Result[None, ErrorsList]:
-    _session().unwrap().write_state("state.json", state.to_json().encode("utf-8")).unwrap()
+    workspace_utils.session_world().unwrap().write_state("state.json", state.to_json().encode("utf-8")).unwrap()
     return Ok(None)
 
 
@@ -77,11 +67,15 @@ def _session_required(func: Callable[P, list[Cell]]) -> Callable[P, list[Cell]]:
 
 def start() -> list[Cell]:
     world_tmp.clear()
-    session_result = _session()
+    session_result = workspace_utils.session_world()
     if session_result.is_err():
         return _errors_to_cells(session_result.unwrap_err())
 
     session_result.unwrap().initialize(reset=True)
+
+    reset_journal_result = machine_journal.reset()
+    if reset_journal_result.is_err():
+        return _errors_to_cells(reset_journal_result.unwrap_err())
 
     save_result = _save_state(MutableState.build().freeze())
     if save_result.is_err():
@@ -100,7 +94,7 @@ def reset() -> list[Cell]:
 
 def clear() -> list[Cell]:
     world_tmp.clear()
-    session_result = _session()
+    session_result = workspace_utils.session_world()
     if session_result.is_err():
         return _errors_to_cells(session_result.unwrap_err())
 
