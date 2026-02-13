@@ -8,3 +8,6 @@
 - gh-35 Renamed RFC request workflow id.
   - Renamed the RFC request workflow id to `donna:rfc:work:request`.
   - Updated references to point to `donna:rfc:work:request`.
+- gh-35 Updated RFC orchestration to include design-first planning.
+  - Added `design` step to `donna:rfc:work:do` between RFC creation and planning.
+  - Updated `donna:rfc:work:plan` to use Design documents as the primary planning input, with RFC as optional helper context.
