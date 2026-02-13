@@ -13,17 +13,6 @@ from donna.protocol.modes import get_cell_formatter
 journal_cli = typer.Typer()
 
 
-def _record_to_cell(record: machine_journal.JournalRecord) -> Cell:
-    return Cell.build_markdown(
-        kind="journal_record",
-        content=record.message,
-        timestamp=record.timestamp,
-        actor_id=record.actor_id,
-        current_task_id=record.current_task_id,
-        current_work_unit_id=record.current_work_unit_id,
-    )
-
-
 @journal_cli.command(help="Append a new journal record.")
 @cells_cli
 def write(
@@ -49,8 +38,8 @@ def view(  # noqa: CCR001
             return
 
         record = record_result.unwrap()
-        rendered = formatter.format_cells([_record_to_cell(record)])
-        sys.stdout.buffer.write(rendered + b"\n\n")
+        rendered = formatter.format_journal(record)
+        sys.stdout.buffer.write(rendered + b"\n")
         sys.stdout.buffer.flush()
 
 

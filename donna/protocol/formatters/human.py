@@ -1,3 +1,4 @@
+from donna.machine.journal import JournalRecord
 from donna.protocol.cells import Cell
 from donna.protocol.formatters.base import Formatter as BaseFormatter
 
@@ -26,9 +27,16 @@ class Formatter(BaseFormatter):
 
         return "\n".join(lines).encode()
 
-    def format_log(self, cell: Cell, single_mode: bool) -> bytes:
-        message = cell.content.strip() if cell.content else ""
-        return f"DONNA LOG: {message}".strip().encode()
+    def format_journal(self, record: JournalRecord) -> bytes:
+        current_task_id = record.current_task_id or ""
+        current_work_unit_id = record.current_work_unit_id or ""
+        output = (
+            f"{record.timestamp} "
+            f"[{record.actor_id}] "
+            f"[{current_task_id}/{current_work_unit_id}] "
+            f"{record.message}"
+        )
+        return output.encode()
 
     def format_cells(self, cells: list[Cell]) -> bytes:
         single_mode = len(cells) == 1

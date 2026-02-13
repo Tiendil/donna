@@ -6,7 +6,6 @@ from donna.domain.ids import ArtifactSectionId, FullArtifactId
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta
-from donna.protocol.cells import Cell
 from donna.protocol.utils import instant_output
 from donna.workspaces import markdown
 from donna.workspaces.sources.markdown import MarkdownSectionMixin
@@ -59,17 +58,29 @@ class Output(MarkdownSectionMixin, OperationKind):
 
     def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterator["Change"]:
         from donna.machine.changes import ChangeAddWorkUnit
+        from donna.machine import journal as machine_journal
 
         meta = cast(OutputMeta, operation.meta)
 
-        output_text = operation.description
-
-        output_cell = Cell.build_markdown(
-            kind="operation_output",
-            content=output_text,
-            operation_id=str(unit.operation_id),
+        journal_record_result = machine_journal.add(
+            actor_id="donna",
+            message=operation.description.strip(),
+            current_task_id=str(task.id),
+            current_work_unit_id=str(unit.id),
         )
-        instant_output([output_cell])
+
+        if journal_record_result.is_ok():
+            journal_record = journal_record_result.unwrap()
+        else:
+            journal_record = machine_journal.JournalRecord(
+                timestamp=machine_journal.now_timestamp(),
+                actor_id="donna",
+                message=operation.description.strip(),
+                current_task_id=str(task.id),
+                current_work_unit_id=str(unit.id),
+            )
+
+        instant_output(journal_record)
 
         next_operation_id = meta.next_operation_id
         assert next_operation_id is not None

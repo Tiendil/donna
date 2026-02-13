@@ -5,7 +5,6 @@ from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result, unwrap_to_error
 from donna.domain.ids import FullArtifactSectionId, TaskId, WorkUnitId
-from donna.protocol.cells import Cell
 from donna.protocol.utils import instant_output
 
 if TYPE_CHECKING:
@@ -54,6 +53,7 @@ class WorkUnit(BaseEntity):
     @unwrap_to_error
     def run(self, task: Task) -> Result[list["Change"], ErrorsList]:
         from donna.machine import artifacts as machine_artifacts
+        from donna.machine import journal as machine_journal
         from donna.machine.primitives import resolve_primitive
         from donna.workspaces.artifacts import ArtifactRenderContext
         from donna.workspaces.templates import RenderMode
@@ -67,14 +67,14 @@ class WorkUnit(BaseEntity):
         operation_kind = resolve_primitive(operation.kind).unwrap()
 
         log_message = f"{self.operation_id}: {operation.title}"
-        log_cell = Cell.build(
-            kind="donna_log",
-            media_type="text/plain",
-            content=log_message,
-            current_task_id=task.id,
-            current_work_unit_id=self.id,
-        )
-        instant_output([log_cell])
+        journal_record = machine_journal.add(
+            actor_id="donna",
+            message=log_message,
+            current_task_id=str(task.id),
+            current_work_unit_id=str(self.id),
+        ).unwrap()
+
+        instant_output(journal_record)
 
         changes = list(operation_kind.execute_section(task, self, operation))
 
