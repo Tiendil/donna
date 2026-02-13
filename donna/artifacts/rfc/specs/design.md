@@ -20,7 +20,7 @@ If not otherwise specified, Design documents for the session MUST be stored as `
 
 The Design document MUST NOT be a high-level description of the problem and solution. A high-level description of the problem and solution should be provided in the RFC document.
 
-**Identifiers in this document MUST follow project-specific naming conventions.** Before working on a Design document, you should read the artifacts with project guidlines for naming and code style, if any exist.
+**Identifiers in this document MUST follow project-specific naming conventions.** Before working on a Design document, you should read the artifacts with project guidelines for naming and code style, if any exist.
 
 ## Design document structure
 
