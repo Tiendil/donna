@@ -19,7 +19,7 @@ def message_has_newlines(message: str) -> bool:
 
 class JournalRecord(BaseEntity):
     timestamp: datetime.datetime
-    actor_id: str
+    actor_id: str | None
     message: str
     current_task_id: TaskId | None
     current_work_unit_id: WorkUnitId | None
@@ -56,7 +56,7 @@ def reset() -> Result[None, ErrorsList]:
 
 @unwrap_to_error
 def add(
-    actor_id: str,
+    actor_id: str | None,
     message: str,
     current_task_id: str | None,
     current_work_unit_id: str | None,

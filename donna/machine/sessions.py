@@ -77,6 +77,16 @@ def start() -> list[Cell]:
     if reset_journal_result.is_err():
         return _errors_to_cells(reset_journal_result.unwrap_err())
 
+    journal_message_result = machine_journal.add(
+        actor_id=None,
+        message="Started new session.",
+        current_task_id=None,
+        current_work_unit_id=None,
+        current_operation_id=None,
+    )
+    if journal_message_result.is_err():
+        return _errors_to_cells(journal_message_result.unwrap_err())
+
     save_result = _save_state(MutableState.build().freeze())
     if save_result.is_err():
         return _errors_to_cells(save_result.unwrap_err())

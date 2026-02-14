@@ -29,11 +29,12 @@ class Formatter(BaseFormatter):
 
     def format_journal(self, record: JournalRecord) -> bytes:
         timestamp = record.timestamp.time().isoformat()
+        actor_id = record.actor_id or "-"
         current_task_id = record.current_task_id.short if record.current_task_id is not None else "-"
         current_operation_id = record.current_operation_id.short if record.current_operation_id is not None else "-"
         output = (
             f"{timestamp} "
-            f"[{record.actor_id}] "
+            f"[{actor_id}] "
             f"[{current_task_id}] "
             f"[{current_operation_id}] "
             f"{record.message}"
