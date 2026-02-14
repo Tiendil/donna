@@ -104,11 +104,11 @@ def view(
 )
 @cells_cli
 def fetch(id: FullArtifactIdArgument, output: OutputPathOption = None) -> Iterable[Cell]:
-    _log_artifact_operation(f"Fetch artifact `{id}` to '{output}'")
-
     if output is None:
         extension = world_artifacts.artifact_file_extension(id).unwrap()
         output = world_tmp.file_for_artifact(id, extension)
+
+    _log_artifact_operation(f"Fetch artifact `{id}` to '{output}'")
 
     world_artifacts.fetch_artifact(id, output).unwrap()
 
@@ -144,8 +144,6 @@ def update(
     input: InputPathArgument,
     extension: ExtensionOption = None,
 ) -> Iterable[Cell]:
-    _log_artifact_operation(f"Update artifact `{id}` from '{input}'")
-
     if input == pathlib.Path("-"):
         tmp_extension = extension or "tmp"
         input_path = world_tmp.file_for_artifact(id, tmp_extension)
@@ -154,6 +152,8 @@ def update(
     else:
         input_path = input
         input_display = str(input)
+
+    _log_artifact_operation(f"Update artifact `{id}` from '{input_display}'")
 
     world_artifacts.update_artifact(id, input_path, extension=extension).unwrap()
     return [
