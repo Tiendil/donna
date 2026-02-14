@@ -18,7 +18,7 @@ journal_cli = typer.Typer()
 @cells_cli
 def write(
     actor_id: str = typer.Argument(..., help="Actor identifier (for example: 'agent_123' or 'donna')."),
-    message: str = typer.Argument(..., help="Message to append to journal."),
+    message: str = typer.Argument(..., help="Single-line message to append to journal (newlines are not allowed)."),
 ) -> Iterable[Cell]:
     state = load_state().unwrap()
 

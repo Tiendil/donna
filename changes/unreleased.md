@@ -30,6 +30,10 @@
   - Removed default values from `machine_journal.add(...)` context parameters and made call sites pass values explicitly.
   - Updated `donna journal write` to resolve and store current task/work-unit/operation ids from session state when available.
   - Added explicit `current_operation_id` for `output` and `finish` workflow journal records.
+- gh-35 Restricted journal messages to single-line values.
+  - Updated `JournalRecord` validation to reject message values containing newline characters.
+  - Updated `machine_journal.add(...)` to return a structured environment error for multiline messages.
+  - Updated CLI/help/spec documentation to explicitly state `journal write` messages must be single-line.
 
 ### Breaking Changes
 
@@ -39,6 +43,8 @@
   instead of yielding changes directly.
 - gh-35 `machine_journal.add(...)` now requires explicit `current_task_id`, `current_work_unit_id`,
   and `current_operation_id` arguments.
+- gh-35 Journal messages now must be single-line; `journal write` and `machine_journal.add(...)` reject newline
+  characters in `message`.
 
 ### Migration
 
@@ -48,3 +54,5 @@
   and use `@unwrap_to_error` for unwrap-based propagation.
 - gh-35 Updated direct calls to `machine_journal.add(...)` to pass explicit task/work-unit/operation ids
   (or `None` when unavailable).
+- gh-35 Updated journal writers to pass single-line messages only (replace newline characters or split into multiple
+  records).

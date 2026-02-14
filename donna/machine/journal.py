@@ -2,10 +2,17 @@ import datetime
 import json
 from collections.abc import Iterable
 
+import pydantic
+
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
+from donna.machine import errors as machine_errors
 from donna.workspaces import utils as workspace_utils
+
+
+def message_has_newlines(message: str) -> bool:
+    return "\n" in message or "\r" in message
 
 
 class JournalRecord(BaseEntity):
@@ -15,6 +22,14 @@ class JournalRecord(BaseEntity):
     current_task_id: str | None = None
     current_work_unit_id: str | None = None
     current_operation_id: str | None = None
+
+    @pydantic.field_validator("message", mode="after")
+    @classmethod
+    def validate_message_no_newlines(cls, value: str) -> str:
+        if message_has_newlines(value):
+            raise ValueError("Journal message must not contain newline characters.")
+
+        return value
 
 
 def now_timestamp() -> str:
@@ -48,6 +63,9 @@ def add(
     current_work_unit_id: str | None,
     current_operation_id: str | None,
 ) -> Result[JournalRecord, ErrorsList]:
+    if message_has_newlines(message):
+        return Err([machine_errors.JournalMessageContainsNewlines()])
+
     record = JournalRecord(
         timestamp=now_timestamp(),
         actor_id=actor_id,
