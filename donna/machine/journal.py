@@ -14,6 +14,7 @@ class JournalRecord(BaseEntity):
     message: str
     current_task_id: str | None = None
     current_work_unit_id: str | None = None
+    current_operation_id: str | None = None
 
 
 def now_timestamp() -> str:
@@ -45,6 +46,7 @@ def add(
     message: str,
     current_task_id: str | None = None,
     current_work_unit_id: str | None = None,
+    current_operation_id: str | None = None,
 ) -> Result[JournalRecord, ErrorsList]:
     record = JournalRecord(
         timestamp=now_timestamp(),
@@ -52,6 +54,7 @@ def add(
         message=message,
         current_task_id=current_task_id,
         current_work_unit_id=current_work_unit_id,
+        current_operation_id=current_operation_id,
     )
 
     serialized = serialize_record(record)

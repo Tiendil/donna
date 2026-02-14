@@ -66,12 +66,12 @@ class WorkUnit(BaseEntity):
         operation = machine_artifacts.resolve(self.operation_id, render_context).unwrap()
         operation_kind = resolve_primitive(operation.kind).unwrap()
 
-        log_message = f"{self.operation_id}: {operation.title}"
         journal_record = machine_journal.add(
             actor_id="donna",
-            message=log_message,
+            message=operation.title,
             current_task_id=str(task.id),
             current_work_unit_id=str(self.id),
+            current_operation_id=str(self.operation_id)
         ).unwrap()
 
         instant_output(journal_record)

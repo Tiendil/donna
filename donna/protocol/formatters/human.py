@@ -28,13 +28,15 @@ class Formatter(BaseFormatter):
         return "\n".join(lines).encode()
 
     def format_journal(self, record: JournalRecord) -> bytes:
-        current_task_id = record.current_task_id or "no_task"
-        current_work_unit_id = record.current_work_unit_id or "no_work"
+        current_task_id = record.current_task_id or "-"
+        current_work_unit_id = record.current_work_unit_id or "-"
+        current_operation_id = record.current_operation_id or "-"
         output = (
             f"{record.timestamp} "
             f"[{record.actor_id}] "
             f"[{current_task_id}] "
             f"[{current_work_unit_id}] "
+            f"[{current_operation_id}] "
             f"{record.message}"
         )
         return output.encode()
