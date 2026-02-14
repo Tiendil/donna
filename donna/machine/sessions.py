@@ -149,6 +149,19 @@ def details() -> list[Cell]:
 
 @_session_required
 def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
+    state_result = load_state()
+    if state_result.is_err():
+        return _errors_to_cells(state_result.unwrap_err())
+
+    static_state = state_result.unwrap()
+
+    machine_journal.add(
+        message=f"Start workflow `{artifact_id}`",
+        current_task_id=str(static_state.current_task.id) if static_state.current_task else None,
+        current_work_unit_id=None,
+        current_operation_id=None,
+    ).unwrap()
+
     workflow_result = artifacts.load_artifact(artifact_id)
     if workflow_result.is_err():
         return _errors_to_cells(workflow_result.unwrap_err())
@@ -164,7 +177,7 @@ def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
     if state_result.is_err():
         return _errors_to_cells(state_result.unwrap_err())
 
-    mutator = state_result.unwrap().mutator()
+    mutator = static_state.mutator()
     mutator.start_workflow(workflow.id.to_full_local(primary_section.id))
     save_result = _save_state(mutator.freeze())
     if save_result.is_err():
@@ -205,7 +218,16 @@ def complete_action_request(request_id: ActionRequestId, next_operation_id: Full
     if state_result.is_err():
         return _errors_to_cells(state_result.unwrap_err())
 
-    mutator = state_result.unwrap().mutator()
+    static_state = state_result.unwrap()
+
+    machine_journal.add(
+        message=f"Complete action request `{request_id}`, transit to `{next_operation_id}`",
+        current_task_id=str(static_state.current_task.id) if static_state.current_task else None,
+        current_work_unit_id=None,
+        current_operation_id=None,
+    ).unwrap()
+
+    mutator = static_state.mutator()
     transition_result = _validate_operation_transition(mutator, request_id, next_operation_id)
     if transition_result.is_err():
         return _errors_to_cells(transition_result.unwrap_err())
