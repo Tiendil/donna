@@ -17,13 +17,11 @@ journal_cli = typer.Typer()
 @journal_cli.command(help="Append a new journal record.")
 @cells_cli
 def write(
-    actor_id: str = typer.Argument(..., help="Actor identifier (for example: 'agent_123' or 'donna')."),
     message: str = typer.Argument(..., help="Single-line message to append to journal (newlines are not allowed)."),
 ) -> Iterable[Cell]:
     state = load_state().unwrap()
 
     machine_journal.add(
-        actor_id=actor_id,
         message=message,
         current_task_id=str(state.current_task.id) if state.current_task else None,
         current_work_unit_id=None,

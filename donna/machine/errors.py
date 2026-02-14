@@ -16,6 +16,10 @@ class SessionStateStatusInvalid(InternalError):
     message: str = "Session state status is invalid."
 
 
+class UnsupportedFormatterMode(InternalError):
+    message: str = "Formatter for mode '{mode}' is not implemented."
+
+
 class EnvironmentError(core_errors.EnvironmentError):
     """Base class for environment errors in donna.machine."""
 

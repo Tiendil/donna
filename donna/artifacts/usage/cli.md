@@ -170,7 +170,7 @@ The format of `<artifact-pattern>` is as follows:
 
 Use the next commands to work with session journal:
 
-- `donna -p <protocol> journal write <actor-id> <message>` — record a single new entry to the journal with the given `actor-id` and a **single-line** `message` (newlines are not allowed). Donna automatically adds a timestamp and other relevant information to the journal entry.
+- `donna -p <protocol> journal write <message>` — record a single new entry to the journal with the given **single-line** `message` (newlines are not allowed). Donna automatically adds a timestamp and other relevant information to the journal entry.
 - `donna -p <protocol> journal view [--lines N] [--follow]` — display journal records.
 
 ## IMPORTANT ON DONNA TOOL USAGE

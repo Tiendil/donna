@@ -1,6 +1,7 @@
 import datetime
 import json
 from collections.abc import Iterable
+from typing import Any
 
 import pydantic
 
@@ -11,6 +12,7 @@ from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.machine import errors as machine_errors
 from donna.workspaces import utils as workspace_utils
 from donna.domain.ids import TaskId, WorkUnitId, FullArtifactSectionId
+from donna.workspaces.config import protocol as protocol_mode
 
 
 def message_has_newlines(message: str) -> bool:
@@ -54,16 +56,35 @@ def reset() -> Result[None, ErrorsList]:
     return Ok(None)
 
 
+def smart_agent_id() -> str:
+    from donna.protocol.modes import Mode as ProtocolMode
+
+    match protocol_mode():
+        case ProtocolMode.human:
+            return 'human'
+        case ProtocolMode.llm:
+            return 'agent'
+        case ProtocolMode.automation:
+            return 'automation'
+        case _:
+            raise machine_errors.UnsupportedFormatterMode(mode=protocol_mode())
+
+
 @unwrap_to_error
 def add(
-    actor_id: str | None,
     message: str,
     current_task_id: str | None,
     current_work_unit_id: str | None,
     current_operation_id: str | None,
+    **kwargs: Any
 ) -> Result[JournalRecord, ErrorsList]:
     if message_has_newlines(message):
         return Err([machine_errors.JournalMessageContainsNewlines()])
+
+    if 'actor_id' in kwargs:
+        actor_id = kwargs['actor_id']
+    else:
+        actor_id = smart_agent_id()
 
     record = JournalRecord(
         timestamp=now(),

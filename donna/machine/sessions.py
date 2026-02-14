@@ -78,7 +78,6 @@ def start() -> list[Cell]:
         return _errors_to_cells(reset_journal_result.unwrap_err())
 
     journal_message_result = machine_journal.add(
-        actor_id=None,
         message="Started new session.",
         current_task_id=None,
         current_work_unit_id=None,
