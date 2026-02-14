@@ -4,11 +4,13 @@ from collections.abc import Iterable
 
 import pydantic
 
+from donna.core.utils import now
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.machine import errors as machine_errors
 from donna.workspaces import utils as workspace_utils
+from donna.domain.ids import TaskId, WorkUnitId, FullArtifactSectionId
 
 
 def message_has_newlines(message: str) -> bool:
@@ -16,12 +18,12 @@ def message_has_newlines(message: str) -> bool:
 
 
 class JournalRecord(BaseEntity):
-    timestamp: str
+    timestamp: datetime.datetime
     actor_id: str
     message: str
-    current_task_id: str | None = None
-    current_work_unit_id: str | None = None
-    current_operation_id: str | None = None
+    current_task_id: TaskId | None
+    current_work_unit_id: WorkUnitId | None
+    current_operation_id: FullArtifactSectionId | None
 
     @pydantic.field_validator("message", mode="after")
     @classmethod
@@ -30,10 +32,6 @@ class JournalRecord(BaseEntity):
             raise ValueError("Journal message must not contain newline characters.")
 
         return value
-
-
-def now_timestamp() -> str:
-    return datetime.datetime.now(datetime.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def serialize_record(record: JournalRecord) -> bytes:
@@ -46,7 +44,8 @@ def serialize_record(record: JournalRecord) -> bytes:
 
 
 def deserialize_record(content: bytes) -> JournalRecord:
-    return JournalRecord.model_validate_json(content.decode("utf-8").strip())
+    payload = json.loads(content.decode("utf-8").strip())
+    return JournalRecord.model_validate(payload)
 
 
 @unwrap_to_error
@@ -67,7 +66,7 @@ def add(
         return Err([machine_errors.JournalMessageContainsNewlines()])
 
     record = JournalRecord(
-        timestamp=now_timestamp(),
+        timestamp=now(),
         actor_id=actor_id,
         message=message,
         current_task_id=current_task_id,

@@ -1,7 +1,13 @@
+
 import pathlib
+import datetime
 
 from donna.core import errors as core_errors
 from donna.core.result import Err, Ok, Result
+
+
+def now() -> datetime.datetime:
+    return datetime.datetime.now(datetime.UTC)
 
 
 def first_donna_dir(donna_dir_name: str) -> pathlib.Path | None:

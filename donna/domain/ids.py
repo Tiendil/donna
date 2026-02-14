@@ -113,6 +113,10 @@ class InternalId(str):
 
         return crc == expected_crc
 
+    @property
+    def short(self) -> str:
+        return self.split("-")[1]
+
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:  # noqa: CCR001
 
@@ -462,6 +466,12 @@ class FullArtifactSectionId(ColonPath):
     @property
     def local_id(self) -> ArtifactSectionId:
         return ArtifactSectionId(self.parts[-1])
+
+    @property
+    def short(self) -> str:
+        parts = str(self).split(self.delimiter)
+        new_parts = [part[0] for part in parts[:-2]] + parts[-2:]
+        return self.delimiter.join(new_parts)
 
     @classmethod
     def parse(cls, text: str) -> Result["FullArtifactSectionId", ErrorsList]:  # noqa: CCR001
