@@ -31,9 +31,7 @@ class Formatter(BaseFormatter):
         timestamp = record.timestamp.time().isoformat("seconds")
         actor_id = record.actor_id or "-"
         current_task_id = record.current_task_id.short if record.current_task_id is not None else "-"
-        output = (
-            f"{timestamp} [{actor_id}] [{current_task_id}] {record.message}"
-        )
+        output = f"{timestamp} [{current_task_id}] <{actor_id}> {record.message}"
         return output.encode()
 
     def format_cells(self, cells: list[Cell]) -> bytes:

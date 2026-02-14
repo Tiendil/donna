@@ -39,8 +39,8 @@ class Formatter(BaseFormatter):
 
         output = (
             f"{timestamp} "
-            f"[{actor_id}] "
             f"[{current_task_id}] "
+            f"<{actor_id}> "
             f"[{current_work_unit_id}] "
             f"[{current_operation_id}] "
             f"{record.message}"

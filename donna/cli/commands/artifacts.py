@@ -213,23 +213,9 @@ def remove(
     return cells
 
 
-@artifacts_cli.command(help="Validate an artifact and return any validation errors.")
+@artifacts_cli.command(help="Validate artifacts matching a pattern (defaults to all artifacts) and return any errors.")
 @cells_cli
-def validate(id: FullArtifactIdArgument) -> Iterable[Cell]:
-    _log_artifact_operation(f"Validate artifact `{id}`")
-
-    artifact = world_artifacts.load_artifact(id).unwrap()
-
-    artifact.validate_artifact().unwrap()
-
-    return [operation_succeeded(f"Artifact `{id}` is valid", artifact_id=str(id))]
-
-
-@artifacts_cli.command(
-    help="Validate all artifacts matching a pattern (defaults to all artifacts) and return any errors."
-)
-@cells_cli
-def validate_all(
+def validate(
     pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
     tags: TagOption = None,
 ) -> Iterable[Cell]:  # noqa: CCR001

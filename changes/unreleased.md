@@ -1,6 +1,10 @@
 
 ### Changes
 
+- gh-35 Updated artifacts validation command naming.
+  - Removed the single-artifact `donna artifacts validate <world>:<artifact>` command behavior.
+  - Renamed `donna artifacts validate-all [<artifact-pattern>]` to `donna artifacts validate [<artifact-pattern>]`.
+  - Updated CLI usage documentation to reflect the new command surface.
 - gh-35 Added workflow for creating Design documents.
   - Added `donna:rfs:work:design` workflow by analogy to `donna:rfc:work:request`.
   - Added instructions to use `donna:rfc:specs:design` and default output artifact `session:design:<short-problem-related-identifier>`.
@@ -37,6 +41,7 @@
 
 ### Breaking Changes
 
+- gh-35 `donna artifacts validate-all` was removed; use `donna artifacts validate [<artifact-pattern>]` instead.
 - gh-35 Formatter protocol implementations must now implement `format_journal(record: JournalRecord, ...)` instead of
   `format_log(cell: Cell, ...)`.
 - gh-35 Primitive and operation `execute_section` implementations must now return `Result[list[Change], ErrorsList]`
@@ -46,8 +51,13 @@
 - gh-35 Journal messages now must be single-line; `journal write` and `machine_journal.add(...)` reject newline
   characters in `message`.
 
+### Removals
+
+- gh-35 Removed single-artifact `donna artifacts validate <world>:<artifact>` command behavior.
+
 ### Migration
 
+- gh-35 Replaced `donna artifacts validate-all [<artifact-pattern>]` calls with `donna artifacts validate [<artifact-pattern>]`.
 - gh-35 Renamed custom formatter hooks from `format_log` to `format_journal` and switched parameter type from `Cell`
   to `JournalRecord`.
 - gh-35 Updated custom primitives and operations to return `Ok([Change...])`/`Err(ErrorsList)` from `execute_section`
