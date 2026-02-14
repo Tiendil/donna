@@ -33,11 +33,7 @@ class Formatter(BaseFormatter):
         current_task_id = record.current_task_id.short if record.current_task_id is not None else "-"
         current_operation_id = record.current_operation_id.short if record.current_operation_id is not None else "-"
         output = (
-            f"{timestamp} "
-            f"[{actor_id}] "
-            f"[{current_task_id}] "
-            f"[{current_operation_id}] "
-            f"{record.message}"
+            f"{timestamp} " f"[{actor_id}] " f"[{current_task_id}] " f"[{current_operation_id}] " f"{record.message}"
         )
         return output.encode()
 

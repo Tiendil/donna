@@ -1,6 +1,5 @@
-
-import pathlib
 import datetime
+import pathlib
 
 from donna.core import errors as core_errors
 from donna.core.result import Err, Ok, Result

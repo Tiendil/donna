@@ -5,13 +5,13 @@ from typing import Any
 
 import pydantic
 
-from donna.core.utils import now
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
+from donna.core.utils import now
+from donna.domain.ids import FullArtifactSectionId, TaskId, WorkUnitId
 from donna.machine import errors as machine_errors
 from donna.workspaces import utils as workspace_utils
-from donna.domain.ids import TaskId, WorkUnitId, FullArtifactSectionId
 from donna.workspaces.config import protocol as protocol_mode
 
 
@@ -61,11 +61,11 @@ def smart_agent_id() -> str:
 
     match protocol_mode():
         case ProtocolMode.human:
-            return 'human'
+            return "human"
         case ProtocolMode.llm:
-            return 'agent'
+            return "agent"
         case ProtocolMode.automation:
-            return 'automation'
+            return "automation"
         case _:
             raise machine_errors.UnsupportedFormatterMode(mode=protocol_mode())
 
@@ -76,23 +76,27 @@ def add(
     current_task_id: str | None,
     current_work_unit_id: str | None,
     current_operation_id: str | None,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> Result[JournalRecord, ErrorsList]:
     if message_has_newlines(message):
         return Err([machine_errors.JournalMessageContainsNewlines()])
 
-    if 'actor_id' in kwargs:
-        actor_id = kwargs['actor_id']
+    if "actor_id" in kwargs:
+        actor_id = kwargs["actor_id"]
     else:
         actor_id = smart_agent_id()
+
+    parsed_task_id = TaskId(current_task_id) if current_task_id is not None else None
+    parsed_work_unit_id = WorkUnitId(current_work_unit_id) if current_work_unit_id is not None else None
+    parsed_operation_id = FullArtifactSectionId(current_operation_id) if current_operation_id is not None else None
 
     record = JournalRecord(
         timestamp=now(),
         actor_id=actor_id,
         message=message,
-        current_task_id=current_task_id,
-        current_work_unit_id=current_work_unit_id,
-        current_operation_id=current_operation_id,
+        current_task_id=parsed_task_id,
+        current_work_unit_id=parsed_work_unit_id,
+        current_operation_id=parsed_operation_id,
     )
 
     serialized = serialize_record(record)
