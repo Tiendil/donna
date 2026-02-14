@@ -26,6 +26,10 @@
   - Updated all `execute_section` implementations to use `@unwrap_to_error` and removed direct fallback
     `machine_journal.JournalRecord` construction in error paths.
   - Updated work-unit execution to propagate `execute_section` `ErrorsList` and keep failed work units uncompleted.
+- gh-35 Updated journal context handling for manual journal entries.
+  - Removed default values from `machine_journal.add(...)` context parameters and made call sites pass values explicitly.
+  - Updated `donna journal write` to resolve and store current task/work-unit/operation ids from session state when available.
+  - Added explicit `current_operation_id` for `output` and `finish` workflow journal records.
 
 ### Breaking Changes
 
@@ -33,6 +37,8 @@
   `format_log(cell: Cell, ...)`.
 - gh-35 Primitive and operation `execute_section` implementations must now return `Result[list[Change], ErrorsList]`
   instead of yielding changes directly.
+- gh-35 `machine_journal.add(...)` now requires explicit `current_task_id`, `current_work_unit_id`,
+  and `current_operation_id` arguments.
 
 ### Migration
 
@@ -40,3 +46,5 @@
   to `JournalRecord`.
 - gh-35 Updated custom primitives and operations to return `Ok([Change...])`/`Err(ErrorsList)` from `execute_section`
   and use `@unwrap_to_error` for unwrap-based propagation.
+- gh-35 Updated direct calls to `machine_journal.add(...)` to pass explicit task/work-unit/operation ids
+  (or `None` when unavailable).

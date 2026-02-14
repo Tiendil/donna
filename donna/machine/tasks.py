@@ -71,7 +71,7 @@ class WorkUnit(BaseEntity):
             message=operation.title,
             current_task_id=str(task.id),
             current_work_unit_id=str(self.id),
-            current_operation_id=str(self.operation_id)
+            current_operation_id=str(self.operation_id),
         ).unwrap()
 
         instant_output(journal_record)

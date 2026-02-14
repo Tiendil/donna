@@ -44,9 +44,9 @@ def reset() -> Result[None, ErrorsList]:
 def add(
     actor_id: str,
     message: str,
-    current_task_id: str | None = None,
-    current_work_unit_id: str | None = None,
-    current_operation_id: str | None = None,
+    current_task_id: str | None,
+    current_work_unit_id: str | None,
+    current_operation_id: str | None,
 ) -> Result[JournalRecord, ErrorsList]:
     record = JournalRecord(
         timestamp=now_timestamp(),

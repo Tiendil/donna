@@ -6,6 +6,7 @@ import typer
 from donna.cli.application import app
 from donna.cli.utils import cells_cli, output_cells
 from donna.machine import journal as machine_journal
+from donna.machine.sessions import load_state
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
 from donna.protocol.modes import get_cell_formatter
@@ -19,7 +20,15 @@ def write(
     actor_id: str = typer.Argument(..., help="Actor identifier (for example: 'agent_123' or 'donna')."),
     message: str = typer.Argument(..., help="Message to append to journal."),
 ) -> Iterable[Cell]:
-    machine_journal.add(actor_id=actor_id, message=message).unwrap()
+    state = load_state().unwrap()
+
+    machine_journal.add(
+        actor_id=actor_id,
+        message=message,
+        current_task_id=str(state.current_task.id) if state.current_task else None,
+        current_work_unit_id=None,
+        current_operation_id=None,
+    ).unwrap()
     return [operation_succeeded("Journal record appended.")]
 
 

@@ -47,7 +47,10 @@ class BaseState(BaseEntity):
     ###########
 
     @property
-    def current_task(self) -> Task:
+    def current_task(self) -> Task | None:
+        if not self.tasks:
+            return None
+
         return self.tasks[-1]
 
     def get_action_request(self, request_id: ActionRequestId) -> Result[ActionRequest, ErrorsList]:
@@ -61,6 +64,9 @@ class BaseState(BaseEntity):
     # Since we only append work units, this effectively works as a queue per task
     # In the future we may want to have more sophisticated scheduling
     def get_next_work_unit(self) -> WorkUnit | None:
+        if self.current_task is None:
+            return None
+
         for work_unit in self.work_units:
             if work_unit.task_id != self.current_task.id:
                 continue
@@ -145,8 +151,11 @@ class MutableState(BaseState):
     ####################
 
     def complete_action_request(self, request_id: ActionRequestId, next_operation_id: FullArtifactSectionId) -> None:
+        current_task = self.current_task
+        assert current_task is not None
+
         changes = [
-            ChangeAddWorkUnit(task_id=self.current_task.id, operation_id=next_operation_id),
+            ChangeAddWorkUnit(task_id=current_task.id, operation_id=next_operation_id),
             ChangeRemoveActionRequest(action_request_id=request_id),
         ]
         self.apply_changes(changes)
@@ -163,8 +172,10 @@ class MutableState(BaseState):
     def execute_next_work_unit(self) -> Result[None, ErrorsList]:
         next_work_unit = self.get_next_work_unit()
         assert next_work_unit is not None
+        current_task = self.current_task
+        assert current_task is not None
 
-        changes = next_work_unit.run(self.current_task).unwrap()
+        changes = next_work_unit.run(current_task).unwrap()
         changes.append(ChangeRemoveWorkUnit(work_unit_id=next_work_unit.id))
 
         self.apply_changes(changes)

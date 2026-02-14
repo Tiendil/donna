@@ -20,7 +20,7 @@ def _errors_to_cells(errors: ErrorsList) -> list[Cell]:
 
 
 @unwrap_to_error
-def _load_state() -> Result[ConsistentState, ErrorsList]:
+def load_state() -> Result[ConsistentState, ErrorsList]:
     content = workspace_utils.session_world().unwrap().read_state("state.json").unwrap()
     if content is None:
         return Err([machine_errors.SessionStateNotInitialized()])
@@ -45,7 +45,7 @@ def _state_run(mutator: MutableState) -> Result[None, ErrorsList]:
 
 @unwrap_to_error
 def _state_cells() -> Result[list[Cell], ErrorsList]:
-    return Ok(_load_state().unwrap().node().details())
+    return Ok(load_state().unwrap().node().details())
 
 
 P = ParamSpec("P")
@@ -56,7 +56,7 @@ def _session_required(func: Callable[P, list[Cell]]) -> Callable[P, list[Cell]]:
     #       when we implement domain exceptions
     @functools.wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> list[Cell]:
-        state_result = _load_state()
+        state_result = load_state()
         if state_result.is_err():
             return _errors_to_cells(state_result.unwrap_err())
 
@@ -104,7 +104,7 @@ def clear() -> list[Cell]:
 
 @_session_required
 def continue_() -> list[Cell]:
-    state_result = _load_state()
+    state_result = load_state()
     if state_result.is_err():
         return _errors_to_cells(state_result.unwrap_err())
 
@@ -122,7 +122,7 @@ def continue_() -> list[Cell]:
 
 @_session_required
 def status() -> list[Cell]:
-    state_result = _load_state()
+    state_result = load_state()
     if state_result.is_err():
         return _errors_to_cells(state_result.unwrap_err())
 
@@ -131,7 +131,7 @@ def status() -> list[Cell]:
 
 @_session_required
 def details() -> list[Cell]:
-    state_result = _load_state()
+    state_result = load_state()
     if state_result.is_err():
         return _errors_to_cells(state_result.unwrap_err())
 
@@ -151,7 +151,7 @@ def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
 
     primary_section = primary_section_result.unwrap()
 
-    state_result = _load_state()
+    state_result = load_state()
     if state_result.is_err():
         return _errors_to_cells(state_result.unwrap_err())
 
@@ -192,7 +192,7 @@ def _validate_operation_transition(
 
 @_session_required
 def complete_action_request(request_id: ActionRequestId, next_operation_id: FullArtifactSectionId) -> list[Cell]:
-    state_result = _load_state()
+    state_result = load_state()
     if state_result.is_err():
         return _errors_to_cells(state_result.unwrap_err())
 

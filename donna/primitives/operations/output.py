@@ -70,6 +70,7 @@ class Output(MarkdownSectionMixin, OperationKind):
             message=operation.description.strip(),
             current_task_id=str(task.id),
             current_work_unit_id=str(unit.id),
+            current_operation_id=str(unit.operation_id),
         ).unwrap()
 
         instant_output(journal_record)
