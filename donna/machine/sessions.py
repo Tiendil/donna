@@ -148,7 +148,7 @@ def details() -> list[Cell]:
 
 
 @_session_required
-def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:
+def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:  # noqa: CCR001
     state_result = load_state()
     if state_result.is_err():
         return _errors_to_cells(state_result.unwrap_err())
