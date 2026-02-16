@@ -161,7 +161,7 @@ class MutableState(BaseState):
 
         action_request = self.get_action_request(request_id).unwrap()
         machine_journal.add(
-            message=f"Complete action request `{action_request.title}`",
+            message=f"Complete agent action `{action_request.title}`",
             current_task_id=str(current_task.id),
             current_work_unit_id=None,
             current_operation_id=None,

@@ -86,7 +86,7 @@ class RequestAction(MarkdownSectionMixin, OperationKind):
 
         machine_journal.add(
             actor_id="donna",
-            message=f"Request action `{operation.title}`",
+            message=f"Request agent action `{operation.title}`",
             current_task_id=str(task.id),
             current_work_unit_id=str(unit.id),
             current_operation_id=full_operation_id,
