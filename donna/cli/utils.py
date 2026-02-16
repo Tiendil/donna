@@ -19,8 +19,7 @@ def output_cells(cells: Iterable[Cell]) -> None:
 
     for cell in cells:
         output = formatter.format_cell(cell)
-
-    sys.stdout.buffer.write(output)
+        sys.stdout.buffer.write(output)
 
 
 P = ParamSpec("P")

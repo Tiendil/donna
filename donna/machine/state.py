@@ -127,6 +127,15 @@ class MutableState(BaseState):
 
     def add_action_request(self, action_request: ActionRequest) -> None:
         full_request = action_request.replace(id=self.next_action_request_id())
+
+        machine_journal.add(
+            actor_id="donna",
+            message=f"Request agent action `{full_request.title}`",
+            current_task_id=str(self.current_task.id) if self.current_task else None,
+            current_work_unit_id=None,
+            current_operation_id=None,
+        ).unwrap()
+
         self.action_requests.append(full_request)
 
     def add_work_unit(self, work_unit: WorkUnit) -> None:

@@ -7,7 +7,6 @@ from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result, unwrap_to_error
 from donna.domain import errors as domain_errors
 from donna.domain.ids import ArtifactSectionId, FullArtifactId
-from donna.machine import journal as machine_journal
 from donna.machine.action_requests import ActionRequest
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
@@ -83,13 +82,5 @@ class RequestAction(MarkdownSectionMixin, OperationKind):
         full_operation_id = unit.operation_id
 
         request = ActionRequest.build(operation.title, request_text, full_operation_id)
-
-        machine_journal.add(
-            actor_id="donna",
-            message=f"Request agent action `{operation.title}`",
-            current_task_id=str(task.id),
-            current_work_unit_id=str(unit.id),
-            current_operation_id=full_operation_id,
-        ).unwrap()
 
         return Ok([ChangeAddActionRequest(action_request=request)])

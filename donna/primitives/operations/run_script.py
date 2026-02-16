@@ -177,7 +177,10 @@ class RunScript(MarkdownSectionMixin, OperationKind):
 
         machine_journal.add(
             actor_id="donna",
-            message=f"Script finished `{operation.title}`, exit code: {exit_code}, has stdout: {bool(stdout)}, has stderr: {bool(stderr)}`",
+            message=(
+                f"Script finished `{operation.title}`, exit code: {exit_code}, "
+                f"has stdout: {bool(stdout)}, has stderr: {bool(stderr)}`"
+            ),
             current_task_id=str(task.id),
             current_work_unit_id=str(unit.id),
             current_operation_id=unit.operation_id,
