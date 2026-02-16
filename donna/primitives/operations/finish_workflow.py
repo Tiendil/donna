@@ -5,7 +5,8 @@ from donna.core.result import Ok, Result, unwrap_to_error
 from donna.domain.ids import FullArtifactId
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
-from donna.protocol.utils import instant_output
+from donna.protocol import cell_shortcuts
+from donna.protocol.utils import instant_output_cell
 from donna.workspaces import markdown
 from donna.workspaces.sources.markdown import MarkdownSectionMixin
 
@@ -23,18 +24,10 @@ class FinishWorkflow(MarkdownSectionMixin, OperationKind):
     def execute_section(
         self, task: "Task", unit: "WorkUnit", operation: ArtifactSection
     ) -> Result[list["Change"], ErrorsList]:
-        from donna.machine import journal as machine_journal
         from donna.machine.changes import ChangeFinishTask
 
-        journal_record = machine_journal.add(
-            actor_id="donna",
-            message=operation.description.strip(),
-            current_task_id=str(task.id),
-            current_work_unit_id=str(unit.id),
-            current_operation_id=str(unit.operation_id),
-        ).unwrap()
-
-        instant_output(journal_record)
+        info = cell_shortcuts.info(operation.description)
+        instant_output_cell(info)
 
         return Ok([ChangeFinishTask(task_id=task.id)])
 

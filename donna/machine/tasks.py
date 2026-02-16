@@ -5,7 +5,6 @@ from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result, unwrap_to_error
 from donna.domain.ids import FullArtifactSectionId, TaskId, WorkUnitId
-from donna.protocol.utils import instant_output
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -68,15 +67,13 @@ class WorkUnit(BaseEntity):
         operation = machine_artifacts.resolve(self.operation_id, render_context).unwrap()
         operation_kind = resolve_primitive(operation.kind).unwrap()
 
-        journal_record = machine_journal.add(
+        machine_journal.add(
             actor_id="donna",
             message=operation.title,
             current_task_id=str(task.id),
             current_work_unit_id=str(self.id),
             current_operation_id=str(self.operation_id),
         ).unwrap()
-
-        instant_output(journal_record)
 
         changes = operation_kind.execute_section(task, self, operation).unwrap()
 

@@ -78,6 +78,8 @@ def add(
     current_operation_id: str | None,
     **kwargs: Any,
 ) -> Result[JournalRecord, ErrorsList]:
+    from donna.protocol.utils import instant_output_journal
+
     if message_has_newlines(message):
         return Err([machine_errors.JournalMessageContainsNewlines()])
 
@@ -101,6 +103,9 @@ def add(
 
     serialized = serialize_record(record)
     workspace_utils.session_world().unwrap().journal_add(serialized).unwrap()
+
+    instant_output_journal(record)
+
     return Ok(record)
 
 

@@ -6,7 +6,8 @@ from donna.domain.ids import ArtifactSectionId, FullArtifactId
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta
-from donna.protocol.utils import instant_output
+from donna.protocol import cell_shortcuts
+from donna.protocol.utils import instant_output_cell
 from donna.workspaces import markdown
 from donna.workspaces.sources.markdown import MarkdownSectionMixin
 
@@ -60,20 +61,12 @@ class Output(MarkdownSectionMixin, OperationKind):
     def execute_section(
         self, task: "Task", unit: "WorkUnit", operation: ArtifactSection
     ) -> Result[list["Change"], ErrorsList]:
-        from donna.machine import journal as machine_journal
         from donna.machine.changes import ChangeAddWorkUnit
 
         meta = cast(OutputMeta, operation.meta)
 
-        journal_record = machine_journal.add(
-            actor_id="donna",
-            message=operation.description.strip(),
-            current_task_id=str(task.id),
-            current_work_unit_id=str(unit.id),
-            current_operation_id=str(unit.operation_id),
-        ).unwrap()
-
-        instant_output(journal_record)
+        info = cell_shortcuts.info(operation.description)
+        instant_output_cell(info)
 
         next_operation_id = meta.next_operation_id
         assert next_operation_id is not None

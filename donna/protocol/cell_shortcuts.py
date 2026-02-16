@@ -7,3 +7,7 @@ def operation_succeeded(message: str, **meta: MetaValue) -> Cell:
 
 def operation_failed(message: str, **meta: MetaValue) -> Cell:
     return Cell.build(kind="operation_failed", media_type="text/markdown", content=message, **meta)
+
+
+def info(message: str, **meta: MetaValue) -> Cell:
+    return Cell.build(kind="info", media_type="text/markdown", content=message, **meta)
