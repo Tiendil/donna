@@ -164,7 +164,7 @@ Commands you may need:
 - `donna artifacts list <pattern>` — list artifacts with short descriptions.
 - `donna journal view [--lines N] [--follow]` — view the log of work performed in the current session.
 
-Here is an example of the journal log:
+Here is an example of the real Donna session work log:
 
 ![Journal log demonstration](./docs/images/journal-demo.gif)
 
