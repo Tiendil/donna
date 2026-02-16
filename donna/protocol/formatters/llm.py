@@ -5,13 +5,10 @@ from donna.protocol.formatters.base import Formatter as BaseFormatter
 
 class Formatter(BaseFormatter):
 
-    def format_cell(self, cell: Cell, single_mode: bool) -> bytes:  # noqa: CCR001
+    def format_cell(self, cell: Cell) -> bytes:  # noqa: CCR001
         id = cell.short_id
 
-        lines = []
-
-        if not single_mode:
-            lines = [f"--DONNA-CELL {id} BEGIN--"]
+        lines = [f"--DONNA-CELL {id} BEGIN--"]
 
         lines.append(f"kind={cell.kind}")
 
@@ -25,8 +22,7 @@ class Formatter(BaseFormatter):
             lines.append("")
             lines.append(cell.content.strip())
 
-        if not single_mode:
-            lines.append(f"--DONNA-CELL {id} END--")
+        lines.append(f"--DONNA-CELL {id} END--")
 
         return "\n".join(lines).strip().encode()
 
@@ -46,8 +42,3 @@ class Formatter(BaseFormatter):
             f"{record.message}"
         )
         return output.encode()
-
-    def format_cells(self, cells: list[Cell]) -> bytes:
-        single_mode = len(cells) == 1
-        formatted_cells = [self.format_cell(cell, single_mode=single_mode) for cell in cells]
-        return b"\n\n".join(formatted_cells)

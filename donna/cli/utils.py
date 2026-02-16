@@ -17,7 +17,8 @@ from donna.workspaces.initialization import initialize_runtime
 def output_cells(cells: Iterable[Cell]) -> None:
     formatter = get_cell_formatter()
 
-    output = formatter.format_cells(list(cells))
+    for cell in cells:
+        output = formatter.format_cell(cell)
 
     sys.stdout.buffer.write(output)
 

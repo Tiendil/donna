@@ -5,13 +5,10 @@ from donna.protocol.formatters.base import Formatter as BaseFormatter
 
 class Formatter(BaseFormatter):
 
-    def format_cell(self, cell: Cell, single_mode: bool) -> bytes:
+    def format_cell(self, cell: Cell) -> bytes:
         id = cell.short_id
 
-        lines = []
-
-        if not single_mode:
-            lines = [f"----- DONNA CELL {id} -----"]
+        lines = [f"----- DONNA CELL {id} -----"]
 
         lines.append(f"kind = {cell.kind}")
 
@@ -33,8 +30,3 @@ class Formatter(BaseFormatter):
         current_task_id = record.current_task_id.short if record.current_task_id is not None else "-"
         output = f"{timestamp} [{current_task_id}] <{actor_id}> {record.message}"
         return output.encode()
-
-    def format_cells(self, cells: list[Cell]) -> bytes:
-        single_mode = len(cells) == 1
-        formatted_cells = [self.format_cell(cell, single_mode=single_mode) for cell in cells]
-        return b"\n\n".join(formatted_cells)

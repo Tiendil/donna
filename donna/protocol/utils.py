@@ -18,5 +18,5 @@ def instant_output_journal(record: JournalRecord) -> None:
 
 def instant_output_cell(cell: Cell) -> None:
     formatter = get_cell_formatter()
-    formatted_output = formatter.format_cell(cell, single_mode=False)
+    formatted_output = formatter.format_cell(cell)
     instant_output(formatted_output)

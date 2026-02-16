@@ -1,6 +1,11 @@
 
 ### Changes
 
+- gh-35 Removed `single_mode` from protocol formatter APIs.
+  - Removed `single_mode` from `Formatter.format_cell(...)` in base and all formatter implementations.
+  - Moved single-vs-multi-cell framing decisions into formatter internals (`format_cells(...)`) for `human` and `llm`.
+  - Updated protocol output utility call sites to use the simplified `format_cell(cell)` signature.
+
 - gh-35 Moved action-request/workflow journal writes into state transitions.
   - Moved `machine_journal.add(...)` for `complete_action_request` from `donna/machine/sessions.py` to
     `donna/machine/state.py`.
@@ -53,6 +58,7 @@
 
 ### Breaking Changes
 
+- gh-35 `format_cell` in formatter implementations now accepts only `cell` (the `single_mode` parameter was removed).
 - gh-35 `donna artifacts validate-all` was removed; use `donna artifacts validate [<artifact-pattern>]` instead.
 - gh-35 Formatter protocol implementations must now implement `format_journal(record: JournalRecord, ...)` instead of
   `format_log(cell: Cell, ...)`.
@@ -65,10 +71,12 @@
 
 ### Removals
 
+- gh-35 Removed `single_mode` support from formatter `format_cell(...)` APIs.
 - gh-35 Removed single-artifact `donna artifacts validate <world>:<artifact>` command behavior.
 
 ### Migration
 
+- gh-35 Removed `single_mode` argument from custom formatter `format_cell(...)` implementations and call sites.
 - gh-35 Replaced `donna artifacts validate-all [<artifact-pattern>]` calls with `donna artifacts validate [<artifact-pattern>]`.
 - gh-35 Renamed custom formatter hooks from `format_log` to `format_journal` and switched parameter type from `Cell`
   to `JournalRecord`.
