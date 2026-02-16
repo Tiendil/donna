@@ -4,6 +4,8 @@ Your agent will generate [state machines](https://en.wikipedia.org/wiki/Finite-s
 
 Donna allows your agent to execute hundreds of consecutive steps without swaying away from the defined workflow. Branching, loops, nested calls, and recursion — all possible.
 
+![Journal log demonstration](./docs/images/journal-demo.gif)
+
 ## What is Donna?
 
 Donna is a CLI tool that helps coding agents like Codex focus on the task at hand by keeping high-level control flow in explicit Donna workflows. Donna dictates what should be done at each step of the work, so the agent can focus on the actual piece.
