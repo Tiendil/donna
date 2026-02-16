@@ -15,10 +15,6 @@ from donna.workspaces import tmp as world_tmp
 from donna.workspaces import utils as workspace_utils
 
 
-def _errors_to_cells(errors: ErrorsList) -> list[Cell]:
-    return [error.node().info() for error in errors]
-
-
 @unwrap_to_error
 def load_state() -> Result[ConsistentState, ErrorsList]:
     content = workspace_utils.session_world().unwrap().read_state("state.json").unwrap()
@@ -49,146 +45,85 @@ def _state_cells() -> Result[list[Cell], ErrorsList]:
 
 
 P = ParamSpec("P")
+CellsResult = Result[list[Cell], ErrorsList]
 
 
-def _session_required(func: Callable[P, list[Cell]]) -> Callable[P, list[Cell]]:
+def _session_required(
+    func: Callable[P, CellsResult],
+) -> Callable[P, CellsResult]:
     # TODO: refactor to catch domain exception from load_state
     #       when we implement domain exceptions
     @functools.wraps(func)
-    def wrapper(*args: P.args, **kwargs: P.kwargs) -> list[Cell]:
-        state_result = load_state()
-        if state_result.is_err():
-            return _errors_to_cells(state_result.unwrap_err())
-
+    @unwrap_to_error
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> CellsResult:
+        load_state().unwrap()
         return func(*args, **kwargs)
 
     return wrapper
 
 
-def start() -> list[Cell]:
+@unwrap_to_error
+def start() -> Result[list[Cell], ErrorsList]:
     world_tmp.clear()
-    session_result = workspace_utils.session_world()
-    if session_result.is_err():
-        return _errors_to_cells(session_result.unwrap_err())
+    workspace_utils.session_world().unwrap().initialize(reset=True)
 
-    session_result.unwrap().initialize(reset=True)
+    machine_journal.reset().unwrap()
 
-    reset_journal_result = machine_journal.reset()
-
-    if reset_journal_result.is_err():
-        return _errors_to_cells(reset_journal_result.unwrap_err())
-
-    journal_message_result = machine_journal.add(
+    machine_journal.add(
         message="Started new session.",
         current_task_id=None,
         current_work_unit_id=None,
         current_operation_id=None,
-    )
-    if journal_message_result.is_err():
-        return _errors_to_cells(journal_message_result.unwrap_err())
+    ).unwrap()
+    _save_state(MutableState.build().freeze()).unwrap()
 
-    save_result = _save_state(MutableState.build().freeze())
-    if save_result.is_err():
-        return _errors_to_cells(save_result.unwrap_err())
-
-    return [operation_succeeded("Started new session.")]
+    return Ok([operation_succeeded("Started new session.")])
 
 
-def reset() -> list[Cell]:
-    save_result = _save_state(MutableState.build().freeze())
-    if save_result.is_err():
-        return _errors_to_cells(save_result.unwrap_err())
-
-    return [operation_succeeded("Session state reset.")]
+@unwrap_to_error
+def reset() -> Result[list[Cell], ErrorsList]:
+    _save_state(MutableState.build().freeze()).unwrap()
+    return Ok([operation_succeeded("Session state reset.")])
 
 
-def clear() -> list[Cell]:
+@unwrap_to_error
+def clear() -> Result[list[Cell], ErrorsList]:
     world_tmp.clear()
-    session_result = workspace_utils.session_world()
-    if session_result.is_err():
-        return _errors_to_cells(session_result.unwrap_err())
-
-    session_result.unwrap().initialize(reset=True)
-    return [operation_succeeded("Cleared session.")]
+    workspace_utils.session_world().unwrap().initialize(reset=True)
+    return Ok([operation_succeeded("Cleared session.")])
 
 
 @_session_required
-def continue_() -> list[Cell]:
-    state_result = load_state()
-    if state_result.is_err():
-        return _errors_to_cells(state_result.unwrap_err())
-
-    mutator = state_result.unwrap().mutator()
-    run_result = _state_run(mutator)
-    if run_result.is_err():
-        return _errors_to_cells(run_result.unwrap_err())
-
-    cells_result = _state_cells()
-    if cells_result.is_err():
-        return _errors_to_cells(cells_result.unwrap_err())
-
-    return cells_result.unwrap()
+@unwrap_to_error
+def continue_() -> Result[list[Cell], ErrorsList]:
+    mutator = load_state().unwrap().mutator()
+    _state_run(mutator).unwrap()
+    return _state_cells()
 
 
 @_session_required
-def status() -> list[Cell]:
-    state_result = load_state()
-    if state_result.is_err():
-        return _errors_to_cells(state_result.unwrap_err())
-
-    return [state_result.unwrap().node().info()]
+@unwrap_to_error
+def status() -> Result[list[Cell], ErrorsList]:
+    return Ok([load_state().unwrap().node().info()])
 
 
 @_session_required
-def details() -> list[Cell]:
-    state_result = load_state()
-    if state_result.is_err():
-        return _errors_to_cells(state_result.unwrap_err())
-
-    return state_result.unwrap().node().details()
+@unwrap_to_error
+def details() -> Result[list[Cell], ErrorsList]:
+    return Ok(load_state().unwrap().node().details())
 
 
 @_session_required
-def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:  # noqa: CCR001
-    state_result = load_state()
-    if state_result.is_err():
-        return _errors_to_cells(state_result.unwrap_err())
-
-    static_state = state_result.unwrap()
-
-    workflow_result = artifacts.load_artifact(artifact_id)
-    if workflow_result.is_err():
-        return _errors_to_cells(workflow_result.unwrap_err())
-
-    workflow = workflow_result.unwrap()
-    primary_section_result = workflow.primary_section()
-    if primary_section_result.is_err():
-        return _errors_to_cells(primary_section_result.unwrap_err())
-
-    primary_section = primary_section_result.unwrap()
-
-    state_result = load_state()
-    if state_result.is_err():
-        return _errors_to_cells(state_result.unwrap_err())
-
+@unwrap_to_error
+def start_workflow(artifact_id: FullArtifactId) -> Result[list[Cell], ErrorsList]:  # noqa: CCR001
+    static_state = load_state().unwrap()
+    workflow = artifacts.load_artifact(artifact_id).unwrap()
+    primary_section = workflow.primary_section().unwrap()
     mutator = static_state.mutator()
-    start_result = mutator.start_workflow(workflow.id.to_full_local(primary_section.id))
-    if start_result.is_err():
-        return _errors_to_cells(start_result.unwrap_err())
-
-    save_result = _save_state(mutator.freeze())
-    if save_result.is_err():
-        return _errors_to_cells(save_result.unwrap_err())
-
-    run_result = _state_run(mutator)
-    if run_result.is_err():
-        return _errors_to_cells(run_result.unwrap_err())
-
-    cells_result = _state_cells()
-    if cells_result.is_err():
-        return _errors_to_cells(cells_result.unwrap_err())
-
-    return cells_result.unwrap()
+    mutator.start_workflow(workflow.id.to_full_local(primary_section.id)).unwrap()
+    _save_state(mutator.freeze()).unwrap()
+    _state_run(mutator).unwrap()
+    return _state_cells()
 
 
 @unwrap_to_error
@@ -210,32 +145,13 @@ def _validate_operation_transition(
 
 
 @_session_required
-def complete_action_request(request_id: ActionRequestId, next_operation_id: FullArtifactSectionId) -> list[Cell]:
-    state_result = load_state()
-    if state_result.is_err():
-        return _errors_to_cells(state_result.unwrap_err())
-
-    static_state = state_result.unwrap()
-
-    mutator = static_state.mutator()
-    transition_result = _validate_operation_transition(mutator, request_id, next_operation_id)
-    if transition_result.is_err():
-        return _errors_to_cells(transition_result.unwrap_err())
-
-    complete_result = mutator.complete_action_request(request_id, next_operation_id)
-    if complete_result.is_err():
-        return _errors_to_cells(complete_result.unwrap_err())
-
-    save_result = _save_state(mutator.freeze())
-    if save_result.is_err():
-        return _errors_to_cells(save_result.unwrap_err())
-
-    run_result = _state_run(mutator)
-    if run_result.is_err():
-        return _errors_to_cells(run_result.unwrap_err())
-
-    cells_result = _state_cells()
-    if cells_result.is_err():
-        return _errors_to_cells(cells_result.unwrap_err())
-
-    return cells_result.unwrap()
+@unwrap_to_error
+def complete_action_request(
+    request_id: ActionRequestId, next_operation_id: FullArtifactSectionId
+) -> Result[list[Cell], ErrorsList]:
+    mutator = load_state().unwrap().mutator()
+    _validate_operation_transition(mutator, request_id, next_operation_id).unwrap()
+    mutator.complete_action_request(request_id, next_operation_id).unwrap()
+    _save_state(mutator.freeze()).unwrap()
+    _state_run(mutator).unwrap()
+    return _state_cells()

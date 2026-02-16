@@ -112,5 +112,8 @@ class EnvironmentErrorNode(Node):
             **self.meta(),
         )
 
+    def journal_message(self) -> str:
+        return self._error.message.format(error=self._error).replace("\n", " ").strip()
+
 
 ErrorsList = list[EnvironmentError]

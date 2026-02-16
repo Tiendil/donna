@@ -1,6 +1,14 @@
 
 ### Changes
 
+- gh-35 Moved session environment error rendering to the CLI boundary.
+  - Updated `donna.machine.sessions` command-facing functions to return `Result[list[Cell], ErrorsList]`
+    instead of rendering environment errors to cells in the machine layer.
+  - Updated `donna.cli.commands.sessions` to unwrap session results at the CLI boundary.
+  - Updated `donna.cli.utils.cells_cli` to process environment errors from unwrap failures and write
+    single-line error records to the session journal.
+  - Fixed typo in `donna/artifacts/intro.md` (`thoughs` -> `thoughts`) found during polish.
+
 - gh-35 Removed `single_mode` from protocol formatter APIs.
   - Removed `single_mode` from `Formatter.format_cell(...)` in base and all formatter implementations.
   - Moved single-vs-multi-cell framing decisions into formatter internals (`format_cells(...)`) for `human` and `llm`.
@@ -58,6 +66,7 @@
 
 ### Breaking Changes
 
+- gh-35 `donna.machine.sessions` command-facing APIs now return `Result[list[Cell], ErrorsList]` instead of `list[Cell]`.
 - gh-35 `format_cell` in formatter implementations now accepts only `cell` (the `single_mode` parameter was removed).
 - gh-35 `donna artifacts validate-all` was removed; use `donna artifacts validate [<artifact-pattern>]` instead.
 - gh-35 Formatter protocol implementations must now implement `format_journal(record: JournalRecord, ...)` instead of
@@ -76,6 +85,7 @@
 
 ### Migration
 
+- gh-35 Updated integrations that call `donna.machine.sessions` command-facing functions to handle `Result` values.
 - gh-35 Removed `single_mode` argument from custom formatter `format_cell(...)` implementations and call sites.
 - gh-35 Replaced `donna artifacts validate-all [<artifact-pattern>]` calls with `donna artifacts validate [<artifact-pattern>]`.
 - gh-35 Renamed custom formatter hooks from `format_log` to `format_journal` and switched parameter type from `Cell`
