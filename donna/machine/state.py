@@ -17,6 +17,7 @@ from donna.domain.ids import (
 from donna.machine import errors as machine_errors
 from donna.machine import journal as machine_journal
 from donna.machine.action_requests import ActionRequest
+from donna.machine.artifacts import resolve
 from donna.machine.changes import (
     Change,
     ChangeAddTask,
@@ -175,8 +176,10 @@ class MutableState(BaseState):
 
     @unwrap_to_error
     def start_workflow(self, full_operation_id: FullArtifactSectionId) -> Result[None, ErrorsList]:
+        workflow = resolve(full_operation_id).unwrap()
+
         machine_journal.add(
-            message=f"Start workflow `{full_operation_id.full_artifact_id}`",
+            message=f"Start workflow `{workflow.title}`",
             current_task_id=str(self.current_task.id) if self.current_task else None,
             current_work_unit_id=None,
             current_operation_id=None,
@@ -187,8 +190,12 @@ class MutableState(BaseState):
         return Ok(None)
 
     def finish_workflow(self, task_id: TaskId) -> None:
+        task = self.current_task
+        assert task is not None
+        workflow = resolve(task.workflow_id).unwrap()
+
         machine_journal.add(
-            message=f"Finish workflow `{task_id}`",
+            message=f"Finish workflow `{workflow.title}`",
             current_task_id=str(self.current_task.id) if self.current_task else None,
             current_work_unit_id=None,
             current_operation_id=None,

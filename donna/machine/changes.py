@@ -35,7 +35,10 @@ class ChangeAddTask(Change):
     operation_id: FullArtifactSectionId
 
     def apply_to(self, state: "MutableState") -> None:
-        task = Task.build(state.next_task_id())
+        task = Task.build(
+            state.next_task_id(),
+            workflow_id=self.operation_id,
+        )
 
         state.add_task(task)
 

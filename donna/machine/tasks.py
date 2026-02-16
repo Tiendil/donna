@@ -13,12 +13,14 @@ if TYPE_CHECKING:
 
 class Task(BaseEntity):
     id: TaskId
+    workflow_id: FullArtifactSectionId
     context: dict[str, Any]
 
     @classmethod
-    def build(cls, id: TaskId) -> "Task":
+    def build(cls, id: TaskId, workflow_id: FullArtifactSectionId) -> "Task":
         return Task(
             id=id,
+            workflow_id=workflow_id,
             context={},
         )
 
