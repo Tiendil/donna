@@ -41,6 +41,11 @@ kind = "donna.lib.request_action"
    - A finish step.
 3. `{{ donna.lib.goto("review_workflow") }}`
 
+Requirements:
+
+- A title of operation MUST always have meaning without knowing context: no sequential numbers, no generic titles like "Plan part 1", no IDs from RFC or Design documents.
+- If you mention an ID from the RFC or the Design document, you MUST include a human-readable title of entity you refer. E.g. not `O1` but `O1 (Implement a new module "a.b.c")`
+
 ## Review workflow
 
 ```toml donna

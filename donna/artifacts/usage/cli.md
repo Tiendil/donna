@@ -172,6 +172,17 @@ Use the next commands to work with session journal:
 - `donna -p <protocol> journal write <message>` — record a single new entry to the journal with the given **single-line** `message` (newlines are not allowed). Donna automatically adds a timestamp and other relevant information to the journal entry.
 - `donna -p <protocol> journal view [--lines N] [--follow]` — display journal records.
 
+Agents MUST use `donna -p <protocol> journal write <message>` to log:
+
+- Goals of the long-running agent-only operations: `Goal: <goal description>`.
+- Significant steps of the long-running agent-only operations: `Step: <step description>`.
+- Significant thoughts, assumptions, and intents during the long-running operations: `Thought: <thought description>`, `Assumption: <assumption description>`, `Intent: <intent description>`.
+
+Agents MUST NOT log:
+
+- CLI commands they execute.
+- Elementary/trivial steps.
+
 ## IMPORTANT ON DONNA TOOL USAGE
 
 **Strictly follow described command syntax**

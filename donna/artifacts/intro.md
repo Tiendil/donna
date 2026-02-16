@@ -36,3 +36,9 @@ Artifact type tags:
 4. If you are executing a workflow operation and need to perform a complex action or changes, you SHOULD search for an appropriate workflow and run it as a child workflow — it is the intended way to use Donna.
 5. Run to list all workflows: `{{ donna.lib.list("**", tags=["workflow"]) }}`
 6. Run to list all specifications: `{{ donna.lib.list("**", tags=["specification"]) }}`
+
+## Journaling
+
+You MUST use `donna journal write` to track you actions and thoughs, according the description in `{{ donna.lib.view("donna:usage:cli") }}`.
+
+You MUST use `donna journal view --lines 100` to read the last records after you compress your context.

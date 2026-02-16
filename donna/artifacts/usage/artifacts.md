@@ -168,7 +168,11 @@ id = "operation_id"
 kind = "donna.lib.request_action"
 ```
 
-#### Kinds of Workflow Operations
+The title of the workflow section MUST be a short human-readable description of the operation in the form of an imperative verb phrase, for example, `Implement the feature X`, `Create a document Y`.
+
+#### Kind: Operation
+
+The title of the operation section MUST be a short human-readable description of the operation in the form of an imperative verb phrase, for example, `Run tests`, `Format the codebase`, `Implement function X in the module Y`.x
 
 ##### `donna.lib.request_action`
 
