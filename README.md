@@ -159,9 +159,14 @@ Donna will:
 
 Commands you may need:
 
-- `donna -p human workspaces init` — Initialize Donna in your project.
-- `donna -p human sessions start` — start a new working session, remove everything from the previous session.
-- `donna -p human artifacts list <pattern>` — list artifacts with short descriptions.
+- `donna workspaces init` — Initialize Donna in your project.
+- `donna sessions start` — start a new working session, remove everything from the previous session.
+- `donna artifacts list <pattern>` — list artifacts with short descriptions.
+- `donna journal view [--lines N] [--follow]` — view the log of work performed in the current session.
+
+Here is an example of the journal log:
+
+![Journal log demonstration](./docs/images/journal-demo.gif)
 
 Use `donna --help` for a quick reference.
 
