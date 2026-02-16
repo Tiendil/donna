@@ -41,11 +41,6 @@ kind = "donna.lib.request_action"
    - A finish step.
 3. `{{ donna.lib.goto("review_workflow") }}`
 
-Requirements:
-
-- A title of operation MUST always have meaning without knowing context: no sequential numbers, no generic titles like "Plan part 1", no IDs from RFC or Design documents.
-- If you mention an ID from the RFC or the Design document, you MUST include a human-readable title of entity you refer. E.g. not `O1` but `O1 (Implement a new module "a.b.c")`
-
 ## Review workflow
 
 ```toml donna
@@ -59,6 +54,12 @@ For each of the steps in the workflow you created:
 2. If the step requires both research and implementation, split it into two steps: research step and implementation step.
 3. If the step required editing multiple artifacts (multiple files, multiple functions, etc.), split it into multiple steps, one per change required.
 4. If the step is too big or complex, split it into multiple smaller steps.
+5. Fux & improve naming and IDs in the step's title and body.
+
+Naming rules:
+
+- A title of operation MUST always have meaning without knowing context: no sequential numbers, no generic titles like `Plan part 1`.
+- If you mention an ID from the RFC or the Design document, you MUST include a human-readable name of the entity you refer. E.g. not `O1` but `O1 (Implement a new module "a.b.c")`
 
 After all steps are reviewed:
 
