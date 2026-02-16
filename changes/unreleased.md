@@ -1,6 +1,14 @@
 
 ### Changes
 
+- gh-35 Moved action-request/workflow journal writes into state transitions.
+  - Moved `machine_journal.add(...)` for `complete_action_request` from `donna/machine/sessions.py` to
+    `donna/machine/state.py`.
+  - Moved `machine_journal.add(...)` for `start_workflow` from `donna/machine/sessions.py` to
+    `donna/machine/state.py`.
+  - Wrapped `MutableState.complete_action_request` and `MutableState.start_workflow` with `@unwrap_to_error` and
+    updated session callers to handle `Result`.
+  - Added a new `machine_journal.add(...)` call in `MutableState.finish_workflow`.
 - gh-35 Updated artifacts validation command naming.
   - Removed the single-artifact `donna artifacts validate <world>:<artifact>` command behavior.
   - Renamed `donna artifacts validate-all [<artifact-pattern>]` to `donna artifacts validate [<artifact-pattern>]`.

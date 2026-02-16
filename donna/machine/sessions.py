@@ -155,13 +155,6 @@ def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:  # noqa: CCR001
 
     static_state = state_result.unwrap()
 
-    machine_journal.add(
-        message=f"Start workflow `{artifact_id}`",
-        current_task_id=str(static_state.current_task.id) if static_state.current_task else None,
-        current_work_unit_id=None,
-        current_operation_id=None,
-    ).unwrap()
-
     workflow_result = artifacts.load_artifact(artifact_id)
     if workflow_result.is_err():
         return _errors_to_cells(workflow_result.unwrap_err())
@@ -178,7 +171,10 @@ def start_workflow(artifact_id: FullArtifactId) -> list[Cell]:  # noqa: CCR001
         return _errors_to_cells(state_result.unwrap_err())
 
     mutator = static_state.mutator()
-    mutator.start_workflow(workflow.id.to_full_local(primary_section.id))
+    start_result = mutator.start_workflow(workflow.id.to_full_local(primary_section.id))
+    if start_result.is_err():
+        return _errors_to_cells(start_result.unwrap_err())
+
     save_result = _save_state(mutator.freeze())
     if save_result.is_err():
         return _errors_to_cells(save_result.unwrap_err())
@@ -220,21 +216,15 @@ def complete_action_request(request_id: ActionRequestId, next_operation_id: Full
 
     static_state = state_result.unwrap()
 
-    action_request = static_state.get_action_request(request_id).unwrap()
-
-    machine_journal.add(
-        message=f"Complete action request `{action_request.title}`",
-        current_task_id=str(static_state.current_task.id) if static_state.current_task else None,
-        current_work_unit_id=None,
-        current_operation_id=None,
-    ).unwrap()
-
     mutator = static_state.mutator()
     transition_result = _validate_operation_transition(mutator, request_id, next_operation_id)
     if transition_result.is_err():
         return _errors_to_cells(transition_result.unwrap_err())
 
-    mutator.complete_action_request(request_id, next_operation_id)
+    complete_result = mutator.complete_action_request(request_id, next_operation_id)
+    if complete_result.is_err():
+        return _errors_to_cells(complete_result.unwrap_err())
+
     save_result = _save_state(mutator.freeze())
     if save_result.is_err():
         return _errors_to_cells(save_result.unwrap_err())

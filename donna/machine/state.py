@@ -15,6 +15,7 @@ from donna.domain.ids import (
     WorkUnitId,
 )
 from donna.machine import errors as machine_errors
+from donna.machine import journal as machine_journal
 from donna.machine.action_requests import ActionRequest
 from donna.machine.changes import (
     Change,
@@ -150,21 +151,49 @@ class MutableState(BaseState):
     # Complex operations
     ####################
 
-    def complete_action_request(self, request_id: ActionRequestId, next_operation_id: FullArtifactSectionId) -> None:
+    @unwrap_to_error
+    def complete_action_request(
+        self, request_id: ActionRequestId, next_operation_id: FullArtifactSectionId
+    ) -> Result[None, ErrorsList]:
         current_task = self.current_task
         assert current_task is not None
+
+        action_request = self.get_action_request(request_id).unwrap()
+        machine_journal.add(
+            message=f"Complete action request `{action_request.title}`",
+            current_task_id=str(current_task.id),
+            current_work_unit_id=None,
+            current_operation_id=None,
+        ).unwrap()
 
         changes = [
             ChangeAddWorkUnit(task_id=current_task.id, operation_id=next_operation_id),
             ChangeRemoveActionRequest(action_request_id=request_id),
         ]
         self.apply_changes(changes)
+        return Ok(None)
 
-    def start_workflow(self, full_operation_id: FullArtifactSectionId) -> None:
+    @unwrap_to_error
+    def start_workflow(self, full_operation_id: FullArtifactSectionId) -> Result[None, ErrorsList]:
+        machine_journal.add(
+            message=f"Start workflow `{full_operation_id.full_artifact_id}`",
+            current_task_id=str(self.current_task.id) if self.current_task else None,
+            current_work_unit_id=None,
+            current_operation_id=None,
+        ).unwrap()
+
         changes = [ChangeAddTask(operation_id=full_operation_id)]
         self.apply_changes(changes)
+        return Ok(None)
 
     def finish_workflow(self, task_id: TaskId) -> None:
+        machine_journal.add(
+            message=f"Finish workflow `{task_id}`",
+            current_task_id=str(self.current_task.id) if self.current_task else None,
+            current_work_unit_id=None,
+            current_operation_id=None,
+        ).unwrap()
+
         changes = [ChangeRemoveTask(task_id=task_id)]
         self.apply_changes(changes)
 
