@@ -39,6 +39,6 @@ Artifact type tags:
 
 ## Journaling
 
-You MUST use `donna journal write` to track you actions and thoughs, according the description in `{{ donna.lib.view("donna:usage:cli") }}`.
+You MUST use `donna journal write` to track you actions and thoughts, according the description in `{{ donna.lib.view("donna:usage:cli") }}`.
 
 You MUST use `donna journal view --lines 100` to read the last records after you compress your context.
