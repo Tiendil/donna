@@ -28,6 +28,10 @@
   - Added `donna journal write` and `donna journal view [--lines N] [--follow]` commands.
   - Added automatic journal records for `donna_log` instant output with task/work-unit context metadata.
   - Updated `donna:usage:cli` documentation with journal command usage.
+- gh-35 Fixed journal follow behavior after journal file recreation.
+  - Updated filesystem journal follow logic to detect file removal/recreation by file identity.
+  - Reopened the journal stream automatically when the backing file changed, so `donna journal view --follow`
+    continues after session restart/recreate flows.
 - gh-35 Updated protocol formatters to use journal records for log output.
   - Renamed formatter API `format_log` to `format_journal` in base class, child classes, and call sites.
   - Updated `format_journal` to accept `JournalRecord` instead of `Cell`.

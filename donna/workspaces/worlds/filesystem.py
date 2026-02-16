@@ -1,5 +1,7 @@
+import os
 import pathlib
 import shutil
+import stat
 import time
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, cast
@@ -209,29 +211,59 @@ class World(BaseWorld):
         with path.open("rb") as stream:
             return [line.rstrip(b"\n") for line in stream if line.strip()]
 
+    def _journal_file_identity(self, path: pathlib.Path) -> tuple[int, int] | None:
+        try:
+            path_stat = path.stat()
+        except FileNotFoundError:
+            return None
+
+        if not stat.S_ISREG(path_stat.st_mode):
+            return None
+
+        return (path_stat.st_dev, path_stat.st_ino)
+
     def _journal_follow(  # noqa: CCR001
         self,
         poll_interval: float = 0.25,
     ) -> Iterable[Result[bytes, ErrorsList]]:
         path = self._journal_path()
 
-        path.parent.mkdir(parents=True, exist_ok=True)
+        stream = None
+        stream_identity: tuple[int, int] | None = None
 
-        if not path.exists():
-            path.touch(exist_ok=True)
+        # if the journal file did exist when we started following, we want to read from the end
+        # if the journal file didn't exist when we started following, we want to read from the start
+        start_from_head = False
 
-        with path.open("rb") as stream:
-            stream.seek(0, 2)
+        while True:
+            file_identity = self._journal_file_identity(path)
 
-            while True:
-                line = stream.readline()
-                if line:
-                    line = line.rstrip(b"\n")
-                    if line.strip():
-                        yield Ok(line)
-                    continue
+            if stream is not None and stream_identity != file_identity:
+                stream.close()
+                stream = None
+                stream_identity = None
 
+            if file_identity is None or file_identity == stream_identity:
+                start_from_head = True
+
+            if stream is None and file_identity is not None:
+                stream = path.open("rb")
+
+                if not start_from_head:
+                    stream.seek(0, os.SEEK_END)
+
+                stream_identity = file_identity
+
+            if stream is None:
                 time.sleep(poll_interval)
+                continue
+
+            while line := stream.readline():
+                line = line.rstrip(b"\n")
+                if line.strip():
+                    yield Ok(line)
+
+            time.sleep(poll_interval)
 
     def _journal_read_some(self, lines: int | None = None) -> Iterable[Result[bytes, ErrorsList]]:
         path = self._journal_path()

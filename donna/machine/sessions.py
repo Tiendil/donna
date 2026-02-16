@@ -74,6 +74,7 @@ def start() -> list[Cell]:
     session_result.unwrap().initialize(reset=True)
 
     reset_journal_result = machine_journal.reset()
+
     if reset_journal_result.is_err():
         return _errors_to_cells(reset_journal_result.unwrap_err())
 
