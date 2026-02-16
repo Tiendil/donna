@@ -220,8 +220,10 @@ def complete_action_request(request_id: ActionRequestId, next_operation_id: Full
 
     static_state = state_result.unwrap()
 
+    action_request = static_state.get_action_request(request_id).unwrap()
+
     machine_journal.add(
-        message=f"Complete action request `{request_id}`, transit to `{next_operation_id}`",
+        message=f"Complete action request `{action_request.title}`",
         current_task_id=str(static_state.current_task.id) if static_state.current_task else None,
         current_work_unit_id=None,
         current_operation_id=None,

@@ -10,13 +10,15 @@ class ActionRequest(BaseEntity):
     id: ActionRequestId | None
     request: str
     operation_id: FullArtifactSectionId
+    title: str = "unknown"  # TODO: remove default value after 2026.05.01
 
     @classmethod
-    def build(cls, request: str, operation_id: FullArtifactSectionId) -> "ActionRequest":
+    def build(cls, title: str, request: str, operation_id: FullArtifactSectionId) -> "ActionRequest":
         return cls(
             id=None,
             request=request,
             operation_id=operation_id,
+            title=title,
         )
 
     def node(self) -> "ActionRequestNode":
