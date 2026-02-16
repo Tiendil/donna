@@ -155,7 +155,7 @@ Donna will:
 
 ## Usage
 
-**Donna is a CLI tool for agents.** You rarely need to use it directly.
+**Donna is a CLI tool for agents.** You rarely need to use it directly; however, it is convenient to run `donna journal view-- follow` in a separate terminal to see what is going on in the current session.
 
 Commands you may need:
 
