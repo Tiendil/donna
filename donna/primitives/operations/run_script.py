@@ -10,6 +10,7 @@ from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import ArtifactSectionId, FullArtifactId
+from donna.machine import journal as machine_journal
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta
@@ -160,11 +161,27 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         script = meta.script
         assert script is not None
 
+        machine_journal.add(
+            actor_id="donna",
+            message=f"Run script `{operation.title}`",
+            current_task_id=str(task.id),
+            current_work_unit_id=str(unit.id),
+            current_operation_id=unit.operation_id,
+        ).unwrap()
+
         stdout, stderr, exit_code = _run_script(
             script=script,
             timeout=meta.timeout,
             project_dir=workspace_config.project_dir(),
         )
+
+        machine_journal.add(
+            actor_id="donna",
+            message=f"Script finished `{operation.title}`, exit code: {exit_code}, has stdout: {bool(stdout)}, has stderr: {bool(stderr)}`",
+            current_task_id=str(task.id),
+            current_work_unit_id=str(unit.id),
+            current_operation_id=unit.operation_id,
+        ).unwrap()
 
         changes: list["Change"] = []
         if meta.save_stdout_to is not None:
