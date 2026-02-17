@@ -41,4 +41,6 @@ Artifact type tags:
 
 You MUST use `donna journal write` to track you actions and thoughts, according the description in `{{ donna.lib.view("donna:usage:cli") }}`.
 
+If you perform a long operation (e.g., exploring the codebase, designing a solution) that takes more than 30 seconds, you MUST split it into parts/steps and write a journal entry between each step.
+
 You MUST use `donna journal view --lines 100` to read the last records after you compress your context.

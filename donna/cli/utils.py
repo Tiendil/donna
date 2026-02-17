@@ -43,6 +43,7 @@ def _write_errors_to_journal(errors: ErrorsList) -> None:
             current_task_id=current_task_id,
             current_work_unit_id=None,
             current_operation_id=None,
+            actor_id="donna",
         )
 
 

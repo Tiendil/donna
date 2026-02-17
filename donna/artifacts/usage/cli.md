@@ -177,6 +177,7 @@ Agents MUST use `donna -p <protocol> journal write <message>` to log:
 - Goals of the long-running agent-only operations: `Goal: <goal description>`.
 - Significant steps of the long-running agent-only operations: `Step: <step description>`.
 - Significant thoughts, assumptions, and intents during the long-running operations: `Thought: <thought description>`, `Assumption: <assumption description>`, `Intent: <intent description>`.
+- Changes in the project source code or in the project structure: `Change: <change description>`.
 
 Agents MUST NOT log:
 
