@@ -9,8 +9,9 @@ start_operation_id = "estimate_complexity"
 This workflow uses a description of a problem or changes required from the developer or parent workflow to:
 
 1. Create a Request for Change (RFC) artifact.
-2. Plan the work required to implement the RFC.
-3. Execute the planned work.
+2. Create a Design document artifact based on the RFC.
+3. Plan the work required to implement the designed changes.
+4. Execute the planned work.
 
 ## Estimate complexity
 
@@ -53,7 +54,18 @@ fsm_mode = "start"
 
 1. Choose a workflow to create an RFC artifact.
 2. Run the chosen workflow.
-2. After completing the workflow `{{ donna.lib.goto("plan_rfc_work") }}`.
+3. After completing the workflow `{{ donna.lib.goto("design") }}`.
+
+## Design
+
+```toml donna
+id = "design"
+kind = "donna.lib.request_action"
+```
+
+1. Choose a workflow to create a Design document artifact based on the RFC created in the previous step.
+2. Run the chosen workflow.
+3. After completing the workflow `{{ donna.lib.goto("plan_rfc_work") }}`.
 
 ## Plan RFC work
 
@@ -62,7 +74,7 @@ id = "plan_rfc_work"
 kind = "donna.lib.request_action"
 ```
 
-1. Choose the workflow to plan the work required to implement the RFC created in the previous step.
+1. Choose the workflow to plan the work. If you created a Design document in the previous step, use it as a basis.
 2. Run the chosen workflow.
 3. Ensure you know the workflow id created in the previous step (default is `session:execute_rfc` if not specified).
 4. After completing the workflow `{{ donna.lib.goto("execute_rfc_work") }}`.

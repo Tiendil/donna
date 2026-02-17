@@ -2,14 +2,15 @@ import os
 import pathlib
 import subprocess  # noqa: S404
 import tempfile
-from typing import TYPE_CHECKING, ClassVar, Iterator, cast
+from typing import TYPE_CHECKING, ClassVar, cast
 
 import pydantic
 
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
+from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import ArtifactSectionId, FullArtifactId
+from donna.machine import journal as machine_journal
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta
@@ -149,7 +150,10 @@ class RunScript(MarkdownSectionMixin, OperationKind):
             )
         )
 
-    def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterator["Change"]:
+    @unwrap_to_error
+    def execute_section(
+        self, task: "Task", unit: "WorkUnit", operation: ArtifactSection
+    ) -> Result[list["Change"], ErrorsList]:
         from donna.machine.changes import ChangeAddWorkUnit, ChangeSetTaskContext
 
         meta = cast(RunScriptMeta, operation.meta)
@@ -157,22 +161,43 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         script = meta.script
         assert script is not None
 
+        machine_journal.add(
+            actor_id="donna",
+            message=f"Run script `{operation.title}`",
+            current_task_id=str(task.id),
+            current_work_unit_id=str(unit.id),
+            current_operation_id=unit.operation_id,
+        ).unwrap()
+
         stdout, stderr, exit_code = _run_script(
             script=script,
             timeout=meta.timeout,
             project_dir=workspace_config.project_dir(),
         )
 
+        machine_journal.add(
+            actor_id="donna",
+            message=(
+                f"Script finished `{operation.title}`, exit code: {exit_code}, "
+                f"has stdout: {bool(stdout)}, has stderr: {bool(stderr)}`"
+            ),
+            current_task_id=str(task.id),
+            current_work_unit_id=str(unit.id),
+            current_operation_id=unit.operation_id,
+        ).unwrap()
+
+        changes: list["Change"] = []
         if meta.save_stdout_to is not None:
-            yield ChangeSetTaskContext(task_id=task.id, key=meta.save_stdout_to, value=stdout)
+            changes.append(ChangeSetTaskContext(task_id=task.id, key=meta.save_stdout_to, value=stdout))
 
         if meta.save_stderr_to is not None:
-            yield ChangeSetTaskContext(task_id=task.id, key=meta.save_stderr_to, value=stderr)
+            changes.append(ChangeSetTaskContext(task_id=task.id, key=meta.save_stderr_to, value=stderr))
 
         next_operation = meta.select_next_operation(exit_code)
         full_operation_id = unit.operation_id.full_artifact_id.to_full_local(next_operation)
 
-        yield ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id)
+        changes.append(ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id))
+        return Ok(changes)
 
     def validate_section(  # noqa: CCR001
         self, artifact: Artifact, section_id: ArtifactSectionId

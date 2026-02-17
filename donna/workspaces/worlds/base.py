@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
 from donna.core.entities import BaseEntity
@@ -58,6 +59,16 @@ class World(BaseEntity, ABC):
 
     @abstractmethod
     def write_state(self, name: str, content: bytes) -> Result[None, ErrorsList]: ...  # noqa: E704
+
+    @abstractmethod
+    def journal_reset(self) -> Result[None, ErrorsList]: ...  # noqa: E704
+
+    @abstractmethod
+    def journal_add(self, content: bytes) -> Result[None, ErrorsList]: ...  # noqa: E704
+
+    @abstractmethod
+    def journal_read(self, lines: int | None = None, follow: bool = False) -> Iterable[Result[bytes, ErrorsList]]:
+        pass
 
     def initialize(self, reset: bool = False) -> None:
         pass

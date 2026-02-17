@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
 
 import pydantic
 
@@ -191,7 +191,7 @@ class ArtifactSectionNode(Node):
 
 @unwrap_to_error
 def resolve(
-    target_id: FullArtifactSectionId, render_context: "ArtifactRenderContext"
+    target_id: FullArtifactSectionId, render_context: Union["ArtifactRenderContext", None] = None
 ) -> Result[ArtifactSection, ErrorsList]:
     from donna.workspaces import artifacts as world_artifacts
 

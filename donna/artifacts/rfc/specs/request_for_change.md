@@ -4,19 +4,15 @@
 kind = "donna.lib.specification"
 ```
 
-This document describes the format and structure of a Request for Change (RFC) document used to propose changes to a project by Donna workflows from `donna:rfc:*` namespace.
+This document describes the format and structure of a Request for Change (RFC) document used to propose changes to a project by Donna workflows from `donna:rfc:*` namespace. This document is an input for a Design document creation.
 
 ## Overview
 
-Donna introduces a group of workflows located in `donna:rfc:*` namespace that organize the process of proposing, reviewing, and implementing changes to a project via RFC documents.
+Donna introduces a group of workflows located in `donna:rfc:*` namespace that organize the process of proposing, reviewing, and implementing changes to a project via RFC and Design documents.
 
 You create RFC documents to propose changes to the project.
 
 If not otherwise specified, RFC documents for the session MUST be stored as `session:rfc:<short-problem-related-identifier>` artifacts in the session world.
-
-The agent (via workflows) creates the artifact and polishes it iteratively as the RFC process progresses.
-
-After the RFC is completed, the agent (via workflows) MAY implement changes directly or create and execute a workflow based on the RFC content.
 
 ## RFC structure
 

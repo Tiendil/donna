@@ -1,12 +1,12 @@
-from typing import TYPE_CHECKING, ClassVar, Iterator, Literal, cast
+from typing import TYPE_CHECKING, ClassVar, Literal, cast
 
 from donna.core.errors import ErrorsList
-from donna.core.result import Ok, Result
+from donna.core.result import Ok, Result, unwrap_to_error
 from donna.domain.ids import FullArtifactId
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
-from donna.protocol.cells import Cell
-from donna.protocol.utils import instant_output
+from donna.protocol import cell_shortcuts
+from donna.protocol.utils import instant_output_cell
 from donna.workspaces import markdown
 from donna.workspaces.sources.markdown import MarkdownSectionMixin
 
@@ -20,19 +20,16 @@ class FinishWorkflowConfig(OperationConfig):
 
 
 class FinishWorkflow(MarkdownSectionMixin, OperationKind):
-    def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterator["Change"]:
+    @unwrap_to_error
+    def execute_section(
+        self, task: "Task", unit: "WorkUnit", operation: ArtifactSection
+    ) -> Result[list["Change"], ErrorsList]:
         from donna.machine.changes import ChangeFinishTask
 
-        output_text = operation.description
+        info = cell_shortcuts.info(operation.description)
+        instant_output_cell(info)
 
-        output_cell = Cell.build_markdown(
-            kind="operation_output",
-            content=output_text,
-            operation_id=str(unit.operation_id),
-        )
-        instant_output([output_cell])
-
-        yield ChangeFinishTask(task_id=task.id)
+        return Ok([ChangeFinishTask(task_id=task.id)])
 
     config_class: ClassVar[type[FinishWorkflowConfig]] = FinishWorkflowConfig
 

@@ -1,10 +1,10 @@
 import re
-from typing import TYPE_CHECKING, ClassVar, Iterator, cast
+from typing import TYPE_CHECKING, ClassVar, cast
 
 import pydantic
 
 from donna.core.errors import ErrorsList
-from donna.core.result import Ok, Result
+from donna.core.result import Ok, Result, unwrap_to_error
 from donna.domain import errors as domain_errors
 from donna.domain.ids import ArtifactSectionId, FullArtifactId
 from donna.machine.action_requests import ActionRequest
@@ -71,13 +71,16 @@ class RequestAction(MarkdownSectionMixin, OperationKind):
             )
         )
 
-    def execute_section(self, task: "Task", unit: "WorkUnit", operation: ArtifactSection) -> Iterator["Change"]:
+    @unwrap_to_error
+    def execute_section(
+        self, task: "Task", unit: "WorkUnit", operation: ArtifactSection
+    ) -> Result[list["Change"], ErrorsList]:
         from donna.machine.changes import ChangeAddActionRequest
 
         request_text = operation.description
 
         full_operation_id = unit.operation_id
 
-        request = ActionRequest.build(request_text, full_operation_id)
+        request = ActionRequest.build(operation.title, request_text, full_operation_id)
 
-        yield ChangeAddActionRequest(action_request=request)
+        return Ok([ChangeAddActionRequest(action_request=request)])

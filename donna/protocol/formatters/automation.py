@@ -1,12 +1,13 @@
 import json
 
+from donna.machine.journal import JournalRecord, serialize_record
 from donna.protocol.cells import Cell
 from donna.protocol.formatters.base import Formatter as BaseFormatter
 
 
 class Formatter(BaseFormatter):
 
-    def format_cell(self, cell: Cell, single_mode: bool) -> bytes:
+    def format_cell(self, cell: Cell) -> bytes:
         data: dict[str, str | int | bool | None] = {"id": cell.short_id}
 
         for meta_key, meta_value in sorted(cell.meta.items()):
@@ -16,10 +17,5 @@ class Formatter(BaseFormatter):
 
         return json.dumps(data, ensure_ascii=False, indent=None, separators=(",", ":"), sort_keys=True).encode()
 
-    def format_log(self, cell: Cell, single_mode: bool) -> bytes:
-        return self.format_cells([cell])
-
-    def format_cells(self, cells: list[Cell]) -> bytes:
-        single_mode = len(cells) == 1
-        formatted_cells = [self.format_cell(cell, single_mode=single_mode) for cell in cells]
-        return b"\n".join(formatted_cells)
+    def format_journal(self, record: JournalRecord) -> bytes:
+        return serialize_record(record)

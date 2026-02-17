@@ -1,22 +1,22 @@
 import sys
 
+from donna.machine.journal import JournalRecord
 from donna.protocol.cells import Cell
 from donna.protocol.modes import get_cell_formatter
 
 
-def instant_output(cells: list[Cell]) -> None:
-    if not cells:
-        return
-
-    formatter = get_cell_formatter()
-
-    formatted_cells: list[bytes] = []
-    for cell in cells:
-        # TODO: we should refactor that hardcoded check somehow
-        if cell.kind == "donna_log":
-            formatted_cells.append(formatter.format_log(cell, single_mode=True))
-        else:
-            formatted_cells.append(formatter.format_cell(cell, single_mode=False))
-
-    sys.stdout.buffer.write(b"\n\n".join(formatted_cells) + b"\n\n")
+def instant_output(text: bytes) -> None:
+    sys.stdout.buffer.write(text + b"\n")
     sys.stdout.buffer.flush()
+
+
+def instant_output_journal(record: JournalRecord) -> None:
+    formatter = get_cell_formatter()
+    formatted_output = formatter.format_journal(record)
+    instant_output(formatted_output)
+
+
+def instant_output_cell(cell: Cell) -> None:
+    formatter = get_cell_formatter()
+    formatted_output = formatter.format_cell(cell)
+    instant_output(formatted_output)

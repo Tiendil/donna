@@ -1,6 +1,7 @@
 import importlib
 import importlib.resources
 import pathlib
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, cast
 
 from donna.core.errors import ErrorsList
@@ -166,6 +167,15 @@ class Python(BaseWorld):
 
     def write_state(self, name: str, content: bytes) -> Result[None, ErrorsList]:
         return Err([world_errors.WorldStateStorageUnsupported(world_id=self.id)])
+
+    def journal_reset(self) -> Result[None, ErrorsList]:
+        return Err([world_errors.WorldStateStorageUnsupported(world_id=self.id)])
+
+    def journal_add(self, content: bytes) -> Result[None, ErrorsList]:
+        return Err([world_errors.WorldStateStorageUnsupported(world_id=self.id)])
+
+    def journal_read(self, lines: int | None = None, follow: bool = False) -> Iterable[Result[bytes, ErrorsList]]:
+        yield Err([world_errors.WorldStateStorageUnsupported(world_id=self.id)])
 
     def initialize(self, reset: bool = False) -> None:
         pass

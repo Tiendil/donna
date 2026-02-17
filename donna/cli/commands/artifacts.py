@@ -19,6 +19,8 @@ from donna.cli.utils import cells_cli
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.ids import FullArtifactIdPattern
+from donna.machine import journal as machine_journal
+from donna.machine.sessions import load_state
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
 from donna.workspaces import artifacts as world_artifacts
@@ -41,6 +43,32 @@ def _parse_slug_with_extension(value: str) -> Result[tuple[str, str], ErrorsList
     return Ok((slug, extension))
 
 
+def _log_artifact_operation(message: str) -> None:
+    state_result = load_state()
+
+    if state_result.is_err():
+        # log nothing if we have no session state
+        return
+
+    state = state_result.unwrap()
+
+    machine_journal.add(
+        message=message,
+        current_task_id=str(state.current_task.id) if state.current_task else None,
+        current_work_unit_id=None,
+        current_operation_id=None,
+    )
+
+
+def _log_operation_on_artifacts(message: str, pattern: FullArtifactIdPattern, tags: TagOption | None) -> None:
+    if not tags:
+        return _log_artifact_operation(f"{message} `{pattern}`")
+
+    tags_list = ", ".join(f"'{tag}'" for tag in tags)
+
+    return _log_artifact_operation(f"{message} `{pattern}` with tags {tags_list}")
+
+
 @artifacts_cli.command(
     help="List artifacts matching a pattern and show their status summaries. Lists all all artifacts by default."
 )
@@ -49,6 +77,8 @@ def list(
     pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
     tags: TagOption = None,
 ) -> Iterable[Cell]:
+    _log_operation_on_artifacts("List artifacts", pattern, tags)
+
     artifacts = world_artifacts.list_artifacts(pattern, tags=tags).unwrap()
 
     return [artifact.node().status() for artifact in artifacts]
@@ -60,6 +90,8 @@ def view(
     pattern: FullArtifactIdPatternArgument,
     tags: TagOption = None,
 ) -> Iterable[Cell]:
+    _log_operation_on_artifacts("View artifacts", pattern, tags)
+
     artifacts = world_artifacts.list_artifacts(pattern, tags=tags).unwrap()
     return [artifact.node().info() for artifact in artifacts]
 
@@ -75,6 +107,8 @@ def fetch(id: FullArtifactIdArgument, output: OutputPathOption = None) -> Iterab
     if output is None:
         extension = world_artifacts.artifact_file_extension(id).unwrap()
         output = world_tmp.file_for_artifact(id, extension)
+
+    _log_artifact_operation(f"Fetch artifact `{id}` to '{output}'")
 
     world_artifacts.fetch_artifact(id, output).unwrap()
 
@@ -92,6 +126,8 @@ def tmp(
 ) -> Iterable[Cell]:
     slug, extension = _parse_slug_with_extension(slug_with_extension).unwrap()
     output = world_tmp.create_file_for_slug(slug, extension)
+
+    _log_artifact_operation(f"Created temporary file {output}")
 
     return [
         operation_succeeded(
@@ -117,6 +153,8 @@ def update(
         input_path = input
         input_display = str(input)
 
+    _log_artifact_operation(f"Update artifact `{id}` from '{input_display}'")
+
     world_artifacts.update_artifact(id, input_path, extension=extension).unwrap()
     return [
         operation_succeeded(
@@ -130,6 +168,8 @@ def update(
 @artifacts_cli.command(help="Copy an artifact to another artifact ID (possibly across worlds).")
 @cells_cli
 def copy(source_id: FullArtifactIdArgument, target_id: FullArtifactIdArgument) -> Iterable[Cell]:
+    _log_artifact_operation(f"Copy artifact from `{source_id}` to `{target_id}`")
+
     world_artifacts.copy_artifact(source_id, target_id).unwrap()
     return [
         operation_succeeded(
@@ -143,6 +183,8 @@ def copy(source_id: FullArtifactIdArgument, target_id: FullArtifactIdArgument) -
 @artifacts_cli.command(help="Move an artifact to another artifact ID (possibly across worlds).")
 @cells_cli
 def move(source_id: FullArtifactIdArgument, target_id: FullArtifactIdArgument) -> Iterable[Cell]:
+    _log_artifact_operation(f"Move artifact from `{source_id}` to `{target_id}`")
+
     world_artifacts.move_artifact(source_id, target_id).unwrap()
     return [
         operation_succeeded(
@@ -159,6 +201,8 @@ def remove(
     pattern: FullArtifactIdPatternArgument,
     tags: TagOption = None,
 ) -> Iterable[Cell]:
+    _log_operation_on_artifacts("Remove artifacts", pattern, tags)
+
     artifacts = world_artifacts.list_artifacts(pattern, tags=tags).unwrap()
 
     cells: builtins.list[Cell] = []
@@ -169,24 +213,14 @@ def remove(
     return cells
 
 
-@artifacts_cli.command(help="Validate an artifact and return any validation errors.")
+@artifacts_cli.command(help="Validate artifacts matching a pattern (defaults to all artifacts) and return any errors.")
 @cells_cli
-def validate(id: FullArtifactIdArgument) -> Iterable[Cell]:
-    artifact = world_artifacts.load_artifact(id).unwrap()
-
-    artifact.validate_artifact().unwrap()
-
-    return [operation_succeeded(f"Artifact `{id}` is valid", artifact_id=str(id))]
-
-
-@artifacts_cli.command(
-    help="Validate all artifacts matching a pattern (defaults to all artifacts) and return any errors."
-)
-@cells_cli
-def validate_all(
+def validate(
     pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
     tags: TagOption = None,
 ) -> Iterable[Cell]:  # noqa: CCR001
+    _log_operation_on_artifacts("Validate artifacts", pattern, tags)
+
     artifacts = world_artifacts.list_artifacts(pattern, tags=tags).unwrap()
 
     errors = []

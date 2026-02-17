@@ -16,6 +16,10 @@ class SessionStateStatusInvalid(InternalError):
     message: str = "Session state status is invalid."
 
 
+class UnsupportedFormatterMode(InternalError):
+    message: str = "Formatter for mode '{mode}' is not implemented."
+
+
 class EnvironmentError(core_errors.EnvironmentError):
     """Base class for environment errors in donna.machine."""
 
@@ -26,6 +30,15 @@ class SessionStateNotInitialized(EnvironmentError):
     code: str = "donna.machine.session_state_not_initialized"
     message: str = "Session state is not initialized."
     ways_to_fix: list[str] = ["Run Donna session start to initialize session state."]
+
+
+class JournalMessageContainsNewlines(EnvironmentError):
+    code: str = "donna.machine.journal_message_contains_newlines"
+    message: str = "Journal message must be a single line and must not contain newline characters."
+    ways_to_fix: list[str] = [
+        "Provide `journal write` message as a single line.",
+        "Replace newline characters with spaces or split the text into multiple journal records.",
+    ]
 
 
 class ActionRequestNotFound(EnvironmentError):

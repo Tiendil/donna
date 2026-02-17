@@ -15,7 +15,9 @@ from donna.domain.ids import (
     WorkUnitId,
 )
 from donna.machine import errors as machine_errors
+from donna.machine import journal as machine_journal
 from donna.machine.action_requests import ActionRequest
+from donna.machine.artifacts import resolve
 from donna.machine.changes import (
     Change,
     ChangeAddTask,
@@ -47,7 +49,10 @@ class BaseState(BaseEntity):
     ###########
 
     @property
-    def current_task(self) -> Task:
+    def current_task(self) -> Task | None:
+        if not self.tasks:
+            return None
+
         return self.tasks[-1]
 
     def get_action_request(self, request_id: ActionRequestId) -> Result[ActionRequest, ErrorsList]:
@@ -61,6 +66,9 @@ class BaseState(BaseEntity):
     # Since we only append work units, this effectively works as a queue per task
     # In the future we may want to have more sophisticated scheduling
     def get_next_work_unit(self) -> WorkUnit | None:
+        if self.current_task is None:
+            return None
+
         for work_unit in self.work_units:
             if work_unit.task_id != self.current_task.id:
                 continue
@@ -119,6 +127,15 @@ class MutableState(BaseState):
 
     def add_action_request(self, action_request: ActionRequest) -> None:
         full_request = action_request.replace(id=self.next_action_request_id())
+
+        machine_journal.add(
+            actor_id="donna",
+            message=f"Request agent action `{full_request.title}`",
+            current_task_id=str(self.current_task.id) if self.current_task else None,
+            current_work_unit_id=None,
+            current_operation_id=None,
+        ).unwrap()
+
         self.action_requests.append(full_request)
 
     def add_work_unit(self, work_unit: WorkUnit) -> None:
@@ -144,18 +161,55 @@ class MutableState(BaseState):
     # Complex operations
     ####################
 
-    def complete_action_request(self, request_id: ActionRequestId, next_operation_id: FullArtifactSectionId) -> None:
+    @unwrap_to_error
+    def complete_action_request(
+        self, request_id: ActionRequestId, next_operation_id: FullArtifactSectionId
+    ) -> Result[None, ErrorsList]:
+        current_task = self.current_task
+        assert current_task is not None
+
+        action_request = self.get_action_request(request_id).unwrap()
+        machine_journal.add(
+            message=f"Complete agent action `{action_request.title}`",
+            current_task_id=str(current_task.id),
+            current_work_unit_id=None,
+            current_operation_id=None,
+        ).unwrap()
+
         changes = [
-            ChangeAddWorkUnit(task_id=self.current_task.id, operation_id=next_operation_id),
+            ChangeAddWorkUnit(task_id=current_task.id, operation_id=next_operation_id),
             ChangeRemoveActionRequest(action_request_id=request_id),
         ]
         self.apply_changes(changes)
+        return Ok(None)
 
-    def start_workflow(self, full_operation_id: FullArtifactSectionId) -> None:
+    @unwrap_to_error
+    def start_workflow(self, full_operation_id: FullArtifactSectionId) -> Result[None, ErrorsList]:
+        workflow = resolve(full_operation_id).unwrap()
+
+        machine_journal.add(
+            message=f"Start workflow `{workflow.title}`",
+            current_task_id=str(self.current_task.id) if self.current_task else None,
+            current_work_unit_id=None,
+            current_operation_id=None,
+        ).unwrap()
+
         changes = [ChangeAddTask(operation_id=full_operation_id)]
         self.apply_changes(changes)
+        return Ok(None)
 
     def finish_workflow(self, task_id: TaskId) -> None:
+        task = self.current_task
+        assert task is not None
+        workflow = resolve(task.workflow_id).unwrap()
+
+        machine_journal.add(
+            message=f"Finish workflow `{workflow.title}`",
+            current_task_id=str(self.current_task.id) if self.current_task else None,
+            current_work_unit_id=None,
+            current_operation_id=None,
+        ).unwrap()
+
         changes = [ChangeRemoveTask(task_id=task_id)]
         self.apply_changes(changes)
 
@@ -163,8 +217,10 @@ class MutableState(BaseState):
     def execute_next_work_unit(self) -> Result[None, ErrorsList]:
         next_work_unit = self.get_next_work_unit()
         assert next_work_unit is not None
+        current_task = self.current_task
+        assert current_task is not None
 
-        changes = next_work_unit.run(self.current_task).unwrap()
+        changes = next_work_unit.run(current_task).unwrap()
         changes.append(ChangeRemoveWorkUnit(work_unit_id=next_work_unit.id))
 
         self.apply_changes(changes)
@@ -181,7 +237,7 @@ class StateNode(Node):
         if not self._state.started:
             message = textwrap.dedent(
                 """
-            The session has not been started yet. You can safely start a new session and then run a workflow.
+            This is a new session; no tasks were performed. You can safely run a workflow.
                 """
             )
 

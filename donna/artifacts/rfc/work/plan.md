@@ -1,12 +1,12 @@
 
-# Plan work on Request For Change
+# Plan work on base of Design & Request for Change documents
 
 ```toml donna
 kind = "donna.lib.workflow"
 start_operation_id = "start"
 ```
 
-This workflow plans the work required to implement a specified Request for Change (RFC). The result of this workflow is a new workflow in the `session:*` world with detailed steps to implement the RFC.
+This workflow plans the work required to implement a specified Design document. The RFC document SHOULD be used as a helper context. The result of this workflow is a new workflow in the `session:*` world with detailed steps to implement the designed changes.
 
 ## Start Work
 
@@ -16,9 +16,10 @@ kind = "donna.lib.request_action"
 fsm_mode = "start"
 ```
 
-1. Read the RFC that the developer or parent workflow wants you to implement.
-2. Read the specification `{{ donna.lib.view("donna:usage:artifacts") }}` if you haven't done it yet.
-2. `{{ donna.lib.goto("prepare_workflow_artifact") }}`
+1. Read the Design document that the developer or parent workflow wants you to implement.
+2. Read the RFC document that the developer or parent workflow wants you to implement, if it exists.
+3. Read the specification `{{ donna.lib.view("donna:usage:artifacts") }}` if you haven't done it yet.
+4. `{{ donna.lib.goto("prepare_workflow_artifact") }}`
 
 ## Prepare workflow artifact
 
@@ -27,10 +28,11 @@ id = "prepare_workflow_artifact"
 kind = "donna.lib.request_action"
 ```
 
-1. If the name of the artifact is not specified explicitly, assume it to `session:plans:<short-id-equal-to-rfc-slug>`.
+1. If the name of the artifact is not specified explicitly, assume it to `session:plans:<short-id-equal-to-design-slug>`.
 2. Create a workflow with the next operations:
    - Start
-   - A step for each action point in the RFC, ordered to minimize dependencies between steps and introduce changes incrementally.
+   - A step for each action point in the RFC document and each item in the `Order of implementation` in Design document with the goal to minimize dependencies between steps and introduce changes incrementally.
+   - Add additional steps if the design requires it.
    - (`id="review_changes"`) A gate step to start reviewing the changes.
    - A gate step to start reviewing the deliverables.
    - A step per deliverable to check if it exists and is correct. If the deliverable is missing or incorrect, the step MUST specify how to fix it and `goto` to the `review_changes` step.
@@ -52,6 +54,12 @@ For each of the steps in the workflow you created:
 2. If the step requires both research and implementation, split it into two steps: research step and implementation step.
 3. If the step required editing multiple artifacts (multiple files, multiple functions, etc.), split it into multiple steps, one per change required.
 4. If the step is too big or complex, split it into multiple smaller steps.
+5. Fux & improve naming and IDs in the step's title and body.
+
+Naming rules:
+
+- A title of operation MUST always have meaning without knowing context: no sequential numbers, no generic titles like `Plan part 1`.
+- If you mention an ID from the RFC or the Design document, you MUST include a human-readable name of the entity you refer. E.g. not `O1` but `O1 (Implement a new module "a.b.c")`
 
 After all steps are reviewed:
 
@@ -65,4 +73,4 @@ id = "finish"
 kind = "donna.lib.finish"
 ```
 
-RFC work plan finalized. Ready to execute the planned workflow.
+Work plan finalized. Ready to execute the planned workflow.

@@ -71,11 +71,12 @@ Donna renders cells differently, depending on the protocol used.
 
 ### Commands
 
-There are three sets of commands:
+There are four sets of commands:
 
 - `donna -p <protocol> workspaces …` — manages workspaces. Most-likely it will be used once per your project to initialize it.
 - `donna -p <protocol> sessions …` — manages sessions. You will use these commands to start, push forward, and manage your work.
 - `donna -p <protocol> artifacts …` — manages artifacts. You will use these commands to read and update artifacts you are working with.
+- `donna -p <protocol> journal …` — manages session actions journal. You will use these commands to log and inspect the history of actions performed during the session.
 
 Use:
 
@@ -149,10 +150,9 @@ Use the next commands to work with artifacts:
 - `donna -p <protocol> artifacts copy <artifact-id-from> <artifact-id-to>` — copy an artifact source to another artifact ID (can be in a different world). This overwrites the destination if it exists.
 - `donna -p <protocol> artifacts move <artifact-id-from> <artifact-id-to>` — copy an artifact source to another artifact ID and remove the original. This overwrites the destination if it exists.
 - `donna -p <protocol> artifacts remove <artifact-pattern>` — remove artifacts matching a pattern. Use this command when you need to delete artifacts.
-- `donna -p <protocol> artifacts validate <world>:<artifact>` — validate the given artifact to ensure it is correct and has no issues.
-- `donna -p <protocol> artifacts validate-all [<artifact-pattern>]` — validate all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, validate all artifacts in all worlds.
+- `donna -p <protocol> artifacts validate [<artifact-pattern>]` — validate all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, validate all artifacts in all worlds.
 
-Commands that accept an artifact pattern (`artifacts list`, `artifacts view`, `artifacts remove`, `artifacts validate-all`) also accept a repeatable `--tag <tag>` option to filter by artifact tags. When multiple tags are provided, only artifacts that include **all** specified tags are matched.
+Commands that accept an artifact pattern (`artifacts list`, `artifacts view`, `artifacts remove`, `artifacts validate`) also accept a repeatable `--tag <tag>` option to filter by artifact tags. When multiple tags are provided, only artifacts that include **all** specified tags are matched.
 
 The format of `<artifact-pattern>` is as follows:
 
@@ -164,6 +164,43 @@ The format of `<artifact-pattern>` is as follows:
   - `**:name` — matches all artifacts with id ending with `:name` in all worlds.
   - `world:**` — matches all artifacts in the `world` world.
   - `world:**:name` — matches all artifacts with id ending with `:name` in the `world` world.
+
+### Working with journal
+
+Use the next commands to work with session journal:
+
+- `donna -p <protocol> journal write <message>` — record a single new entry to the journal with the given **single-line** `message` (newlines are not allowed). Donna automatically adds a timestamp and other relevant information to the journal entry.
+- `donna -p <protocol> journal view [--lines N] [--follow]` — display journal records.
+
+Agents MUST use `donna -p <protocol> journal write <message>` to log:
+
+- Goals of the long-running agent-side operations: `Goal: <goal description>`.
+- Significant steps of the long-running agent-side operations: `Step: <phase progress or completion handoff>`.
+- Significant thoughts during the long-running operations: `Thought: <important thought>`.
+- Significant assumptions during the long-running operations: `Assumption: <important assumption>`.
+- Changes in the project source code or in the project structure: `Change: <what changed and where>`.
+
+For each non-trivial action request, agents MUST follow this journaling contract:
+
+1. Write exactly one `Goal:` record at action-request start.
+2. Write `Step:` records at significant phase boundaries. If an action request describes a multi-step process, there MUST be at least one `Step:` record per specified step and one `Step:` record for the completion handoff.
+3. Write `Change:` records after each meaningful source update batch.
+4. Write one final `Step:` record immediately before `sessions action-request-completed`.
+
+Agents MUST consider these cases as significant phase boundaries:
+
+- A work phase expected to take more than 10 seconds.
+- Transition from analysis/research to implementation/editing.
+- Transition to a new step in a multi-step process described in the action request.
+- Start or completion of a multi-file or multi-artifact change batch.
+- A decision that changes implementation direction.
+
+Before `sessions action-request-completed`, agents MUST check journal completeness for the current action request.
+
+Agents MUST NOT log:
+
+- CLI commands they execute.
+- Elementary/trivial steps.
 
 ## IMPORTANT ON DONNA TOOL USAGE
 

@@ -1,5 +1,9 @@
+import os
 import pathlib
 import shutil
+import stat
+import time
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, cast
 
 from donna.core.errors import ErrorsList
@@ -18,6 +22,10 @@ if TYPE_CHECKING:
 
 class World(BaseWorld):
     path: pathlib.Path
+    _journal_file_name = "journal.jsonl"
+
+    def _journal_path(self) -> pathlib.Path:
+        return self.path / self._journal_file_name
 
     def _artifact_listing_root(self) -> ArtifactListingNode | None:
         if not self.path.exists():
@@ -167,6 +175,118 @@ class World(BaseWorld):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(content)
         return Ok(None)
+
+    def journal_reset(self) -> Result[None, ErrorsList]:
+        if self.readonly:
+            return Err([world_errors.WorldReadonly(world_id=self.id)])
+
+        if not self.session:
+            return Err([world_errors.WorldStateStorageUnsupported(world_id=self.id)])
+
+        path = self._journal_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"")
+        return Ok(None)
+
+    def journal_add(self, content: bytes) -> Result[None, ErrorsList]:
+        if self.readonly:
+            return Err([world_errors.WorldReadonly(world_id=self.id)])
+
+        if not self.session:
+            return Err([world_errors.WorldStateStorageUnsupported(world_id=self.id)])
+
+        path = self._journal_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        with path.open("ab") as stream:
+            stream.write(content.rstrip(b"\n"))
+            stream.write(b"\n")
+
+        return Ok(None)
+
+    def _journal_read_all(self, path: pathlib.Path) -> list[bytes]:
+        if not path.exists():
+            return []
+
+        with path.open("rb") as stream:
+            return [line.rstrip(b"\n") for line in stream if line.strip()]
+
+    def _journal_file_identity(self, path: pathlib.Path) -> tuple[int, int] | None:
+        try:
+            path_stat = path.stat()
+        except FileNotFoundError:
+            return None
+
+        if not stat.S_ISREG(path_stat.st_mode):
+            return None
+
+        return (path_stat.st_dev, path_stat.st_ino)
+
+    def _journal_follow(  # noqa: CCR001
+        self,
+        poll_interval: float = 0.25,
+    ) -> Iterable[Result[bytes, ErrorsList]]:
+        path = self._journal_path()
+
+        stream = None
+        stream_identity: tuple[int, int] | None = None
+
+        # if the journal file did exist when we started following, we want to read from the end
+        # if the journal file didn't exist when we started following, we want to read from the start
+        start_from_head = False
+
+        while True:
+            file_identity = self._journal_file_identity(path)
+
+            if stream is not None and stream_identity != file_identity:
+                stream.close()
+                stream = None
+                stream_identity = None
+
+            if file_identity is None or file_identity == stream_identity:
+                start_from_head = True
+
+            if stream is None and file_identity is not None:
+                stream = path.open("rb")
+
+                if not start_from_head:
+                    stream.seek(0, os.SEEK_END)
+
+                stream_identity = file_identity
+
+            if stream is None:
+                time.sleep(poll_interval)
+                continue
+
+            while line := stream.readline():
+                line = line.rstrip(b"\n")
+                if line.strip():
+                    yield Ok(line)
+
+            time.sleep(poll_interval)
+
+    def _journal_read_some(self, lines: int | None = None) -> Iterable[Result[bytes, ErrorsList]]:
+        path = self._journal_path()
+
+        records = self._journal_read_all(path)
+
+        if lines is not None:
+            records = records[-lines:] if lines > 0 else []
+
+        for record in records:
+            yield Ok(record)
+
+    def journal_read(self, lines: int | None = None, follow: bool = False) -> Iterable[Result[bytes, ErrorsList]]:
+        if not self.session:
+            yield Err([world_errors.WorldStateStorageUnsupported(world_id=self.id)])
+            return
+
+        yield from self._journal_read_some(lines=lines)
+
+        if not follow:
+            return
+
+        yield from self._journal_follow()
 
     def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
         return list_artifacts_by_pattern(

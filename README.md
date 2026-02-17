@@ -4,6 +4,8 @@ Your agent will generate [state machines](https://en.wikipedia.org/wiki/Finite-s
 
 Donna allows your agent to execute hundreds of consecutive steps without swaying away from the defined workflow. Branching, loops, nested calls, and recursion — all possible.
 
+![Journal log demonstration](./docs/images/journal-demo.gif)
+
 ## What is Donna?
 
 Donna is a CLI tool that helps coding agents like Codex focus on the task at hand by keeping high-level control flow in explicit Donna workflows. Donna dictates what should be done at each step of the work, so the agent can focus on the actual piece.
@@ -155,11 +157,18 @@ Donna will:
 
 **Donna is a CLI tool for agents.** You rarely need to use it directly.
 
+However, it is convenient to run `donna journal view --follow` in a separate terminal to see what is going on in the current session.
+
 Commands you may need:
 
-- `donna -p human workspaces init` — Initialize Donna in your project.
-- `donna -p human sessions start` — start a new working session, remove everything from the previous session.
-- `donna -p human artifacts list <pattern>` — list artifacts with short descriptions.
+- `donna workspaces init` — Initialize Donna in your project.
+- `donna sessions start` — start a new working session, remove everything from the previous session.
+- `donna artifacts list <pattern>` — list artifacts with short descriptions.
+- `donna journal view [--lines N] [--follow]` — view the log of work performed in the current session.
+
+Here is an example of the real Donna session work log:
+
+![Journal log demonstration](./docs/images/journal-demo.gif)
 
 Use `donna --help` for a quick reference.
 
@@ -194,7 +203,7 @@ Note that the default Donna workflows are designed to be reliable and useful for
 Points of interest:
 
 - [donna:rfc:specs:request_for_change](./donna/artifacts/rfc/specs/request_for_change.md) — specification of the RFC document.
-- [donna:rfc:work:create](./donna/artifacts/rfc/work/create.md) — workflow to create a RFC document.
+- [donna:rfc:work:request](./donna/artifacts/rfc/work/request.md) — workflow to create a RFC document.
 - [donna:rfc:work:plan](./donna/artifacts/rfc/work/plan.md) — workflow to plan work on an RFC — creates a new workflow.
 - [donna:rfc:work:do](./donna/artifacts/rfc/work/do.md) — meta workflow to automate the whole work from a developer request to a changelog update.
 
