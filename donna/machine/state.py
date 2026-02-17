@@ -237,7 +237,7 @@ class StateNode(Node):
         if not self._state.started:
             message = textwrap.dedent(
                 """
-            The session has not been started yet. You can safely start a new session and then run a workflow.
+            The session has not been started yet. You can safely run a workflow.
                 """
             )
 
