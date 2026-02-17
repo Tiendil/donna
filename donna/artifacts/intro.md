@@ -39,8 +39,21 @@ Artifact type tags:
 
 ## Journaling
 
-You MUST use `donna journal write` to track you actions and thoughts, according the description in `{{ donna.lib.view("donna:usage:cli") }}`.
+You MUST use `donna journal write` to track your actions and thoughts, according the description in `{{ donna.lib.view("donna:usage:cli") }}`.
 
-If you perform a long operation (e.g., exploring the codebase, designing a solution) that takes more than 30 seconds, you MUST split it into parts/steps and write a journal entry between each step.
+Journaling is a required part of workflow execution. An action request MUST be considered incomplete until required journal records are written.
+
+Journaling lifecycle for each non-trivial action request:
+
+1. Start intent (`Goal:`) before substantial work begins.
+2. Progress updates (`Step:`) at significant phase boundaries.
+3. Concrete edits (`Change:`) after meaningful source/artifact update batches.
+4. Completion handoff (`Step:`) before calling `sessions action-request-completed`.
+
+Journal records MUST be change/decision-oriented and SHOULD be sufficient for another agent to continue work without re-discovery.
+
+If you perform a long operation (e.g., exploring the codebase, designing a solution) that takes more than 10 seconds, you MUST journal your progress.
 
 You MUST use `donna journal view --lines 100` to read the last records after you compress your context.
+
+If your work is interrupted and you resume later, you MUST first journal `Resume context and next action`.

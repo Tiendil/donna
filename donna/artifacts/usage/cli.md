@@ -174,10 +174,28 @@ Use the next commands to work with session journal:
 
 Agents MUST use `donna -p <protocol> journal write <message>` to log:
 
-- Goals of the long-running agent-only operations: `Goal: <goal description>`.
-- Significant steps of the long-running agent-only operations: `Step: <step description>`.
-- Significant thoughts, assumptions, and intents during the long-running operations: `Thought: <thought description>`, `Assumption: <assumption description>`, `Intent: <intent description>`.
-- Changes in the project source code or in the project structure: `Change: <change description>`.
+- Goals of the long-running agent-side operations: `Goal: <goal description>`.
+- Significant steps of the long-running agent-side operations: `Step: <phase progress or completion handoff>`.
+- Significant thoughts during the long-running operations: `Thought: <important thought>`.
+- Significant assumptions during the long-running operations: `Assumption: <important assumption>`.
+- Changes in the project source code or in the project structure: `Change: <what changed and where>`.
+
+For each non-trivial action request, agents MUST follow this journaling contract:
+
+1. Write exactly one `Goal:` record at action-request start.
+2. Write `Step:` records at significant phase boundaries. If an action request describes a multi-step process, there MUST be at least one `Step:` record per specified step and one `Step:` record for the completion handoff.
+3. Write `Change:` records after each meaningful source update batch.
+4. Write one final `Step:` record immediately before `sessions action-request-completed`.
+
+Agents MUST consider these cases as significant phase boundaries:
+
+- A work phase expected to take more than 10 seconds.
+- Transition from analysis/research to implementation/editing.
+- Transition to a new step in a multi-step process described in the action request.
+- Start or completion of a multi-file or multi-artifact change batch.
+- A decision that changes implementation direction.
+
+Before `sessions action-request-completed`, agents MUST check journal completeness for the current action request.
 
 Agents MUST NOT log:
 
