@@ -155,6 +155,8 @@ def update_artifact(  # noqa: CCR001
             source_suffix = requested
 
         case (None, requested, inferred):
+            assert requested is not None
+            assert inferred is not None
             return mismatch_error(requested, inferred)
 
         case (expected, None, None):
@@ -164,21 +166,29 @@ def update_artifact(  # noqa: CCR001
             source_suffix = expected
 
         case (expected, None, inferred):
+            assert expected is not None
+            assert inferred is not None
             return mismatch_error(inferred, expected)
 
         case (expected, requested, None) if expected == requested:
             source_suffix = expected
 
         case (expected, requested, None):
+            assert expected is not None
+            assert requested is not None
             return mismatch_error(requested, expected)
 
         case (expected, requested, inferred) if expected == requested == inferred:
             source_suffix = expected
 
         case (expected, requested, inferred) if expected != requested:
+            assert expected is not None
+            assert requested is not None
             return mismatch_error(requested, expected)
 
         case (expected, requested, inferred):
+            assert expected is not None
+            assert inferred is not None
             return mismatch_error(inferred, expected)
 
     normalized_source_suffix = f".{source_suffix}"
