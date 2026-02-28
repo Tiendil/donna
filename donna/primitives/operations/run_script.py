@@ -164,9 +164,6 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         machine_journal.add(
             actor_id="donna",
             message=f"Run script `{operation.title}`",
-            current_task_id=str(task.id),
-            current_work_unit_id=str(unit.id),
-            current_operation_id=unit.operation_id,
         ).unwrap()
 
         stdout, stderr, exit_code = _run_script(
@@ -181,9 +178,6 @@ class RunScript(MarkdownSectionMixin, OperationKind):
                 f"Script finished `{operation.title}`, exit code: {exit_code}, "
                 f"has stdout: {bool(stdout)}, has stderr: {bool(stderr)}`"
             ),
-            current_task_id=str(task.id),
-            current_work_unit_id=str(unit.id),
-            current_operation_id=unit.operation_id,
         ).unwrap()
 
         changes: list["Change"] = []

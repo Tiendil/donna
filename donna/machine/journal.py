@@ -1,7 +1,6 @@
 import datetime
 import json
 from collections.abc import Iterable
-from typing import Any
 
 import pydantic
 
@@ -71,26 +70,24 @@ def smart_agent_id() -> str:
 
 
 @unwrap_to_error
-def add(
+def add(  # noqa: CCR001
     message: str,
-    current_task_id: str | None,
-    current_work_unit_id: str | None,
-    current_operation_id: str | None,
-    **kwargs: Any,
+    actor_id: str | None = None,
 ) -> Result[JournalRecord, ErrorsList]:
+    from donna.context.context import context
     from donna.protocol.utils import instant_output_journal
 
     if message_has_newlines(message):
         return Err([machine_errors.JournalMessageContainsNewlines()])
 
-    if "actor_id" in kwargs:
-        actor_id = kwargs["actor_id"]
-    else:
+    if actor_id is None:
         actor_id = smart_agent_id()
 
-    parsed_task_id = TaskId(current_task_id) if current_task_id is not None else None
-    parsed_work_unit_id = WorkUnitId(current_work_unit_id) if current_work_unit_id is not None else None
-    parsed_operation_id = FullArtifactSectionId(current_operation_id) if current_operation_id is not None else None
+    ctx = context()
+    state = ctx.state.load().unwrap()
+    parsed_task_id: TaskId | None = state.current_task.id if state.current_task else None
+    parsed_work_unit_id: WorkUnitId | None = ctx.current_work_unit_id.get()
+    parsed_operation_id: FullArtifactSectionId | None = ctx.current_operation_id.get()
 
     record = JournalRecord(
         timestamp=now(),

@@ -103,6 +103,7 @@ class Config(BaseEntity):
     _sources_instances: list[SourceConfigValue] = pydantic.PrivateAttr(default_factory=list)
 
     tmp_dir: pathlib.Path = pathlib.Path("./tmp")
+    cache_lifetime: float = 1.0
 
     def model_post_init(self, __context: Any) -> None:  # noqa: CCR001
         worlds: list[BaseWorld] = []

@@ -1,11 +1,11 @@
-from typing import TYPE_CHECKING, Any, Union
+from typing import Any
 
 import pydantic
 
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import ArtifactSectionId, FullArtifactId, FullArtifactSectionId, PythonImportPath
+from donna.domain.ids import ArtifactSectionId, FullArtifactId, PythonImportPath
 from donna.machine.errors import (
     ArtifactPrimarySectionMissing,
     ArtifactSectionNotFound,
@@ -13,9 +13,6 @@ from donna.machine.errors import (
 )
 from donna.protocol.cells import Cell
 from donna.protocol.nodes import Node
-
-if TYPE_CHECKING:
-    from donna.workspaces.artifacts import ArtifactRenderContext
 
 
 class ArtifactSectionConfig(BaseEntity):
@@ -71,7 +68,7 @@ class Artifact(BaseEntity):
         return Ok(primary_sections[0])
 
     def validate_artifact(self) -> Result[None, ErrorsList]:  # noqa: CCR001
-        from donna.machine.primitives import resolve_primitive
+        from donna.context.context import context
 
         primary_sections = self._primary_sections()
 
@@ -88,7 +85,7 @@ class Artifact(BaseEntity):
             )
 
         for section in self.sections:
-            primitive_result = resolve_primitive(section.kind)
+            primitive_result = context().primitives.resolve(section.kind)
             if primitive_result.is_err():
                 errors.extend(primitive_result.unwrap_err())
                 continue
@@ -187,16 +184,3 @@ class ArtifactSectionNode(Node):
             section_primary=self._section.primary,
             **self._section.meta.cells_meta(),
         )
-
-
-@unwrap_to_error
-def resolve(
-    target_id: FullArtifactSectionId, render_context: Union["ArtifactRenderContext", None] = None
-) -> Result[ArtifactSection, ErrorsList]:
-    from donna.workspaces import artifacts as world_artifacts
-
-    artifact = world_artifacts.load_artifact(target_id.full_artifact_id, render_context).unwrap()
-
-    section = artifact.get_section(target_id.local_id).unwrap()
-
-    return Ok(section)

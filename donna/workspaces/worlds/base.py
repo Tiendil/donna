@@ -7,13 +7,25 @@ from typing import TYPE_CHECKING
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Result
-from donna.domain.ids import ArtifactId, FullArtifactIdPattern, WorldId
+from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern, WorldId
+from donna.domain.types import Milliseconds
 from donna.machine.artifacts import Artifact
 from donna.machine.primitives import Primitive
 
 if TYPE_CHECKING:
     from donna.workspaces.artifacts import ArtifactRenderContext
     from donna.workspaces.config import WorldConfig
+
+
+class RawArtifact(BaseEntity, ABC):
+    source_id: str
+
+    @abstractmethod
+    def get_bytes(self) -> bytes: ...  # noqa: E704
+
+    @abstractmethod
+    def render(self, full_id: FullArtifactId, render_context: "ArtifactRenderContext") -> Result[Artifact, ErrorsList]:
+        pass
 
 
 class World(BaseEntity, ABC):
@@ -25,12 +37,11 @@ class World(BaseEntity, ABC):
     def has(self, artifact_id: ArtifactId) -> bool: ...  # noqa: E704
 
     @abstractmethod
-    def fetch(  # noqa: E704
-        self, artifact_id: ArtifactId, render_context: "ArtifactRenderContext"
-    ) -> Result[Artifact, ErrorsList]: ...
+    def fetch(self, artifact_id: ArtifactId) -> Result[RawArtifact, ErrorsList]: ...  # noqa: E704
 
     @abstractmethod
-    def fetch_source(self, artifact_id: ArtifactId) -> Result[bytes, ErrorsList]: ...  # noqa: E704
+    def has_artifact_changed(self, artifact_id: ArtifactId, since: Milliseconds) -> Result[bool, ErrorsList]:
+        pass
 
     @abstractmethod
     def update(  # noqa: E704
