@@ -3,8 +3,7 @@ import pathlib
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import FullArtifactId, FullArtifactIdPattern, WorldId
-from donna.machine.artifacts import Artifact
+from donna.domain.ids import FullArtifactId, WorldId
 from donna.machine.tasks import Task, WorkUnit
 from donna.workspaces import errors
 from donna.workspaces.config import config
@@ -105,10 +104,10 @@ def artifact_file_extension(full_id: FullArtifactId) -> Result[str, ErrorsList]:
 @unwrap_to_error
 def fetch_artifact(full_id: FullArtifactId, output: pathlib.Path) -> Result[None, ErrorsList]:
     world = config().get_world(full_id.world_id).unwrap()
-    content = world.fetch_source(full_id.artifact_id).unwrap()
+    raw_artifact = world.fetch(full_id.artifact_id).unwrap()
 
     with output.open("wb") as f:
-        f.write(content)
+        f.write(raw_artifact.get_bytes())
 
     return Ok(None)
 
@@ -223,7 +222,8 @@ def copy_artifact(source_id: FullArtifactId, target_id: FullArtifactId) -> Resul
             ]
         )
 
-    content_bytes = source_world.fetch_source(source_id.artifact_id).unwrap()
+    source_raw_artifact = source_world.fetch(source_id.artifact_id).unwrap()
+    content_bytes = source_raw_artifact.get_bytes()
     source_extension = source_world.file_extension_for(source_id.artifact_id).unwrap()
 
     if not source_extension:
@@ -268,57 +268,3 @@ def remove_artifact(full_id: FullArtifactId) -> Result[None, ErrorsList]:
 
     world.remove(full_id.artifact_id).unwrap()
     return Ok(None)
-
-
-@unwrap_to_error
-def load_artifact(
-    full_id: FullArtifactId, render_context: ArtifactRenderContext | None = None
-) -> Result[Artifact, ErrorsList]:
-    if render_context is None:
-        render_context = ArtifactRenderContext(primary_mode=RenderMode.view)
-
-    world = config().get_world(full_id.world_id).unwrap()
-    return Ok(world.fetch(full_id.artifact_id, render_context).unwrap())
-
-
-def list_artifacts(  # noqa: CCR001
-    pattern: FullArtifactIdPattern,
-    render_context: ArtifactRenderContext | None = None,
-    tags: list[str] | None = None,
-) -> Result[list[Artifact], ErrorsList]:
-    if render_context is None:
-        render_context = ArtifactRenderContext(primary_mode=RenderMode.view)
-
-    tag_filters = tags or []
-
-    artifacts: list[Artifact] = []
-    errors: ErrorsList = []
-
-    for world in reversed(config().worlds_instances):
-        for artifact_id in world.list_artifacts(pattern):
-            full_id = FullArtifactId((world.id, artifact_id))
-            artifact_result = load_artifact(full_id, render_context)
-            if artifact_result.is_err():
-                errors.extend(artifact_result.unwrap_err())
-                continue
-            artifact = artifact_result.unwrap()
-            if tag_filters and not _artifact_matches_tags(artifact, tag_filters):
-                continue
-            artifacts.append(artifact)
-
-    if errors:
-        return Err(errors)
-
-    return Ok(artifacts)
-
-
-def _artifact_matches_tags(artifact: Artifact, tags: list[str]) -> bool:
-    if not tags:
-        return True
-
-    primary_result = artifact.primary_section()
-    if primary_result.is_err():
-        return False
-
-    primary = primary_result.unwrap()
-    return all(tag in primary.tags for tag in tags)

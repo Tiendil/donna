@@ -10,17 +10,20 @@ from donna.workspaces.templates import RenderMode
 
 if TYPE_CHECKING:
     from donna.workspaces.artifacts import ArtifactRenderContext
+    from donna.workspaces.worlds.base import RawArtifact
 
 
 class _ArtifactCacheValue:
-    __slots__ = ("view_artifact", "analysis_artifact", "loaded_at_ms")
+    __slots__ = ("raw_artifact", "view_artifact", "analysis_artifact", "loaded_at_ms")
 
     def __init__(
         self,
+        raw_artifact: "RawArtifact",
         view_artifact: Artifact | None,
         analysis_artifact: Artifact | None,
         loaded_at_ms: int,
     ) -> None:
+        self.raw_artifact = raw_artifact
         self.view_artifact = view_artifact
         self.analysis_artifact = analysis_artifact
         self.loaded_at_ms = loaded_at_ms
@@ -62,38 +65,52 @@ class ArtifactsCache:
     def invalidate(self, full_id: FullArtifactId) -> None:
         self._cache.pop(full_id, None)
 
+    @staticmethod
+    @unwrap_to_error
+    def _load_raw_artifact(full_id: FullArtifactId) -> Result["RawArtifact", ErrorsList]:
+        from donna.workspaces.config import config
+
+        world = config().get_world(full_id.world_id).unwrap()
+        return Ok(world.fetch(full_id.artifact_id).unwrap())
+
+    @unwrap_to_error
+    def _get_cache_value(self, full_id: FullArtifactId) -> Result[_ArtifactCacheValue, ErrorsList]:
+        cached = self._cache.get(full_id)
+        since = cached.loaded_at_ms if cached is not None else 0
+        cache_stale = self._is_cache_stale(full_id, since).unwrap()
+
+        if cached is not None and not cache_stale:
+            return Ok(cached)
+
+        raw_artifact = self._load_raw_artifact(full_id).unwrap()
+        refreshed = _ArtifactCacheValue(
+            raw_artifact=raw_artifact,
+            view_artifact=None,
+            analysis_artifact=None,
+            loaded_at_ms=self._now_ms(),
+        )
+        self._cache[full_id] = refreshed
+        return Ok(refreshed)
+
     @unwrap_to_error
     def load(  # noqa: CCR001
         self, full_id: FullArtifactId, render_context: "ArtifactRenderContext | None" = None
     ) -> Result[Artifact, ErrorsList]:
-        from donna.workspaces import artifacts as workspace_artifacts
-
         if render_context is None:
             render_context = self._default_render_context()
 
+        cached = self._get_cache_value(full_id).unwrap()
+
         if render_context.primary_mode == RenderMode.execute:
-            return Ok(workspace_artifacts.load_artifact(full_id, render_context).unwrap())
+            return Ok(cached.raw_artifact.render(full_id, render_context).unwrap())
 
-        cached = self._cache.get(full_id)
         cache_slot = self._context_slot_name(render_context)
-        since = cached.loaded_at_ms if cached is not None else 0
-        cache_stale = self._is_cache_stale(full_id, since).unwrap()
-
-        if cached is not None and cache_slot:
+        if cache_slot:
             cached_artifact = getattr(cached, cache_slot)
-
-            if cached_artifact is not None and not cache_stale:
+            if cached_artifact is not None:
                 return Ok(cached_artifact)
 
-        artifact = workspace_artifacts.load_artifact(full_id, render_context).unwrap()
-
-        loaded_at_ms = self._now_ms()
-
-        if cached is None:
-            cached = _ArtifactCacheValue(view_artifact=None, analysis_artifact=None, loaded_at_ms=loaded_at_ms)
-            self._cache[full_id] = cached
-        else:
-            cached.loaded_at_ms = loaded_at_ms
+        artifact = cached.raw_artifact.render(full_id, render_context).unwrap()
 
         if render_context.primary_mode == RenderMode.view:
             cached.view_artifact = artifact
