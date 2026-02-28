@@ -40,9 +40,7 @@ class World(BaseEntity, ABC):
     def fetch(self, artifact_id: ArtifactId) -> Result[RawArtifact, ErrorsList]: ...  # noqa: E704
 
     @abstractmethod
-    def has_artifact_changed(
-        self, artifact_id: ArtifactId, since: Milliseconds
-    ) -> Result[bool, ErrorsList]:
+    def has_artifact_changed(self, artifact_id: ArtifactId, since: Milliseconds) -> Result[bool, ErrorsList]:
         pass
 
     @abstractmethod
