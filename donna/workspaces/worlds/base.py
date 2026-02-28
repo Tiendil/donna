@@ -8,6 +8,7 @@ from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Result
 from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern, WorldId
+from donna.domain.types import Milliseconds
 from donna.machine.artifacts import Artifact
 from donna.machine.primitives import Primitive
 
@@ -39,7 +40,10 @@ class World(BaseEntity, ABC):
     def fetch(self, artifact_id: ArtifactId) -> Result[RawArtifact, ErrorsList]: ...  # noqa: E704
 
     @abstractmethod
-    def has_artifact_changed(self, artifact_id: ArtifactId, since: int) -> Result[bool, ErrorsList]: ...  # noqa: E704
+    def has_artifact_changed(
+        self, artifact_id: ArtifactId, since: Milliseconds
+    ) -> Result[bool, ErrorsList]:
+        pass
 
     @abstractmethod
     def update(  # noqa: E704

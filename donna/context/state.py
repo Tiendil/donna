@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from donna.context.entity_cache import TimedCache, TimedCacheValue
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
+from donna.domain.types import Milliseconds
 from donna.machine import errors as machine_errors
 
 if TYPE_CHECKING:
@@ -16,8 +17,8 @@ class _StateCacheValue(TimedCacheValue):
         self,
         state: "ConsistentState",
         state_json: bytes,
-        loaded_at_ms: int,
-        checked_at_ms: int,
+        loaded_at_ms: Milliseconds,
+        checked_at_ms: Milliseconds,
     ) -> None:
         super().__init__(loaded_at_ms=loaded_at_ms, checked_at_ms=checked_at_ms)
         self.state = state

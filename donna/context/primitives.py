@@ -5,6 +5,7 @@ from donna.context.entity_cache import TimedCache, TimedCacheValue
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import PythonImportPath
+from donna.domain.types import Milliseconds
 from donna.machine import errors as machine_errors
 
 if TYPE_CHECKING:
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
 class _PrimitiveCacheValue(TimedCacheValue):
     __slots__ = ("primitive",)
 
-    def __init__(self, primitive: "Primitive", loaded_at_ms: int, checked_at_ms: int) -> None:
+    def __init__(self, primitive: "Primitive", loaded_at_ms: Milliseconds, checked_at_ms: Milliseconds) -> None:
         super().__init__(loaded_at_ms=loaded_at_ms, checked_at_ms=checked_at_ms)
         self.primitive = primitive
 

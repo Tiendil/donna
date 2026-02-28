@@ -5,6 +5,7 @@ from donna.context.entity_cache import TimedCache, TimedCacheValue
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import FullArtifactId, FullArtifactIdPattern, FullArtifactSectionId
+from donna.domain.types import Milliseconds
 from donna.machine.artifacts import Artifact, ArtifactSection
 from donna.workspaces.templates import RenderMode
 
@@ -20,8 +21,8 @@ class _ArtifactCacheValue(TimedCacheValue):
         self,
         raw_artifact: "RawArtifact",
         rendered_artifacts: dict[RenderMode, Artifact],
-        loaded_at_ms: int,
-        checked_at_ms: int,
+        loaded_at_ms: Milliseconds,
+        checked_at_ms: Milliseconds,
     ) -> None:
         super().__init__(loaded_at_ms=loaded_at_ms, checked_at_ms=checked_at_ms)
         self.raw_artifact = raw_artifact
@@ -35,7 +36,7 @@ class ArtifactsCache(TimedCache):
         self._cache: dict[FullArtifactId, _ArtifactCacheValue] = {}
 
     @unwrap_to_error
-    def _is_cache_stale(self, full_id: FullArtifactId, loaded_at_ms: int) -> Result[bool, ErrorsList]:
+    def _is_cache_stale(self, full_id: FullArtifactId, loaded_at_ms: Milliseconds) -> Result[bool, ErrorsList]:
         from donna.workspaces.config import config
 
         world = config().get_world(full_id.world_id).unwrap()
@@ -50,7 +51,9 @@ class ArtifactsCache(TimedCache):
         return Ok(world.fetch(full_id.artifact_id).unwrap())
 
     @unwrap_to_error
-    def _refresh_cache_value(self, full_id: FullArtifactId, now_ms: int) -> Result[_ArtifactCacheValue, ErrorsList]:
+    def _refresh_cache_value(
+        self, full_id: FullArtifactId, now_ms: Milliseconds
+    ) -> Result[_ArtifactCacheValue, ErrorsList]:
         raw_artifact = self._load_raw_artifact(full_id).unwrap()
         refreshed = _ArtifactCacheValue(
             raw_artifact=raw_artifact,

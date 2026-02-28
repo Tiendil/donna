@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, cast
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern, WorldId
+from donna.domain.types import Milliseconds
 from donna.workspaces import errors as world_errors
 from donna.workspaces.artifacts_discovery import ArtifactListingNode, list_artifacts_by_pattern
 from donna.workspaces.worlds.base import RawArtifact
@@ -132,7 +133,7 @@ class Python(BaseWorld):
         )
 
     @unwrap_to_error
-    def has_artifact_changed(self, artifact_id: ArtifactId, since: int) -> Result[bool, ErrorsList]:
+    def has_artifact_changed(self, artifact_id: ArtifactId, since: Milliseconds) -> Result[bool, ErrorsList]:
         resource_path = self._resolve_artifact_file(artifact_id).unwrap()
 
         if resource_path is None:
