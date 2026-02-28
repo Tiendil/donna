@@ -14,20 +14,18 @@ if TYPE_CHECKING:
 
 
 class _ArtifactCacheValue(TimedCacheValue):
-    __slots__ = ("raw_artifact", "view_artifact", "analysis_artifact")
+    __slots__ = ("raw_artifact", "rendered_artifacts")
 
     def __init__(
         self,
         raw_artifact: "RawArtifact",
-        view_artifact: Artifact | None,
-        analysis_artifact: Artifact | None,
+        rendered_artifacts: dict[RenderMode, Artifact],
         loaded_at_ms: int,
         checked_at_ms: int,
     ) -> None:
         super().__init__(loaded_at_ms=loaded_at_ms, checked_at_ms=checked_at_ms)
         self.raw_artifact = raw_artifact
-        self.view_artifact = view_artifact
-        self.analysis_artifact = analysis_artifact
+        self.rendered_artifacts = rendered_artifacts
 
 
 class ArtifactsCache(TimedCache):
@@ -35,16 +33,6 @@ class ArtifactsCache(TimedCache):
 
     def __init__(self) -> None:
         self._cache: dict[FullArtifactId, _ArtifactCacheValue] = {}
-
-    @staticmethod
-    def _context_slot_name(render_context: "ArtifactRenderContext") -> str:
-        if render_context.primary_mode == RenderMode.view:
-            return "view_artifact"
-
-        if render_context.primary_mode == RenderMode.analysis:
-            return "analysis_artifact"
-
-        return ""
 
     @unwrap_to_error
     def _is_cache_stale(self, full_id: FullArtifactId, loaded_at_ms: int) -> Result[bool, ErrorsList]:
@@ -66,8 +54,7 @@ class ArtifactsCache(TimedCache):
         raw_artifact = self._load_raw_artifact(full_id).unwrap()
         refreshed = _ArtifactCacheValue(
             raw_artifact=raw_artifact,
-            view_artifact=None,
-            analysis_artifact=None,
+            rendered_artifacts={},
             loaded_at_ms=now_ms,
             checked_at_ms=now_ms,
         )
@@ -107,18 +94,12 @@ class ArtifactsCache(TimedCache):
         if render_context.primary_mode == RenderMode.execute:
             return Ok(cached.raw_artifact.render(full_id, render_context).unwrap())
 
-        cache_slot = self._context_slot_name(render_context)
-        if cache_slot:
-            cached_artifact = getattr(cached, cache_slot)
-            if cached_artifact is not None:
-                return Ok(cached_artifact)
+        cached_artifact = cached.rendered_artifacts.get(render_context.primary_mode)
+        if cached_artifact is not None:
+            return Ok(cached_artifact)
 
         artifact = cached.raw_artifact.render(full_id, render_context).unwrap()
-
-        if render_context.primary_mode == RenderMode.view:
-            cached.view_artifact = artifact
-        elif render_context.primary_mode == RenderMode.analysis:
-            cached.analysis_artifact = artifact
+        cached.rendered_artifacts[render_context.primary_mode] = artifact
 
         return Ok(artifact)
 
