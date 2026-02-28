@@ -27,22 +27,12 @@ P = ParamSpec("P")
 
 def _write_errors_to_journal(errors: ErrorsList) -> None:
     from donna.machine import journal as machine_journal
-    from donna.machine import sessions as machine_sessions
-
-    state_result = machine_sessions.load_state()
-    current_task_id = None
-    if state_result.is_ok():
-        state = state_result.unwrap()
-        current_task_id = str(state.current_task.id) if state.current_task else None
 
     for error in errors:
         message = f"Error: {error.node().journal_message()} [{error.code}]"
 
         machine_journal.add(
             message=message,
-            current_task_id=current_task_id,
-            current_work_unit_id=None,
-            current_operation_id=None,
             actor_id="donna",
         )
 
@@ -80,6 +70,8 @@ def _is_workspace_init_command() -> bool:
 
 
 def try_initialize_donna(project_dir: pathlib.Path | None, protocol: Mode) -> None:
+    from donna.context import Context, set_context
+
     if _is_workspace_init_command():
         workspace_config.protocol.set(protocol)
         if project_dir is not None:
@@ -89,6 +81,7 @@ def try_initialize_donna(project_dir: pathlib.Path | None, protocol: Mode) -> No
     result = initialize_runtime(root_dir=project_dir, protocol=protocol)
 
     if result.is_ok():
+        set_context(Context())
         return
 
     errors = result.unwrap_err()

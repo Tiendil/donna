@@ -20,9 +20,18 @@ The code is separated by layers/subsystems into subpackages:
 - `donna.core` — code that not in the Donna's domain, but required to its functioning: domain-independent utils, basic classes for errors, exceptions and other entities, etc.
 - `donna.domain` — code that is required by all Donna'specific logic: ID classes, common types, etc.
 - `donna.machine` — code that implements the core Donna's logic — how Donna works regardless of external environments, i.e. pure domain behavior.
+- `donna.context` — code that stores and provides execution-scoped runtime context for Donna's domain logic: artifact/state/primitive caches and scoped values like current actor/work unit/operation identifiers.
 - `donna.world` — code that implements various worlds where Donna can find and manage artifacts: from artifacts discovery to their loading, parsing, updating. Also contains code related to configuration of Donna.
 - `donna.protocol` — code that implements protocol via which Donna's core domain logic interacts with external environments: CLI, API, etc. Includes basic classes for information representing (for the external environments) and its formatting.
 - `donna.cli` — code that implements the `donna` CLI tool, its commands, arguments parsing, etc.
 - `donna.primitives` — code that implements basic building blocks for Donna's behavior: concrete implementations of various classes from the `donna.machine`.
 - `donna.lib` — module that contains constructed primitives to be used in donna artifacts by referencing them by python import path. Like `donna.lib.workflow`, `donna.lib.goto`, etc.
 - `donna.artifacts` — artifacts that are distributed with Donna itself: specifications of how it works, predefined workflows, etc.
+
+## Data structures
+
+- Do not use `dataclass` for data structures. Use `donna.core.entities.BaseEntity` (subclass of the `pydantic.BaseModel`) for complex data structures and Python classes with `__slots__` for very simple ones (like cache keys).
+
+## Autotests
+
+- No autotests in the project for now.

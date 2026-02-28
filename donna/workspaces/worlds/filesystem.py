@@ -9,15 +9,33 @@ from typing import TYPE_CHECKING, cast
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern
-from donna.machine.artifacts import Artifact
+from donna.domain.types import Milliseconds
 from donna.workspaces import errors as world_errors
-from donna.workspaces.artifacts import ArtifactRenderContext
 from donna.workspaces.artifacts_discovery import ArtifactListingNode, list_artifacts_by_pattern
+from donna.workspaces.worlds.base import RawArtifact
 from donna.workspaces.worlds.base import World as BaseWorld
 from donna.workspaces.worlds.base import WorldConstructor
 
 if TYPE_CHECKING:
-    from donna.workspaces.config import SourceConfigValue, WorldConfig
+    from donna.machine.artifacts import Artifact
+    from donna.workspaces.artifacts import ArtifactRenderContext
+    from donna.workspaces.config import WorldConfig
+
+
+class FilesystemRawArtifact(RawArtifact):
+    path: pathlib.Path
+
+    def get_bytes(self) -> bytes:
+        return self.path.read_bytes()
+
+    @unwrap_to_error
+    def render(
+        self, full_id: FullArtifactId, render_context: "ArtifactRenderContext"
+    ) -> Result["Artifact", ErrorsList]:
+        from donna.workspaces.config import config
+
+        source_config = config().get_source_config(self.source_id).unwrap()
+        return Ok(source_config.construct_artifact_from_bytes(full_id, self.get_bytes(), render_context).unwrap())
 
 
 class World(BaseWorld):
@@ -60,26 +78,6 @@ class World(BaseWorld):
 
         return Ok(matches[0])
 
-    def _get_source_by_filename(
-        self, artifact_id: ArtifactId, filename: str
-    ) -> Result["SourceConfigValue", ErrorsList]:
-        from donna.workspaces.config import config
-
-        extension = pathlib.Path(filename).suffix
-        source_config = config().find_source_for_extension(extension)
-        if source_config is None:
-            return Err(
-                [
-                    world_errors.UnsupportedArtifactSourceExtension(
-                        artifact_id=artifact_id,
-                        world_id=self.id,
-                        extension=extension,
-                    )
-                ]
-            )
-
-        return Ok(source_config)
-
     def has(self, artifact_id: ArtifactId) -> bool:
         resolve_result = self._resolve_artifact_file(artifact_id)
         if resolve_result.is_err():
@@ -88,38 +86,40 @@ class World(BaseWorld):
         return resolve_result.unwrap() is not None
 
     @unwrap_to_error
-    def fetch(self, artifact_id: ArtifactId, render_context: ArtifactRenderContext) -> Result[Artifact, ErrorsList]:
+    def fetch(self, artifact_id: ArtifactId) -> Result[RawArtifact, ErrorsList]:
         path = self._resolve_artifact_file(artifact_id).unwrap()
         if path is None:
             return Err([world_errors.ArtifactNotFound(artifact_id=artifact_id, world_id=self.id)])
 
-        content_bytes = path.read_bytes()
-        full_id = FullArtifactId((self.id, artifact_id))
-
-        extension = pathlib.Path(path.name).suffix
         from donna.workspaces.config import config
 
-        source_config = config().find_source_for_extension(extension)
+        source_config = config().find_source_for_extension(path.suffix)
         if source_config is None:
             return Err(
                 [
                     world_errors.UnsupportedArtifactSourceExtension(
                         artifact_id=artifact_id,
                         world_id=self.id,
-                        extension=extension,
+                        extension=path.suffix,
                     )
                 ]
             )
 
-        return Ok(source_config.construct_artifact_from_bytes(full_id, content_bytes, render_context).unwrap())
+        return Ok(
+            FilesystemRawArtifact(
+                source_id=source_config.kind,
+                path=path,
+            )
+        )
 
     @unwrap_to_error
-    def fetch_source(self, artifact_id: ArtifactId) -> Result[bytes, ErrorsList]:
+    def has_artifact_changed(self, artifact_id: ArtifactId, since: Milliseconds) -> Result[bool, ErrorsList]:
         path = self._resolve_artifact_file(artifact_id).unwrap()
-        if path is None:
-            return Err([world_errors.ArtifactNotFound(artifact_id=artifact_id, world_id=self.id)])
 
-        return Ok(path.read_bytes())
+        if path is None:
+            return Ok(True)
+
+        return Ok((path.stat().st_mtime_ns // 1_000_000) > since)
 
     def update(self, artifact_id: ArtifactId, content: bytes, extension: str) -> Result[None, ErrorsList]:
         if self.readonly:
