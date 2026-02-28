@@ -6,7 +6,6 @@ import typer
 from donna.cli.application import app
 from donna.cli.utils import cells_cli, output_cells
 from donna.machine import journal as machine_journal
-from donna.machine.sessions import load_state
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
 from donna.protocol.modes import get_cell_formatter
@@ -19,14 +18,7 @@ journal_cli = typer.Typer()
 def write(
     message: str = typer.Argument(..., help="Single-line message to append to journal (newlines are not allowed)."),
 ) -> Iterable[Cell]:
-    state = load_state().unwrap()
-
-    machine_journal.add(
-        message=message,
-        current_task_id=str(state.current_task.id) if state.current_task else None,
-        current_work_unit_id=None,
-        current_operation_id=None,
-    ).unwrap()
+    machine_journal.add(message=message).unwrap()
     return [operation_succeeded("Journal record appended.")]
 
 

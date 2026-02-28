@@ -33,6 +33,9 @@ class World(BaseEntity, ABC):
     def fetch_source(self, artifact_id: ArtifactId) -> Result[bytes, ErrorsList]: ...  # noqa: E704
 
     @abstractmethod
+    def has_artifact_changed(self, artifact_id: ArtifactId, since: int) -> Result[bool, ErrorsList]: ...  # noqa: E704
+
+    @abstractmethod
     def update(  # noqa: E704
         self, artifact_id: ArtifactId, content: bytes, extension: str
     ) -> Result[None, ErrorsList]: ...  # noqa: E704

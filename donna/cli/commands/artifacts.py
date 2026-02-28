@@ -16,14 +16,13 @@ from donna.cli.types import (
     TagOption,
 )
 from donna.cli.utils import cells_cli
+from donna.context.context import context
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.ids import FullArtifactIdPattern
 from donna.machine import journal as machine_journal
-from donna.machine.sessions import load_state
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
-from donna.workspaces import artifacts as world_artifacts
 from donna.workspaces import tmp as world_tmp
 
 artifacts_cli = typer.Typer()
@@ -44,20 +43,7 @@ def _parse_slug_with_extension(value: str) -> Result[tuple[str, str], ErrorsList
 
 
 def _log_artifact_operation(message: str) -> None:
-    state_result = load_state()
-
-    if state_result.is_err():
-        # log nothing if we have no session state
-        return
-
-    state = state_result.unwrap()
-
-    machine_journal.add(
-        message=message,
-        current_task_id=str(state.current_task.id) if state.current_task else None,
-        current_work_unit_id=None,
-        current_operation_id=None,
-    )
+    machine_journal.add(message=message)
 
 
 def _log_operation_on_artifacts(message: str, pattern: FullArtifactIdPattern, tags: TagOption | None) -> None:
@@ -79,7 +65,7 @@ def list(
 ) -> Iterable[Cell]:
     _log_operation_on_artifacts("List artifacts", pattern, tags)
 
-    artifacts = world_artifacts.list_artifacts(pattern, tags=tags).unwrap()
+    artifacts = context().artifacts.list(pattern, tags=tags).unwrap()
 
     return [artifact.node().status() for artifact in artifacts]
 
@@ -92,7 +78,7 @@ def view(
 ) -> Iterable[Cell]:
     _log_operation_on_artifacts("View artifacts", pattern, tags)
 
-    artifacts = world_artifacts.list_artifacts(pattern, tags=tags).unwrap()
+    artifacts = context().artifacts.list(pattern, tags=tags).unwrap()
     return [artifact.node().info() for artifact in artifacts]
 
 
@@ -105,12 +91,12 @@ def view(
 @cells_cli
 def fetch(id: FullArtifactIdArgument, output: OutputPathOption = None) -> Iterable[Cell]:
     if output is None:
-        extension = world_artifacts.artifact_file_extension(id).unwrap()
+        extension = context().artifacts.file_extension(id).unwrap()
         output = world_tmp.file_for_artifact(id, extension)
 
     _log_artifact_operation(f"Fetch artifact `{id}` to '{output}'")
 
-    world_artifacts.fetch_artifact(id, output).unwrap()
+    context().artifacts.fetch(id, output).unwrap()
 
     return [
         operation_succeeded(f"Artifact `{id}` fetched to '{output}'", artifact_id=str(id), output_path=str(output))
@@ -155,7 +141,7 @@ def update(
 
     _log_artifact_operation(f"Update artifact `{id}` from '{input_display}'")
 
-    world_artifacts.update_artifact(id, input_path, extension=extension).unwrap()
+    context().artifacts.update(id, input_path, extension=extension).unwrap()
     return [
         operation_succeeded(
             f"Artifact `{id}` updated from '{input_display}'",
@@ -170,7 +156,7 @@ def update(
 def copy(source_id: FullArtifactIdArgument, target_id: FullArtifactIdArgument) -> Iterable[Cell]:
     _log_artifact_operation(f"Copy artifact from `{source_id}` to `{target_id}`")
 
-    world_artifacts.copy_artifact(source_id, target_id).unwrap()
+    context().artifacts.copy(source_id, target_id).unwrap()
     return [
         operation_succeeded(
             f"Artifact `{source_id}` copied to `{target_id}`",
@@ -185,7 +171,7 @@ def copy(source_id: FullArtifactIdArgument, target_id: FullArtifactIdArgument) -
 def move(source_id: FullArtifactIdArgument, target_id: FullArtifactIdArgument) -> Iterable[Cell]:
     _log_artifact_operation(f"Move artifact from `{source_id}` to `{target_id}`")
 
-    world_artifacts.move_artifact(source_id, target_id).unwrap()
+    context().artifacts.move(source_id, target_id).unwrap()
     return [
         operation_succeeded(
             f"Artifact `{source_id}` moved to `{target_id}`",
@@ -203,11 +189,11 @@ def remove(
 ) -> Iterable[Cell]:
     _log_operation_on_artifacts("Remove artifacts", pattern, tags)
 
-    artifacts = world_artifacts.list_artifacts(pattern, tags=tags).unwrap()
+    artifacts = context().artifacts.list(pattern, tags=tags).unwrap()
 
     cells: builtins.list[Cell] = []
     for artifact in artifacts:
-        world_artifacts.remove_artifact(artifact.id).unwrap()
+        context().artifacts.remove(artifact.id).unwrap()
         cells.append(operation_succeeded(f"Artifact `{artifact.id}` removed", artifact_id=str(artifact.id)))
 
     return cells
@@ -221,7 +207,7 @@ def validate(
 ) -> Iterable[Cell]:  # noqa: CCR001
     _log_operation_on_artifacts("Validate artifacts", pattern, tags)
 
-    artifacts = world_artifacts.list_artifacts(pattern, tags=tags).unwrap()
+    artifacts = context().artifacts.list(pattern, tags=tags).unwrap()
 
     errors = []
 

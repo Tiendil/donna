@@ -1,6 +1,7 @@
 import functools
 from typing import Callable, ParamSpec
 
+from donna.context.context import context
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactSectionId
@@ -10,23 +11,18 @@ from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
-from donna.workspaces import artifacts
 from donna.workspaces import tmp as world_tmp
 from donna.workspaces import utils as workspace_utils
 
 
 @unwrap_to_error
 def load_state() -> Result[ConsistentState, ErrorsList]:
-    content = workspace_utils.session_world().unwrap().read_state("state.json").unwrap()
-    if content is None:
-        return Err([machine_errors.SessionStateNotInitialized()])
-
-    return Ok(ConsistentState.from_json(content.decode("utf-8")))
+    return Ok(context().state.load().unwrap())
 
 
 @unwrap_to_error
 def _save_state(state: ConsistentState) -> Result[None, ErrorsList]:
-    workspace_utils.session_world().unwrap().write_state("state.json", state.to_json().encode("utf-8")).unwrap()
+    context().state.save(state).unwrap()
     return Ok(None)
 
 
@@ -68,14 +64,9 @@ def start() -> Result[list[Cell], ErrorsList]:
     workspace_utils.session_world().unwrap().initialize(reset=True)
 
     machine_journal.reset().unwrap()
-
-    machine_journal.add(
-        message="Started new session.",
-        current_task_id=None,
-        current_work_unit_id=None,
-        current_operation_id=None,
-    ).unwrap()
     _save_state(MutableState.build().freeze()).unwrap()
+
+    machine_journal.add(message="Started new session.").unwrap()
 
     return Ok([operation_succeeded("Started new session.")])
 
@@ -117,7 +108,7 @@ def details() -> Result[list[Cell], ErrorsList]:
 @unwrap_to_error
 def start_workflow(artifact_id: FullArtifactId) -> Result[list[Cell], ErrorsList]:  # noqa: CCR001
     static_state = load_state().unwrap()
-    workflow = artifacts.load_artifact(artifact_id).unwrap()
+    workflow = context().artifacts.load(artifact_id).unwrap()
     primary_section = workflow.primary_section().unwrap()
     mutator = static_state.mutator()
     mutator.start_workflow(workflow.id.to_full_local(primary_section.id)).unwrap()
@@ -131,7 +122,7 @@ def _validate_operation_transition(
     state: MutableState, request_id: ActionRequestId, next_operation_id: FullArtifactSectionId
 ) -> Result[None, ErrorsList]:
     operation_id = state.get_action_request(request_id).unwrap().operation_id
-    workflow = artifacts.load_artifact(operation_id.full_artifact_id).unwrap()
+    workflow = context().artifacts.load(operation_id.full_artifact_id).unwrap()
     operation = workflow.get_section(operation_id.local_id).unwrap()
 
     assert isinstance(operation.meta, OperationMeta)

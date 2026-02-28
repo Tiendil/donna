@@ -140,6 +140,15 @@ class Python(BaseWorld):
 
         return Ok(resource_path.read_bytes())
 
+    @unwrap_to_error
+    def has_artifact_changed(self, artifact_id: ArtifactId, since: int) -> Result[bool, ErrorsList]:
+        resource_path = self._resolve_artifact_file(artifact_id).unwrap()
+
+        if resource_path is None:
+            return Ok(True)
+
+        return Ok(False)
+
     def update(self, artifact_id: ArtifactId, content: bytes, extension: str) -> Result[None, ErrorsList]:
         return Err([world_errors.WorldReadonly(world_id=self.id)])
 
