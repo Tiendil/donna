@@ -1,7 +1,7 @@
-import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from donna.context.entity_cache import TimedCache, TimedCacheValue
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import FullArtifactId, FullArtifactIdPattern, FullArtifactSectionId
@@ -13,8 +13,8 @@ if TYPE_CHECKING:
     from donna.workspaces.worlds.base import RawArtifact
 
 
-class _ArtifactCacheValue:
-    __slots__ = ("raw_artifact", "view_artifact", "analysis_artifact", "loaded_at_ms")
+class _ArtifactCacheValue(TimedCacheValue):
+    __slots__ = ("raw_artifact", "view_artifact", "analysis_artifact")
 
     def __init__(
         self,
@@ -22,22 +22,19 @@ class _ArtifactCacheValue:
         view_artifact: Artifact | None,
         analysis_artifact: Artifact | None,
         loaded_at_ms: int,
+        checked_at_ms: int,
     ) -> None:
+        super().__init__(loaded_at_ms=loaded_at_ms, checked_at_ms=checked_at_ms)
         self.raw_artifact = raw_artifact
         self.view_artifact = view_artifact
         self.analysis_artifact = analysis_artifact
-        self.loaded_at_ms = loaded_at_ms
 
 
-class ArtifactsCache:
+class ArtifactsCache(TimedCache):
     __slots__ = ("_cache",)
 
     def __init__(self) -> None:
         self._cache: dict[FullArtifactId, _ArtifactCacheValue] = {}
-
-    @staticmethod
-    def _now_ms() -> int:
-        return time.time_ns() // 1_000_000
 
     @staticmethod
     def _default_render_context() -> "ArtifactRenderContext":
@@ -62,9 +59,6 @@ class ArtifactsCache:
         world = config().get_world(full_id.world_id).unwrap()
         return Ok(world.has_artifact_changed(full_id.artifact_id, since=loaded_at_ms).unwrap())
 
-    def invalidate(self, full_id: FullArtifactId) -> None:
-        self._cache.pop(full_id, None)
-
     @staticmethod
     @unwrap_to_error
     def _load_raw_artifact(full_id: FullArtifactId) -> Result["RawArtifact", ErrorsList]:
@@ -74,23 +68,39 @@ class ArtifactsCache:
         return Ok(world.fetch(full_id.artifact_id).unwrap())
 
     @unwrap_to_error
-    def _get_cache_value(self, full_id: FullArtifactId) -> Result[_ArtifactCacheValue, ErrorsList]:
-        cached = self._cache.get(full_id)
-        since = cached.loaded_at_ms if cached is not None else 0
-        cache_stale = self._is_cache_stale(full_id, since).unwrap()
-
-        if cached is not None and not cache_stale:
-            return Ok(cached)
-
+    def _refresh_cache_value(self, full_id: FullArtifactId, now_ms: int) -> Result[_ArtifactCacheValue, ErrorsList]:
         raw_artifact = self._load_raw_artifact(full_id).unwrap()
         refreshed = _ArtifactCacheValue(
             raw_artifact=raw_artifact,
             view_artifact=None,
             analysis_artifact=None,
-            loaded_at_ms=self._now_ms(),
+            loaded_at_ms=now_ms,
+            checked_at_ms=now_ms,
         )
         self._cache[full_id] = refreshed
         return Ok(refreshed)
+
+    @unwrap_to_error
+    def _get_cache_value(self, full_id: FullArtifactId) -> Result[_ArtifactCacheValue, ErrorsList]:
+        cached = self._cache.get(full_id)
+        now_ms = self._now_ms()
+
+        if cached is None:
+            return Ok(self._refresh_cache_value(full_id, now_ms).unwrap())
+
+        # Skip expensive world checks when cache lifetime has not elapsed yet.
+        if self._is_within_lifetime(cached, now_ms):
+            return Ok(cached)
+
+        cache_stale = self._is_cache_stale(full_id, cached.loaded_at_ms).unwrap()
+        self._mark_checked(cached, now_ms)
+        if not cache_stale:
+            return Ok(cached)
+
+        return Ok(self._refresh_cache_value(full_id, now_ms).unwrap())
+
+    def invalidate(self, full_id: FullArtifactId) -> None:
+        self._cache.pop(full_id, None)
 
     @unwrap_to_error
     def load(  # noqa: CCR001
