@@ -30,3 +30,7 @@ The code is separated by layers/subsystems into subpackages:
 ## Data structures
 
 - Do not use `dataclass` for data structures. Use `donna.core.entities.BaseEntity` (subclass of the `pydantic.BaseModel`) for complex data structures and Python classes with `__slots__` for very simple ones (like cache keys).
+
+## Autotests
+
+- No autotests in the project for now.
