@@ -208,3 +208,4 @@ __marimo__/
 *~
 .venv-donna
 # .donna/session/ commented to easier navigate artifacts
+.donna/tmp
