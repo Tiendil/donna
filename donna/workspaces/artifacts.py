@@ -48,10 +48,11 @@ class CanNotRemoveReadonlyWorld(ArtifactRemoveError):
 
 class ArtifactExtensionCannotBeInferred(ArtifactUpdateError):
     code: str = "donna.workspaces.artifact_extension_cannot_be_inferred"
-    message: str = "Cannot infer artifact extension. Provide `--extension` or update an existing artifact."
+    message: str = "Cannot infer artifact extension."
     ways_to_fix: list[str] = [
         "Pass `--extension <extension>` when updating the artifact.",
-        "Create/update an artifact that already exists and has a known extension.",
+        "Provide an input path with extension (for example `*.md`).",
+        "Update an artifact that already exists and has a known extension if that is applicable.",
     ]
 
 
@@ -126,28 +127,59 @@ def update_artifact(  # noqa: CCR001
     expected_extension = artifact_file_extension(full_id).unwrap_or(None)
 
     requested_extension = extension.lstrip(".").lower() if extension is not None else None
+    inferred_extension = input.suffix.lstrip(".").lower() or None
 
-    if expected_extension is None and requested_extension is None:
-        return Err([ArtifactExtensionCannotBeInferred(artifact_id=full_id, path=input)])
-
-    if expected_extension is None and requested_extension is not None:
-        source_suffix = requested_extension
-    elif expected_extension is not None and requested_extension is None:
-        source_suffix = expected_extension
-    elif expected_extension != requested_extension:
+    def mismatch_error(a: str, b: str) -> Result[None, ErrorsList]:
         return Err(
             [
                 ArtifactExtensionMismatch(
                     artifact_id=full_id,
                     path=input,
-                    provided_extension=requested_extension or "",
-                    existing_extension=expected_extension or "",
+                    provided_extension=a,
+                    existing_extension=b,
                 )
             ]
         )
-    else:
-        assert expected_extension is not None
-        source_suffix = expected_extension
+
+    match (expected_extension, requested_extension, inferred_extension):
+        case (None, None, None):
+            return Err([ArtifactExtensionCannotBeInferred(artifact_id=full_id, path=input)])
+
+        case (None, None, inferred):
+            source_suffix = inferred
+
+        case (None, requested, None):
+            source_suffix = requested
+
+        case (None, requested, inferred) if requested == inferred:
+            source_suffix = requested
+
+        case (None, requested, inferred):
+            return mismatch_error(requested, inferred)
+
+        case (expected, None, None):
+            source_suffix = expected
+
+        case (expected, None, inferred) if expected == inferred:
+            source_suffix = expected
+
+        case (expected, None, inferred):
+            return mismatch_error(inferred, expected)
+
+        case (expected, requested, None) if expected == requested:
+            source_suffix = expected
+
+        case (expected, requested, None):
+            return mismatch_error(requested, expected)
+
+        case (expected, requested, inferred) if expected == requested == inferred:
+            source_suffix = expected
+
+        case (expected, requested, inferred) if expected != requested:
+            return mismatch_error(requested, expected)
+
+        case (expected, requested, inferred):
+            return mismatch_error(inferred, expected)
 
     normalized_source_suffix = f".{source_suffix}"
 
