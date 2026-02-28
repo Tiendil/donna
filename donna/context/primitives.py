@@ -26,20 +26,15 @@ class PrimitivesCache(TimedCache):
         self._cache: dict[PythonImportPath, _PrimitiveCacheValue] = {}
 
     @unwrap_to_error
-    def resolve(self, primitive_id: PythonImportPath | str) -> Result["Primitive", ErrorsList]:  # noqa: CCR001
+    def resolve(self, primitive_id: PythonImportPath) -> Result["Primitive", ErrorsList]:  # noqa: CCR001
         from donna.machine.primitives import Primitive
 
-        if isinstance(primitive_id, PythonImportPath):
-            import_path = primitive_id
-        else:
-            import_path = PythonImportPath.parse(primitive_id).unwrap()
-
-        cached = self._cache.get(import_path)
+        cached = self._cache.get(primitive_id)
         now_ms = self._now_ms()
         if cached is not None and self._is_within_lifetime(cached, now_ms):
             return Ok(cached.primitive)
 
-        import_path_str = str(import_path)
+        import_path_str = str(primitive_id)
 
         if "." not in import_path_str:
             return Err([machine_errors.PrimitiveInvalidImportPath(import_path=import_path_str)])
@@ -67,6 +62,6 @@ class PrimitivesCache(TimedCache):
                 cached.loaded_at_ms = now_ms
         else:
             cached = _PrimitiveCacheValue(primitive=primitive, loaded_at_ms=now_ms, checked_at_ms=now_ms)
-            self._cache[import_path] = cached
+            self._cache[primitive_id] = cached
 
         return Ok(cached.primitive)
