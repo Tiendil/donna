@@ -26,3 +26,7 @@ The code is separated by layers/subsystems into subpackages:
 - `donna.primitives` — code that implements basic building blocks for Donna's behavior: concrete implementations of various classes from the `donna.machine`.
 - `donna.lib` — module that contains constructed primitives to be used in donna artifacts by referencing them by python import path. Like `donna.lib.workflow`, `donna.lib.goto`, etc.
 - `donna.artifacts` — artifacts that are distributed with Donna itself: specifications of how it works, predefined workflows, etc.
+
+## Data structures
+
+- Do not use `dataclass` for data structures. Use `donna.core.entities.BaseEntity` (subclass of the `pydantic.BaseModel`) instead.
