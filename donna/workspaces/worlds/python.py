@@ -134,11 +134,6 @@ class Python(BaseWorld):
 
     @unwrap_to_error
     def has_artifact_changed(self, artifact_id: ArtifactId, since: Milliseconds) -> Result[bool, ErrorsList]:
-        resource_path = self._resolve_artifact_file(artifact_id).unwrap()
-
-        if resource_path is None:
-            return Ok(True)
-
         return Ok(False)
 
     def update(self, artifact_id: ArtifactId, content: bytes, extension: str) -> Result[None, ErrorsList]:
