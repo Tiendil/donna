@@ -24,6 +24,7 @@ from donna.machine import journal as machine_journal
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
 from donna.workspaces import tmp as world_tmp
+from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
 
 artifacts_cli = typer.Typer()
 
@@ -65,7 +66,7 @@ def list(
 ) -> Iterable[Cell]:
     _log_operation_on_artifacts("List artifacts", pattern, tags)
 
-    artifacts = context().artifacts.list(pattern, tags=tags).unwrap()
+    artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, tags=tags).unwrap()
 
     return [artifact.node().status() for artifact in artifacts]
 
@@ -78,7 +79,7 @@ def view(
 ) -> Iterable[Cell]:
     _log_operation_on_artifacts("View artifacts", pattern, tags)
 
-    artifacts = context().artifacts.list(pattern, tags=tags).unwrap()
+    artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, tags=tags).unwrap()
     return [artifact.node().info() for artifact in artifacts]
 
 
@@ -189,7 +190,7 @@ def remove(
 ) -> Iterable[Cell]:
     _log_operation_on_artifacts("Remove artifacts", pattern, tags)
 
-    artifacts = context().artifacts.list(pattern, tags=tags).unwrap()
+    artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, tags=tags).unwrap()
 
     cells: builtins.list[Cell] = []
     for artifact in artifacts:
@@ -207,7 +208,7 @@ def validate(
 ) -> Iterable[Cell]:  # noqa: CCR001
     _log_operation_on_artifacts("Validate artifacts", pattern, tags)
 
-    artifacts = context().artifacts.list(pattern, tags=tags).unwrap()
+    artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, tags=tags).unwrap()
 
     errors = []
 

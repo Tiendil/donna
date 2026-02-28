@@ -16,6 +16,9 @@ class ArtifactRenderContext(BaseEntity):
     current_work_unit: WorkUnit | None = None
 
 
+RENDER_CONTEXT_VIEW = ArtifactRenderContext(primary_mode=RenderMode.view)
+
+
 class ArtifactUpdateError(errors.WorkspaceError):
     cell_kind: str = "artifact_update_error"
     artifact_id: FullArtifactId
@@ -196,7 +199,7 @@ def update_artifact(  # noqa: CCR001
     if source_config is None:
         return Err([NoSourceForArtifactExtension(artifact_id=full_id, path=input, extension=normalized_source_suffix)])
 
-    render_context = ArtifactRenderContext(primary_mode=RenderMode.view)
+    render_context = RENDER_CONTEXT_VIEW
     test_artifact = source_config.construct_artifact_from_bytes(full_id, content_bytes, render_context).unwrap()
     validation_result = test_artifact.validate_artifact()
 
@@ -242,7 +245,7 @@ def copy_artifact(source_id: FullArtifactId, target_id: FullArtifactId) -> Resul
             ]
         )
 
-    render_context = ArtifactRenderContext(primary_mode=RenderMode.view)
+    render_context = RENDER_CONTEXT_VIEW
     test_artifact = source_config.construct_artifact_from_bytes(target_id, content_bytes, render_context).unwrap()
     test_artifact.validate_artifact().unwrap()
 

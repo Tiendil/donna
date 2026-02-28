@@ -37,12 +37,6 @@ class ArtifactsCache(TimedCache):
         self._cache: dict[FullArtifactId, _ArtifactCacheValue] = {}
 
     @staticmethod
-    def _default_render_context() -> "ArtifactRenderContext":
-        from donna.workspaces.artifacts import ArtifactRenderContext
-
-        return ArtifactRenderContext(primary_mode=RenderMode.view)
-
-    @staticmethod
     def _context_slot_name(render_context: "ArtifactRenderContext") -> str:
         if render_context.primary_mode == RenderMode.view:
             return "view_artifact"
@@ -104,11 +98,10 @@ class ArtifactsCache(TimedCache):
 
     @unwrap_to_error
     def load(  # noqa: CCR001
-        self, full_id: FullArtifactId, render_context: "ArtifactRenderContext | None" = None
+        self,
+        full_id: FullArtifactId,
+        render_context: "ArtifactRenderContext",
     ) -> Result[Artifact, ErrorsList]:
-        if render_context is None:
-            render_context = self._default_render_context()
-
         cached = self._get_cache_value(full_id).unwrap()
 
         if render_context.primary_mode == RenderMode.execute:
@@ -133,7 +126,7 @@ class ArtifactsCache(TimedCache):
     def resolve_section(
         self,
         target_id: FullArtifactSectionId,
-        render_context: "ArtifactRenderContext | None" = None,
+        render_context: "ArtifactRenderContext",
     ) -> Result[ArtifactSection, ErrorsList]:
         artifact = self.load(target_id.full_artifact_id, render_context).unwrap()
         return Ok(artifact.get_section(target_id.local_id).unwrap())
@@ -193,13 +186,10 @@ class ArtifactsCache(TimedCache):
     def list(  # noqa: CCR001
         self,
         pattern: FullArtifactIdPattern,
-        render_context: "ArtifactRenderContext | None" = None,
+        render_context: "ArtifactRenderContext",
         tags: list[str] | None = None,
     ) -> Result[list[Artifact], ErrorsList]:
         from donna.workspaces.config import config
-
-        if render_context is None:
-            render_context = self._default_render_context()
 
         tag_filters = tags or []
 

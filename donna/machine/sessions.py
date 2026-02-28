@@ -13,6 +13,7 @@ from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
 from donna.workspaces import tmp as world_tmp
 from donna.workspaces import utils as workspace_utils
+from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
 
 
 @unwrap_to_error
@@ -108,7 +109,7 @@ def details() -> Result[list[Cell], ErrorsList]:
 @unwrap_to_error
 def start_workflow(artifact_id: FullArtifactId) -> Result[list[Cell], ErrorsList]:  # noqa: CCR001
     static_state = load_state().unwrap()
-    workflow = context().artifacts.load(artifact_id).unwrap()
+    workflow = context().artifacts.load(artifact_id, RENDER_CONTEXT_VIEW).unwrap()
     primary_section = workflow.primary_section().unwrap()
     mutator = static_state.mutator()
     mutator.start_workflow(workflow.id.to_full_local(primary_section.id)).unwrap()
@@ -122,7 +123,7 @@ def _validate_operation_transition(
     state: MutableState, request_id: ActionRequestId, next_operation_id: FullArtifactSectionId
 ) -> Result[None, ErrorsList]:
     operation_id = state.get_action_request(request_id).unwrap().operation_id
-    workflow = context().artifacts.load(operation_id.full_artifact_id).unwrap()
+    workflow = context().artifacts.load(operation_id.full_artifact_id, RENDER_CONTEXT_VIEW).unwrap()
     operation = workflow.get_section(operation_id.local_id).unwrap()
 
     assert isinstance(operation.meta, OperationMeta)
