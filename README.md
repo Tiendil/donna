@@ -266,7 +266,7 @@ Examples:
 - `world:**:name` — matches all artifacts with id ending with `:name` in the `world` world.
 
 Both commands also accept `--predicate/-p '<python-expression>'` option to filter artifacts by
-their primary section config (available as `config` inside expression).
+their primary section properties (available as `section` inside expression).
 
 Currently, Donna supports two artifact tags:
 
@@ -274,7 +274,7 @@ Currently, Donna supports two artifact tags:
 - `specification` — marks a specification artifact — is set automatically by Donna.
 
 You can find all workflows with the command
-`donna -p llm artifacts list '**' --predicate '"workflow" in config.tags'`.
+`donna -p llm artifacts list '**' --predicate '"workflow" in section.tags'`.
 
 ## Sessions
 
