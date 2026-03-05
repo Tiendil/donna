@@ -119,12 +119,16 @@ class ArtifactsCache(TimedCache):
     def update(
         self,
         full_id: FullArtifactId,
-        input_path: Path,
+        content_bytes: bytes,
         extension: str | None = None,
     ) -> Result[None, ErrorsList]:
         from donna.workspaces import artifacts as workspace_artifacts
 
-        workspace_artifacts.update_artifact(full_id, input_path, extension=extension).unwrap()
+        workspace_artifacts.update_artifact(
+            full_id=full_id,
+            content_bytes=content_bytes,
+            extension=extension,
+        ).unwrap()
         self.invalidate(full_id)
         return Ok(None)
 

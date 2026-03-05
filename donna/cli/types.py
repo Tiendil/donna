@@ -6,7 +6,12 @@ import typer
 
 from donna.cli.utils import output_cells
 from donna.core.errors import ErrorsList
-from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactIdPattern, FullArtifactSectionId
+from donna.domain.ids import (
+    ActionRequestId,
+    FullArtifactId,
+    FullArtifactIdPattern,
+    FullArtifactSectionId,
+)
 from donna.machine.artifacts import ArtifactPredicate
 from donna.protocol.modes import Mode
 

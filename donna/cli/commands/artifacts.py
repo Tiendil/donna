@@ -47,6 +47,31 @@ def _log_artifact_operation(message: str) -> None:
     machine_journal.add(message=message)
 
 
+def _resolve_update_extension(
+    input_path: pathlib.Path | None,
+    extension: str | None,
+) -> str | None:
+    normalized_extension = extension.lstrip(".").lower() if extension is not None else None
+    if input_path is None:
+        return normalized_extension
+
+    inferred_extension = input_path.suffix.lstrip(".").lower() or None
+    if (
+        normalized_extension is not None
+        and inferred_extension is not None
+        and normalized_extension != inferred_extension
+    ):
+        raise typer.BadParameter(
+            (
+                f"Option extension '{normalized_extension}' does not match input file extension "
+                f"'{inferred_extension}'"
+            ),
+            param_hint="--extension",
+        )
+
+    return normalized_extension if normalized_extension is not None else inferred_extension
+
+
 def _log_operation_on_artifacts(
     message: str,
     pattern: FullArtifactIdPattern,
@@ -133,23 +158,31 @@ def update(
     input: InputPathArgument,
     extension: ExtensionOption = None,
 ) -> Iterable[Cell]:
+    input_path: pathlib.Path | None
+
     if input == pathlib.Path("-"):
-        tmp_extension = extension or "tmp"
-        input_path = world_tmp.file_for_artifact(id, tmp_extension)
-        input_path.write_bytes(sys.stdin.buffer.read())
+        content_bytes = sys.stdin.buffer.read()
         input_display = "stdin"
+        input_path = None
     else:
-        input_path = input
+        content_bytes = input.read_bytes()
         input_display = str(input)
+        input_path = input
+
+    resolved_extension = _resolve_update_extension(input_path, extension)
 
     _log_artifact_operation(f"Update artifact `{id}` from '{input_display}'")
 
-    context().artifacts.update(id, input_path, extension=extension).unwrap()
+    context().artifacts.update(
+        id,
+        content_bytes,
+        extension=resolved_extension,
+    ).unwrap()
     return [
         operation_succeeded(
             f"Artifact `{id}` updated from '{input_display}'",
             artifact_id=str(id),
-            input_path=str(input_path),
+            input_path=input_display,
         )
     ]
 

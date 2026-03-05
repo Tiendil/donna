@@ -22,10 +22,9 @@ RENDER_CONTEXT_VIEW = ArtifactRenderContext(primary_mode=RenderMode.view)
 class ArtifactUpdateError(errors.WorkspaceError):
     cell_kind: str = "artifact_update_error"
     artifact_id: FullArtifactId
-    path: pathlib.Path
 
     def content_intro(self) -> str:
-        return f"Error updating artifact '{self.artifact_id}' from the path '{self.path}'"
+        return f"Error updating artifact '{self.artifact_id}'"
 
 
 class CanNotUpdateReadonlyWorld(ArtifactUpdateError):
@@ -117,87 +116,63 @@ def fetch_artifact(full_id: FullArtifactId, output: pathlib.Path) -> Result[None
 
 @unwrap_to_error
 def update_artifact(  # noqa: CCR001
-    full_id: FullArtifactId, input: pathlib.Path, extension: str | None = None
+    full_id: FullArtifactId,
+    content_bytes: bytes,
+    extension: str | None = None,
 ) -> Result[None, ErrorsList]:
     world = config().get_world(full_id.world_id).unwrap()
 
     if world.readonly:
-        return Err([CanNotUpdateReadonlyWorld(artifact_id=full_id, path=input, world_id=world.id)])
-
-    content_bytes = input.read_bytes()
+        return Err([CanNotUpdateReadonlyWorld(artifact_id=full_id, world_id=world.id)])
 
     expected_extension = artifact_file_extension(full_id).unwrap_or(None)
 
     requested_extension = extension.lstrip(".").lower() if extension is not None else None
-    inferred_extension = input.suffix.lstrip(".").lower() or None
 
     def mismatch_error(a: str, b: str) -> Result[None, ErrorsList]:
         return Err(
             [
                 ArtifactExtensionMismatch(
                     artifact_id=full_id,
-                    path=input,
                     provided_extension=a,
                     existing_extension=b,
                 )
             ]
         )
 
-    match (expected_extension, requested_extension, inferred_extension):
-        case (None, None, None):
-            return Err([ArtifactExtensionCannotBeInferred(artifact_id=full_id, path=input)])
+    match (expected_extension, requested_extension):
+        case (None, None):
+            return Err([ArtifactExtensionCannotBeInferred(artifact_id=full_id)])
 
-        case (None, None, inferred):
-            source_suffix = inferred
-
-        case (None, requested, None):
-            source_suffix = requested
-
-        case (None, requested, inferred) if requested == inferred:
-            source_suffix = requested
-
-        case (None, requested, inferred):
+        case (None, requested):
             assert requested is not None
-            assert inferred is not None
-            return mismatch_error(requested, inferred)
+            source_suffix = requested
 
-        case (expected, None, None):
-            source_suffix = expected
-
-        case (expected, None, inferred) if expected == inferred:
-            source_suffix = expected
-
-        case (expected, None, inferred):
+        case (expected, None):
             assert expected is not None
-            assert inferred is not None
-            return mismatch_error(inferred, expected)
-
-        case (expected, requested, None) if expected == requested:
             source_suffix = expected
 
-        case (expected, requested, None):
+        case (expected, requested) if expected == requested:
+            assert expected is not None
+            source_suffix = expected
+
+        case (expected, requested):
             assert expected is not None
             assert requested is not None
             return mismatch_error(requested, expected)
-
-        case (expected, requested, inferred) if expected == requested == inferred:
-            source_suffix = expected
-
-        case (expected, requested, inferred) if expected != requested:
-            assert expected is not None
-            assert requested is not None
-            return mismatch_error(requested, expected)
-
-        case (expected, requested, inferred):
-            assert expected is not None
-            assert inferred is not None
-            return mismatch_error(inferred, expected)
 
     normalized_source_suffix = f".{source_suffix}"
 
     source_config = config().find_source_for_extension(normalized_source_suffix)
     if source_config is None:
-        return Err([NoSourceForArtifactExtension(artifact_id=full_id, path=input, extension=normalized_source_suffix)])
+        return Err(
+            [
+                NoSourceForArtifactExtension(
+                    artifact_id=full_id,
+                    extension=normalized_source_suffix,
+                )
+            ]
+        )
 
     render_context = RENDER_CONTEXT_VIEW
     test_artifact = source_config.construct_artifact_from_bytes(full_id, content_bytes, render_context).unwrap()
@@ -239,7 +214,6 @@ def copy_artifact(source_id: FullArtifactId, target_id: FullArtifactId) -> Resul
             [
                 NoSourceForArtifactExtension(
                     artifact_id=source_id,
-                    path=pathlib.Path(str(source_id)),
                     extension=source_extension,
                 )
             ]

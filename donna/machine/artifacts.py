@@ -112,6 +112,13 @@ class Artifact(BaseEntity):
                 return Ok(section)
         return Err([ArtifactSectionNotFound(artifact_id=self.id, section_id=section_id)])
 
+    def get_section_number(self, section_id: ArtifactSectionId) -> int | None:
+        for index, section in enumerate(self.sections):
+            if section.id == section_id:
+                return index
+
+        return None
+
     def node(self) -> "ArtifactNode":
         return ArtifactNode(self)
 
