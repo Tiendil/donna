@@ -51,14 +51,6 @@ class RunScriptMissingScriptBlock(ArtifactValidationError):
     ]
 
 
-class RunScriptMultipleScriptBlocks(ArtifactValidationError):
-    code: str = "donna.workflows.run_script_multiple_script_blocks"
-    message: str = "Run script operation `{error.section_id}` must include exactly one `donna script` code block."
-    ways_to_fix: list[str] = [
-        "Remove extra `donna script` code blocks so only one remains in the operation body.",
-    ]
-
-
 class RunScriptGotoOnCodeIncludesZero(ArtifactValidationError):
     code: str = "donna.workflows.run_script_goto_on_code_includes_zero"
     message: str = "Run script operation `{error.section_id}` must not map exit code 0 in `goto_on_code`."
@@ -109,6 +101,7 @@ class RunScriptMeta(OperationMeta):
 class RunScript(MarkdownSectionMixin, OperationKind):
     config_class: ClassVar[type[RunScriptConfig]] = RunScriptConfig
 
+    @unwrap_to_error
     def markdown_construct_meta(
         self,
         artifact_id: "FullArtifactId",
@@ -118,13 +111,9 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         primary: bool = False,
     ) -> Result[ArtifactSectionMeta, ErrorsList]:
         run_config = cast(RunScriptConfig, section_config)
-        scripts = source.scripts()
-        if not scripts:
+        script = source.script().unwrap()
+        if script is None:
             return Err([RunScriptMissingScriptBlock(artifact_id=artifact_id, section_id=run_config.id)])
-        if len(scripts) > 1:
-            return Err([RunScriptMultipleScriptBlocks(artifact_id=artifact_id, section_id=run_config.id)])
-
-        script = scripts[0]
         allowed_transitions: set[ArtifactSectionId] = set()
 
         if run_config.goto_on_success is not None:

@@ -161,7 +161,7 @@ def construct_artifact_from_markdown_source(  # noqa: CCR001
     full_id: FullArtifactId, content: str, render_context: ArtifactRenderContext, config: Config
 ) -> Result[Artifact, ErrorsList]:
     original_sections = parse_artifact_content(full_id, content, render_context).unwrap()
-    head_config = dict(original_sections[0].merged_configs().unwrap())
+    head_config = dict(original_sections[0].config().unwrap())
     head_kind_value = head_config["kind"]
     if isinstance(head_kind_value, PythonImportPath):
         head_kind = head_kind_value
@@ -205,7 +205,7 @@ def construct_sections_from_markdown(  # noqa: CCR001
     errors: ErrorsList = []
 
     for section in sections:
-        data = dict(section.merged_configs().unwrap())
+        data = dict(section.config().unwrap())
 
         if "id" not in data or data["id"] is None:
             data["id"] = ArtifactSectionId("markdown" + uuid.uuid4().hex.replace("-", ""))
