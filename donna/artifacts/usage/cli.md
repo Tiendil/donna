@@ -152,7 +152,7 @@ Use the next commands to work with artifacts:
 - `donna -p <protocol> artifacts remove <artifact-pattern>` — remove artifacts matching a pattern. Use this command when you need to delete artifacts.
 - `donna -p <protocol> artifacts validate [<artifact-pattern>]` — validate all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, validate all artifacts in all worlds.
 
-Commands that accept an artifact pattern (`artifacts list`, `artifacts view`, `artifacts remove`, `artifacts validate`) also accept a repeatable `--tag <tag>` option to filter by artifact tags. When multiple tags are provided, only artifacts that include **all** specified tags are matched.
+Commands that accept an artifact pattern (`artifacts list`, `artifacts view`, `artifacts remove`, `artifacts validate`) also accept `--predicate/-p <python-expression>` to filter by artifact primary section config. The expression is evaluated as `bool` with `config` global available (for example: `--predicate '"workflow" in config.tags'`).
 
 The format of `<artifact-pattern>` is as follows:
 

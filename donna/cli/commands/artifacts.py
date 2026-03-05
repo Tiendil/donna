@@ -13,7 +13,7 @@ from donna.cli.types import (
     FullArtifactIdPatternArgument,
     InputPathArgument,
     OutputPathOption,
-    TagOption,
+    PredicateOption,
 )
 from donna.cli.utils import cells_cli
 from donna.context.context import context
@@ -47,13 +47,15 @@ def _log_artifact_operation(message: str) -> None:
     machine_journal.add(message=message)
 
 
-def _log_operation_on_artifacts(message: str, pattern: FullArtifactIdPattern, tags: TagOption | None) -> None:
-    if not tags:
+def _log_operation_on_artifacts(
+    message: str,
+    pattern: FullArtifactIdPattern,
+    predicate: PredicateOption | None,
+) -> None:
+    if predicate is None:
         return _log_artifact_operation(f"{message} `{pattern}`")
 
-    tags_list = ", ".join(f"'{tag}'" for tag in tags)
-
-    return _log_artifact_operation(f"{message} `{pattern}` with tags {tags_list}")
+    return _log_artifact_operation(f"{message} `{pattern}` with predicate `{predicate.source}`")
 
 
 @artifacts_cli.command(
@@ -62,11 +64,11 @@ def _log_operation_on_artifacts(message: str, pattern: FullArtifactIdPattern, ta
 @cells_cli
 def list(
     pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
-    tags: TagOption = None,
+    predicate: PredicateOption = None,
 ) -> Iterable[Cell]:
-    _log_operation_on_artifacts("List artifacts", pattern, tags)
+    _log_operation_on_artifacts("List artifacts", pattern, predicate)
 
-    artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, tags=tags).unwrap()
+    artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, predicate=predicate).unwrap()
 
     return [artifact.node().status() for artifact in artifacts]
 
@@ -75,11 +77,11 @@ def list(
 @cells_cli
 def view(
     pattern: FullArtifactIdPatternArgument,
-    tags: TagOption = None,
+    predicate: PredicateOption = None,
 ) -> Iterable[Cell]:
-    _log_operation_on_artifacts("View artifacts", pattern, tags)
+    _log_operation_on_artifacts("View artifacts", pattern, predicate)
 
-    artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, tags=tags).unwrap()
+    artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, predicate=predicate).unwrap()
     return [artifact.node().info() for artifact in artifacts]
 
 
@@ -186,11 +188,11 @@ def move(source_id: FullArtifactIdArgument, target_id: FullArtifactIdArgument) -
 @cells_cli
 def remove(
     pattern: FullArtifactIdPatternArgument,
-    tags: TagOption = None,
+    predicate: PredicateOption = None,
 ) -> Iterable[Cell]:
-    _log_operation_on_artifacts("Remove artifacts", pattern, tags)
+    _log_operation_on_artifacts("Remove artifacts", pattern, predicate)
 
-    artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, tags=tags).unwrap()
+    artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, predicate=predicate).unwrap()
 
     cells: builtins.list[Cell] = []
     for artifact in artifacts:
@@ -204,11 +206,11 @@ def remove(
 @cells_cli
 def validate(
     pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
-    tags: TagOption = None,
+    predicate: PredicateOption = None,
 ) -> Iterable[Cell]:  # noqa: CCR001
-    _log_operation_on_artifacts("Validate artifacts", pattern, tags)
+    _log_operation_on_artifacts("Validate artifacts", pattern, predicate)
 
-    artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, tags=tags).unwrap()
+    artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, predicate=predicate).unwrap()
 
     errors = []
 

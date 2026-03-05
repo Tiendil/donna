@@ -104,6 +104,29 @@ class PrimitiveNotPrimitive(EnvironmentError):
     import_path: str
 
 
+class InvalidArtifactPredicateExpression(EnvironmentError):
+    code: str = "donna.artifacts.invalid_predicate_expression"
+    message: str = "Artifact predicate `{error.predicate}` is invalid: {error.reason}"
+    ways_to_fix: list[str] = [
+        "Use a valid Python expression.",
+        "Use `config` as the artifact primary-section config variable.",
+        "Do not use function calls in predicate expressions.",
+    ]
+    predicate: str
+    reason: str
+
+
+class ArtifactPredicateEvaluationFailed(EnvironmentError):
+    code: str = "donna.artifacts.predicate_evaluation_failed"
+    message: str = "Artifact predicate `{error.predicate}` evaluation failed: {error.reason}"
+    ways_to_fix: list[str] = [
+        "Ensure the predicate expression uses available variables (for example: `config`).",
+        "Use valid operations for values in artifact primary-section config.",
+    ]
+    predicate: str
+    reason: str
+
+
 class ArtifactValidationError(EnvironmentError):
     cell_kind: str = "artifact_validation_error"
     artifact_id: FullArtifactId

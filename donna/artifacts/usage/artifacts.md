@@ -117,7 +117,7 @@ When a section contains multiple configuration blocks, Donna merges them in docu
 
 Artifacts can include semantic tags via a `tags` field in the section configuration. Tags are a list of strings and default to an empty list `[]` when omitted.
 
-Tags are used for deterministic artifact filtering and discovery (for example, via `donna -p <protocol> artifacts list ... --tag <tag>`). Tags are typically attached to the primary section and describe the artifact as a whole.
+Tags are used for deterministic artifact filtering and discovery (for example, via `donna -p <protocol> artifacts list ... --predicate '"workflow" in config.tags'`). Tags are typically attached to the primary section and describe the artifact as a whole.
 
 The canonical list of standard tags is documented in `donna:intro`.
 

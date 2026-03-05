@@ -7,6 +7,7 @@ import typer
 from donna.cli.utils import output_cells
 from donna.core.errors import ErrorsList
 from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactIdPattern, FullArtifactSectionId
+from donna.machine.artifacts import ArtifactPredicate
 from donna.protocol.modes import Mode
 
 
@@ -35,6 +36,15 @@ def _parse_full_artifact_id_pattern(value: str) -> FullArtifactIdPattern:
 
 def _parse_full_artifact_section_id(value: str) -> FullArtifactSectionId:
     result = FullArtifactSectionId.parse(value)
+    errors = result.err()
+    if errors is not None:
+        _exit_with_errors(errors)
+
+    return result.unwrap()
+
+
+def _parse_artifact_predicate(value: str) -> ArtifactPredicate:
+    result = ArtifactPredicate.parse(value)
     errors = result.err()
     if errors is not None:
         _exit_with_errors(errors)
@@ -112,11 +122,13 @@ FullArtifactIdPatternArgument = Annotated[
     ),
 ]
 
-TagOption = Annotated[
-    list[str] | None,
+PredicateOption = Annotated[
+    ArtifactPredicate | None,
     typer.Option(
-        "--tag",
-        help="Filter artifacts by tag. Repeatable.",
+        "--predicate",
+        "-p",
+        parser=_parse_artifact_predicate,
+        help="Filter artifacts by predicate expression evaluated with `config` global.",
     ),
 ]
 
