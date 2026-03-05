@@ -34,8 +34,8 @@ Artifact type tags:
 2. If you need to perform a work with Donna, you **MUST** select an appropriate Donna workflow to perform the work and run it.
 3. If there is no appropriate workflow, ask the developer for a precise instructions on what to do.
 4. If you are executing a workflow operation and need to perform a complex action or changes, you SHOULD search for an appropriate workflow and run it as a child workflow — it is the intended way to use Donna.
-5. Run to list all workflows: `{{ donna.lib.list("**", predicate='"workflow" in config.tags') }}`
-6. Run to list all specifications: `{{ donna.lib.list("**", predicate='"specification" in config.tags') }}`
+5. Run to list all workflows: `{{ donna.lib.list("**", predicate='"workflow" in section.tags') }}`
+6. Run to list all specifications: `{{ donna.lib.list("**", predicate='"specification" in section.tags') }}`
 
 ## Journaling
 

@@ -34,7 +34,7 @@ class ViewInvalidKeyword(EnvironmentError):
 class ViewInvalidPredicate(EnvironmentError):
     code: str = "donna.directives.view.invalid_predicate"
     message: str = "View directive `predicate` must be a string."
-    ways_to_fix: list[str] = ["Provide predicate as a string, e.g. predicate='config.kind == \"...\"'."]
+    ways_to_fix: list[str] = ["Provide predicate as a string, e.g. predicate='section.kind == \"...\"'."]
 
 
 class View(Directive):

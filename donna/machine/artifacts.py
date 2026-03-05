@@ -178,14 +178,14 @@ class ArtifactPredicate(BaseEntity):
 
         return Ok(cls(source=normalized))
 
-    def evaluate(self, config: Any) -> Result[bool, ErrorsList]:
+    def evaluate(self, section: Any) -> Result[bool, ErrorsList]:
         from donna.machine import errors as machine_errors
 
         try:
             result = eval(  # noqa: S307
                 compile(self.source, "<artifact-predicate>", "eval"),
                 {"__builtins__": {}},
-                {"config": config},
+                {"section": section},
             )
         except Exception as exc:
             return Err(

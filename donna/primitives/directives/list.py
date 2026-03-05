@@ -34,7 +34,7 @@ class ListInvalidKeyword(EnvironmentError):
 class ListInvalidPredicate(EnvironmentError):
     code: str = "donna.directives.list.invalid_predicate"
     message: str = "List directive `predicate` must be a string."
-    ways_to_fix: list[str] = ["Provide predicate as a string, e.g. predicate='config.kind == \"...\"'."]
+    ways_to_fix: list[str] = ["Provide predicate as a string, e.g. predicate='section.kind == \"...\"'."]
 
 
 class List(Directive):

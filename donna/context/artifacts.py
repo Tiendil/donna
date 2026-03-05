@@ -182,9 +182,9 @@ class ArtifactsCache(TimedCache):
         if predicate is None:
             return Ok(artifact)
 
-        primary_section = artifact.primary_section().unwrap()
+        section = artifact.primary_section().unwrap()
 
-        predicate_result = predicate.evaluate(primary_section)
+        predicate_result = predicate.evaluate(section)
         if predicate_result.is_err():
             return Ok(None)
 

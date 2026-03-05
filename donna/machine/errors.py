@@ -109,7 +109,7 @@ class InvalidArtifactPredicateExpression(EnvironmentError):
     message: str = "Artifact predicate `{error.predicate}` is invalid: {error.reason}"
     ways_to_fix: list[str] = [
         "Use a valid Python expression.",
-        "Use `config` as the artifact primary-section config variable.",
+        "Use `section` as the artifact primary-section variable.",
         "Do not use function calls in predicate expressions.",
     ]
     predicate: str
@@ -120,8 +120,8 @@ class ArtifactPredicateEvaluationFailed(EnvironmentError):
     code: str = "donna.artifacts.predicate_evaluation_failed"
     message: str = "Artifact predicate `{error.predicate}` evaluation failed: {error.reason}"
     ways_to_fix: list[str] = [
-        "Ensure the predicate expression uses available variables (for example: `config`).",
-        "Use valid operations for values in artifact primary-section config.",
+        "Ensure the predicate expression uses available variables (for example: `section`).",
+        "Use valid operations for values in artifact primary section.",
     ]
     predicate: str
     reason: str

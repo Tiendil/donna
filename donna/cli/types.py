@@ -133,7 +133,7 @@ PredicateOption = Annotated[
         "--predicate",
         "-p",
         parser=_parse_artifact_predicate,
-        help="Filter artifacts by predicate expression evaluated with `config` global.",
+        help="Filter artifacts by predicate expression evaluated with `section` global.",
     ),
 ]
 
