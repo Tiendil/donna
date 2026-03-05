@@ -75,24 +75,37 @@ class SectionSource(BaseEntity):
     def as_analysis_markdown(self, with_title: bool) -> str:
         return self._as_markdown(self.analysis_tokens, with_title)
 
-    def merged_configs(self) -> Result[dict[str, Any], ErrorsList]:
-        result: dict[str, Any] = {}
-        errors: ErrorsList = []
+    def config(self) -> Result[dict[str, Any], ErrorsList]:
+        config_blocks = [config for config in self.configs if "config" in config.properties]
+        if len(config_blocks) > 1:
+            return Err(
+                [
+                    world_errors.MarkdownMultipleConfigBlocksInSection(
+                        section_title=self.title or "<untitled>",
+                    )
+                ]
+            )
 
-        for config in self.configs:
-            data_result = config.structured_data()
-            if data_result.is_err():
-                errors.extend(data_result.unwrap_err())
-                continue
-            result.update(data_result.unwrap())
+        if not config_blocks:
+            return Ok({})
 
-        if errors:
-            return Err(errors)
+        return config_blocks[0].structured_data()
 
-        return Ok(result)
+    def script(self) -> Result[str | None, ErrorsList]:
+        script_blocks = [config.content for config in self.configs if "script" in config.properties]
+        if len(script_blocks) > 1:
+            return Err(
+                [
+                    world_errors.MarkdownMultipleScriptBlocksInSection(
+                        section_title=self.title or "<untitled>",
+                    )
+                ]
+            )
 
-    def scripts(self) -> list[str]:
-        return [config.content for config in self.configs if "script" in config.properties]
+        if not script_blocks:
+            return Ok(None)
+
+        return Ok(script_blocks[0])
 
 
 def render_back(tokens: list[Token]) -> str:
@@ -164,35 +177,50 @@ def _parse_heading(
     return Ok(node.next_sibling)
 
 
-def _parse_fence(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:  # noqa: CCR001
+def _parse_fence(  # noqa: CCR001
+    sections: list[SectionSource],
+    node: SyntaxTreeNode,
+    artifact_id: FullArtifactId | None,
+) -> Result[SyntaxTreeNode | None, ErrorsList]:
+    if not sections:
+        return Err([world_errors.MarkdownH1SectionMustBeFirst(artifact_id=artifact_id)])
+
     section = sections[-1]
 
     info_parts = node.info.split()
 
-    format = info_parts[0] if info_parts else ""
+    if not info_parts:
+        section.original_tokens.extend(node.to_tokens())
+        return Ok(node.next_sibling)
+
+    format = info_parts[0]
+    markers = info_parts[1:]
+
+    if "donna" not in markers:
+        section.original_tokens.extend(node.to_tokens())
+        return Ok(node.next_sibling)
+
+    if markers == ["donna"]:
+        markers.append("config")
 
     properties: dict[str, str | bool] = {}
 
-    for part in info_parts[1:]:
-        if "=" in part:
-            key, value = part.split("=", 1)
+    for marker in markers:
+        if "=" in marker:
+            key, value = marker.split("=", 1)
             properties[key] = value
             continue
 
-        properties[part] = True
+        properties[marker] = True
 
-    if "donna" in properties:
-        code_block = CodeSource(
-            format=format,
-            properties=properties,
-            content=node.content,
-        )
+    code_block = CodeSource(
+        format=format,
+        properties=properties,
+        content=node.content,
+    )
 
-        section.configs.append(code_block)
-    else:
-        section.original_tokens.extend(node.to_tokens())
-
-    return node.next_sibling
+    section.configs.append(code_block)
+    return Ok(node.next_sibling)
 
 
 def _parse_nested(sections: list[SectionSource], node: SyntaxTreeNode) -> SyntaxTreeNode | None:
@@ -245,7 +273,7 @@ def parse(  # noqa: CCR001, CFQ001
             continue
 
         if node.type == "fence":
-            node = _parse_fence(sections, node)
+            node = _parse_fence(sections, node, artifact_id).unwrap()
             continue
 
         if node.is_nested:

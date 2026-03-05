@@ -6,7 +6,7 @@ from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import FullArtifactId, FullArtifactIdPattern, FullArtifactSectionId
 from donna.domain.types import Milliseconds
-from donna.machine.artifacts import Artifact, ArtifactSection
+from donna.machine.artifacts import Artifact, ArtifactPredicate, ArtifactSection
 from donna.workspaces.templates import RenderMode
 
 if TYPE_CHECKING:
@@ -119,12 +119,16 @@ class ArtifactsCache(TimedCache):
     def update(
         self,
         full_id: FullArtifactId,
-        input_path: Path,
+        content_bytes: bytes,
         extension: str | None = None,
     ) -> Result[None, ErrorsList]:
         from donna.workspaces import artifacts as workspace_artifacts
 
-        workspace_artifacts.update_artifact(full_id, input_path, extension=extension).unwrap()
+        workspace_artifacts.update_artifact(
+            full_id=full_id,
+            content_bytes=content_bytes,
+            extension=extension,
+        ).unwrap()
         self.invalidate(full_id)
         return Ok(None)
 
@@ -167,15 +171,36 @@ class ArtifactsCache(TimedCache):
         return Ok(None)
 
     @unwrap_to_error
+    def _list_artifact_if_matches(
+        self,
+        full_id: FullArtifactId,
+        render_context: "ArtifactRenderContext",
+        predicate: ArtifactPredicate | None,
+    ) -> Result[Artifact | None, ErrorsList]:
+        artifact = self.load(full_id, render_context).unwrap()
+
+        if predicate is None:
+            return Ok(artifact)
+
+        section = artifact.primary_section().unwrap()
+
+        predicate_result = predicate.evaluate(section)
+        if predicate_result.is_err():
+            return Ok(None)
+
+        if not predicate_result.unwrap():
+            return Ok(None)
+
+        return Ok(artifact)
+
+    @unwrap_to_error
     def list(  # noqa: CCR001
         self,
         pattern: FullArtifactIdPattern,
         render_context: "ArtifactRenderContext",
-        tags: list[str] | None = None,
+        predicate: ArtifactPredicate | None = None,
     ) -> Result[list[Artifact], ErrorsList]:
         from donna.workspaces.config import config
-
-        tag_filters = tags or []
 
         artifacts: list[Artifact] = []
         errors: ErrorsList = []
@@ -183,19 +208,16 @@ class ArtifactsCache(TimedCache):
         for world in reversed(config().worlds_instances):
             for artifact_id in world.list_artifacts(pattern):
                 full_id = FullArtifactId((world.id, artifact_id))
-                artifact_result = self.load(full_id, render_context)
+
+                artifact_result = self._list_artifact_if_matches(full_id, render_context, predicate)
+
                 if artifact_result.is_err():
                     errors.extend(artifact_result.unwrap_err())
                     continue
 
                 artifact = artifact_result.unwrap()
-                if tag_filters:
-                    primary_result = artifact.primary_section()
-                    if primary_result.is_err():
-                        continue
-                    primary = primary_result.unwrap()
-                    if not all(tag in primary.tags for tag in tag_filters):
-                        continue
+                if artifact is None:
+                    continue
 
                 artifacts.append(artifact)
 

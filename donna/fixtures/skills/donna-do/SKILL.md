@@ -11,3 +11,5 @@ description: Use Donna as a work orchestration tool and execute a workflow suita
 4. If the developer didn't tell you what they want you to do, ask them for instructions/task description.
 5. Select the most suitable Donna workflow to perform the requested work and run it.
 6. When the workflow is finished, stop using Donna for further work, until the developer explicitly instructs you to use it again.
+
+**If you are rebuilding, zipping or optimizing your context, while executing this skill, execute `donna -p llm -r <project-root> artifacts view '*:intro'` command again after rebuilding, zipping or optimizing your context to refresh your understanding of the project and Donna tool.**

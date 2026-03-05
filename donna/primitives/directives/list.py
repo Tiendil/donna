@@ -4,8 +4,9 @@ from jinja2.runtime import Context
 
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
+from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.ids import FullArtifactIdPattern
+from donna.machine.artifacts import ArtifactPredicate
 from donna.machine.templates import Directive, PreparedDirectiveResult
 from donna.workspaces import config as workspace_config
 
@@ -25,18 +26,19 @@ class ListInvalidArguments(EnvironmentError):
 
 class ListInvalidKeyword(EnvironmentError):
     code: str = "donna.directives.list.invalid_keyword"
-    message: str = "List directive accepts only the `tags` keyword argument (got {error.keyword})."
+    message: str = "List directive accepts only the `predicate` keyword argument (got {error.keyword})."
     ways_to_fix: list[str] = ["Remove unsupported keyword arguments."]
     keyword: str
 
 
-class ListInvalidTags(EnvironmentError):
-    code: str = "donna.directives.list.invalid_tags"
-    message: str = "List directive `tags` must be a list of strings."
-    ways_to_fix: list[str] = ["Provide tags as a list of strings, e.g. tags=['tag1', 'tag2']."]
+class ListInvalidPredicate(EnvironmentError):
+    code: str = "donna.directives.list.invalid_predicate"
+    message: str = "List directive `predicate` must be a string."
+    ways_to_fix: list[str] = ["Provide predicate as a string, e.g. predicate='section.kind == \"...\"'."]
 
 
 class List(Directive):
+    @unwrap_to_error
     def _prepare_arguments(  # noqa: CCR001
         self,
         context: Context,
@@ -47,44 +49,39 @@ class List(Directive):
             return Err([ListInvalidArguments(provided_count=0 if argv is None else len(argv))])
 
         for keyword in kwargs:
-            if keyword != "tags":
+            if keyword != "predicate":
                 return Err([ListInvalidKeyword(keyword=keyword)])
 
-        artifact_pattern_result = FullArtifactIdPattern.parse(str(argv[0]))
-        errors = artifact_pattern_result.err()
-        if errors is not None:
-            return Err(errors)
+        artifact_pattern = FullArtifactIdPattern.parse(str(argv[0])).unwrap()
 
-        artifact_pattern = artifact_pattern_result.ok()
-        assert artifact_pattern is not None
-
-        tags = kwargs.get("tags")
-        if tags is None:
-            tags_list: list[str] = []
-        elif isinstance(tags, (list, tuple, set)):
-            tags_list = [str(tag) for tag in tags]
+        predicate = kwargs.get("predicate")
+        if predicate is None:
+            parsed_predicate: ArtifactPredicate | None = None
+        elif isinstance(predicate, str):
+            parsed_predicate = ArtifactPredicate.parse(predicate).unwrap()
         else:
-            return Err([ListInvalidTags()])
+            return Err([ListInvalidPredicate()])
 
-        return Ok((artifact_pattern, tags_list))
+        return Ok((artifact_pattern, parsed_predicate))
 
     def render_view(
-        self, context: Context, artifact_pattern: FullArtifactIdPattern, tags: list[str]
+        self, context: Context, artifact_pattern: FullArtifactIdPattern, predicate: ArtifactPredicate | None
     ) -> Result[Any, ErrorsList]:
         protocol = workspace_config.protocol().value
         root_dir = workspace_config.project_dir()
-        tags_args = " ".join(f"--tag '{tag}'" for tag in tags)
-        tag_suffix = f" {tags_args}" if tags_args else ""
+        predicate_suffix = ""
+        if predicate is not None:
+            escaped = predicate.source.replace("'", "'\"'\"'")
+            predicate_suffix = f" --predicate '{escaped}'"
         return Ok(
             f"{artifact_pattern} (donna -p {protocol} -r '{root_dir}' "
-            f"artifacts list '{artifact_pattern}'{tag_suffix})"
+            f"artifacts list '{artifact_pattern}'{predicate_suffix})"
         )
 
     def render_analyze(
-        self, context: Context, artifact_pattern: FullArtifactIdPattern, tags: list[str]
+        self, context: Context, artifact_pattern: FullArtifactIdPattern, predicate: ArtifactPredicate | None
     ) -> Result[Any, ErrorsList]:
-        if not tags:
+        if predicate is None:
             return Ok(f"$$donna {self.analyze_id} {artifact_pattern} donna$$")
 
-        tags_marker = ",".join(tags)
-        return Ok(f"$$donna {self.analyze_id} {artifact_pattern} tags={tags_marker} donna$$")
+        return Ok(f"$$donna {self.analyze_id} {artifact_pattern} predicate={predicate.source!r} donna$$")

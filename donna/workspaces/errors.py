@@ -218,6 +218,24 @@ class MarkdownArtifactWithoutSections(MarkdownError):
     message: str = "Artifact MUST have at least one section"
 
 
+class MarkdownMultipleConfigBlocksInSection(MarkdownError):
+    code: str = "donna.workspaces.markdown_multiple_config_blocks_in_section"
+    message: str = "Section `{error.section_title}` has multiple `donna config` blocks."
+    ways_to_fix: list[str] = [
+        "Keep only one config block (`donna` or `donna config`) per section.",
+    ]
+    section_title: str
+
+
+class MarkdownMultipleScriptBlocksInSection(MarkdownError):
+    code: str = "donna.workspaces.markdown_multiple_script_blocks_in_section"
+    message: str = "Section `{error.section_title}` has multiple `donna script` blocks."
+    ways_to_fix: list[str] = [
+        "Keep only one `donna script` block per section.",
+    ]
+    section_title: str
+
+
 class PrimitiveDoesNotSupportMarkdown(MarkdownError):
     code: str = "donna.workspaces.primitive_does_not_support_markdown"
     message: str = "Primitive {error.primitive_id} cannot construct artifact section from the Markdown source"
