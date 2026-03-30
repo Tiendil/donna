@@ -28,12 +28,13 @@ Default worlds and there locations are:
 
 All worlds have a free layout, defined by developers who own the particular world.
 
-## Write Access
+## Artifact Access
 
-By default, worlds are read-only. Besides the next exceptions:
+Donna has read access to artifacts stored in worlds. It discovers, fetches, renders, and validates world artifacts, but it does not create, update, move, copy, or delete them.
 
-- `session` in the project world is read-write, Donna stores its current state of work here.
-- `project` is read-write when the developer explicitly asks Donna to change it. For example, to add the result of performed work into docs.
+Developers and external tools are responsible for mutating world artifacts before Donna reads or validates them.
+
+Donna still writes its own session state and journal data in the `session` world, but that internal state storage is separate from world-artifact mutation.
 
 ## `<world>:intro` artifact
 

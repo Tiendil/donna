@@ -30,7 +30,6 @@ class RawArtifact(BaseEntity, ABC):
 
 class World(BaseEntity, ABC):
     id: WorldId
-    readonly: bool = True
     session: bool = False
 
     @abstractmethod
@@ -42,14 +41,6 @@ class World(BaseEntity, ABC):
     @abstractmethod
     def has_artifact_changed(self, artifact_id: ArtifactId, since: Milliseconds) -> Result[bool, ErrorsList]:
         pass
-
-    @abstractmethod
-    def update(  # noqa: E704
-        self, artifact_id: ArtifactId, content: bytes, extension: str
-    ) -> Result[None, ErrorsList]: ...  # noqa: E704
-
-    @abstractmethod
-    def remove(self, artifact_id: ArtifactId) -> Result[None, ErrorsList]: ...  # noqa: E704
 
     @abstractmethod
     def file_extension_for(self, artifact_id: ArtifactId) -> Result[str, ErrorsList]: ...  # noqa: E704

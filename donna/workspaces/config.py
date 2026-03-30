@@ -29,7 +29,6 @@ DONNA_WORLD_HOME_DIR_NAME = "home"
 class WorldConfig(BaseEntity):
     kind: PythonImportPath
     id: WorldId
-    readonly: bool
     session: bool
 
     model_config = pydantic.ConfigDict(extra="allow")
@@ -57,7 +56,6 @@ def _create_default_worlds() -> list[WorldConfig]:
             {
                 "id": WorldId("donna"),
                 "kind": "donna.lib.worlds.python",
-                "readonly": True,
                 "session": False,
                 "package": "donna",
             }
@@ -66,7 +64,6 @@ def _create_default_worlds() -> list[WorldConfig]:
             {
                 "id": WorldId("home"),
                 "kind": "donna.lib.worlds.filesystem",
-                "readonly": True,
                 "session": False,
                 "path": f"~/{DONNA_DIR_NAME}/{DONNA_WORLD_HOME_DIR_NAME}",
             }
@@ -75,7 +72,6 @@ def _create_default_worlds() -> list[WorldConfig]:
             {
                 "id": WorldId("project"),
                 "kind": "donna.lib.worlds.filesystem",
-                "readonly": False,
                 "session": False,
                 "path": pathlib.Path(DONNA_DIR_NAME) / DONNA_WORLD_PROJECT_DIR_NAME,
             }
@@ -84,7 +80,6 @@ def _create_default_worlds() -> list[WorldConfig]:
             {
                 "id": WorldId("session"),
                 "kind": "donna.lib.worlds.filesystem",
-                "readonly": False,
                 "session": True,
                 "path": pathlib.Path(DONNA_DIR_NAME) / DONNA_WORLD_SESSION_DIR_NAME,
             }

@@ -51,9 +51,6 @@ class World(BaseWorld):
 
         return cast(ArtifactListingNode, self.path)
 
-    def _artifact_path(self, artifact_id: ArtifactId, extension: str) -> pathlib.Path:
-        return self.path / f"{artifact_id.replace(':', '/')}{extension}"
-
     def _resolve_artifact_file(self, artifact_id: ArtifactId) -> Result[pathlib.Path | None, ErrorsList]:
         artifact_path = self.path / artifact_id.replace(":", "/")
         parent = artifact_path.parent
@@ -121,30 +118,6 @@ class World(BaseWorld):
 
         return Ok((path.stat().st_mtime_ns // 1_000_000) > since)
 
-    def update(self, artifact_id: ArtifactId, content: bytes, extension: str) -> Result[None, ErrorsList]:
-        if self.readonly:
-            return Err([world_errors.WorldReadonly(world_id=self.id)])
-
-        path = self._artifact_path(artifact_id, extension)
-
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(content)
-        return Ok(None)
-
-    @unwrap_to_error
-    def remove(self, artifact_id: ArtifactId) -> Result[None, ErrorsList]:
-        if self.readonly:
-            return Err([world_errors.WorldReadonly(world_id=self.id)])
-
-        path = self._resolve_artifact_file(artifact_id).unwrap()
-
-        if path is None:
-            return Ok(None)
-
-        path.unlink()
-
-        return Ok(None)
-
     @unwrap_to_error
     def file_extension_for(self, artifact_id: ArtifactId) -> Result[str, ErrorsList]:
         path = self._resolve_artifact_file(artifact_id).unwrap()
@@ -165,9 +138,6 @@ class World(BaseWorld):
         return Ok(path.read_bytes())
 
     def write_state(self, name: str, content: bytes) -> Result[None, ErrorsList]:
-        if self.readonly:
-            return Err([world_errors.WorldReadonly(world_id=self.id)])
-
         if not self.session:
             return Err([world_errors.WorldStateStorageUnsupported(world_id=self.id)])
 
@@ -177,9 +147,6 @@ class World(BaseWorld):
         return Ok(None)
 
     def journal_reset(self) -> Result[None, ErrorsList]:
-        if self.readonly:
-            return Err([world_errors.WorldReadonly(world_id=self.id)])
-
         if not self.session:
             return Err([world_errors.WorldStateStorageUnsupported(world_id=self.id)])
 
@@ -189,9 +156,6 @@ class World(BaseWorld):
         return Ok(None)
 
     def journal_add(self, content: bytes) -> Result[None, ErrorsList]:
-        if self.readonly:
-            return Err([world_errors.WorldReadonly(world_id=self.id)])
-
         if not self.session:
             return Err([world_errors.WorldStateStorageUnsupported(world_id=self.id)])
 
@@ -296,9 +260,6 @@ class World(BaseWorld):
         )
 
     def initialize(self, reset: bool = False) -> None:
-        if self.readonly:
-            return
-
         if self.path.exists() and reset:
             shutil.rmtree(self.path)
 
@@ -324,6 +285,5 @@ class FilesystemWorldConstructor(WorldConstructor):
         return World(
             id=config.id,
             path=path.resolve(),
-            readonly=config.readonly,
             session=config.session,
         )

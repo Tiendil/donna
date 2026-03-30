@@ -75,7 +75,7 @@ There are four sets of commands:
 
 - `donna -p <protocol> workspaces …` — manages workspaces. Most-likely it will be used once per your project to initialize it.
 - `donna -p <protocol> sessions …` — manages sessions. You will use these commands to start, push forward, and manage your work.
-- `donna -p <protocol> artifacts …` — manages artifacts. You will use these commands to read and update artifacts you are working with.
+- `donna -p <protocol> artifacts …` — manages artifact discovery, reading, fetching, temporary files, and validation.
 - `donna -p <protocol> journal …` — manages session actions journal. You will use these commands to log and inspect the history of actions performed during the session.
 
 Use:
@@ -146,13 +146,11 @@ Use the next commands to work with artifacts:
 - `donna -p <protocol> artifacts view <artifact-pattern>` — get the meaningful (rendered) content of all matching artifacts. This command shows the rendered information about each artifact. Use this command when you need to read artifact content.
 - `donna -p <protocol> artifacts fetch <world>:<artifact>` — download the original source of the artifact content, outputs the file path to the artifact's copy, you can change. Use this command when you need to change the content of the artifact.
 - `donna -p <protocol> artifacts tmp <slug>.<extension>` — create a temporary file for artifact-related work and output its path.
-- `donna -p <protocol> artifacts update <world>:<artifact> <file-path|-> [--extension <extension>]` — upload content from a file path or from stdin (`-`) as the artifact. Donna gets an extension from three sources: `--extension`, `<file-path>`, and a stored artifact; if there are multiple extensions or no extensions at all, Donna returns an error.
-- `donna -p <protocol> artifacts copy <artifact-id-from> <artifact-id-to>` — copy an artifact source to another artifact ID (can be in a different world). This overwrites the destination if it exists.
-- `donna -p <protocol> artifacts move <artifact-id-from> <artifact-id-to>` — copy an artifact source to another artifact ID and remove the original. This overwrites the destination if it exists.
-- `donna -p <protocol> artifacts remove <artifact-pattern>` — remove artifacts matching a pattern. Use this command when you need to delete artifacts.
 - `donna -p <protocol> artifacts validate [<artifact-pattern>]` — validate all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, validate all artifacts in all worlds.
 
-Commands that accept an artifact pattern (`artifacts list`, `artifacts view`, `artifacts remove`, `artifacts validate`) also accept `--predicate/-p <python-expression>` to filter by artifact primary section. The expression is evaluated as `bool` with `section` global available (for example: `--predicate '"workflow" in section.tags'`).
+Donna does not mutate artifacts stored in worlds. Developers and external tools are responsible for creating, updating, moving, copying, or deleting world artifacts before Donna reads or validates them.
+
+Commands that accept an artifact pattern (`artifacts list`, `artifacts view`, `artifacts validate`) also accept `--predicate/-p <python-expression>` to filter by artifact primary section. The expression is evaluated as `bool` with `section` global available (for example: `--predicate '"workflow" in section.tags'`).
 
 The format of `<artifact-pattern>` is as follows:
 

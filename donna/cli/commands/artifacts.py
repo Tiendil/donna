@@ -1,6 +1,3 @@
-import builtins
-import pathlib
-import sys
 from collections.abc import Iterable
 
 import typer
@@ -8,10 +5,8 @@ import typer
 from donna.cli import errors as cli_errors
 from donna.cli.application import app
 from donna.cli.types import (
-    ExtensionOption,
     FullArtifactIdArgument,
     FullArtifactIdPatternArgument,
-    InputPathArgument,
     OutputPathOption,
     PredicateOption,
 )
@@ -45,31 +40,6 @@ def _parse_slug_with_extension(value: str) -> Result[tuple[str, str], ErrorsList
 
 def _log_artifact_operation(message: str) -> None:
     machine_journal.add(message=message)
-
-
-def _resolve_update_extension(
-    input_path: pathlib.Path | None,
-    extension: str | None,
-) -> str | None:
-    normalized_extension = extension.lstrip(".").lower() if extension is not None else None
-    if input_path is None:
-        return normalized_extension
-
-    inferred_extension = input_path.suffix.lstrip(".").lower() or None
-    if (
-        normalized_extension is not None
-        and inferred_extension is not None
-        and normalized_extension != inferred_extension
-    ):
-        raise typer.BadParameter(
-            (
-                f"Option extension '{normalized_extension}' does not match input file extension "
-                f"'{inferred_extension}'"
-            ),
-            param_hint="--extension",
-        )
-
-    return normalized_extension if normalized_extension is not None else inferred_extension
 
 
 def _log_operation_on_artifacts(
@@ -131,9 +101,7 @@ def fetch(id: FullArtifactIdArgument, output: OutputPathOption = None) -> Iterab
     ]
 
 
-@artifacts_cli.command(
-    help="Create a temporary file for artifact-related work and print its path. Use it to create new artifacts"
-)
+@artifacts_cli.command(help="Create a temporary file for artifact-related work and print its path.")
 @cells_cli
 def tmp(
     slug_with_extension: str = typer.Argument(..., help="Temporary file slug with extension (example: 'draft.md').")
@@ -149,90 +117,6 @@ def tmp(
             output_path=str(output),
         )
     ]
-
-
-@artifacts_cli.command(help="Create or replace an artifact from a file path or stdin.")
-@cells_cli
-def update(
-    id: FullArtifactIdArgument,
-    input: InputPathArgument,
-    extension: ExtensionOption = None,
-) -> Iterable[Cell]:
-    input_path: pathlib.Path | None
-
-    if input == pathlib.Path("-"):
-        content_bytes = sys.stdin.buffer.read()
-        input_display = "stdin"
-        input_path = None
-    else:
-        content_bytes = input.read_bytes()
-        input_display = str(input)
-        input_path = input
-
-    resolved_extension = _resolve_update_extension(input_path, extension)
-
-    _log_artifact_operation(f"Update artifact `{id}` from '{input_display}'")
-
-    context().artifacts.update(
-        id,
-        content_bytes,
-        extension=resolved_extension,
-    ).unwrap()
-    return [
-        operation_succeeded(
-            f"Artifact `{id}` updated from '{input_display}'",
-            artifact_id=str(id),
-            input_path=input_display,
-        )
-    ]
-
-
-@artifacts_cli.command(help="Copy an artifact to another artifact ID (possibly across worlds).")
-@cells_cli
-def copy(source_id: FullArtifactIdArgument, target_id: FullArtifactIdArgument) -> Iterable[Cell]:
-    _log_artifact_operation(f"Copy artifact from `{source_id}` to `{target_id}`")
-
-    context().artifacts.copy(source_id, target_id).unwrap()
-    return [
-        operation_succeeded(
-            f"Artifact `{source_id}` copied to `{target_id}`",
-            source_id=str(source_id),
-            target_id=str(target_id),
-        )
-    ]
-
-
-@artifacts_cli.command(help="Move an artifact to another artifact ID (possibly across worlds).")
-@cells_cli
-def move(source_id: FullArtifactIdArgument, target_id: FullArtifactIdArgument) -> Iterable[Cell]:
-    _log_artifact_operation(f"Move artifact from `{source_id}` to `{target_id}`")
-
-    context().artifacts.move(source_id, target_id).unwrap()
-    return [
-        operation_succeeded(
-            f"Artifact `{source_id}` moved to `{target_id}`",
-            source_id=str(source_id),
-            target_id=str(target_id),
-        )
-    ]
-
-
-@artifacts_cli.command(help="Remove artifacts matching a pattern.")
-@cells_cli
-def remove(
-    pattern: FullArtifactIdPatternArgument,
-    predicate: PredicateOption = None,
-) -> Iterable[Cell]:
-    _log_operation_on_artifacts("Remove artifacts", pattern, predicate)
-
-    artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, predicate=predicate).unwrap()
-
-    cells: builtins.list[Cell] = []
-    for artifact in artifacts:
-        context().artifacts.remove(artifact.id).unwrap()
-        cells.append(operation_succeeded(f"Artifact `{artifact.id}` removed", artifact_id=str(artifact.id)))
-
-    return cells
 
 
 @artifacts_cli.command(help="Validate artifacts matching a pattern (defaults to all artifacts) and return any errors.")
@@ -261,5 +145,5 @@ def validate(
 app.add_typer(
     artifacts_cli,
     name="artifacts",
-    help="Inspect, fetch, update, and validate stored artifacts across all Donna worlds.",
+    help="Inspect, fetch, and validate stored artifacts across all Donna worlds.",
 )
