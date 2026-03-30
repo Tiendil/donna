@@ -62,7 +62,7 @@ def _session_required(
 @unwrap_to_error
 def start() -> Result[list[Cell], ErrorsList]:
     world_tmp.clear()
-    workspace_utils.session_world().unwrap().initialize(reset=True)
+    workspace_utils.session_world().unwrap().initialize(reset=True).unwrap()
 
     machine_journal.reset().unwrap()
     _save_state(MutableState.build().freeze()).unwrap()
@@ -81,7 +81,7 @@ def reset() -> Result[list[Cell], ErrorsList]:
 @unwrap_to_error
 def clear() -> Result[list[Cell], ErrorsList]:
     world_tmp.clear()
-    workspace_utils.session_world().unwrap().initialize(reset=True)
+    workspace_utils.session_world().unwrap().initialize(reset=True).unwrap()
     return Ok([operation_succeeded("Cleared session.")])
 
 

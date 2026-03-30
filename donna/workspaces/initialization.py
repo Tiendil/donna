@@ -110,10 +110,10 @@ def initialize_workspace(
     )
 
     project_world = default_config.get_world(WorldId(config.DONNA_WORLD_PROJECT_DIR_NAME)).unwrap()
-    project_world.initialize()
+    project_world.initialize().unwrap()
 
     session_world = default_config.get_world(WorldId(config.DONNA_WORLD_SESSION_DIR_NAME)).unwrap()
-    session_world.initialize()
+    session_world.initialize().unwrap()
 
     if install_skills:
         _sync_donna_skill(project_dir)

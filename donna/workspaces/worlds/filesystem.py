@@ -259,11 +259,15 @@ class World(BaseWorld):
             pattern=pattern,
         )
 
-    def initialize(self, reset: bool = False) -> None:
+    @unwrap_to_error
+    def initialize(self, reset: bool = False) -> Result[None, ErrorsList]:
+        super().initialize(reset=reset).unwrap()
+
         if self.path.exists() and reset:
             shutil.rmtree(self.path)
 
         self.path.mkdir(parents=True, exist_ok=True)
+        return Ok(None)
 
     def is_initialized(self) -> bool:
         return self.path.exists()

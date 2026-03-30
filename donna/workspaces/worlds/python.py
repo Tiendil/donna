@@ -166,8 +166,10 @@ class Python(BaseWorld):
     def journal_read(self, lines: int | None = None, follow: bool = False) -> Iterable[Result[bytes, ErrorsList]]:
         yield Err([world_errors.WorldStateStorageUnsupported(world_id=self.id)])
 
-    def initialize(self, reset: bool = False) -> None:
-        pass
+    @unwrap_to_error
+    def initialize(self, reset: bool = False) -> Result[None, ErrorsList]:
+        super().initialize(reset=reset).unwrap()
+        return Ok(None)
 
     def is_initialized(self) -> bool:
         return True

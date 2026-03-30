@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
-from donna.core.result import Result
+from donna.core.result import Err, Ok, Result
 from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern, WorldId
 from donna.domain.types import Milliseconds
 from donna.machine.artifacts import Artifact
@@ -72,8 +72,13 @@ class World(BaseEntity, ABC):
     def journal_read(self, lines: int | None = None, follow: bool = False) -> Iterable[Result[bytes, ErrorsList]]:
         pass
 
-    def initialize(self, reset: bool = False) -> None:
-        pass
+    def initialize(self, reset: bool = False) -> Result[None, ErrorsList]:
+        from donna.workspaces import errors as world_errors
+
+        if reset and not self.session:
+            return Err([world_errors.CanNotResetNonSessionWorld(world_id=self.id)])
+
+        return Ok(None)
 
     @abstractmethod
     def is_initialized(self) -> bool: ...  # noqa: E704

@@ -10,6 +10,6 @@ def session_world() -> Result[World, ErrorsList]:
     world = config().get_world(WorldId("session")).unwrap()
 
     if not world.is_initialized():
-        world.initialize(reset=False)
+        world.initialize(reset=False).unwrap()
 
     return Ok(world)
