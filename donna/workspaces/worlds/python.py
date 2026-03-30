@@ -38,7 +38,6 @@ class PythonRawArtifact(RawArtifact):
 
 class Python(BaseWorld):
     id: WorldId
-    readonly: bool = True
     session: bool = False
     package: str
     artifacts_root: str
@@ -136,12 +135,6 @@ class Python(BaseWorld):
     def has_artifact_changed(self, artifact_id: ArtifactId, since: Milliseconds) -> Result[bool, ErrorsList]:
         return Ok(False)
 
-    def update(self, artifact_id: ArtifactId, content: bytes, extension: str) -> Result[None, ErrorsList]:
-        return Err([world_errors.WorldReadonly(world_id=self.id)])
-
-    def remove(self, artifact_id: ArtifactId) -> Result[None, ErrorsList]:
-        return Err([world_errors.WorldReadonly(world_id=self.id)])
-
     @unwrap_to_error
     def file_extension_for(self, artifact_id: ArtifactId) -> Result[str, ErrorsList]:
         resource_path = self._resolve_artifact_file(artifact_id).unwrap()
@@ -200,6 +193,5 @@ class PythonWorldConstructor(WorldConstructor):
             id=config.id,
             package=str(package),
             artifacts_root=artifacts_root,
-            readonly=config.readonly,
             session=config.session,
         )

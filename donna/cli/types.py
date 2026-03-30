@@ -1,5 +1,4 @@
 import pathlib
-import re
 from typing import Annotated
 
 import typer
@@ -69,19 +68,6 @@ def _parse_protocol_mode(value: str) -> Mode:
     except ValueError as exc:
         allowed = ", ".join(mode.value for mode in Mode)
         raise typer.BadParameter(f"Unsupported protocol mode '{value}'. Expected one of: {allowed}.") from exc
-
-
-def _parse_extension(value: str) -> str:
-    normalized = value.strip().lower().lstrip(".")
-    if not normalized:
-        raise typer.BadParameter("Extension must not be empty.")
-
-    if re.fullmatch(r"[a-z0-9][a-z0-9_-]*", normalized) is None:
-        raise typer.BadParameter(
-            "Invalid extension format. Use letters, digits, underscore, and dash (for example: md, yaml)."
-        )
-
-    return normalized
 
 
 def _parse_input_path(value: str) -> pathlib.Path:
@@ -179,19 +165,6 @@ SkillsOption = Annotated[
     typer.Option(
         "--skills/--no-skills",
         help="Enable or disable skills updates in `.agents/skills`.",
-    ),
-]
-
-
-ExtensionOption = Annotated[
-    str | None,
-    typer.Option(
-        "--extension",
-        parser=_parse_extension,
-        help=(
-            "Optional artifact source extension to use for update "
-            "(for example: md, yaml). Accepts values with or without leading dot."
-        ),
     ),
 ]
 

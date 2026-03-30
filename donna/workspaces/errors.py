@@ -64,14 +64,6 @@ class SourceConfigNotConfigured(SourceError):
     kind: str
 
 
-class WorldReadonly(WorldError):
-    code: str = "donna.workspaces.world_readonly"
-    message: str = "World `{error.world_id}` is read-only"
-    ways_to_fix: list[str] = [
-        "Use a world configured with readonly = false. Most likely they are `project` and `session`.",
-    ]
-
-
 class WorldStateStorageUnsupported(WorldError):
     code: str = "donna.workspaces.state_storage_unsupported"
     message: str = "World `{error.world_id}` does not support state storage"

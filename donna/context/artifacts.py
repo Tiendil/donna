@@ -116,48 +116,6 @@ class ArtifactsCache(TimedCache):
         return Ok(artifact.get_section(target_id.local_id).unwrap())
 
     @unwrap_to_error
-    def update(
-        self,
-        full_id: FullArtifactId,
-        content_bytes: bytes,
-        extension: str | None = None,
-    ) -> Result[None, ErrorsList]:
-        from donna.workspaces import artifacts as workspace_artifacts
-
-        workspace_artifacts.update_artifact(
-            full_id=full_id,
-            content_bytes=content_bytes,
-            extension=extension,
-        ).unwrap()
-        self.invalidate(full_id)
-        return Ok(None)
-
-    @unwrap_to_error
-    def copy(self, source_id: FullArtifactId, target_id: FullArtifactId) -> Result[None, ErrorsList]:
-        from donna.workspaces import artifacts as workspace_artifacts
-
-        workspace_artifacts.copy_artifact(source_id, target_id).unwrap()
-        self.invalidate(target_id)
-        return Ok(None)
-
-    @unwrap_to_error
-    def move(self, source_id: FullArtifactId, target_id: FullArtifactId) -> Result[None, ErrorsList]:
-        from donna.workspaces import artifacts as workspace_artifacts
-
-        workspace_artifacts.move_artifact(source_id, target_id).unwrap()
-        self.invalidate(source_id)
-        self.invalidate(target_id)
-        return Ok(None)
-
-    @unwrap_to_error
-    def remove(self, full_id: FullArtifactId) -> Result[None, ErrorsList]:
-        from donna.workspaces import artifacts as workspace_artifacts
-
-        workspace_artifacts.remove_artifact(full_id).unwrap()
-        self.invalidate(full_id)
-        return Ok(None)
-
-    @unwrap_to_error
     def file_extension(self, full_id: FullArtifactId) -> Result[str, ErrorsList]:
         from donna.workspaces import artifacts as workspace_artifacts
 
