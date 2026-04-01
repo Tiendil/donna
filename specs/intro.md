@@ -46,7 +46,8 @@ We may need coding agents on each step of the process, but there is no reason fo
 ## Points of interest
 
 - `./donna/` — a directory containing source code of project — `donna` CLI tool.
-- `./.donna/` — a directory containing project-specific donna artifacts that is used to manage the work of AI agents on this project.
+- `./specs/` — a directory containing project-specific donna artifacts that is used to manage the work of AI agents on this project.
+- `./.donna/` — a directory containing donn-specific artifacts that is used to manage the work of AI agents on this project.
 
 ## Specifications of interest
 

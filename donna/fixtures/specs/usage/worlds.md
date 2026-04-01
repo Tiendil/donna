@@ -23,7 +23,7 @@ Default worlds and there locations are:
 
 - `donna` — `<project-root>/.agents/donna` — the project-local bundled Donna specs installed from `donna/fixtures/specs` by workspace init/update.
 - `home` — `~/.donna/home` — the user-level donna artifacts, i.e. those that should be visible for all workspaces on this machine.
-- `project` — `<project-root>/.donna/project` — the project-level donna artifacts, i.e. those that are specific to this project.
+- `project` — `<project-root>/specs` — the project-level donna artifacts, i.e. those that are specific to this project.
 - `session` — `<project-root>/.donna/session` — the session world that contains the current state of work performed by Donna.
 
 All worlds have a free layout, defined by developers who own the particular world.
