@@ -118,14 +118,6 @@ class World(BaseWorld):
 
         return Ok((path.stat().st_mtime_ns // 1_000_000) > since)
 
-    @unwrap_to_error
-    def file_extension_for(self, artifact_id: ArtifactId) -> Result[str, ErrorsList]:
-        path = self._resolve_artifact_file(artifact_id).unwrap()
-        if path is None:
-            return Err([world_errors.ArtifactNotFound(artifact_id=artifact_id, world_id=self.id)])
-
-        return Ok(path.suffix)
-
     def read_state(self, name: str) -> Result[bytes | None, ErrorsList]:
         if not self.session:
             return Err([world_errors.WorldStateStorageUnsupported(world_id=self.id)])

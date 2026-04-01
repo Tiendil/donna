@@ -135,14 +135,6 @@ class Python(BaseWorld):
     def has_artifact_changed(self, artifact_id: ArtifactId, since: Milliseconds) -> Result[bool, ErrorsList]:
         return Ok(False)
 
-    @unwrap_to_error
-    def file_extension_for(self, artifact_id: ArtifactId) -> Result[str, ErrorsList]:
-        resource_path = self._resolve_artifact_file(artifact_id).unwrap()
-        if resource_path is None:
-            return Err([world_errors.ArtifactNotFound(artifact_id=artifact_id, world_id=self.id)])
-
-        return Ok(pathlib.Path(resource_path.name).suffix)
-
     def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
         return list_artifacts_by_pattern(
             world_id=self.id,

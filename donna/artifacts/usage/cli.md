@@ -75,7 +75,7 @@ There are four sets of commands:
 
 - `donna -p <protocol> workspaces …` — manages workspaces. Most-likely it will be used once per your project to initialize it.
 - `donna -p <protocol> sessions …` — manages sessions. You will use these commands to start, push forward, and manage your work.
-- `donna -p <protocol> artifacts …` — manages artifact discovery, reading, fetching, temporary files, and validation.
+- `donna -p <protocol> artifacts …` — manages artifact discovery, reading, and validation.
 - `donna -p <protocol> journal …` — manages session actions journal. You will use these commands to log and inspect the history of actions performed during the session.
 
 Use:
@@ -144,8 +144,6 @@ Use the next commands to work with artifacts:
 
 - `donna -p <protocol> artifacts list [<artifact-pattern>]` — list all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, list all artifacts in all worlds. Use this command when you need to find an artifact or see what artifacts are available.
 - `donna -p <protocol> artifacts view <artifact-pattern>` — get the meaningful (rendered) content of all matching artifacts. This command shows the rendered information about each artifact. Use this command when you need to read artifact content.
-- `donna -p <protocol> artifacts fetch <world>:<artifact>` — download the original source of the artifact content, outputs the file path to the artifact's copy, you can change. Use this command when you need to change the content of the artifact.
-- `donna -p <protocol> artifacts tmp <slug>.<extension>` — create a temporary file for artifact-related work and output its path.
 - `donna -p <protocol> artifacts validate [<artifact-pattern>]` — validate all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, validate all artifacts in all worlds.
 
 Donna does not mutate artifacts stored in worlds. Developers and external tools are responsible for creating, updating, moving, copying, or deleting world artifacts before Donna reads or validates them.
