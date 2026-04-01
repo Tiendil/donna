@@ -45,7 +45,7 @@ Donna executes such loops for the agents, thereby saving time, context, and toke
 
 ## Example
 
-Donna is developed via Donna itself. You can find real-life examples of workflows and specifications in the [.donna/project](./.donna/project) folder of this repository.
+Donna is developed via Donna itself. You can find real-life examples of workflows and specifications in the [specs](./specs) folder of this repository.
 
 The example below is a simplified version of the polishing workflow that formats code, runs linters, and fixes found problems until all checks pass. It uses the single operation type `donna.lib.request_action` to ask the agent to perform specific instructions.
 
@@ -124,7 +124,7 @@ Generally speaking, **all you need is `donna.lib.request_action` operation** —
 
 </details>
 
-You can find a more complex implementation of the same workflow in the [polish.md](./.donna/project/work/polish.md) file. It demonstrates other Donna operations, such as running scripts directly and branching.
+You can find a more complex implementation of the same workflow in the [polish.md](./specs/work/polish.md) file. It demonstrates other Donna operations, such as running scripts directly and branching.
 
 ## Installation
 
@@ -225,7 +225,7 @@ By default, Donna uses the next worlds:
 
 - `donna` — artifacts provided by Donna itself;
 - `home` — user-level artifacts in `<HOME>/.donna/` folder;
-- `project` — project-level artifacts in `<project-root>/.donna/project/` folder;
+- `project` — project-level artifacts in `<project-root>/specs/` folder;
 - `session` — session-level artifacts in `<project-root>/.donna/session/` folder.
 
 A world can be read-only. By default, writable worlds are `session` (current work scope) and `project` (project scope).

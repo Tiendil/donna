@@ -24,6 +24,7 @@ DONNA_CONFIG_NAME = "config.toml"
 DONNA_WORLD_SESSION_DIR_NAME = "session"
 DONNA_WORLD_PROJECT_DIR_NAME = "project"
 DONNA_WORLD_HOME_DIR_NAME = "home"
+DONNA_WORLD_PROJECT_PATH = pathlib.Path("specs")
 
 
 class WorldConfig(BaseEntity):
@@ -73,7 +74,7 @@ def _create_default_worlds() -> list[WorldConfig]:
                 "id": WorldId("project"),
                 "kind": "donna.lib.worlds.filesystem",
                 "session": False,
-                "path": pathlib.Path(DONNA_DIR_NAME) / DONNA_WORLD_PROJECT_DIR_NAME,
+                "path": DONNA_WORLD_PROJECT_PATH,
             }
         ),
         WorldConfig.model_validate(

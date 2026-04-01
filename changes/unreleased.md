@@ -1,10 +1,14 @@
 ### Migration
 
+- Move project-specific specs from `.donna/project` to `specs`, or set an explicit `project` world path in your Donna workspace config before upgrading.
 - Run `donna workspaces update` in existing projects so bundled Donna specs are installed into `.agents/donna` for the new filesystem-backed `donna` world.
 - Update your scripts and specs to use external tools or direct file edits to create, update, move, copy, or delete world artifacts instead using removed Donna commands.
 
 ### Changes
 
+- Changed the default location of project specs to `specs/`.
+  - Updated the default `project` world path to load from `specs/` instead of `.donna/project/`.
+  - Rewrote the moved project specs and repository docs to reference the new `specs/` location.
 - `--tag` option is replaced with `--predicate` in all CLI commands that accept artifact patterns.
 - Removed the Python donna world.
   - Added workspace spec dumping into `.agents/donna` on `donna workspaces init` and `donna workspaces update`.
