@@ -9,6 +9,7 @@
   - Removed `donna artifacts` mutation commands and the supporting artifact-mutation code paths.
   - Removed `readonly` world-artifact mutability modeling from workspace config and world abstractions.
   - Updated artifact and world usage specs to state that developers and external tools mutate world artifacts while Donna validates them.
+- Removed `donna artifacts fetch` and `donna artifacts tmp` commands and all related code.
 
 ### Breaking Changes
 
