@@ -43,9 +43,6 @@ class World(BaseEntity, ABC):
         pass
 
     @abstractmethod
-    def file_extension_for(self, artifact_id: ArtifactId) -> Result[str, ErrorsList]: ...  # noqa: E704
-
-    @abstractmethod
     def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]: ...  # noqa: E704
 
     # These two methods are intended for storing world state (e.g., session data)

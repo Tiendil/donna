@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from donna.context.entity_cache import TimedCache, TimedCacheValue
@@ -114,19 +113,6 @@ class ArtifactsCache(TimedCache):
     ) -> Result[ArtifactSection, ErrorsList]:
         artifact = self.load(target_id.full_artifact_id, render_context).unwrap()
         return Ok(artifact.get_section(target_id.local_id).unwrap())
-
-    @unwrap_to_error
-    def file_extension(self, full_id: FullArtifactId) -> Result[str, ErrorsList]:
-        from donna.workspaces import artifacts as workspace_artifacts
-
-        return Ok(workspace_artifacts.artifact_file_extension(full_id).unwrap())
-
-    @unwrap_to_error
-    def fetch(self, full_id: FullArtifactId, output: Path) -> Result[None, ErrorsList]:
-        from donna.workspaces import artifacts as workspace_artifacts
-
-        workspace_artifacts.fetch_artifact(full_id, output).unwrap()
-        return Ok(None)
 
     @unwrap_to_error
     def _list_artifact_if_matches(

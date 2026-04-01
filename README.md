@@ -228,17 +228,9 @@ By default, Donna uses the next worlds:
 - `project` — project-level artifacts in `<project-root>/.donna/project/` folder;
 - `session` — session-level artifacts in `<project-root>/.donna/session/` folder.
 
-Besides that, there is `<project-root>/.donna/tmp` folder used to store temporary files.
-
 A world can be read-only. By default, writable worlds are `session` (current work scope) and `project` (project scope).
 
-Agents are not allowed to edit artifacts directly because artifact consistency is important. Instead, they follow the next algorithm:
-
-- Fetch an artifact into the temporary file with the command `donna -p llm artifacts fetch ...`.
-- Edit the temporary file.
-- Upload an artifact with the command `donna -p llm artifacts upload ...`.
-
-On upload, Donna validates the artifact and accepts it only when there are no errors. For example, Donna will not accept a workflow that can not be finished.
+Agents are not allowed to edit artifacts through Donna CLI directly because artifact consistency is important. Instead, they update the underlying files in writable worlds and rely on Donna validation when needed.
 
 ### Rendering
 

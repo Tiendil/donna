@@ -18,8 +18,6 @@ The text artifact has a source and one or more rendered representations, produce
 
 To change the artifact, developers and agents edit its source.
 
-When you need a scratch file for artifact-related work, use `donna -p <protocol> artifacts tmp '<slug>.<extension>'` to create a temporary file in the workspace temp directory.
-
 To get information from the artifact, developers, agents and Donna view one of its representations (typically via the view rendering mode).
 
 **If you need an information from the artifact, you MUST view its representation**. Artifact sources are only for editing.
@@ -46,7 +44,7 @@ Here are some examples:
 
 Donna allows all of Jinja2 expressions in artifact sources, except inheritance-related once: `{{ "{% extends %}" }}` , `{{ "{% block %}" }}`, etc.
 
-Donna intentionally hides some parts of the source in the rendered output, but they remain visible in source views (for example, in `artifacts fetch` output or on GitHub):
+Donna intentionally hides some parts of the source in the rendered output, but they remain visible in the source files themselves (on filesystem):
 
 - fenced code blocks with the `donna` marker (they contain technical information for the Donna, not information for the agent).
 - Jinja2 comments like `{{ "{# ... #}" }}`.
@@ -100,7 +98,7 @@ The configuration block properties format is `property1 property2=value2 propert
 
 The content of the block is parsed according to the primary format and interpreted according its properties.
 
-Configuration blocks are parsed by Donna and removed from rendered Markdown representations (see "Jinja2 rendering"); they remain in the source for editing and inspection (e.g., via `artifacts fetch` or the repository file).
+Configuration blocks are parsed by Donna and removed from rendered Markdown representations (see "Jinja2 rendering"); they remain in the source for editing and inspection on the file system.
 
 Fences without `donna` keyword are considered regular code blocks and have no special meaning for Donna.
 
