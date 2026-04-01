@@ -55,9 +55,9 @@ def _create_default_worlds() -> list[WorldConfig]:
         WorldConfig.model_validate(
             {
                 "id": WorldId("donna"),
-                "kind": "donna.lib.worlds.python",
+                "kind": "donna.lib.worlds.filesystem",
                 "session": False,
-                "package": "donna",
+                "path": pathlib.Path(".agents") / "donna",
             }
         ),
         WorldConfig.model_validate(

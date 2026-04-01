@@ -15,6 +15,8 @@ from donna.workspaces import errors as world_errors
 
 SKILLS_ROOT_DIR = pathlib.Path(".agents") / "skills"
 DONNA_SKILL_FIXTURE_DIR = pathlib.Path("fixtures") / "skills"
+DONNA_SPECS_ROOT_DIR = pathlib.Path(".agents") / "donna"
+DONNA_SPECS_FIXTURE_DIR = pathlib.Path("fixtures") / "specs"
 
 # this list must only increase in size,
 # do not remove old items from it, since users may upgrade from older versions of Donna
@@ -34,6 +36,17 @@ def _sync_donna_skill(project_dir: pathlib.Path) -> None:
     # copy all content of fixtures/skills to the skills directory
     with importlib.resources.as_file(source) as source_dir:
         shutil.copytree(source_dir, project_dir / SKILLS_ROOT_DIR, dirs_exist_ok=True)
+
+
+def _sync_donna_specs(project_dir: pathlib.Path) -> None:
+    source = importlib.resources.files("donna").joinpath(*DONNA_SPECS_FIXTURE_DIR.parts)
+    target_dir = project_dir / DONNA_SPECS_ROOT_DIR
+
+    if target_dir.exists():
+        shutil.rmtree(target_dir)
+
+    with importlib.resources.as_file(source) as source_dir:
+        shutil.copytree(source_dir, target_dir)
 
 
 @unwrap_to_error
@@ -84,7 +97,9 @@ def initialize_runtime(  # noqa: CCR001
 
 @unwrap_to_error
 def initialize_workspace(
-    project_dir: pathlib.Path, install_skills: bool = True
+    project_dir: pathlib.Path,
+    install_skills: bool = True,
+    install_specs: bool = True,
 ) -> Result[None, core_errors.ErrorsList]:
     """Initialize the physical workspace for the project (`.donna` directory)."""
     project_dir = project_dir.resolve()
@@ -118,11 +133,18 @@ def initialize_workspace(
     if install_skills:
         _sync_donna_skill(project_dir)
 
+    if install_specs:
+        _sync_donna_specs(project_dir)
+
     return Ok(None)
 
 
 @unwrap_to_error
-def update_workspace(project_dir: pathlib.Path, install_skills: bool = True) -> Result[None, core_errors.ErrorsList]:
+def update_workspace(
+    project_dir: pathlib.Path,
+    install_skills: bool = True,
+    install_specs: bool = True,
+) -> Result[None, core_errors.ErrorsList]:
     project_dir = project_dir.resolve()
     workspace_dir = project_dir / config.DONNA_DIR_NAME
 
@@ -131,5 +153,8 @@ def update_workspace(project_dir: pathlib.Path, install_skills: bool = True) -> 
 
     if install_skills:
         _sync_donna_skill(project_dir)
+
+    if install_specs:
+        _sync_donna_specs(project_dir)
 
     return Ok(None)
