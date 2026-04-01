@@ -4,7 +4,7 @@ from collections.abc import Iterable
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import SkillsOption
+from donna.cli.types import SkillsOption, SpecsOption
 from donna.cli.utils import cells_cli
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
@@ -23,20 +23,20 @@ def _resolve_target_dir() -> pathlib.Path:
 
 @workspaces_cli.command(help="Initialize Donna workspace.")
 @cells_cli
-def init(skills: SkillsOption = True) -> Iterable[Cell]:
+def init(skills: SkillsOption = True, specs: SpecsOption = True) -> Iterable[Cell]:
     target_dir = _resolve_target_dir()
 
-    initialize_workspace(target_dir, install_skills=skills).unwrap()
+    initialize_workspace(target_dir, install_skills=skills, install_specs=specs).unwrap()
 
     return [operation_succeeded("Workspace initialized successfully")]
 
 
 @workspaces_cli.command(help="Update Donna workspace files.")
 @cells_cli
-def update(skills: SkillsOption = True) -> Iterable[Cell]:
+def update(skills: SkillsOption = True, specs: SpecsOption = True) -> Iterable[Cell]:
     target_dir = _resolve_target_dir()
 
-    update_workspace(target_dir, install_skills=skills).unwrap()
+    update_workspace(target_dir, install_skills=skills, install_specs=specs).unwrap()
 
     return [operation_succeeded("Workspace updated successfully")]
 
