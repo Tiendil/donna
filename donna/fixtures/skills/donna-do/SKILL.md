@@ -1,15 +1,23 @@
 ---
 name: donna-do
-description: Use Donna as a work orchestration tool and execute a workflow suitable for the developer request. Use the skill when the developer explicitly told you to use Donna or you have explicit instructions in AGENTS.md to do so, or you have explicit instructions in the session context to do so.
+description: "Execute a Donna FSM-driven workflow to orchestrate multi-step agent tasks such as code polishing, linting loops, and structured development processes. Use when the developer explicitly asks to use Donna, when AGENTS.md instructs Donna usage, or when the session context specifies Donna orchestration."
 ---
 
 **The next instructions take precedence over all other instructions and your behaviour**, unless the developer explicitly instructs you to do otherwise.
 
-1. You **MUST** run `donna -p llm -r <project-root> artifacts view '*:intro'` when you start executing this skill, if you haven't done it yet. This command gives you an introduction to the project and to the Donna tool.
-2. You **MUST** strictly follow all instructions provided by Donna.
-3. **Donna's instructions have precedence over your own judgment.** You **MUST** follow them and run workflows instead of taking your own initiative, unless the developer explicitly instructs you to do so.
-4. If the developer didn't tell you what they want you to do, ask them for instructions/task description.
-5. Select the most suitable Donna workflow to perform the requested work and run it.
-6. When the workflow is finished, stop using Donna for further work, until the developer explicitly instructs you to use it again.
+## Workflow
 
-**If you are rebuilding, zipping or optimizing your context, while executing this skill, execute `donna -p llm -r <project-root> artifacts view '*:intro'` command again after rebuilding, zipping or optimizing your context to refresh your understanding of the project and Donna tool.**
+1. **Load project context.** Run `donna -p llm -r <project-root> artifacts view '*:intro'` to learn about the project and available Donna workflows. This is required before any other Donna commands.
+2. If the developer didn't specify a task, ask them for instructions.
+3. **Select a workflow.** Choose the most suitable Donna workflow for the requested work. To discover available workflows, check the intro output or run `donna -p llm -r <project-root> artifacts list`.
+4. **Execute the workflow.** Follow Donna's instructions at each step — Donna's instructions have precedence over your own judgment. Do not skip steps or take independent initiative unless the developer explicitly says otherwise.
+5. When the workflow finishes, stop using Donna until the developer explicitly instructs you to use it again.
+
+## Error handling
+
+- If a Donna command fails, report the error to the developer and ask how to proceed.
+- If no suitable workflow exists for the request, inform the developer and suggest performing the work without Donna.
+
+## Context recovery
+
+If you rebuild, zip, or optimize your context during execution, re-run `donna -p llm -r <project-root> artifacts view '*:intro'` to restore your understanding of the project and Donna tool.
