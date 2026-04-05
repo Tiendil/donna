@@ -100,7 +100,7 @@ FullArtifactIdArgument = Annotated[
     FullArtifactId,
     typer.Argument(
         parser=_parse_full_artifact_id,
-        help="Full artifact ID in the form 'world:artifact[:path]' (e.g., 'project:intro').",
+        help="Full artifact ID in the form 'world:artifact[:path]' (e.g., 'project:specs:intro').",
     ),
 ]
 
@@ -109,7 +109,7 @@ FullArtifactIdPatternArgument = Annotated[
     FullArtifactIdPattern,
     typer.Argument(
         parser=_parse_full_artifact_id_pattern,
-        help="Artifact pattern (supports '*' and '**', e.g. 'project:*' or '**:intro').",
+        help="Artifact pattern (supports '*' and '**', e.g. 'project:specs:*' or 'project:**:intro').",
     ),
 ]
 
@@ -128,7 +128,9 @@ FullArtifactSectionIdArgument = Annotated[
     FullArtifactSectionId,
     typer.Argument(
         parser=_parse_full_artifact_section_id,
-        help="Full artifact section ID in the form 'world:artifact:section'.",
+        help=(
+            "Full artifact section ID in the form 'project:artifact:section' "
+        ),
     ),
 ]
 

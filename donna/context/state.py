@@ -34,7 +34,7 @@ class StateCache(TimedCache):
     @unwrap_to_error
     def load(self) -> Result["ConsistentState", ErrorsList]:
         from donna.machine.state import ConsistentState
-        from donna.workspaces import utils as workspace_utils
+        from donna.workspaces import sessions as workspace_sessions
 
         now_ms = self._now_ms()
         cached = self._session_state
@@ -42,7 +42,7 @@ class StateCache(TimedCache):
         if cached is not None and self._is_within_lifetime(cached, now_ms):
             return Ok(cached.state)
 
-        content = workspace_utils.session_world().unwrap().read_state("state.json").unwrap()
+        content = workspace_sessions.read_state()
         if content is None:
             return Err([machine_errors.SessionStateNotInitialized()])
 
@@ -61,10 +61,10 @@ class StateCache(TimedCache):
 
     @unwrap_to_error
     def save(self, state: "ConsistentState") -> Result[None, ErrorsList]:
-        from donna.workspaces import utils as workspace_utils
+        from donna.workspaces import sessions as workspace_sessions
 
         content = state.to_json().encode("utf-8")
-        workspace_utils.session_world().unwrap().write_state("state.json", content).unwrap()
+        workspace_sessions.write_state(content)
         now_ms = self._now_ms()
         self._session_state = _StateCacheValue(
             state=state,

@@ -4,19 +4,19 @@
 kind = "donna.lib.specification"
 ```
 
-This document describes the format and structure of a Request for Change (RFC) document used to propose changes to a project by Donna workflows from `donna:rfc:*` namespace. This document is an input for a Design document creation.
+This document describes the format and structure of a Request for Change (RFC) document used to propose changes to a project by Donna workflows from `project:.agents:donna:rfc:*` namespace. This document is an input for a Design document creation.
 
 ## Overview
 
-Donna introduces a group of workflows located in `donna:rfc:*` namespace that organize the process of proposing, reviewing, and implementing changes to a project via RFC and Design documents.
+Donna introduces a group of workflows located in `project:.agents:donna:rfc:*` namespace that organize the process of proposing, reviewing, and implementing changes to a project via RFC and Design documents.
 
 You create RFC documents to propose changes to the project.
 
-If not otherwise specified, RFC documents for the session MUST be stored as `session:rfc:<short-problem-related-identifier>` artifacts in the session world.
+If not otherwise specified, RFC documents for the session MUST be stored as `project:.donna:session:rfc:<short-problem-related-identifier>` artifacts under `<project-root>/.donna/session`.
 
 ## RFC structure
 
-The RFC document is Donna artifact (check `{{ donna.lib.view("donna:usage:artifacts") }}`) with the next structure:
+The RFC document is Donna artifact (check `{{ donna.lib.view("project:.agents:donna:usage:artifacts") }}`) with the next structure:
 
 - **Primary section** — title and short description of the proposed change.
 - **Original description** — original description of the requested changes from the developer or parent workflow.
@@ -34,7 +34,7 @@ The RFC document is Donna artifact (check `{{ donna.lib.view("donna:usage:artifa
 ## General language and format
 
 - You MUST follow [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.txt) for keywords like MUST, SHOULD, MAY, etc.
-- You MUST follow `{{ donna.lib.view("donna:usage:artifacts") }}`.
+- You MUST follow `{{ donna.lib.view("project:.agents:donna:usage:artifacts") }}`.
 - You MUST follow the structure specified in this document.
 
 ### List format

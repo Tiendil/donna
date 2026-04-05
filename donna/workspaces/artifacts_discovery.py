@@ -6,6 +6,12 @@ from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern, 
 from donna.workspaces.config import config
 
 
+def _should_skip_directory(parts: list[str], name: str) -> bool:
+    # `.donna/tmp` holds scratch files produced during artifact editing and verification.
+    # Once the project world is rooted at `<project-root>`, those files must not appear as durable artifacts.
+    return parts == [".donna"] and name == "tmp"
+
+
 class ArtifactListingNode(Protocol):
     name: str
 
@@ -42,6 +48,9 @@ def list_artifacts_by_pattern(  # noqa: CCR001
     def walk(node: ArtifactListingNode, parts: list[str]) -> None:  # noqa: CCR001
         for entry in sorted(node.iterdir(), key=lambda item: item.name):
             if entry.is_dir():
+                if _should_skip_directory(parts, entry.name):
+                    continue
+
                 next_parts = parts + [entry.name]
                 if not _pattern_allows_prefix(pattern_parts, world_prefix + tuple(next_parts)):
                     continue
@@ -55,8 +64,11 @@ def list_artifacts_by_pattern(  # noqa: CCR001
             if extension not in supported_extensions:
                 continue
 
-            stem = entry.name[: -len(extension)]
-            artifact_name = ":".join(parts + [stem])
+            # `parts` are always relative to the configured world root.
+            # When the default project world is rooted at `<project-root>`,
+            # this naturally produces ids under `specs`, `.agents/donna`, and `.donna/session`.
+            artifact_parts = parts + [pathlib.Path(entry.name).stem]
+            artifact_name = ":".join(artifact_parts)
             if ArtifactId.validate(artifact_name):
                 artifact_id = ArtifactId(artifact_name)
                 full_id = FullArtifactId((world_id, artifact_id))

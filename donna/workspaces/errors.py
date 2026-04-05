@@ -64,22 +64,6 @@ class SourceConfigNotConfigured(SourceError):
     kind: str
 
 
-class WorldStateStorageUnsupported(WorldError):
-    code: str = "donna.workspaces.state_storage_unsupported"
-    message: str = "World `{error.world_id}` does not support state storage"
-    ways_to_fix: list[str] = [
-        "Use the session world.",
-    ]
-
-
-class CanNotResetNonSessionWorld(WorldError):
-    code: str = "donna.workspaces.can_not_reset_non_session_world"
-    message: str = "Can not reset non-session world `{error.world_id}`"
-    ways_to_fix: list[str] = [
-        "Mark the world as a session world in the config or do not initialize it.",
-    ]
-
-
 class ArtifactError(WorkspaceError):
     cell_kind: str = "artifact_error"
     artifact_id: ArtifactId

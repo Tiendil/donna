@@ -6,7 +6,7 @@ kind = "donna.lib.workflow"
 start_operation_id = "start"
 ```
 
-This workflow plans the work required to implement a specified Design document. The RFC document SHOULD be used as a helper context. The result of this workflow is a new workflow in the `session:*` world with detailed steps to implement the designed changes.
+This workflow plans the work required to implement a specified Design document. The RFC document SHOULD be used as a helper context. The result of this workflow is a new workflow stored as a `project:.donna:session:*` artifact under `<project-root>/.donna/session` with detailed steps to implement the designed changes.
 
 ## Start Work
 
@@ -18,7 +18,7 @@ fsm_mode = "start"
 
 1. Read the Design document that the developer or parent workflow wants you to implement.
 2. Read the RFC document that the developer or parent workflow wants you to implement, if it exists.
-3. Read the specification `{{ donna.lib.view("donna:usage:artifacts") }}` if you haven't done it yet.
+3. Read the specification `{{ donna.lib.view("project:.agents:donna:usage:artifacts") }}` if you haven't done it yet.
 4. `{{ donna.lib.goto("prepare_workflow_artifact") }}`
 
 ## Prepare workflow artifact
@@ -28,7 +28,7 @@ id = "prepare_workflow_artifact"
 kind = "donna.lib.request_action"
 ```
 
-1. If the name of the artifact is not specified explicitly, assume it to `session:plans:<short-id-equal-to-design-slug>`.
+1. If the name of the artifact is not specified explicitly, assume it to `project:.donna:session:plans:<short-id-equal-to-design-slug>`.
 2. Create a workflow with the next operations:
    - Start
    - A step for each action point in the RFC document and each item in the `Order of implementation` in Design document with the goal to minimize dependencies between steps and introduce changes incrementally.

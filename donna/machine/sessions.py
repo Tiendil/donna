@@ -11,7 +11,7 @@ from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
-from donna.workspaces import utils as workspace_utils
+from donna.workspaces import sessions as workspace_sessions
 from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
 
 
@@ -39,7 +39,6 @@ def _state_run(mutator: MutableState) -> Result[None, ErrorsList]:
 def _state_cells() -> Result[list[Cell], ErrorsList]:
     return Ok(load_state().unwrap().node().details())
 
-
 P = ParamSpec("P")
 CellsResult = Result[list[Cell], ErrorsList]
 
@@ -60,7 +59,7 @@ def _session_required(
 
 @unwrap_to_error
 def start() -> Result[list[Cell], ErrorsList]:
-    workspace_utils.session_world().unwrap().initialize(reset=True).unwrap()
+    workspace_sessions.reset_dir()
 
     machine_journal.reset().unwrap()
     _save_state(MutableState.build().freeze()).unwrap()
@@ -78,7 +77,7 @@ def reset() -> Result[list[Cell], ErrorsList]:
 
 @unwrap_to_error
 def clear() -> Result[list[Cell], ErrorsList]:
-    workspace_utils.session_world().unwrap().initialize(reset=True).unwrap()
+    workspace_sessions.reset_dir()
     return Ok([operation_succeeded("Cleared session.")])
 
 

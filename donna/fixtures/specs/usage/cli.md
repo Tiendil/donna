@@ -26,7 +26,6 @@ We may need coding agents on the each step of the process, but there no reason f
 
 ## Primary rules for agents
 
-- Donna stores all project-related data in `.donna` directory in the project root.
 - All work is always done in the context of a session. There is only one active session at a time.
 - You MUST always work on one task assigned to you.
 - You MUST keep all the information about the session in your memory.
@@ -109,7 +108,7 @@ After the session starts you MUST follow the next workflow to perform your work:
 3. Start chosen workflow by calling `donna -p <protocol> sessions run <workflow-id>`.
 4. Donna will output descriptions of all operations it performs to complete the work.
 5. Donna will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
-6. When you done processing an action request, call `donna -p <protocol> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report request completion. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>:<artifact>:<operation-id>`.
+6. When you done processing an action request, call `donna -p <protocol> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report request completion. `<next-full-operation-id>` MUST contain the full identifier of the next operation, for example `project:.donna:session:execute_rfc:review_changes`.
 7. After you complete an action request, Donna will continue workflow execution and output what you need to do next.
 
 You MUST continue following Donna's instructions until the workflow is completed.

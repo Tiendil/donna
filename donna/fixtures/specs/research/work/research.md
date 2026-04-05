@@ -20,8 +20,8 @@ kind = "donna.lib.request_action"
 fsm_mode = "start"
 ```
 
-1. Read the specification `{{ donna.lib.view("donna:usage:artifacts") }}` if you haven't done it yet.
-2. Read the specification `{{ donna.lib.view("donna:research:specs:report") }}` if you haven't done it yet.
+1. Read the specification `{{ donna.lib.view("project:.agents:donna:usage:artifacts") }}` if you haven't done it yet.
+2. Read the specification `{{ donna.lib.view("project:.agents:donna:research:specs:report") }}` if you haven't done it yet.
 3. `{{ donna.lib.goto("ensure_problem_description_exists") }}`
 
 ## Ensure problem description exists
@@ -34,7 +34,7 @@ kind = "donna.lib.request_action"
 At this point, you SHOULD have a clear description of the problem in your context. I.e., you know what you need to do in this workflow.
 
 1. If you have a problem description in your context, `{{ donna.lib.goto("prepare_artifact") }}`.
-2. If you have no problem description in your context, but you know it is in one of `session:*` artifacts, find and view it. Then `{{ donna.lib.goto("prepare_artifact") }}`.
+2. If you have no problem description in your context, but you know it is in one of `project:.donna:session:**` artifacts, find and view it. Then `{{ donna.lib.goto("prepare_artifact") }}`.
 3. If you have no problem description in your context, and you don't know where it is, ask the developer to provide it. After you get the problem description, `{{ donna.lib.goto("prepare_artifact") }}`.
 
 ## Prepare research artifact
@@ -44,8 +44,8 @@ id = "prepare_artifact"
 kind = "donna.lib.request_action"
 ```
 
-1. Based on the problem description you have, suggest an artifact name in the format `session:research:<short-problem-related-identifier>`. `<short-problem-related-identifier>` MUST be unique within the session.
-{# TODO: we can add donna.lib.list('session:*') here as the command to list all artifacts in session #}
+1. Based on the problem description you have, suggest an artifact name in the format `project:.donna:session:research:<short-problem-related-identifier>`. `<short-problem-related-identifier>` MUST be unique within the session.
+{# TODO: we can add donna.lib.list('project:.donna:session:**') here as the command to list all session artifacts #}
 2. Create the artifact and specify an original problem description in it.
 3. `{{ donna.lib.goto("formalize_research") }}`
 

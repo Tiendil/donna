@@ -33,13 +33,13 @@ We may need coding agents on each step of the process, but there is no reason fo
 - **Head section** — the H1 section of a markdown artifact (before the first H2) that contains the primary description and mandatory config block.
 - **Internal error** — an error caused by a bug or unexpected state in Donna itself. These errors are not expected to be handled by agents or users.
 - **Protocol** — the output/interaction mode for Donna (e.g., `llm`) that governs CLI behavior and rendering.
-- **Session** — the active unit of work tracked by Donna; its state and artifacts live in the `session` world and it always has exactly one active story.
+- **Session** — the active unit of work tracked by Donna; its state and artifacts live under `<project-root>/.donna/session`.
 - **Source** — the entity that implements logic of building an artifact from its raw data (text or binary).
 - **Specification** — a text artifact of kind `donna.lib.specification` that documents behavior, rules, or project guidance.
 - **Story** — a semantically consistent scope of work within a session; a conceptual unit not directly represented in the tool.
 - **Tail section** — each H2 section of an artifact.
 - **World** — a storage namespace (filesystem or other backends) that contains artifacts.
-- **Workspace** — the `.donna` directory in a project root that stores Donna's configuration, worlds, and artifacts for that project.
+- **Workspace** — the `.donna` directory at `<project-root>/.donna` that stores Donna's configuration, and runtime state.
 - **Workflow** — a `donna.lib.workflow` artifact that encodes a finite-state machine of operations guiding the agent's work.
 - **Workflow operation** — a single step in a workflow, defined by a tail section with an `id`, `kind`, and instructions.
 
@@ -47,16 +47,16 @@ We may need coding agents on each step of the process, but there is no reason fo
 
 - `./donna/` — a directory containing source code of project — `donna` CLI tool.
 - `./specs/` — a directory containing project-specific donna artifacts that is used to manage the work of AI agents on this project.
-- `./.donna/` — a directory containing donn-specific artifacts that is used to manage the work of AI agents on this project.
+- `./.donna/` — a directory containing Donna-specific artifacts used to manage the work of AI agents on this project.
 
 ## Specifications of interest
 
-Since this is the repository that contains the Donna project itself, you MUST pay additional attention to from which world you are viewing specifications.
+Since this is the repository that contains the Donna project itself, you MUST pay additional attention to which project-scoped artifact ids you are viewing.
 
-- `donna:` world contains specifications and artifacts related to the Donna tool behavior. You access them when you need to use `donna` tool itself. You change them when you make changes to the Donna behavior.
-- `project:` world contains specifications and artifacts related to the Donna project as a software project. You access them when you need to understand how to introduce changes to the Donna codebase. You change them when you change the development processes or documentation of the Donna project as a software project.
+- `project:.agents:donna:*` contains synced Donna specifications and workflows related to the Donna tool behavior. You access them when you need to use Donna itself. You change the source fixtures when you make changes to Donna behavior.
+- `project:specs:*` contains project-specific specifications and workflows for developing the Donna codebase. You access them when you need to understand how to introduce changes to this repository. You change them when you change the development processes or documentation of the Donna project as a software project.
 
 Check the next specifications:
 
-- `{{ donna.lib.view("project:core:top_level_architecture") }}` when you need to introduce any changes in Donna or to research its code.
-- `{{ donna.lib.view("project:core:error_handling") }}` when you need to implement any new feature in Donna that may produce, process or propagate errors.
+- `{{ donna.lib.view("project:specs:core:top_level_architecture") }}` when you need to introduce any changes in Donna or to research its code.
+- `{{ donna.lib.view("project:specs:core:error_handling") }}` when you need to implement any new feature in Donna that may produce, process or propagate errors.

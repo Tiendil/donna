@@ -23,14 +23,12 @@ DONNA_DIR_NAME = ".donna"
 DONNA_CONFIG_NAME = "config.toml"
 DONNA_WORLD_SESSION_DIR_NAME = "session"
 DONNA_WORLD_PROJECT_DIR_NAME = "project"
-DONNA_WORLD_HOME_DIR_NAME = "home"
-DONNA_WORLD_PROJECT_PATH = pathlib.Path("specs")
+DONNA_WORLD_PROJECT_PATH = pathlib.Path(".")
 
 
 class WorldConfig(BaseEntity):
     kind: PythonImportPath
     id: WorldId
-    session: bool
 
     model_config = pydantic.ConfigDict(extra="allow")
 
@@ -55,34 +53,9 @@ def _create_default_worlds() -> list[WorldConfig]:
     return [
         WorldConfig.model_validate(
             {
-                "id": WorldId("donna"),
-                "kind": "donna.lib.worlds.filesystem",
-                "session": False,
-                "path": pathlib.Path(".agents") / "donna",
-            }
-        ),
-        WorldConfig.model_validate(
-            {
-                "id": WorldId("home"),
-                "kind": "donna.lib.worlds.filesystem",
-                "session": False,
-                "path": f"~/{DONNA_DIR_NAME}/{DONNA_WORLD_HOME_DIR_NAME}",
-            }
-        ),
-        WorldConfig.model_validate(
-            {
                 "id": WorldId("project"),
                 "kind": "donna.lib.worlds.filesystem",
-                "session": False,
                 "path": DONNA_WORLD_PROJECT_PATH,
-            }
-        ),
-        WorldConfig.model_validate(
-            {
-                "id": WorldId("session"),
-                "kind": "donna.lib.worlds.filesystem",
-                "session": True,
-                "path": pathlib.Path(DONNA_DIR_NAME) / DONNA_WORLD_SESSION_DIR_NAME,
             }
         ),
     ]
