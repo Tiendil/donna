@@ -3,6 +3,7 @@ from functools import lru_cache
 from typing import Iterable, Protocol
 
 from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern
+from donna.domain.id_paths import NormalizedRawIdPath
 from donna.workspaces.config import config
 
 
@@ -59,13 +60,10 @@ def list_artifacts_by_pattern(  # noqa: CCR001
             if extension not in supported_extensions:
                 continue
 
-            # `parts` are always relative to the configured world root.
-            # When the default project world is rooted at `<project-root>`,
-            # this naturally produces ids under `specs`, `.agents/donna`, and `.donna/session`.
-            artifact_parts = parts + [pathlib.Path(entry.name).stem]
-            artifact_name = ":".join(artifact_parts)
+            artifact_parts = parts + [entry.name]
+            artifact_name = "/".join(artifact_parts)
             if ArtifactId.validate(artifact_name):
-                artifact_id = ArtifactId(artifact_name)
+                artifact_id = ArtifactId(NormalizedRawIdPath(artifact_name))
                 if pattern.matches(artifact_id):
                     artifacts.add(artifact_id)
 

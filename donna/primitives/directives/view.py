@@ -5,7 +5,8 @@ from jinja2.runtime import Context
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import ArtifactIdPattern
+from donna.domain import errors as domain_errors
+from donna.domain.artifact_ids import ArtifactIdPattern, normalize_path
 from donna.machine.artifacts import ArtifactPredicate
 from donna.machine.templates import Directive, PreparedDirectiveResult
 from donna.workspaces import config as workspace_config
@@ -52,7 +53,14 @@ class View(Directive):
             if keyword != "predicate":
                 return Err([ViewInvalidKeyword(keyword=keyword)])
 
-        artifact_pattern = ArtifactIdPattern.parse(str(argv[0])).unwrap()
+        artifact_pattern_text = str(argv[0])
+        normalized = normalize_path(artifact_pattern_text, relative_to=context["artifact_id"], allow_wildcards=True)
+        if normalized is None:
+            return Err(
+                [domain_errors.InvalidIdPattern(id_type=ArtifactIdPattern.__name__, value=artifact_pattern_text)]
+            )
+
+        artifact_pattern = ArtifactIdPattern.parse(str(normalized)).unwrap()
 
         predicate = kwargs.get("predicate")
         if predicate is None:

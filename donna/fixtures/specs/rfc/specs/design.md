@@ -8,11 +8,11 @@ This document describes the format and structure of a Design document used to de
 
 ## Overview
 
-Donna introduces a group of workflows located in `.agents:donna:rfc:*` namespace that organize the process of proposing, reviewing, and implementing changes to a project via RFC and Design documents.
+Donna introduces a group of workflows located in `../**` namespace that organize the process of proposing, reviewing, and implementing changes to a project via RFC and Design documents.
 
 You create a Design document to explicitly describe the exact changes you want to make to the project in order to implement the RFC.
 
-If not otherwise specified, Design documents for the session MUST be stored as `.donna:session:design:<short-problem-related-identifier>` artifacts under `<project-root>/.donna/session`.
+If not otherwise specified, Design documents for the session MUST be stored as `@/.donna/session/design/<short-problem-related-identifier>.md` artifacts under `<project-root>/.donna/session`.
 
 **The Design document MUST list exact changes to the project that will be implemented.** E.g. concrete function names and signatures, file paths, data structures, etc.
 
@@ -24,7 +24,7 @@ The Design document MUST NOT be a high-level description of the problem and solu
 
 ## Design document structure
 
-The RFC document is Donna artifact (check `{{ donna.lib.view(".agents:donna:usage:artifacts") }}`) with the next structure:
+The RFC document is Donna artifact (check `{{ donna.lib.view("../../usage/artifacts.md") }}`) with the next structure:
 
 - **Primary section** — title and short description of the proposed change.
 - **Inputs** — list of input documents that are relevant for the proposed change, starting from the RFC document.
@@ -40,7 +40,7 @@ The RFC document is Donna artifact (check `{{ donna.lib.view(".agents:donna:usag
 ## General language and format
 
 - You MUST follow [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.txt) for keywords like MUST, SHOULD, MAY, etc.
-- You MUST follow `{{ donna.lib.view(".agents:donna:usage:artifacts") }}`.
+- You MUST follow `{{ donna.lib.view("../../usage/artifacts.md") }}`.
 - You MUST follow the structure specified in this document.
 
 ### List format

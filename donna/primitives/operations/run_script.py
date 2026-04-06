@@ -183,9 +183,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         changes.append(ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id))
         return Ok(changes)
 
-    def validate_section(  # noqa: CCR001
-        self, artifact: Artifact, section_id: SectionId
-    ) -> Result[None, ErrorsList]:
+    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None, ErrorsList]:  # noqa: CCR001
         section = artifact.get_section(section_id).unwrap()
 
         meta = cast(RunScriptMeta, section.meta)

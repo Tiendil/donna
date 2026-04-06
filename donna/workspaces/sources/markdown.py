@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Protocol, cast
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId
+from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
@@ -29,7 +30,7 @@ class MarkdownSectionConstructor(Protocol):
 class Config(SourceConfig):
     kind: Literal["markdown"] = "markdown"
     supported_extensions: list[str] = [".md", ".markdown"]
-    default_section_kind: PythonPath = PythonPath("donna.lib.text")
+    default_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.text"))
     default_primary_section_id: SectionId = SectionId("primary")
 
     def construct_artifact_from_bytes(

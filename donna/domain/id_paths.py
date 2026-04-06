@@ -1,4 +1,5 @@
-from typing import Any, Generic, Sequence, TypeVar
+from functools import total_ordering
+from typing import Any, Generic, Self, Sequence, TypeVar
 
 from pydantic_core import PydanticCustomError, core_schema
 
@@ -66,26 +67,26 @@ def _invalid_pattern(id_type: str, value: Any) -> Result[TParsed, ErrorsList]:
     return Err([domain_errors.InvalidIdPattern(id_type=id_type, value=_stringify_value(value))])
 
 
-class IdPath(str):
+class NormalizedRawIdPath(str):
     __slots__ = ()
+
+
+@total_ordering
+class IdPath:
+    __slots__ = ("parts",)
+    prefix: str = ""
     delimiter: str = ""
     min_parts: int = 1
     validate_json: bool = False
+    parts: tuple[str, ...]
 
-    def __new__(cls, value: str | tuple[str, ...] | list[str]) -> "IdPath":
-        text = cls._coerce_to_text(value)
+    def __init__(self, value: NormalizedRawIdPath) -> None:
+        cls = type(self)
 
-        if not cls.validate(text):
-            raise domain_errors.InvalidIdPath(id_type=cls.__name__, value=text)
+        if not cls.validate(value):
+            raise domain_errors.InvalidIdPath(id_type=cls.__name__, value=value)
 
-        return super().__new__(cls, text)
-
-    @classmethod
-    def _coerce_to_text(cls, value: str | tuple[str, ...] | list[str]) -> str:
-        if isinstance(value, str):
-            return value
-
-        return cls.delimiter.join(str(part) for part in value)
+        object.__setattr__(self, "parts", tuple(cls._split(value)))
 
     @classmethod
     def _split(cls, value: str) -> list[str]:
@@ -114,8 +115,61 @@ class IdPath(str):
         return cls._validate_parts(parts)
 
     @property
-    def parts(self) -> tuple[str, ...]:
-        return tuple(self._split(str.__str__(self)))
+    def raw_value(self) -> str:
+        return self.delimiter.join(self.parts)
+
+    @classmethod
+    def normalize_raw_value(cls, value: str) -> NormalizedRawIdPath | None:
+        if not isinstance(value, str) or not value:
+            return None
+
+        normalized = value
+        if cls.prefix and normalized.startswith(cls.prefix):
+            normalized = normalized.removeprefix(cls.prefix)
+
+        if not cls.validate(normalized):
+            return None
+
+        return NormalizedRawIdPath(normalized)
+
+    def __str__(self) -> str:
+        return f"{self.prefix}{self.raw_value}"
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({self.raw_value!r})"
+
+    def __hash__(self) -> int:
+        return hash((type(self), self.parts))
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        return self.parts == other.parts
+
+    def __lt__(self, other: object) -> bool:
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        return self.parts < other.parts
+
+    def __copy__(self) -> Self:
+        return self
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> Self:
+        memo[id(self)] = self
+        return self
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        raise AttributeError(f"{type(self).__name__} is immutable")
+
+    @classmethod
+    def parse(cls, text: str) -> Result[Self, ErrorsList]:
+        normalized = cls.normalize_raw_value(text)
+        if normalized is None:
+            return _invalid_format(cls.__name__, text)
+
+        return Ok(cls(normalized))
 
     @classmethod
     def _build_pydantic_schema(cls, validate_func: Any) -> core_schema.CoreSchema:
@@ -142,10 +196,11 @@ class IdPath(str):
             if not isinstance(v, str):
                 raise _pydantic_type_error(cls.__name__, v)
 
-            if not cls.validate(v):
+            normalized = cls.normalize_raw_value(v)
+            if normalized is None:
                 raise _pydantic_value_error(cls.__name__, v)
 
-            return cls(v)
+            return cls(normalized)
 
         return cls._build_pydantic_schema(validate)
 
@@ -176,6 +231,9 @@ class IdPathPattern(tuple[str, ...], Generic[TIdPath]):
         if not cls.id_class.delimiter:
             return _invalid_pattern(cls.__name__, text)
 
+        if cls.id_class.prefix and text.startswith(cls.id_class.prefix):
+            text = text.removeprefix(cls.id_class.prefix)
+
         parts = text.split(cls.id_class.delimiter)
 
         if any(part == "" for part in parts):
@@ -188,7 +246,7 @@ class IdPathPattern(tuple[str, ...], Generic[TIdPath]):
         return Ok(cls(parts))
 
     def matches(self, value: TIdPath) -> bool:
-        return _match_pattern_parts(self, self.id_class._split(str(value)))
+        return _match_pattern_parts(self, value.parts)
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:  # noqa: CCR001

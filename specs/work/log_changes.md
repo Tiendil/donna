@@ -41,7 +41,7 @@ id = "analyze_scoped_changes"
 kind = "donna.lib.request_action"
 ```
 
-1. Focus on changes in the `.donna:session:*` artifacts provided by the parent workflow.
+1. Focus on changes in the `@/.donna/session/**` artifacts provided by the parent workflow.
 2. Summarize the main changes within that scoped set to use for the changelog entry.
 3. Only after the scoped analysis, check the git state to confirm the summary reflects the current working tree.
 4. `{{ donna.lib.goto("analyze_branch_name") }}`

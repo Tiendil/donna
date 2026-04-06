@@ -76,7 +76,7 @@ kind = "donna.lib.request_action"
 
 1. Choose the workflow to plan the work. If you created a Design document in the previous step, use it as a basis.
 2. Run the chosen workflow.
-3. Ensure you know the workflow id created in the previous step (default is `.donna:session:execute_rfc` if not specified).
+3. Ensure you know the workflow id created in the previous step (default is `@/.donna/session/execute_rfc.md` if not specified).
 4. After completing the workflow `{{ donna.lib.goto("execute_rfc_work") }}`.
 
 ## Execute RFC work
@@ -86,7 +86,7 @@ id = "execute_rfc_work"
 kind = "donna.lib.request_action"
 ```
 
-1. Run the workflow created by the plan step (default: `.donna:session:execute_rfc`) and complete it.
+1. Run the workflow created by the plan step (default: `@/.donna/session/execute_rfc.md`) and complete it.
 2. After completing the workflow `{{ donna.lib.goto("polish_changes") }}`.
 
 ## Polish changes

@@ -1,46 +1,67 @@
 import pathlib
-from typing import Annotated
+from typing import Annotated, NoReturn
 
 import typer
 
 from donna.cli.utils import output_cells
 from donna.core.errors import ErrorsList
+from donna.domain import errors as domain_errors
 from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern, ArtifactSectionId
 from donna.domain.internal_ids import ActionRequestId
 from donna.machine.artifacts import ArtifactPredicate
 from donna.protocol.modes import Mode
 
 
-def _exit_with_errors(errors: ErrorsList) -> None:
+def _exit_with_errors(errors: ErrorsList) -> NoReturn:
     output_cells([error.node().info() for error in errors])
     raise typer.Exit(code=0)
 
 
-def _parse_artifact_id(value: str) -> ArtifactId:
-    result = ArtifactId.parse(value)
-    errors = result.err()
+def _parse_result_or_exit[T](result: T | None, errors: ErrorsList | None) -> T:
     if errors is not None:
         _exit_with_errors(errors)
 
-    return result.unwrap()
+    assert result is not None
+    return result
+
+
+def _absolute_artifact_id_or_exit(value: str) -> str:
+    if not value.startswith(ArtifactId.prefix):
+        _exit_with_errors([domain_errors.InvalidIdFormat(id_type=ArtifactId.__name__, value=value)])
+
+    return value
+
+
+def _absolute_artifact_section_id_or_exit(value: str) -> str:
+    if not value.startswith(ArtifactId.prefix):
+        _exit_with_errors([domain_errors.InvalidIdFormat(id_type=f"{ArtifactSectionId.__name__} format", value=value)])
+
+    return value
+
+
+def _absolute_artifact_pattern_or_exit(value: str) -> str:
+    if value in {"*", "**"} or value.startswith("*/") or value.startswith("**/"):
+        return f"{ArtifactId.prefix}{value}"
+
+    if not value.startswith(ArtifactId.prefix):
+        _exit_with_errors([domain_errors.InvalidIdPattern(id_type=ArtifactIdPattern.__name__, value=value)])
+
+    return value
+
+
+def _parse_artifact_id(value: str) -> ArtifactId:
+    result = ArtifactId.parse(_absolute_artifact_id_or_exit(value))
+    return _parse_result_or_exit(result.ok(), result.err())
 
 
 def _parse_artifact_id_pattern(value: str) -> ArtifactIdPattern:
-    result = ArtifactIdPattern.parse(value)
-    errors = result.err()
-    if errors is not None:
-        _exit_with_errors(errors)
-
-    return result.unwrap()
+    result = ArtifactIdPattern.parse(_absolute_artifact_pattern_or_exit(value))
+    return _parse_result_or_exit(result.ok(), result.err())
 
 
 def _parse_artifact_section_id(value: str) -> ArtifactSectionId:
-    result = ArtifactSectionId.parse(value)
-    errors = result.err()
-    if errors is not None:
-        _exit_with_errors(errors)
-
-    return result.unwrap()
+    result = ArtifactSectionId.parse(_absolute_artifact_section_id_or_exit(value))
+    return _parse_result_or_exit(result.ok(), result.err())
 
 
 def _parse_artifact_predicate(value: str) -> ArtifactPredicate:
@@ -96,7 +117,7 @@ ArtifactIdArgument = Annotated[
     ArtifactId,
     typer.Argument(
         parser=_parse_artifact_id,
-        help="Artifact ID in project-relative form 'artifact[:path]' (e.g., 'specs:intro').",
+        help="Artifact ID in absolute project-root form (e.g., '@/specs/intro.md').",
     ),
 ]
 
@@ -105,7 +126,7 @@ ArtifactIdPatternArgument = Annotated[
     ArtifactIdPattern,
     typer.Argument(
         parser=_parse_artifact_id_pattern,
-        help="Artifact pattern (supports '*' and '**', e.g. 'specs:*' or '**:intro').",
+        help="Artifact pattern in absolute form '@/...' or rooted wildcard form like '*/x.md' and '**/x.md'.",
     ),
 ]
 
@@ -125,8 +146,8 @@ ArtifactSectionIdArgument = Annotated[
     typer.Argument(
         parser=_parse_artifact_section_id,
         help=(
-            "Artifact section ID in project-relative form 'artifact:section' "
-            "(e.g. '.donna:session:execute_rfc:finish')."
+            "Artifact section ID in absolute project-root form 'artifact:section' "
+            "(e.g. '@/.donna/session/plans/artifact_id_filepaths.md:finish')."
         ),
     ),
 ]

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, TypeVar
 
 from pydantic_core import core_schema
 
@@ -6,6 +6,8 @@ from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result
 from donna.domain import errors as domain_errors
 from donna.domain.id_paths import _invalid_format, _pydantic_type_error, _pydantic_value_error
+
+TIdentifier = TypeVar("TIdentifier", bound="Identifier")
 
 
 def _is_artifact_slug_part(part: str) -> bool:
@@ -36,7 +38,7 @@ class Identifier(str):
         return value.isidentifier()
 
     @classmethod
-    def parse(cls, text: str) -> Result["Identifier", ErrorsList]:
+    def parse(cls: type[TIdentifier], text: str) -> Result[TIdentifier, ErrorsList]:
         if not isinstance(text, str) or not text:
             return _invalid_format(cls.__name__, text)
 
@@ -69,3 +71,10 @@ class Identifier(str):
 
 class SectionId(Identifier):
     __slots__ = ()
+
+    @classmethod
+    def validate(cls, value: str) -> bool:
+        if not isinstance(value, str):
+            return False
+
+        return _is_artifact_slug_part(value)

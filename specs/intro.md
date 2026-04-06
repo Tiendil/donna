@@ -53,10 +53,10 @@ We may need coding agents on each step of the process, but there is no reason fo
 
 Since this is the repository that contains the Donna project itself, you MUST pay additional attention to which project-scoped artifact ids you are viewing.
 
-- `.agents:donna:*` contains synced Donna specifications and workflows related to the Donna tool behavior. You access them when you need to use Donna itself. You change the source fixtures when you make changes to Donna behavior.
-- `specs:*` contains project-specific specifications and workflows for developing the Donna codebase. You access them when you need to understand how to introduce changes to this repository. You change them when you change the development processes or documentation of the Donna project as a software project.
+- `@/.agents/donna/**` contains synced Donna specifications and workflows related to the Donna tool behavior. You access them when you need to use Donna itself. You change the source fixtures when you make changes to Donna behavior.
+- `@/specs/**` contains project-specific specifications and workflows for developing the Donna codebase. You access them when you need to understand how to introduce changes to this repository. You change them when you change the development processes or documentation of the Donna project as a software project.
 
 Check the next specifications:
 
-- `{{ donna.lib.view("specs:core:top_level_architecture") }}` when you need to introduce any changes in Donna or to research its code.
-- `{{ donna.lib.view("specs:core:error_handling") }}` when you need to implement any new feature in Donna that may produce, process or propagate errors.
+- `{{ donna.lib.view("@/specs/core/top_level_architecture.md") }}` when you need to introduce any changes in Donna or to research its code.
+- `{{ donna.lib.view("@/specs/core/error_handling.md") }}` when you need to implement any new feature in Donna that may produce, process or propagate errors.

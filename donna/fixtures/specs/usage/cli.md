@@ -108,7 +108,7 @@ After the session starts you MUST follow the next workflow to perform your work:
 3. Start chosen workflow by calling `donna -p <protocol> sessions run <workflow-id>`.
 4. Donna will output descriptions of all operations it performs to complete the work.
 5. Donna will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
-6. When you done processing an action request, call `donna -p <protocol> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report request completion. `<next-full-operation-id>` MUST contain the full identifier of the next operation, for example `.donna:session:execute_rfc:review_changes`.
+6. When you done processing an action request, call `donna -p <protocol> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report request completion. `<next-full-operation-id>` MUST contain the full identifier of the next operation, for example `@/.donna/session/execute_rfc.md:review_changes`.
 7. After you complete an action request, Donna will continue workflow execution and output what you need to do next.
 
 You MUST continue following Donna's instructions until the workflow is completed.
@@ -151,14 +151,16 @@ Commands that accept an artifact pattern (`artifacts list`, `artifacts view`, `a
 
 The format of `<artifact-pattern>` is as follows:
 
-- full artifact identifier: `<artifact>`
-- `*` — single wildcard matches a single level in the artifact path. Examples:
-  - `*:name` — matches all artifacts named `name`.
-  - `.agents:*:intro` — matches all artifacts with id `something:intro` under `.agents`.
-- `**` — double wildcard matches multiple levels in the artifact path. Examples:
-  - `**:name` — matches all artifacts with id ending with `:name` in the project workspace.
-  - `.donna:**` — matches all artifacts under `.donna`.
-  - `.agents:**:intro` — matches all artifacts with id ending with `:intro` under `.agents`.
+- full artifact identifier: `@/...`
+- `*` — single wildcard matches a single level in the rooted artifact path. Examples:
+  - `*/intro.md` — matches all artifacts with filename `intro.md` exactly one directory below the project root.
+  - `@/*/intro.md` — equivalent full form.
+- `**` — double wildcard matches multiple levels in the rooted artifact path. Examples:
+  - `**/name.md` — matches all artifacts with filename `name.md` anywhere in the project workspace.
+  - `@/**/intro.md` — equivalent full form.
+  - `@/.donna/**` — matches all artifacts under `.donna`.
+
+CLI arguments MUST NOT use relative artifact paths like `./...` or `../../...`; use absolute `@/...` paths or rooted wildcard forms.
 
 ### Working with journal
 
@@ -205,7 +207,7 @@ Agents MUST NOT log:
 
   1. Direct instructions from the developer.
   2. `AGENTS.md` document.
-  3. Project-relative specifications under `specs:` or `.agents:donna:`.
+  3. Project-relative specifications under `../../../specs/**` or `../**`.
   4. This document.
 
 **All Donna CLI commands MUST include an explicit protocol selection using `-p <protocol>`.** Like `donna -p llm <command>`.

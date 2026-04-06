@@ -21,9 +21,9 @@ Donna does not read world definitions from `<project-root>/.donna/config.toml`.
 
 The project world and its primary artifact areas are:
 
-- `specs:*` — artifacts under `<project-root>/specs`, owned by the project itself.
-- `.agents:donna:*` — synced Donna usage specs and workflows under `<project-root>/.agents/donna`.
-- `.donna:session:*` — session artifacts under `<project-root>/.donna/session`.
+- `../../../specs/**` — artifacts under `<project-root>/specs`, owned by the project itself.
+- `../**` — synced Donna usage specs and workflows under `<project-root>/.agents/donna`.
+- `@/.donna/session/**` — session artifacts under `<project-root>/.donna/session`.
 
 The project world has a free layout, defined by the developers who own the project.
 
@@ -37,6 +37,6 @@ Donna still writes its own session state and journal data under `<project-root>/
 
 ## Intro Artifacts
 
-It is a recommended practice to provide short introductory artifacts such as `.agents:donna:intro` and `specs:intro` at meaningful roots inside the project world.
+It is a recommended practice to provide short introductory artifacts such as `../intro.md` and `../../../specs/intro.md` at meaningful roots inside the project world.
 
-So, the agent can load the relevant introductions in commands such as `donna -p llm artifacts view '**:intro'`.
+So, the agent can load the relevant introductions in commands such as `donna -p llm artifacts view '**/intro.md'`.

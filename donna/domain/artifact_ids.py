@@ -1,40 +1,113 @@
+import pathlib
 from typing import Sequence
 
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
-from donna.domain.id_paths import IdPath, IdPathPattern, _invalid_format
+from donna.domain.id_paths import IdPath, IdPathPattern, NormalizedRawIdPath
 from donna.domain.ids import SectionId, _is_artifact_slug_part
+
+ARTIFACT_ID_PREFIX = "@/"
+
+
+def normalize_path(  # noqa: CCR001
+    text: str,
+    *,
+    relative_to: "ArtifactId | None" = None,
+    allow_wildcards: bool,
+) -> NormalizedRawIdPath | None:
+    if not isinstance(text, str) or not text:
+        return None
+
+    if text.startswith("/"):
+        return None
+
+    if text.startswith(ARTIFACT_ID_PREFIX):
+        raw = text.removeprefix(ARTIFACT_ID_PREFIX)
+        normalized_parts: list[str] = []
+    else:
+        raw = text
+        normalized_parts = list(relative_to.parts[:-1]) if relative_to is not None else []
+
+    if not raw:
+        return None
+
+    for part in raw.split("/"):
+        if part == "":
+            return None
+
+        if part == ".":
+            continue
+
+        if part == "..":
+            if not normalized_parts:
+                return None
+            normalized_parts.pop()
+            continue
+
+        if allow_wildcards and part in {"*", "**"}:
+            normalized_parts.append(part)
+            continue
+
+        if not _is_artifact_slug_part(part):
+            return None
+
+        normalized_parts.append(part)
+
+    if not normalized_parts:
+        return None
+
+    last_part = normalized_parts[-1]
+    if not allow_wildcards or last_part not in {"*", "**"}:
+        if not pathlib.PurePosixPath(last_part).suffix:
+            return None
+
+    return NormalizedRawIdPath("/".join(normalized_parts))
+
+
+def normalize_artifact_section_id(text: str, *, relative_to: "ArtifactId | None" = None) -> NormalizedRawIdPath | None:
+    if not isinstance(text, str) or not text:
+        return None
+
+    try:
+        artifact_part, local_part = text.rsplit(ArtifactSectionId.delimiter, maxsplit=1)
+    except ValueError:
+        return None
+
+    normalized_artifact_id = normalize_path(artifact_part, relative_to=relative_to, allow_wildcards=False)
+    if normalized_artifact_id is None or not SectionId.validate(local_part):
+        return None
+
+    return NormalizedRawIdPath(f"{normalized_artifact_id}{ArtifactSectionId.delimiter}{local_part}")
 
 
 class ArtifactId(IdPath):
     __slots__ = ()
-    delimiter = ":"
+    prefix = ARTIFACT_ID_PREFIX
+    delimiter = "/"
     validate_json = True
 
     @classmethod
     def _validate_parts(cls, parts: Sequence[str]) -> bool:
-        return all(_is_artifact_slug_part(part) for part in parts)
+        if not parts:
+            return False
+
+        if not all(_is_artifact_slug_part(part) for part in parts):
+            return False
+
+        return bool(pathlib.PurePosixPath(parts[-1]).suffix)
 
     def to_full_local(self, local_id: SectionId) -> "ArtifactSectionId":
-        return ArtifactSectionId(f"{self}:{local_id}")
-
-    @classmethod
-    def parse(cls, text: str) -> Result["ArtifactId", ErrorsList]:
-        if not isinstance(text, str) or not text:
-            return _invalid_format(cls.__name__, text)
-
-        if not cls.delimiter:
-            return _invalid_format(cls.__name__, text)
-
-        if not cls.validate(text):
-            return _invalid_format(cls.__name__, text)
-
-        return Ok(cls(text))
+        return ArtifactSectionId(NormalizedRawIdPath(f"{self.raw_value}:{local_id}"))
 
 
 class ArtifactIdPattern(IdPathPattern["ArtifactId"]):
     __slots__ = ()
     id_class = ArtifactId
+
+    def __str__(self) -> str:
+        rendered = self.id_class.delimiter.join(self)
+        if self and self[0] in {"*", "**"}:
+            return rendered
+
+        return f"{self.id_class.prefix}{rendered}"
 
     @classmethod
     def _validate_pattern_part(cls, part: str) -> bool:
@@ -44,13 +117,10 @@ class ArtifactIdPattern(IdPathPattern["ArtifactId"]):
         return _is_artifact_slug_part(part)
 
 
-class _ColonPath(IdPath):
+class ArtifactSectionId(IdPath):
     __slots__ = ()
+    prefix = ARTIFACT_ID_PREFIX
     delimiter = ":"
-
-
-class ArtifactSectionId(_ColonPath):
-    __slots__ = ()
     min_parts = 2
     validate_json = True
 
@@ -63,41 +133,8 @@ class ArtifactSectionId(_ColonPath):
 
     @property
     def artifact_id(self) -> ArtifactId:
-        return ArtifactId(self.delimiter.join(self.parts[:-1]))
+        return ArtifactId(NormalizedRawIdPath(self.delimiter.join(self.parts[:-1])))
 
     @property
     def local_id(self) -> SectionId:
         return SectionId(self.parts[-1])
-
-    @classmethod
-    def parse(cls, text: str) -> Result["ArtifactSectionId", ErrorsList]:  # noqa: CCR001
-        if not isinstance(text, str) or not text:
-            return _invalid_format(f"{cls.__name__} format", text)
-
-        if not cls.delimiter:
-            return _invalid_format(f"{cls.__name__} format", text)
-
-        try:
-            artifact_part, local_part = text.rsplit(cls.delimiter, maxsplit=1)
-        except ValueError:
-            return _invalid_format(f"{cls.__name__} format", text)
-
-        full_artifact_id_result = ArtifactId.parse(artifact_part)
-        errors = full_artifact_id_result.err()
-        if errors is not None:
-            return Err(errors)
-
-        artifact_id = full_artifact_id_result.ok()
-        if artifact_id is None:
-            return _invalid_format(f"{cls.__name__} format", text)
-
-        local_id_result = SectionId.parse(local_part)
-        local_errors = local_id_result.err()
-        if local_errors is not None:
-            return Err(local_errors)
-
-        local_id = local_id_result.ok()
-        if local_id is None:
-            return _invalid_format(f"{cls.__name__} format", text)
-
-        return Ok(cls(f"{artifact_id}{cls.delimiter}{local_id}"))

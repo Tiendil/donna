@@ -27,7 +27,7 @@ The code is separated by layers/subsystems into subpackages:
 - `donna.primitives` — code that implements basic building blocks for Donna's behavior: concrete implementations of various classes from the `donna.machine`.
 - `donna.lib` — module that contains constructed primitives to be used in donna artifacts by referencing them by python import path. Like `donna.lib.workflow`, `donna.lib.goto`, etc.
 - `donna.fixtures.skills` — bundled skills that are distributed with Donna and synced into project workspaces under `.agents/skills`.
-- `donna.fixtures.specs` — bundled Donna specifications and workflows that are distributed with Donna and synced into project workspaces under `.agents/donna`, where they are addressed as `.agents:donna:*` artifacts.
+- `donna.fixtures.specs` — bundled Donna specifications and workflows that are distributed with Donna and synced into project workspaces under `.agents/donna`, where they are addressed as `@/.agents/donna/**` artifacts.
 
 ## Data structures
 

@@ -43,27 +43,13 @@ class World(BaseWorld):
 
     def _resolve_artifact_file(self, artifact_id: ArtifactId) -> Result[pathlib.Path | None, ErrorsList]:
         artifact_path = self.path.joinpath(*artifact_id.parts)
-        parent = artifact_path.parent
-
-        if not parent.exists():
+        if not artifact_path.parent.exists():
             return Ok(None)
 
-        from donna.workspaces.config import config
-
-        supported_extensions = config().supported_extensions()
-        matches = [
-            path
-            for path in parent.glob(f"{artifact_path.name}.*")
-            if path.is_file() and path.suffix.lower() in supported_extensions
-        ]
-
-        if not matches:
+        if not artifact_path.exists() or not artifact_path.is_file():
             return Ok(None)
 
-        if len(matches) > 1:
-            return Err([world_errors.ArtifactMultipleFiles(artifact_id=artifact_id)])
-
-        return Ok(matches[0])
+        return Ok(artifact_path)
 
     def has(self, artifact_id: ArtifactId) -> bool:
         resolve_result = self._resolve_artifact_file(artifact_id)
