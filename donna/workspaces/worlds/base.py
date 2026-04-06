@@ -7,7 +7,6 @@ from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result
 from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern
-from donna.domain.ids import WorldId
 from donna.domain.types import Milliseconds
 from donna.machine.artifacts import Artifact
 
@@ -27,8 +26,6 @@ class RawArtifact(BaseEntity, ABC):
 
 
 class World(BaseEntity, ABC):
-    id: WorldId
-
     @abstractmethod
     def has(self, artifact_id: ArtifactId) -> bool: ...  # noqa: E704
 

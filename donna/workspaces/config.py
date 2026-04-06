@@ -8,7 +8,6 @@ import pydantic
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
-from donna.domain.ids import WorldId
 from donna.domain.python_path import PythonPath
 from donna.machine.primitives import resolve_primitive
 from donna.workspaces import errors as world_errors
@@ -22,7 +21,6 @@ if TYPE_CHECKING:
 DONNA_DIR_NAME = ".donna"
 DONNA_CONFIG_NAME = "config.toml"
 DONNA_WORLD_SESSION_DIR_NAME = "session"
-DONNA_WORLD_PROJECT_DIR_NAME = "project"
 
 
 class SourceConfig(BaseEntity):
@@ -45,7 +43,6 @@ def _construct_project_world() -> BaseWorld:
     from donna.workspaces.worlds.filesystem import World as FilesystemWorld
 
     return FilesystemWorld(
-        id=WorldId(DONNA_WORLD_PROJECT_DIR_NAME),
         path=project_dir().resolve(),
     )
 

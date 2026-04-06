@@ -67,16 +67,5 @@ class Identifier(str):
         )
 
 
-class WorldId(Identifier):
-    __slots__ = ()
-
-    @classmethod
-    def validate(cls, value: str) -> bool:
-        if not isinstance(value, str):
-            return False
-
-        return _is_artifact_slug_part(value)
-
-
 class SectionId(Identifier):
     __slots__ = ()
