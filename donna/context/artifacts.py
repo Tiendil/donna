@@ -9,8 +9,7 @@ from donna.machine.artifacts import Artifact, ArtifactPredicate, ArtifactSection
 from donna.workspaces.templates import RenderMode
 
 if TYPE_CHECKING:
-    from donna.workspaces.artifacts import ArtifactRenderContext
-    from donna.workspaces.artifacts import FilesystemRawArtifact
+    from donna.workspaces.artifacts import ArtifactRenderContext, FilesystemRawArtifact
 
 
 class _ArtifactCacheValue(TimedCacheValue):

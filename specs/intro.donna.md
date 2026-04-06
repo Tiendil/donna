@@ -57,5 +57,5 @@ Since this is the repository that contains the Donna project itself, you MUST pa
 
 Check the next specifications:
 
-- `{{ donna.lib.view("@/specs/core/top_level_architecture.md") }}` when you need to introduce any changes in Donna or to research its code.
-- `{{ donna.lib.view("@/specs/core/error_handling.md") }}` when you need to implement any new feature in Donna that may produce, process or propagate errors.
+- `{{ donna.lib.view("@/specs/core/top_level_architecture.donna.md") }}` when you need to introduce any changes in Donna or to research its code.
+- `{{ donna.lib.view("@/specs/core/error_handling.donna.md") }}` when you need to implement any new feature in Donna that may produce, process or propagate errors.

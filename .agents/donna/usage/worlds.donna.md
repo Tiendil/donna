@@ -37,6 +37,6 @@ Donna still writes its own session state and journal data under `<project-root>/
 
 ## Intro Artifacts
 
-It is a recommended practice to provide short introductory artifacts such as `../intro.md` and `../../../specs/intro.md` at meaningful roots inside the project world.
+It is a recommended practice to provide short introductory artifacts such as `../intro.donna.md` and `../../../specs/intro.donna.md` at meaningful roots inside the project world.
 
-So, the agent can load the relevant introductions in commands such as `donna -p llm artifacts view '**/intro.md'`.
+So, the agent can load the relevant introductions in commands such as `donna -p llm artifacts view '**/intro.donna.md'`.

@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 class SourceConfig(BaseEntity, ABC):
     kind: str
-    supported_extensions: list[str] = pydantic.Field(default_factory=list)
+    extension: str
 
     @classmethod
     def normalize_extension(cls, extension: str) -> str:
@@ -36,20 +36,13 @@ class SourceConfig(BaseEntity, ABC):
 
         return normalized
 
-    @pydantic.field_validator("supported_extensions")
+    @pydantic.field_validator("extension")
     @classmethod
-    def _normalize_supported_extensions(cls, values: list[str]) -> list[str]:
-        normalized: list[str] = []
-
-        for value in values:
-            extension = cls.normalize_extension(value)
-            if extension not in normalized:
-                normalized.append(extension)
-
-        return normalized
+    def _normalize_extension(cls, value: str) -> str:
+        return cls.normalize_extension(value)
 
     def supports_extension(self, extension: str) -> bool:
-        return self.normalize_extension(extension) in self.supported_extensions
+        return self.normalize_extension(extension) == self.extension
 
     @abstractmethod
     def construct_artifact_from_bytes(  # noqa: E704

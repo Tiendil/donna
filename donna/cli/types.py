@@ -10,6 +10,7 @@ from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern, ArtifactSec
 from donna.domain.internal_ids import ActionRequestId
 from donna.machine.artifacts import ArtifactPredicate
 from donna.protocol.modes import Mode
+from donna.workspaces.config import config as workspace_config
 
 
 def _exit_with_errors(errors: ErrorsList) -> NoReturn:
@@ -62,6 +63,55 @@ def _parse_artifact_id_pattern(value: str) -> ArtifactIdPattern:
 def _parse_artifact_section_id(value: str) -> ArtifactSectionId:
     result = ArtifactSectionId.parse(_absolute_artifact_section_id_or_exit(value))
     return _parse_result_or_exit(result.ok(), result.err())
+
+
+def _match_supported_extension(filename: str) -> str | None:
+    supported_extensions = workspace_config().supported_extensions()
+    normalized = filename.strip().lower()
+
+    for extension in sorted(supported_extensions, key=len, reverse=True):
+        if normalized.endswith(extension):
+            return extension
+
+    return None
+
+
+def _artifact_filename(value: str) -> str:
+    return pathlib.PurePosixPath(value.split(ArtifactSectionId.delimiter, maxsplit=1)[0]).name
+
+
+def _pattern_filename(value: str) -> str | None:
+    last_part = pathlib.PurePosixPath(value).name
+    if last_part in {"*", "**"}:
+        return None
+
+    dot_index = last_part.find(".")
+    if dot_index == -1:
+        return None
+
+    return f"placeholder{last_part[dot_index:]}"
+
+
+def validate_supported_artifact_id(artifact_id: ArtifactId) -> None:
+    if _match_supported_extension(_artifact_filename(str(artifact_id))) is None:
+        raise typer.BadParameter(
+            f"Unsupported artifact extension for '{artifact_id}'. Use a filename extension supported by the sources."
+        )
+
+
+def validate_supported_artifact_pattern(pattern: ArtifactIdPattern) -> None:
+    filename = _pattern_filename(str(pattern))
+    if filename is None:
+        return
+
+    if _match_supported_extension(filename) is None:
+        raise typer.BadParameter(
+            f"Unsupported artifact extension for '{pattern}'. Use a filename extension supported by the sources."
+        )
+
+
+def validate_supported_artifact_section_id(section_id: ArtifactSectionId) -> None:
+    validate_supported_artifact_id(section_id.artifact_id)
 
 
 def _parse_artifact_predicate(value: str) -> ArtifactPredicate:
@@ -117,7 +167,10 @@ ArtifactIdArgument = Annotated[
     ArtifactId,
     typer.Argument(
         parser=_parse_artifact_id,
-        help="Artifact ID in absolute project-root form (e.g., '@/specs/intro.md').",
+        help=(
+            "Artifact ID in absolute project-root form with a supported source "
+            "extension (e.g., '@/specs/intro.donna.md')."
+        ),
     ),
 ]
 
@@ -126,7 +179,11 @@ ArtifactIdPatternArgument = Annotated[
     ArtifactIdPattern,
     typer.Argument(
         parser=_parse_artifact_id_pattern,
-        help="Artifact pattern in absolute form '@/...' or rooted wildcard form like '*/x.md' and '**/x.md'.",
+        help=(
+            "Artifact pattern in absolute form '@/...' or rooted wildcard form like "
+            "'*/x.donna.md' and '**/x.donna.md'. Patterns that name a file "
+            "extension must use a supported source extension."
+        ),
     ),
 ]
 
@@ -147,7 +204,7 @@ ArtifactSectionIdArgument = Annotated[
         parser=_parse_artifact_section_id,
         help=(
             "Artifact section ID in absolute project-root form 'artifact:section' "
-            "(e.g. '@/.donna/session/plans/artifact_id_filepaths.md:finish')."
+            "(e.g. '@/.donna/session/plans/artifact_id_filepaths.donna.md:finish')."
         ),
     ),
 ]

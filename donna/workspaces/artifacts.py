@@ -2,8 +2,8 @@ import pathlib
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
-from donna.core.errors import ErrorsList
 from donna.core.entities import BaseEntity
+from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern
 from donna.domain.id_paths import NormalizedRawIdPath
@@ -33,15 +33,23 @@ class FilesystemRawArtifact(BaseEntity):
         return self.path.read_bytes()
 
     @unwrap_to_error
-    def render(
-        self, artifact_id: ArtifactId, render_context: ArtifactRenderContext
-    ) -> Result["Artifact", ErrorsList]:
+    def render(self, artifact_id: ArtifactId, render_context: ArtifactRenderContext) -> Result["Artifact", ErrorsList]:
         return Ok(render_artifact_from_source(artifact_id, self.source_id, self.get_bytes(), render_context).unwrap())
 
 
 def _should_skip_directory(parts: list[str], name: str) -> bool:
     # `.donna/tmp` contains scratch files and must not be treated as durable artifacts.
     return parts == [".donna"] and name == "tmp"
+
+
+def _match_supported_extension(path: pathlib.Path, supported_extensions: set[str]) -> str | None:
+    name = path.name.lower()
+
+    for extension in sorted(supported_extensions, key=len, reverse=True):
+        if name.endswith(extension):
+            return extension
+
+    return None
 
 
 def list_artifact_ids(pattern: ArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
@@ -56,7 +64,7 @@ def list_artifact_ids(pattern: ArtifactIdPattern) -> list[ArtifactId]:  # noqa: 
     supported_extensions = config().supported_extensions()
     artifacts: set[ArtifactId] = set()
 
-    def walk(node: pathlib.Path, parts: list[str]) -> None:
+    def walk(node: pathlib.Path, parts: list[str]) -> None:  # noqa: CCR001
         for entry in sorted(node.iterdir(), key=lambda item: item.name):
             if entry.is_dir():
                 if _should_skip_directory(parts, entry.name):
@@ -72,8 +80,8 @@ def list_artifact_ids(pattern: ArtifactIdPattern) -> list[ArtifactId]:  # noqa: 
             if not entry.is_file():
                 continue
 
-            extension = entry.suffix.lower()
-            if extension not in supported_extensions:
+            extension = _match_supported_extension(entry, supported_extensions)
+            if extension is None:
                 continue
 
             artifact_parts = parts + [entry.name]
@@ -117,13 +125,24 @@ def fetch_raw_artifact(artifact_id: ArtifactId) -> Result[FilesystemRawArtifact,
     if artifact_path is None:
         return Err([world_errors.ArtifactNotFound(artifact_id=artifact_id)])
 
-    source_config = config().find_source_for_extension(artifact_path.suffix)
+    supported_extension = _match_supported_extension(artifact_path, config().supported_extensions())
+    if supported_extension is None:
+        return Err(
+            [
+                world_errors.UnsupportedArtifactSourceExtension(
+                    artifact_id=artifact_id,
+                    extension="".join(artifact_path.suffixes).lower() or artifact_path.suffix.lower(),
+                )
+            ]
+        )
+
+    source_config = config().find_source_for_extension(supported_extension)
     if source_config is None:
         return Err(
             [
                 world_errors.UnsupportedArtifactSourceExtension(
                     artifact_id=artifact_id,
-                    extension=artifact_path.suffix,
+                    extension=supported_extension,
                 )
             ]
         )

@@ -29,7 +29,7 @@ class MarkdownSectionConstructor(Protocol):
 
 class Config(SourceConfig):
     kind: Literal["markdown"] = "markdown"
-    supported_extensions: list[str] = [".md", ".markdown"]
+    extension: str = ".donna.md"
     default_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.text"))
     default_primary_section_id: SectionId = SectionId("primary")
 

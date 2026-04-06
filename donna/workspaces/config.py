@@ -24,6 +24,7 @@ DONNA_WORLD_SESSION_DIR_NAME = "session"
 
 class SourceConfig(BaseEntity):
     kind: PythonPath
+    extension: str
 
     model_config = pydantic.ConfigDict(extra="allow")
 
@@ -33,6 +34,7 @@ def _default_sources() -> list[SourceConfig]:
         SourceConfig.model_validate(
             {
                 "kind": "donna.lib.sources.markdown",
+                "extension": ".donna.md",
             }
         ),
     ]
@@ -91,8 +93,7 @@ class Config(BaseEntity):
         extensions: set[str] = set()
 
         for source in self._sources_instances:
-            for extension in source.supported_extensions:
-                extensions.add(extension)
+            extensions.add(source.extension)
 
         return extensions
 

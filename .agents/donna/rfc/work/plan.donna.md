@@ -18,7 +18,7 @@ fsm_mode = "start"
 
 1. Read the Design document that the developer or parent workflow wants you to implement.
 2. Read the RFC document that the developer or parent workflow wants you to implement, if it exists.
-3. Read the specification `{{ donna.lib.view("../../usage/artifacts.md") }}` if you haven't done it yet.
+3. Read the specification `{{ donna.lib.view("../../usage/artifacts.donna.md") }}` if you haven't done it yet.
 4. `{{ donna.lib.goto("prepare_workflow_artifact") }}`
 
 ## Prepare workflow artifact
@@ -28,7 +28,7 @@ id = "prepare_workflow_artifact"
 kind = "donna.lib.request_action"
 ```
 
-1. If the name of the artifact is not specified explicitly, assume it to `@/.donna/session/plans/<short-id-equal-to-design-slug>.md`.
+1. If the name of the artifact is not specified explicitly, assume it to `@/.donna/session/plans/<short-id-equal-to-design-slug>.donna.md`.
 2. Create a workflow with the next operations:
    - Start
    - A step for each action point in the RFC document and each item in the `Order of implementation` in Design document with the goal to minimize dependencies between steps and introduce changes incrementally.

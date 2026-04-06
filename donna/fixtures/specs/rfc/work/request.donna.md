@@ -16,8 +16,8 @@ kind = "donna.lib.request_action"
 fsm_mode = "start"
 ```
 
-1. Read the specification `{{ donna.lib.view("../specs/request_for_change.md") }}` if you haven't done it yet.
-2. Read the specification `{{ donna.lib.view("../../usage/artifacts.md") }}` if you haven't done it yet.
+1. Read the specification `{{ donna.lib.view("../specs/request_for_change.donna.md") }}` if you haven't done it yet.
+2. Read the specification `{{ donna.lib.view("../../usage/artifacts.donna.md") }}` if you haven't done it yet.
 3. `{{ donna.lib.goto("ensure_work_description_exists") }}`
 
 ## Ensure work description exists
@@ -40,7 +40,7 @@ id = "prepare_rfc_artifact"
 kind = "donna.lib.request_action"
 ```
 
-1. If the name of the artifact is not specified explicitly, assume it to be `@/.donna/session/rfc/<short-problem-related-identifier>.md`, where `<short-problem-related-identifier>` MUST be unique within the session.
+1. If the name of the artifact is not specified explicitly, assume it to be `@/.donna/session/rfc/<short-problem-related-identifier>.donna.md`, where `<short-problem-related-identifier>` MUST be unique within the session.
 2. Save the next template into the artifact, replace `<variables>` with appropriate values.
 
 ~~~
@@ -86,7 +86,7 @@ id = "initial_fill"
 kind = "donna.lib.request_action"
 ```
 
-1. Read the specification `{{ donna.lib.view("../specs/request_for_change.md") }}` if you haven't done it yet.
+1. Read the specification `{{ donna.lib.view("../specs/request_for_change.donna.md") }}` if you haven't done it yet.
 2. Analyze the project if needed to understand the context of the requested change.
 3. Based on the problem description you have, fill in all sections of the RFC draft artifact.
 4. `{{ donna.lib.goto("review_rfc_format") }}`
@@ -98,7 +98,7 @@ id = "review_rfc_format"
 kind = "donna.lib.request_action"
 ```
 
-1. List mismatches between the RFC artifact and the RFC specification `{{ donna.lib.view("../specs/request_for_change.md") }}`.
+1. List mismatches between the RFC artifact and the RFC specification `{{ donna.lib.view("../specs/request_for_change.donna.md") }}`.
 2. For each mismatch, make necessary edits to the RFC draft artifact to ensure compliance with the RFC specification.
 3. `{{ donna.lib.goto("review_rfc_content") }}`
 
@@ -109,7 +109,7 @@ id = "review_rfc_content"
 kind = "donna.lib.request_action"
 ```
 
-1. Read the RFC document and identify any gaps, inconsistencies, or areas for improvement in the content in accordance with the current project context. Use `{{ donna.lib.view("../../research/work/research.md") }}` workflow if you need to make a complex decision.
+1. Read the RFC document and identify any gaps, inconsistencies, or areas for improvement in the content in accordance with the current project context. Use `{{ donna.lib.view("../../research/work/research.donna.md") }}` workflow if you need to make a complex decision.
 2. Make necessary edits to the RFC draft artifact to address identified issues.
 3. If there were changes made on this step or the previous `review_rfc_format` step `{{ donna.lib.goto("review_rfc_format") }}`.
 4. If no changes were made, `{{ donna.lib.goto("finish") }}`.
