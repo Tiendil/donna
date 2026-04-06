@@ -1,6 +1,6 @@
 from donna.core import errors as core_errors
 from donna.domain.artifact_ids import ArtifactSectionId, FullArtifactId, FullArtifactSectionId
-from donna.domain.ids import ActionRequestId
+from donna.domain.internal_ids import ActionRequestId
 
 
 class InternalError(core_errors.InternalError):

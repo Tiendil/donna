@@ -5,7 +5,7 @@ from donna.context.primitives import PrimitivesCache
 from donna.context.state import StateCache
 from donna.context.value_scope import ValueScope
 from donna.domain.artifact_ids import FullArtifactSectionId
-from donna.domain.ids import WorkUnitId
+from donna.domain.internal_ids import WorkUnitId
 
 
 class Context:

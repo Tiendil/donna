@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from donna.core.entities import BaseEntity
 from donna.domain.artifact_ids import FullArtifactSectionId
-from donna.domain.ids import ActionRequestId, TaskId, WorkUnitId
+from donna.domain.internal_ids import ActionRequestId, TaskId, WorkUnitId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.tasks import Task, WorkUnit
 

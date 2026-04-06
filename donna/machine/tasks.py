@@ -5,7 +5,7 @@ from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import FullArtifactSectionId
-from donna.domain.ids import TaskId, WorkUnitId
+from donna.domain.internal_ids import TaskId, WorkUnitId
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
