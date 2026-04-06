@@ -61,9 +61,6 @@ class FullArtifactSectionId(_ColonPath):
 
         return ArtifactId.validate(cls.delimiter.join(parts[:-1])) and SectionId.validate(parts[-1])
 
-    def __str__(self) -> str:
-        return f"{self.artifact_id}{self.delimiter}{self.local_id}"
-
     @property
     def artifact_id(self) -> ArtifactId:
         return ArtifactId(self.delimiter.join(self.parts[:-1]))
