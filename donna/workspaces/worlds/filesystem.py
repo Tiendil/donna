@@ -10,12 +10,10 @@ from donna.workspaces import errors as world_errors
 from donna.workspaces.artifacts_discovery import ArtifactListingNode, list_artifacts_by_pattern
 from donna.workspaces.worlds.base import RawArtifact
 from donna.workspaces.worlds.base import World as BaseWorld
-from donna.workspaces.worlds.base import WorldConstructor
 
 if TYPE_CHECKING:
     from donna.machine.artifacts import Artifact
     from donna.workspaces.artifacts import ArtifactRenderContext
-    from donna.workspaces.config import WorldConfig
 
 
 class FilesystemRawArtifact(RawArtifact):
@@ -63,7 +61,7 @@ class World(BaseWorld):
             return Ok(None)
 
         if len(matches) > 1:
-            return Err([world_errors.ArtifactMultipleFiles(artifact_id=artifact_id, world_id=self.id)])
+            return Err([world_errors.ArtifactMultipleFiles(artifact_id=artifact_id)])
 
         return Ok(matches[0])
 
@@ -78,7 +76,7 @@ class World(BaseWorld):
     def fetch(self, artifact_id: ArtifactId) -> Result[RawArtifact, ErrorsList]:
         path = self._resolve_artifact_file(artifact_id).unwrap()
         if path is None:
-            return Err([world_errors.ArtifactNotFound(artifact_id=artifact_id, world_id=self.id)])
+            return Err([world_errors.ArtifactNotFound(artifact_id=artifact_id)])
 
         from donna.workspaces.config import config
 
@@ -88,7 +86,6 @@ class World(BaseWorld):
                 [
                     world_errors.UnsupportedArtifactSourceExtension(
                         artifact_id=artifact_id,
-                        world_id=self.id,
                         extension=path.suffix,
                     )
                 ]
@@ -112,7 +109,6 @@ class World(BaseWorld):
 
     def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
         return list_artifacts_by_pattern(
-            world_id=self.id,
             root=self._artifact_listing_root(),
             pattern=pattern,
         )
@@ -129,22 +125,3 @@ class World(BaseWorld):
 
     def is_initialized(self) -> bool:
         return self.path.exists()
-
-
-class FilesystemWorldConstructor(WorldConstructor):
-    def construct_world(self, config: "WorldConfig") -> World:
-        path_value = getattr(config, "path", None)
-
-        if path_value is None:
-            raise ValueError(f"World config '{config.id}' does not define a filesystem path")
-
-        from donna.workspaces.config import project_dir
-
-        path = pathlib.Path(path_value).expanduser()
-        if not path.is_absolute():
-            path = project_dir() / path
-
-        return World(
-            id=config.id,
-            path=path.resolve(),
-        )

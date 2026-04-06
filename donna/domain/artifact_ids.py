@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import Any, Sequence
 
 from pydantic_core import core_schema
 
@@ -13,9 +13,6 @@ from donna.domain.id_paths import (
     _pydantic_value_error,
 )
 
-if TYPE_CHECKING:
-    from donna.domain.ids import WorldId
-
 
 def _is_artifact_slug_part(part: str) -> bool:
     if not part:
@@ -27,8 +24,6 @@ def _is_artifact_slug_part(part: str) -> bool:
         return False
 
     return any(character not in ".-" for character in part)
-
-
 class ArtifactId(IdPath):
     __slots__ = ()
     delimiter = ":"
@@ -104,7 +99,7 @@ class ArtifactSectionId(str):
 
 class FullArtifactId(_ColonPath):
     __slots__ = ()
-    min_parts = 2
+    min_parts = 1
     validate_json = True
 
     @classmethod
@@ -112,20 +107,17 @@ class FullArtifactId(_ColonPath):
         if len(parts) < cls.min_parts:
             return False
 
-        return _is_artifact_slug_part(parts[0]) and ArtifactId.validate(cls.delimiter.join(parts[1:]))
+        if len(parts) > 1 and parts[0] == "project":
+            return False
+
+        return ArtifactId.validate(cls.delimiter.join(parts))
 
     def __str__(self) -> str:
-        return f"{self.world_id}{self.delimiter}{self.artifact_id}"
-
-    @property
-    def world_id(self) -> "WorldId":
-        from donna.domain.ids import WorldId
-
-        return WorldId(self.parts[0])
+        return str(self.artifact_id)
 
     @property
     def artifact_id(self) -> ArtifactId:
-        return ArtifactId(self.delimiter.join(self.parts[1:]))
+        return ArtifactId(self.delimiter.join(self.parts))
 
     def to_full_local(self, local_id: ArtifactSectionId) -> "FullArtifactSectionId":
         return FullArtifactSectionId(f"{self}:{local_id}")
@@ -138,20 +130,13 @@ class FullArtifactId(_ColonPath):
         if not cls.delimiter:
             return _invalid_format(f"{cls.__name__} format", text)
 
-        parts = text.split(cls.delimiter, maxsplit=1)
-
-        if len(parts) != 2:
+        if text.startswith("project:"):
             return _invalid_format(f"{cls.__name__} format", text)
 
-        world_part, artifact_part = parts
-
-        if not _is_artifact_slug_part(world_part):
+        if not ArtifactId.validate(text):
             return _invalid_format(f"{cls.__name__} format", text)
 
-        if not ArtifactId.validate(artifact_part):
-            return _invalid_format(f"{cls.__name__} format", text)
-
-        return Ok(cls(f"{world_part}{cls.delimiter}{artifact_part}"))
+        return Ok(cls(text))
 
 
 class FullArtifactIdPattern(IdPathPattern["FullArtifactId"]):
@@ -162,13 +147,20 @@ class FullArtifactIdPattern(IdPathPattern["FullArtifactId"]):
     def _validate_pattern_part(cls, part: str) -> bool:
         return ArtifactIdPattern._validate_pattern_part(part)
 
+    @classmethod
+    def parse(cls, text: str) -> Result["FullArtifactIdPattern", ErrorsList]:
+        if isinstance(text, str) and text.startswith("project:"):
+            return _invalid_format(cls.__name__, text)
+
+        return super().parse(text)
+
     def matches_full_id(self, full_id: FullArtifactId) -> bool:
         return self.matches(full_id)
 
 
 class FullArtifactSectionId(_ColonPath):
     __slots__ = ()
-    min_parts = 3
+    min_parts = 2
     validate_json = True
 
     @classmethod
@@ -176,28 +168,21 @@ class FullArtifactSectionId(_ColonPath):
         if len(parts) < cls.min_parts:
             return False
 
-        return (
-            _is_artifact_slug_part(parts[0])
-            and ArtifactId.validate(cls.delimiter.join(parts[1:-1]))
-            and ArtifactSectionId.validate(parts[-1])
-        )
+        if len(parts) > 2 and parts[0] == "project":
+            return False
+
+        return ArtifactId.validate(cls.delimiter.join(parts[:-1])) and ArtifactSectionId.validate(parts[-1])
 
     def __str__(self) -> str:
-        return f"{self.world_id}{self.delimiter}{self.artifact_id}{self.delimiter}{self.local_id}"
-
-    @property
-    def world_id(self) -> "WorldId":
-        from donna.domain.ids import WorldId
-
-        return WorldId(self.parts[0])
+        return f"{self.artifact_id}{self.delimiter}{self.local_id}"
 
     @property
     def artifact_id(self) -> ArtifactId:
-        return ArtifactId(self.delimiter.join(self.parts[1:-1]))
+        return ArtifactId(self.delimiter.join(self.parts[:-1]))
 
     @property
     def full_artifact_id(self) -> FullArtifactId:
-        return FullArtifactId(f"{self.world_id}{self.delimiter}{self.artifact_id}")
+        return FullArtifactId(self.artifact_id)
 
     @property
     def local_id(self) -> ArtifactSectionId:

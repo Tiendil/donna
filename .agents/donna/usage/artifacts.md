@@ -22,7 +22,7 @@ To get information from the artifact, developers, agents and Donna view one of i
 
 **If you need an information from the artifact, you MUST view its representation**. Artifact sources are only for editing.
 
-Read the specification `{{ donna.lib.view("donna:usage:cli") }}` to learn how to work with artifacts via Donna CLI.
+Read the specification `{{ donna.lib.view(".agents:donna:usage:cli") }}` to learn how to work with artifacts via Donna CLI.
 
 ## Source Format and Rendering
 
@@ -117,7 +117,7 @@ Artifacts can include semantic tags via a `tags` field in the section configurat
 
 Tags are used for deterministic artifact filtering and discovery (for example, via `donna -p <protocol> artifacts list ... --predicate '"workflow" in section.tags'`). Tags are typically attached to the primary section and describe the artifact as a whole.
 
-The canonical list of standard tags is documented in `donna:intro`.
+The canonical list of standard tags is documented in `.agents:donna:intro`.
 
 ## Section Kinds, Their Formats and Behaviors
 

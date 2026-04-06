@@ -4,19 +4,19 @@
 kind = "donna.lib.specification"
 ```
 
-This document describes the format and structure of a Research Report document used by Donna workflows from `donna:research:*` namespace.
+This document describes the format and structure of a Research Report document used by Donna workflows from `.agents:donna:research:*` namespace.
 
 ## Overview
 
-Donna introduces a group of workflows located in `donna:research:*` namespace that organize the process of researching a problem, collecting information, analyzing it, synthesizing options, and producing a final solution.
+Donna introduces a group of workflows located in `.agents:donna:research:*` namespace that organize the process of researching a problem, collecting information, analyzing it, synthesizing options, and producing a final solution.
 
-Session-related research artifacts MUST be stored as `session:research:<short-problem-related-identifier>`, unless the developer or parent workflow specifies a different location. The `<short-problem-related-identifier>` MUST be unique within the session.
+Session-related research artifacts MUST be stored as `.donna:session:research:<short-problem-related-identifier>`, unless the developer or parent workflow specifies a different location. The `<short-problem-related-identifier>` MUST be unique within the session.
 
 The agent (via workflows) creates the artifact and updates it iteratively as the research process progresses.
 
 ## Research report structure
 
-The research report is a Donna artifact (check `{{ donna.lib.view("donna:usage:artifacts") }}`) with the next structure:
+The research report is a Donna artifact (check `{{ donna.lib.view(".agents:donna:usage:artifacts") }}`) with the next structure:
 
 - **Primary section** -- title and short description of the research problem.
 - **Original problem description** -- original problem statement from the developer or parent workflow.
@@ -35,7 +35,7 @@ The research report is a Donna artifact (check `{{ donna.lib.view("donna:usage:a
 ## General language and format
 
 - You MUST follow [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.txt) for keywords like MUST, SHOULD, MAY, etc.
-- You MUST follow `{{ donna.lib.view("donna:usage:artifacts") }}`.
+- You MUST follow `{{ donna.lib.view(".agents:donna:usage:artifacts") }}`.
 - You MUST follow the structure specified in this document.
 
 ### List format

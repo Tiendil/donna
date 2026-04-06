@@ -3,7 +3,6 @@ from functools import lru_cache
 from typing import Iterable, Protocol
 
 from donna.domain.artifact_ids import ArtifactId, FullArtifactId, FullArtifactIdPattern
-from donna.domain.ids import WorldId
 from donna.workspaces.config import config
 
 
@@ -31,18 +30,13 @@ class ArtifactListingNode(Protocol):
 
 def list_artifacts_by_pattern(  # noqa: CCR001
     *,
-    world_id: WorldId,
     root: ArtifactListingNode | None,
     pattern: FullArtifactIdPattern,
 ) -> list[ArtifactId]:
-    if pattern[0] not in {"*", "**"} and pattern[0] != str(world_id):
-        return []
-
     if root is None or not root.is_dir():
         return []
 
     pattern_parts = tuple(pattern)
-    world_prefix = (str(world_id),)
     supported_extensions = config().supported_extensions()
     artifacts: set[ArtifactId] = set()
 
@@ -53,7 +47,7 @@ def list_artifacts_by_pattern(  # noqa: CCR001
                     continue
 
                 next_parts = parts + [entry.name]
-                if not _pattern_allows_prefix(pattern_parts, world_prefix + tuple(next_parts)):
+                if not _pattern_allows_prefix(pattern_parts, tuple(next_parts)):
                     continue
                 walk(entry, next_parts)
                 continue
@@ -72,7 +66,7 @@ def list_artifacts_by_pattern(  # noqa: CCR001
             artifact_name = ":".join(artifact_parts)
             if ArtifactId.validate(artifact_name):
                 artifact_id = ArtifactId(artifact_name)
-                full_id = FullArtifactId((world_id, artifact_id))
+                full_id = FullArtifactId(artifact_id)
                 if pattern.matches_full_id(full_id):
                     artifacts.add(artifact_id)
 

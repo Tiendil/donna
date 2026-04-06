@@ -38,7 +38,7 @@ class ArtifactsCache(TimedCache):
     def _is_cache_stale(self, full_id: FullArtifactId, loaded_at_ms: Milliseconds) -> Result[bool, ErrorsList]:
         from donna.workspaces.config import config
 
-        world = config().get_world(full_id.world_id).unwrap()
+        world = config().project_world
         return Ok(world.has_artifact_changed(full_id.artifact_id, since=loaded_at_ms).unwrap())
 
     @staticmethod
@@ -46,7 +46,7 @@ class ArtifactsCache(TimedCache):
     def _load_raw_artifact(full_id: FullArtifactId) -> Result["RawArtifact", ErrorsList]:
         from donna.workspaces.config import config
 
-        world = config().get_world(full_id.world_id).unwrap()
+        world = config().project_world
         return Ok(world.fetch(full_id.artifact_id).unwrap())
 
     @unwrap_to_error
@@ -149,21 +149,22 @@ class ArtifactsCache(TimedCache):
         artifacts: list[Artifact] = []
         errors: ErrorsList = []
 
-        for world in reversed(config().worlds_instances):
-            for artifact_id in world.list_artifacts(pattern):
-                full_id = FullArtifactId((world.id, artifact_id))
+        world = config().project_world
 
-                artifact_result = self._list_artifact_if_matches(full_id, render_context, predicate)
+        for artifact_id in world.list_artifacts(pattern):
+            full_id = FullArtifactId(artifact_id)
 
-                if artifact_result.is_err():
-                    errors.extend(artifact_result.unwrap_err())
-                    continue
+            artifact_result = self._list_artifact_if_matches(full_id, render_context, predicate)
 
-                artifact = artifact_result.unwrap()
-                if artifact is None:
-                    continue
+            if artifact_result.is_err():
+                errors.extend(artifact_result.unwrap_err())
+                continue
 
-                artifacts.append(artifact)
+            artifact = artifact_result.unwrap()
+            if artifact is None:
+                continue
+
+            artifacts.append(artifact)
 
         if errors:
             return Err(errors)

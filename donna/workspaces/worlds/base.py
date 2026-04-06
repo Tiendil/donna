@@ -10,11 +10,8 @@ from donna.domain.artifact_ids import ArtifactId, FullArtifactId, FullArtifactId
 from donna.domain.ids import WorldId
 from donna.domain.types import Milliseconds
 from donna.machine.artifacts import Artifact
-from donna.machine.primitives import Primitive
-
 if TYPE_CHECKING:
     from donna.workspaces.artifacts import ArtifactRenderContext
-    from donna.workspaces.config import WorldConfig
 
 
 class RawArtifact(BaseEntity, ABC):
@@ -49,8 +46,3 @@ class World(BaseEntity, ABC):
 
     @abstractmethod
     def is_initialized(self) -> bool: ...  # noqa: E704
-
-
-class WorldConstructor(Primitive, ABC):
-    @abstractmethod
-    def construct_world(self, config: WorldConfig) -> World: ...  # noqa: E704

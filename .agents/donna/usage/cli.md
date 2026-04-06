@@ -26,7 +26,6 @@ We may need coding agents on the each step of the process, but there no reason f
 
 ## Primary rules for agents
 
-- Donna stores all project-related data in `.donna` directory in the project root.
 - All work is always done in the context of a session. There is only one active session at a time.
 - You MUST always work on one task assigned to you.
 - You MUST keep all the information about the session in your memory.
@@ -109,7 +108,7 @@ After the session starts you MUST follow the next workflow to perform your work:
 3. Start chosen workflow by calling `donna -p <protocol> sessions run <workflow-id>`.
 4. Donna will output descriptions of all operations it performs to complete the work.
 5. Donna will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
-6. When you done processing an action request, call `donna -p <protocol> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report request completion. `<next-full-operation-id>` MUST contain full identifier of the next operation, like `<world>:<artifact>:<operation-id>`.
+6. When you done processing an action request, call `donna -p <protocol> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report request completion. `<next-full-operation-id>` MUST contain the full identifier of the next operation, for example `.donna:session:execute_rfc:review_changes`.
 7. After you complete an action request, Donna will continue workflow execution and output what you need to do next.
 
 You MUST continue following Donna's instructions until the workflow is completed.
@@ -138,28 +137,28 @@ If Donna tells you there is no work left, you MUST inform the developer that the
 
 ### Working with artifacts
 
-An artifact is a markdown document with extra metadata stored in one of the Donna's worlds.
+An artifact is a markdown document with extra metadata stored in the project workspace.
 
 Use the next commands to work with artifacts:
 
-- `donna -p <protocol> artifacts list [<artifact-pattern>]` — list all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, list all artifacts in all worlds. Use this command when you need to find an artifact or see what artifacts are available.
+- `donna -p <protocol> artifacts list [<artifact-pattern>]` — list all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, list all artifacts in the project workspace. Use this command when you need to find an artifact or see what artifacts are available.
 - `donna -p <protocol> artifacts view <artifact-pattern>` — get the meaningful (rendered) content of all matching artifacts. This command shows the rendered information about each artifact. Use this command when you need to read artifact content.
-- `donna -p <protocol> artifacts validate [<artifact-pattern>]` — validate all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, validate all artifacts in all worlds.
+- `donna -p <protocol> artifacts validate [<artifact-pattern>]` — validate all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, validate all artifacts in the project workspace.
 
-Donna does not mutate artifacts stored in worlds. Developers and external tools are responsible for creating, updating, moving, copying, or deleting world artifacts before Donna reads or validates them.
+Donna does not mutate artifacts stored in the project workspace. Developers and external tools are responsible for creating, updating, moving, copying, or deleting artifacts before Donna reads or validates them.
 
 Commands that accept an artifact pattern (`artifacts list`, `artifacts view`, `artifacts validate`) also accept `--predicate/-p <python-expression>` to filter by artifact primary section. The expression is evaluated as `bool` with `section` global available (for example: `--predicate '"workflow" in section.tags'`).
 
 The format of `<artifact-pattern>` is as follows:
 
-- full artifact identifier: `<world>:<artifact>`
+- full artifact identifier: `<artifact>`
 - `*` — single wildcard matches a single level in the artifact path. Examples:
-  - `*:artifact:name` — matches all artifacts named `artifact:name` in all worlds.
-  - `world:*:name` — matches all artifacts with id `something:name` in the `world` world.
+  - `*:name` — matches all artifacts named `name`.
+  - `.agents:*:intro` — matches all artifacts with id `something:intro` under `.agents`.
 - `**` — double wildcard matches multiple levels in the artifact path. Examples:
-  - `**:name` — matches all artifacts with id ending with `:name` in all worlds.
-  - `world:**` — matches all artifacts in the `world` world.
-  - `world:**:name` — matches all artifacts with id ending with `:name` in the `world` world.
+  - `**:name` — matches all artifacts with id ending with `:name` in the project workspace.
+  - `.donna:**` — matches all artifacts under `.donna`.
+  - `.agents:**:intro` — matches all artifacts with id ending with `:intro` under `.agents`.
 
 ### Working with journal
 
@@ -206,7 +205,7 @@ Agents MUST NOT log:
 
   1. Direct instructions from the developer.
   2. `AGENTS.md` document.
-  3. Specifications in `project:` world.
+  3. Project-relative specifications under `specs:` or `.agents:donna:`.
   4. This document.
 
 **All Donna CLI commands MUST include an explicit protocol selection using `-p <protocol>`.** Like `donna -p llm <command>`.

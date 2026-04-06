@@ -8,14 +8,12 @@ import pydantic
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
-from donna.domain.ids import WorldId
 from donna.domain.python_path import PythonPath
 from donna.machine.primitives import resolve_primitive
 from donna.workspaces import errors as world_errors
 from donna.workspaces.sources.base import SourceConfig as SourceConfigValue
 from donna.workspaces.sources.base import SourceConstructor
 from donna.workspaces.worlds.base import World as BaseWorld
-from donna.workspaces.worlds.base import WorldConstructor
 
 if TYPE_CHECKING:
     from donna.protocol.modes import Mode
@@ -24,14 +22,6 @@ DONNA_DIR_NAME = ".donna"
 DONNA_CONFIG_NAME = "config.toml"
 DONNA_WORLD_SESSION_DIR_NAME = "session"
 DONNA_WORLD_PROJECT_DIR_NAME = "project"
-DONNA_WORLD_PROJECT_PATH = pathlib.Path(".")
-
-
-class WorldConfig(BaseEntity):
-    kind: PythonPath
-    id: WorldId
-
-    model_config = pydantic.ConfigDict(extra="allow")
 
 
 class SourceConfig(BaseEntity):
@@ -50,46 +40,24 @@ def _default_sources() -> list[SourceConfig]:
     ]
 
 
-def _create_default_worlds() -> list[WorldConfig]:
-    return [
-        WorldConfig.model_validate(
-            {
-                "id": WorldId("project"),
-                "kind": "donna.lib.worlds.filesystem",
-                "path": DONNA_WORLD_PROJECT_PATH,
-            }
-        ),
-    ]
+def _construct_project_world() -> BaseWorld:
+    from donna.workspaces.worlds.filesystem import World as FilesystemWorld
 
-
-def _default_worlds() -> list[WorldConfig]:
-    return _create_default_worlds()
+    return FilesystemWorld(
+        id=DONNA_WORLD_PROJECT_DIR_NAME,
+        path=project_dir().resolve(),
+    )
 
 
 class Config(BaseEntity):
-    worlds: list[WorldConfig] = pydantic.Field(default_factory=_default_worlds)
     sources: list[SourceConfig] = pydantic.Field(default_factory=_default_sources)
-    _worlds_instances: list[BaseWorld] = pydantic.PrivateAttr(default_factory=list)
+    _project_world: BaseWorld | None = pydantic.PrivateAttr(default=None)
     _sources_instances: list[SourceConfigValue] = pydantic.PrivateAttr(default_factory=list)
 
     cache_lifetime: float = 1.0
 
     def model_post_init(self, __context: Any) -> None:  # noqa: CCR001
-        worlds: list[BaseWorld] = []
         sources: list[SourceConfigValue] = []
-
-        for world_config in self.worlds:
-            primitive_result = resolve_primitive(world_config.kind)
-            if primitive_result.is_err():
-                error = primitive_result.unwrap_err()[0]
-                raise ValueError(error.message.format(error=error))
-
-            primitive = primitive_result.unwrap()
-
-            if not isinstance(primitive, WorldConstructor):
-                raise ValueError(f"World constructor '{world_config.kind}' is not supported")
-
-            worlds.append(primitive.construct_world(world_config))
 
         for source_config in self.sources:
             primitive_result = resolve_primitive(source_config.kind)
@@ -104,19 +72,15 @@ class Config(BaseEntity):
 
             sources.append(primitive.construct_source(source_config))
 
-        object.__setattr__(self, "_worlds_instances", worlds)
+        object.__setattr__(self, "_project_world", _construct_project_world())
         object.__setattr__(self, "_sources_instances", sources)
 
-    def get_world(self, world_id: WorldId) -> Result[BaseWorld, ErrorsList]:
-        for world in self._worlds_instances:
-            if world.id == world_id:
-                return Ok(world)
-
-        return Err([world_errors.WorldNotConfigured(world_id=world_id)])
-
     @property
-    def worlds_instances(self) -> list[BaseWorld]:
-        return list(self._worlds_instances)
+    def project_world(self) -> BaseWorld:
+        if self._project_world is None:
+            raise world_errors.GlobalConfigNotSet()
+
+        return self._project_world
 
     @property
     def sources_instances(self) -> list[SourceConfigValue]:

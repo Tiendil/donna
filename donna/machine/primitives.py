@@ -16,7 +16,6 @@ if TYPE_CHECKING:
     from donna.machine.changes import Change
     from donna.machine.tasks import Task, WorkUnit
     from donna.workspaces.config import SourceConfig as SourceConfigModel
-    from donna.workspaces.config import WorldConfig
     from donna.workspaces.sources.base import SourceConfig as SourceConfigValue
     from donna.workspaces.worlds.base import World
 
@@ -39,11 +38,6 @@ class Primitive(BaseEntity):
     def apply_directive(self, context: Context, *argv: Any, **kwargs: Any) -> Result[Any, ErrorsList]:
         raise machine_errors.PrimitiveMethodUnsupported(
             primitive_name=self.__class__.__name__, method_name="apply_directive()"
-        )
-
-    def construct_world(self, config: "WorldConfig") -> "World":
-        raise machine_errors.PrimitiveMethodUnsupported(
-            primitive_name=self.__class__.__name__, method_name="construct_world()"
         )
 
     def construct_source(self, config: "SourceConfigModel") -> "SourceConfigValue":

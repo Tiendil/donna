@@ -8,7 +8,6 @@ import tomli_w
 from donna.core import errors as core_errors
 from donna.core import utils
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import WorldId
 from donna.protocol.modes import Mode
 from donna.workspaces import config
 from donna.workspaces import errors as world_errors
@@ -125,8 +124,7 @@ def initialize_workspace(
         encoding="utf-8",
     )
 
-    project_world = default_config.get_world(WorldId(config.DONNA_WORLD_PROJECT_DIR_NAME)).unwrap()
-    project_world.initialize().unwrap()
+    default_config.project_world.initialize().unwrap()
 
     workspace_sessions.ensure_dir()
 
