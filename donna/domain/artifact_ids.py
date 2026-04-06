@@ -69,12 +69,6 @@ class ArtifactSectionId(_ColonPath):
     def local_id(self) -> SectionId:
         return SectionId(self.parts[-1])
 
-    @property
-    def short(self) -> str:
-        parts = str(self).split(self.delimiter)
-        new_parts = [part[0] for part in parts[:-2]] + parts[-2:]
-        return self.delimiter.join(new_parts)
-
     @classmethod
     def parse(cls, text: str) -> Result["ArtifactSectionId", ErrorsList]:  # noqa: CCR001
         if not isinstance(text, str) or not text:
