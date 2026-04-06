@@ -6,7 +6,8 @@ import pydantic
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import ArtifactSectionId, FullArtifactId, PythonImportPath
+from donna.domain.ids import ArtifactSectionId, FullArtifactId
+from donna.domain.python_path import PythonPath
 from donna.machine.errors import (
     ArtifactPrimarySectionMissing,
     ArtifactSectionNotFound,
@@ -18,7 +19,7 @@ from donna.protocol.nodes import Node
 
 class ArtifactSectionConfig(BaseEntity):
     id: ArtifactSectionId
-    kind: PythonImportPath
+    kind: PythonPath
     tags: list[str] = pydantic.Field(default_factory=list)
 
 
@@ -30,7 +31,7 @@ class ArtifactSectionMeta(BaseEntity):
 class ArtifactSection(BaseEntity):
     id: ArtifactSectionId
     artifact_id: FullArtifactId
-    kind: PythonImportPath
+    kind: PythonPath
     title: str
     description: str
     tags: list[str] = pydantic.Field(default_factory=list)

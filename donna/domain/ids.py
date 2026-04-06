@@ -153,11 +153,6 @@ class WorldId(Identifier):
         return _is_artifact_slug_part(value)
 
 
-class DottedPath(IdPath):
-    __slots__ = ()
-    delimiter = "."
-
-
 class ColonPath(IdPath):
     __slots__ = ()
     delimiter = ":"
@@ -169,20 +164,6 @@ class ArtifactId(ColonPath):
     @classmethod
     def _validate_parts(cls, parts: Sequence[str]) -> bool:
         return all(_is_artifact_slug_part(part) for part in parts)
-
-
-class PythonImportPath(DottedPath):
-    __slots__ = ()
-
-    @classmethod
-    def parse(cls, text: str) -> Result["PythonImportPath", ErrorsList]:
-        if not isinstance(text, str) or not text:
-            return _invalid_format(cls.__name__, text)
-
-        if not cls.validate(text):
-            return _invalid_format(cls.__name__, text)
-
-        return Ok(cls(text))
 
 
 class FullArtifactId(ColonPath):

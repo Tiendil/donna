@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Protocol, cast
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import ArtifactSectionId, FullArtifactId, PythonImportPath
+from donna.domain.ids import ArtifactSectionId, FullArtifactId
+from donna.domain.python_path import PythonPath
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.primitives import Primitive, resolve_primitive
 from donna.workspaces import errors as world_errors
@@ -27,7 +28,7 @@ class MarkdownSectionConstructor(Protocol):
 class Config(SourceConfig):
     kind: Literal["markdown"] = "markdown"
     supported_extensions: list[str] = [".md", ".markdown"]
-    default_section_kind: PythonImportPath = PythonImportPath("donna.lib.text")
+    default_section_kind: PythonPath = PythonPath("donna.lib.text")
     default_primary_section_id: ArtifactSectionId = ArtifactSectionId("primary")
 
     def construct_artifact_from_bytes(
@@ -163,10 +164,10 @@ def construct_artifact_from_markdown_source(  # noqa: CCR001
     original_sections = parse_artifact_content(full_id, content, render_context).unwrap()
     head_config = dict(original_sections[0].config().unwrap())
     head_kind_value = head_config["kind"]
-    if isinstance(head_kind_value, PythonImportPath):
+    if isinstance(head_kind_value, PythonPath):
         head_kind = head_kind_value
     else:
-        head_kind = PythonImportPath.parse(head_kind_value).unwrap()
+        head_kind = PythonPath.parse(head_kind_value).unwrap()
 
     if "id" not in head_config or head_config["id"] is None:
         head_config["id"] = config.default_primary_section_id
@@ -198,8 +199,8 @@ def construct_artifact_from_markdown_source(  # noqa: CCR001
 def construct_sections_from_markdown(  # noqa: CCR001
     artifact_id: FullArtifactId,
     sections: list[markdown.SectionSource],
-    default_section_kind: PythonImportPath,
-    primitive_overrides: dict[PythonImportPath, Primitive] | None = None,
+    default_section_kind: PythonPath,
+    primitive_overrides: dict[PythonPath, Primitive] | None = None,
 ) -> Result[list[ArtifactSection], ErrorsList]:
     constructed: list[ArtifactSection] = []
     errors: ErrorsList = []
@@ -215,7 +216,7 @@ def construct_sections_from_markdown(  # noqa: CCR001
 
         kind_value = data["kind"]
         if isinstance(kind_value, str):
-            primitive_id = PythonImportPath.parse(kind_value).unwrap()
+            primitive_id = PythonPath.parse(kind_value).unwrap()
         else:
             primitive_id = kind_value
 
@@ -236,8 +237,8 @@ def construct_sections_from_markdown(  # noqa: CCR001
 
 
 def _resolve_primitive(
-    primitive_id: PythonImportPath,
-    primitive_overrides: dict[PythonImportPath, Primitive] | None = None,
+    primitive_id: PythonPath,
+    primitive_overrides: dict[PythonPath, Primitive] | None = None,
 ) -> Result[Primitive, ErrorsList]:
     if primitive_overrides is not None and primitive_id in primitive_overrides:
         return Ok(primitive_overrides[primitive_id])
@@ -247,7 +248,7 @@ def _resolve_primitive(
 
 def _ensure_markdown_constructible(
     primitive: Primitive,
-    primitive_id: PythonImportPath | str | None = None,
+    primitive_id: PythonPath | str | None = None,
 ) -> Result[None, ErrorsList]:
     if isinstance(primitive, MarkdownSectionMixin):
         return Ok(None)

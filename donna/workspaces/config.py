@@ -8,7 +8,8 @@ import pydantic
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
-from donna.domain.ids import PythonImportPath, WorldId
+from donna.domain.ids import WorldId
+from donna.domain.python_path import PythonPath
 from donna.machine.primitives import resolve_primitive
 from donna.workspaces import errors as world_errors
 from donna.workspaces.sources.base import SourceConfig as SourceConfigValue
@@ -27,14 +28,14 @@ DONNA_WORLD_PROJECT_PATH = pathlib.Path(".")
 
 
 class WorldConfig(BaseEntity):
-    kind: PythonImportPath
+    kind: PythonPath
     id: WorldId
 
     model_config = pydantic.ConfigDict(extra="allow")
 
 
 class SourceConfig(BaseEntity):
-    kind: PythonImportPath
+    kind: PythonPath
 
     model_config = pydantic.ConfigDict(extra="allow")
 
