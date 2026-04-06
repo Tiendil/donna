@@ -2,9 +2,22 @@ from typing import Any
 
 from pydantic_core import core_schema
 
+from donna.core.errors import ErrorsList
+from donna.core.result import Ok, Result
 from donna.domain import errors as domain_errors
-from donna.domain.artifact_ids import _is_artifact_slug_part
-from donna.domain.id_paths import _pydantic_type_error, _pydantic_value_error
+from donna.domain.id_paths import _invalid_format, _pydantic_type_error, _pydantic_value_error
+
+
+def _is_artifact_slug_part(part: str) -> bool:
+    if not part:
+        return False
+
+    allowed_characters = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-")
+
+    if any(character not in allowed_characters for character in part):
+        return False
+
+    return any(character not in ".-" for character in part)
 
 
 class Identifier(str):
@@ -21,6 +34,16 @@ class Identifier(str):
         if not isinstance(value, str):
             return False
         return value.isidentifier()
+
+    @classmethod
+    def parse(cls, text: str) -> Result["Identifier", ErrorsList]:
+        if not isinstance(text, str) or not text:
+            return _invalid_format(cls.__name__, text)
+
+        if not cls.validate(text):
+            return _invalid_format(cls.__name__, text)
+
+        return Ok(cls(text))
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:  # noqa: CCR001
@@ -53,3 +76,7 @@ class WorldId(Identifier):
             return False
 
         return _is_artifact_slug_part(value)
+
+
+class SectionId(Identifier):
+    __slots__ = ()

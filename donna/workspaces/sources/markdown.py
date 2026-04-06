@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Protocol, cast
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
+from donna.domain.artifact_ids import ArtifactId
+from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.primitives import Primitive, resolve_primitive
@@ -29,7 +30,7 @@ class Config(SourceConfig):
     kind: Literal["markdown"] = "markdown"
     supported_extensions: list[str] = [".md", ".markdown"]
     default_section_kind: PythonPath = PythonPath("donna.lib.text")
-    default_primary_section_id: ArtifactSectionId = ArtifactSectionId("primary")
+    default_primary_section_id: SectionId = SectionId("primary")
 
     def construct_artifact_from_bytes(
         self, artifact_id: ArtifactId, content: bytes, render_context: ArtifactRenderContext
@@ -209,7 +210,7 @@ def construct_sections_from_markdown(  # noqa: CCR001
         data = dict(section.config().unwrap())
 
         if "id" not in data or data["id"] is None:
-            data["id"] = ArtifactSectionId("markdown" + uuid.uuid4().hex.replace("-", ""))
+            data["id"] = SectionId("markdown" + uuid.uuid4().hex.replace("-", ""))
 
         if "kind" not in data:
             data["kind"] = default_section_kind
