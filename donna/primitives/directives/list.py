@@ -5,7 +5,7 @@ from jinja2.runtime import Context
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import FullArtifactIdPattern
+from donna.domain.artifact_ids import FullArtifactIdPattern
 from donna.machine.artifacts import ArtifactPredicate
 from donna.machine.templates import Directive, PreparedDirectiveResult
 from donna.workspaces import config as workspace_config

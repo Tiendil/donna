@@ -2,7 +2,8 @@ import pathlib
 from functools import lru_cache
 from typing import Iterable, Protocol
 
-from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern, WorldId
+from donna.domain.artifact_ids import ArtifactId, FullArtifactId, FullArtifactIdPattern
+from donna.domain.ids import WorldId
 from donna.workspaces.config import config
 
 

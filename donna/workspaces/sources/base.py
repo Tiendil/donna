@@ -11,7 +11,7 @@ from donna.core.result import Result
 from donna.machine.primitives import Primitive
 
 if TYPE_CHECKING:
-    from donna.domain.ids import FullArtifactId
+    from donna.domain.artifact_ids import FullArtifactId
     from donna.machine.artifacts import Artifact
     from donna.workspaces.artifacts import ArtifactRenderContext
     from donna.workspaces.config import SourceConfig as SourceConfigModel

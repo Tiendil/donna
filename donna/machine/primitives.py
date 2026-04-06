@@ -6,7 +6,7 @@ from jinja2.runtime import Context
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import ArtifactSectionId
+from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.python_path import PythonPath
 from donna.machine import errors as machine_errors
 from donna.machine.artifacts import ArtifactSectionConfig

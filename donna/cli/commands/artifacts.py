@@ -9,7 +9,7 @@ from donna.cli.types import (
 )
 from donna.cli.utils import cells_cli
 from donna.context.context import context
-from donna.domain.ids import FullArtifactIdPattern
+from donna.domain.artifact_ids import FullArtifactIdPattern
 from donna.machine import journal as machine_journal
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell

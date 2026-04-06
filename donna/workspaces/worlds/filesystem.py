@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, cast
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import ArtifactId, FullArtifactId, FullArtifactIdPattern
+from donna.domain.artifact_ids import ArtifactId, FullArtifactId, FullArtifactIdPattern
 from donna.domain.types import Milliseconds
 from donna.workspaces import errors as world_errors
 from donna.workspaces.artifacts_discovery import ArtifactListingNode, list_artifacts_by_pattern

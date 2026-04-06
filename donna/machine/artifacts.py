@@ -6,7 +6,7 @@ import pydantic
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import ArtifactSectionId, FullArtifactId
+from donna.domain.artifact_ids import ArtifactSectionId, FullArtifactId
 from donna.domain.python_path import PythonPath
 from donna.machine.errors import (
     ArtifactPrimarySectionMissing,

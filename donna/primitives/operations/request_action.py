@@ -6,7 +6,7 @@ import pydantic
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result, unwrap_to_error
 from donna.domain import errors as domain_errors
-from donna.domain.ids import ArtifactSectionId, FullArtifactId
+from donna.domain.artifact_ids import ArtifactSectionId, FullArtifactId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta

@@ -1,7 +1,8 @@
 import pathlib
 
 from donna.core import errors as core_errors
-from donna.domain.ids import ArtifactId, FullArtifactId, WorldId
+from donna.domain.artifact_ids import ArtifactId, FullArtifactId
+from donna.domain.ids import WorldId
 
 
 class InternalError(core_errors.InternalError):

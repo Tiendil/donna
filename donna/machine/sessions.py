@@ -4,7 +4,8 @@ from typing import Callable, ParamSpec
 from donna.context.context import context
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactSectionId
+from donna.domain.artifact_ids import FullArtifactId, FullArtifactSectionId
+from donna.domain.ids import ActionRequestId
 from donna.machine import errors as machine_errors
 from donna.machine import journal as machine_journal
 from donna.machine.operations import OperationMeta

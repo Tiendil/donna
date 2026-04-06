@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, ClassVar, Literal, cast
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result, unwrap_to_error
-from donna.domain.ids import FullArtifactId
+from donna.domain.artifact_ids import FullArtifactId
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
 from donna.protocol import cell_shortcuts

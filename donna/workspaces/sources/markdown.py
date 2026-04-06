@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Literal, Protocol, cast
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import ArtifactSectionId, FullArtifactId
+from donna.domain.artifact_ids import ArtifactSectionId, FullArtifactId
 from donna.domain.python_path import PythonPath
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.primitives import Primitive, resolve_primitive

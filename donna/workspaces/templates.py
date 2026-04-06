@@ -10,7 +10,7 @@ import jinja2
 from donna.core import errors as core_errors
 from donna.core.errors import EnvironmentErrorsProxy, ErrorsList
 from donna.core.result import Err, Ok, Result
-from donna.domain.ids import FullArtifactId
+from donna.domain.artifact_ids import FullArtifactId
 from donna.machine.templates import Directive
 from donna.workspaces import errors as world_errors
 

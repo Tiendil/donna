@@ -8,7 +8,8 @@ from donna.context.context import context
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import ActionRequestId, FullArtifactSectionId, InternalId, TaskId, WorkUnitId
+from donna.domain.artifact_ids import FullArtifactSectionId
+from donna.domain.ids import ActionRequestId, InternalId, TaskId, WorkUnitId
 from donna.machine import errors as machine_errors
 from donna.machine import journal as machine_journal
 from donna.machine.action_requests import ActionRequest

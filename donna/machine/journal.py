@@ -8,7 +8,8 @@ from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.core.utils import now
-from donna.domain.ids import FullArtifactSectionId, TaskId, WorkUnitId
+from donna.domain.artifact_ids import FullArtifactSectionId
+from donna.domain.ids import TaskId, WorkUnitId
 from donna.machine import errors as machine_errors
 from donna.workspaces import sessions as workspace_sessions
 from donna.workspaces.config import protocol as protocol_mode

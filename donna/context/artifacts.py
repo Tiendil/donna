@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from donna.context.entity_cache import TimedCache, TimedCacheValue
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import FullArtifactId, FullArtifactIdPattern, FullArtifactSectionId
+from donna.domain.artifact_ids import FullArtifactId, FullArtifactIdPattern, FullArtifactSectionId
 from donna.domain.types import Milliseconds
 from donna.machine.artifacts import Artifact, ArtifactPredicate, ArtifactSection
 from donna.workspaces.templates import RenderMode

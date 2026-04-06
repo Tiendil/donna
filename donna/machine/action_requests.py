@@ -1,7 +1,8 @@
 import textwrap
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import ActionRequestId, FullArtifactSectionId
+from donna.domain.artifact_ids import FullArtifactSectionId
+from donna.domain.ids import ActionRequestId
 from donna.protocol.cells import Cell
 from donna.protocol.nodes import Node
 
