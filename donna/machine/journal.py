@@ -8,7 +8,7 @@ from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.core.utils import now
-from donna.domain.artifact_ids import FullArtifactSectionId
+from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import TaskId, WorkUnitId
 from donna.machine import errors as machine_errors
 from donna.workspaces import sessions as workspace_sessions
@@ -25,7 +25,7 @@ class JournalRecord(BaseEntity):
     message: str
     current_task_id: TaskId | None
     current_work_unit_id: WorkUnitId | None
-    current_operation_id: FullArtifactSectionId | None
+    current_operation_id: ArtifactSectionId | None
 
     @pydantic.field_validator("message", mode="after")
     @classmethod
@@ -88,7 +88,7 @@ def add(  # noqa: CCR001
     state = ctx.state.load().unwrap()
     parsed_task_id: TaskId | None = state.current_task.id if state.current_task else None
     parsed_work_unit_id: WorkUnitId | None = ctx.current_work_unit_id.get()
-    parsed_operation_id: FullArtifactSectionId | None = ctx.current_operation_id.get()
+    parsed_operation_id: ArtifactSectionId | None = ctx.current_operation_id.get()
 
     record = JournalRecord(
         timestamp=now(),

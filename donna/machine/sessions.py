@@ -4,7 +4,7 @@ from typing import Callable, ParamSpec
 from donna.context.context import context
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import ArtifactId, FullArtifactSectionId
+from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
 from donna.domain.internal_ids import ActionRequestId
 from donna.machine import errors as machine_errors
 from donna.machine import journal as machine_journal
@@ -118,7 +118,7 @@ def start_workflow(artifact_id: ArtifactId) -> Result[list[Cell], ErrorsList]:  
 
 @unwrap_to_error
 def _validate_operation_transition(
-    state: MutableState, request_id: ActionRequestId, next_operation_id: FullArtifactSectionId
+    state: MutableState, request_id: ActionRequestId, next_operation_id: ArtifactSectionId
 ) -> Result[None, ErrorsList]:
     operation_id = state.get_action_request(request_id).unwrap().operation_id
     workflow = context().artifacts.load(operation_id.full_artifact_id, RENDER_CONTEXT_VIEW).unwrap()
@@ -137,7 +137,7 @@ def _validate_operation_transition(
 @_session_required
 @unwrap_to_error
 def complete_action_request(
-    request_id: ActionRequestId, next_operation_id: FullArtifactSectionId
+    request_id: ActionRequestId, next_operation_id: ArtifactSectionId
 ) -> Result[list[Cell], ErrorsList]:
     mutator = load_state().unwrap().mutator()
     _validate_operation_transition(mutator, request_id, next_operation_id).unwrap()

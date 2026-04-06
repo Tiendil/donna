@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from donna.context.entity_cache import TimedCache, TimedCacheValue
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern, FullArtifactSectionId
+from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern, ArtifactSectionId
 from donna.domain.types import Milliseconds
 from donna.machine.artifacts import Artifact, ArtifactPredicate, ArtifactSection
 from donna.workspaces.templates import RenderMode
@@ -108,7 +108,7 @@ class ArtifactsCache(TimedCache):
     @unwrap_to_error
     def resolve_section(
         self,
-        target_id: FullArtifactSectionId,
+        target_id: ArtifactSectionId,
         render_context: "ArtifactRenderContext",
     ) -> Result[ArtifactSection, ErrorsList]:
         artifact = self.load(target_id.full_artifact_id, render_context).unwrap()

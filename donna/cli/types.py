@@ -5,7 +5,7 @@ import typer
 
 from donna.cli.utils import output_cells
 from donna.core.errors import ErrorsList
-from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern, FullArtifactSectionId
+from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern, ArtifactSectionId
 from donna.domain.internal_ids import ActionRequestId
 from donna.machine.artifacts import ArtifactPredicate
 from donna.protocol.modes import Mode
@@ -34,8 +34,8 @@ def _parse_artifact_id_pattern(value: str) -> ArtifactIdPattern:
     return result.unwrap()
 
 
-def _parse_full_artifact_section_id(value: str) -> FullArtifactSectionId:
-    result = FullArtifactSectionId.parse(value)
+def _parse_artifact_section_id(value: str) -> ArtifactSectionId:
+    result = ArtifactSectionId.parse(value)
     errors = result.err()
     if errors is not None:
         _exit_with_errors(errors)
@@ -120,10 +120,10 @@ PredicateOption = Annotated[
 ]
 
 
-FullArtifactSectionIdArgument = Annotated[
-    FullArtifactSectionId,
+ArtifactSectionIdArgument = Annotated[
+    ArtifactSectionId,
     typer.Argument(
-        parser=_parse_full_artifact_section_id,
+        parser=_parse_artifact_section_id,
         help=(
             "Artifact section ID in project-relative form 'artifact:section' "
             "(e.g. '.donna:session:execute_rfc:finish')."

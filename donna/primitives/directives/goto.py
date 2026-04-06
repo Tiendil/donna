@@ -5,7 +5,7 @@ from jinja2.runtime import Context
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
-from donna.domain.artifact_ids import FullArtifactSectionId
+from donna.domain.artifact_ids import ArtifactSectionId
 from donna.machine.templates import Directive, PreparedDirectiveResult
 from donna.workspaces import config as workspace_config
 
@@ -36,7 +36,7 @@ class GoTo(Directive):
 
         return Ok((next_operation_id,))
 
-    def render_view(self, context: Context, next_operation_id: FullArtifactSectionId) -> Result[Any, ErrorsList]:
+    def render_view(self, context: Context, next_operation_id: ArtifactSectionId) -> Result[Any, ErrorsList]:
         protocol = workspace_config.protocol().value
         root_dir = workspace_config.project_dir()
         return Ok(
@@ -44,5 +44,5 @@ class GoTo(Directive):
             f"sessions action-request-completed <action-request-id> '{next_operation_id}'"
         )
 
-    def render_analyze(self, context: Context, next_operation_id: FullArtifactSectionId) -> Result[Any, ErrorsList]:
+    def render_analyze(self, context: Context, next_operation_id: ArtifactSectionId) -> Result[Any, ErrorsList]:
         return Ok(f"$$donna {self.analyze_id} {next_operation_id.local_id} donna$$")

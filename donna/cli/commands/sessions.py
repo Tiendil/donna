@@ -3,7 +3,7 @@ from collections.abc import Iterable
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import ActionRequestIdArgument, ArtifactIdArgument, FullArtifactSectionIdArgument
+from donna.cli.types import ActionRequestIdArgument, ArtifactIdArgument, ArtifactSectionIdArgument
 from donna.cli.utils import cells_cli
 from donna.machine import sessions
 from donna.protocol.cells import Cell
@@ -55,7 +55,7 @@ def run(workflow_id: ArtifactIdArgument) -> Iterable[Cell]:
 )
 @cells_cli
 def action_request_completed(
-    request_id: ActionRequestIdArgument, next_operation_id: FullArtifactSectionIdArgument
+    request_id: ActionRequestIdArgument, next_operation_id: ArtifactSectionIdArgument
 ) -> Iterable[Cell]:
     return sessions.complete_action_request(request_id, next_operation_id).unwrap()
 

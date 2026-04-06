@@ -1,5 +1,5 @@
 from donna.core import errors as core_errors
-from donna.domain.artifact_ids import ArtifactId, FullArtifactSectionId
+from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
 from donna.domain.ids import SectionId
 from donna.domain.internal_ids import ActionRequestId
 
@@ -57,8 +57,8 @@ class InvalidOperationTransition(EnvironmentError):
         "Check the next operation id for typos.",
         "Use one of the allowed transitions listed in the action request.",
     ]
-    operation_id: FullArtifactSectionId
-    next_operation_id: FullArtifactSectionId
+    operation_id: ArtifactSectionId
+    next_operation_id: ArtifactSectionId
 
 
 class PrimitiveInvalidImportPath(EnvironmentError):

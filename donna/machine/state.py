@@ -8,7 +8,7 @@ from donna.context.context import context
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import FullArtifactSectionId
+from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import ActionRequestId, InternalId, TaskId, WorkUnitId
 from donna.machine import errors as machine_errors
 from donna.machine import journal as machine_journal
@@ -156,7 +156,7 @@ class MutableState(BaseState):
 
     @unwrap_to_error
     def complete_action_request(
-        self, request_id: ActionRequestId, next_operation_id: FullArtifactSectionId
+        self, request_id: ActionRequestId, next_operation_id: ArtifactSectionId
     ) -> Result[None, ErrorsList]:
         current_task = self.current_task
         assert current_task is not None
@@ -174,7 +174,7 @@ class MutableState(BaseState):
         return Ok(None)
 
     @unwrap_to_error
-    def start_workflow(self, full_operation_id: FullArtifactSectionId) -> Result[None, ErrorsList]:
+    def start_workflow(self, full_operation_id: ArtifactSectionId) -> Result[None, ErrorsList]:
         workflow = context().artifacts.resolve_section(full_operation_id, RENDER_CONTEXT_VIEW).unwrap()
 
         machine_journal.add(

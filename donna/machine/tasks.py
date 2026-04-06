@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import FullArtifactSectionId
+from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import TaskId, WorkUnitId
 
 if TYPE_CHECKING:
@@ -13,11 +13,11 @@ if TYPE_CHECKING:
 
 class Task(BaseEntity):
     id: TaskId
-    workflow_id: FullArtifactSectionId
+    workflow_id: ArtifactSectionId
     context: dict[str, Any]
 
     @classmethod
-    def build(cls, id: TaskId, workflow_id: FullArtifactSectionId) -> "Task":
+    def build(cls, id: TaskId, workflow_id: ArtifactSectionId) -> "Task":
         return Task(
             id=id,
             workflow_id=workflow_id,
@@ -28,7 +28,7 @@ class Task(BaseEntity):
 class WorkUnit(BaseEntity):
     id: WorkUnitId
     task_id: TaskId
-    operation_id: FullArtifactSectionId
+    operation_id: ArtifactSectionId
     context: dict[str, Any]
 
     @classmethod
@@ -36,7 +36,7 @@ class WorkUnit(BaseEntity):
         cls,
         id: WorkUnitId,
         task_id: TaskId,
-        operation_id: FullArtifactSectionId,
+        operation_id: ArtifactSectionId,
         context: dict[str, Any] | None = None,
     ) -> "WorkUnit":
 

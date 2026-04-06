@@ -15,8 +15,8 @@ class ArtifactId(IdPath):
     def _validate_parts(cls, parts: Sequence[str]) -> bool:
         return all(_is_artifact_slug_part(part) for part in parts)
 
-    def to_full_local(self, local_id: SectionId) -> "FullArtifactSectionId":
-        return FullArtifactSectionId(f"{self}:{local_id}")
+    def to_full_local(self, local_id: SectionId) -> "ArtifactSectionId":
+        return ArtifactSectionId(f"{self}:{local_id}")
 
     @classmethod
     def parse(cls, text: str) -> Result["ArtifactId", ErrorsList]:
@@ -49,7 +49,7 @@ class _ColonPath(IdPath):
     delimiter = ":"
 
 
-class FullArtifactSectionId(_ColonPath):
+class ArtifactSectionId(_ColonPath):
     __slots__ = ()
     min_parts = 2
     validate_json = True
@@ -80,7 +80,7 @@ class FullArtifactSectionId(_ColonPath):
         return self.delimiter.join(new_parts)
 
     @classmethod
-    def parse(cls, text: str) -> Result["FullArtifactSectionId", ErrorsList]:  # noqa: CCR001
+    def parse(cls, text: str) -> Result["ArtifactSectionId", ErrorsList]:  # noqa: CCR001
         if not isinstance(text, str) or not text:
             return _invalid_format(f"{cls.__name__} format", text)
 
