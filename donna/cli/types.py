@@ -128,9 +128,7 @@ FullArtifactSectionIdArgument = Annotated[
     FullArtifactSectionId,
     typer.Argument(
         parser=_parse_full_artifact_section_id,
-        help=(
-            "Full artifact section ID in the form 'project:artifact:section' "
-        ),
+        help=("Full artifact section ID in the form 'project:artifact:section' "),
     ),
 ]
 

@@ -39,6 +39,7 @@ def _state_run(mutator: MutableState) -> Result[None, ErrorsList]:
 def _state_cells() -> Result[list[Cell], ErrorsList]:
     return Ok(load_state().unwrap().node().details())
 
+
 P = ParamSpec("P")
 CellsResult = Result[list[Cell], ErrorsList]
 
