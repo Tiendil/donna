@@ -272,12 +272,13 @@ Good example:
 ```python
 ...
 from donna.core.result import Err, Ok, Result, unwrap_to_error
+from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
 
 @unwrap_to_error
 def resolve(target_id: FullArtifactSectionId) -> Result[ArtifactSection, ErrorsList]:
-    from donna.world import artifacts as world_artifacts
+    from donna.context.context import context
 
-    artifact = world_artifacts.load_artifact(target_id.full_artifact_id).unwrap()
+    artifact = context().artifacts.load(target_id.full_artifact_id, RENDER_CONTEXT_VIEW).unwrap()
 
     section = artifact.get_section(target_id.local_id).unwrap()
 
@@ -292,7 +293,7 @@ Bad example:
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 
 def resolve(target_id: FullArtifactSectionId) -> Result[ArtifactSection, ErrorsList]:
-    artifact_result = world_artifacts.load_artifact(target_id.full_artifact_id)
+    artifact_result = context().artifacts.load(target_id.full_artifact_id, RENDER_CONTEXT_VIEW)
 
     if artifact_result.is_err():
         return Err(artifact_result.unwrap_err())

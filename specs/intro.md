@@ -25,7 +25,7 @@ We may need coding agents on each step of the process, but there is no reason fo
 ## Dictionary
 
 - **Action request** — an instruction to the agent (who runs Donna) to perform the specified operations. Action requests are created by operations, like `donna.lib.request_action`. After finishing following the instructions of an action request, the agent MUST report back to Donna specifying the next operation to continue with. The list of next operations is specified in the action request itself.
-- **Artifact** — any text or binary document managed by Donna in a world; text artifacts are typically Markdown templates with metadata and are the primary units of knowledge and instructions.
+- **Artifact** — any text or binary document managed by Donna in the project filesystem; text artifacts are typically Markdown templates with metadata and are the primary units of knowledge and instructions.
 - **Artifact Section** — a part of a text artifact separated by markdown headers, has its own configuration block and semantics depending on section kind.
 - **Configuration block** — a fenced code block with the `donna` keyword (preferably TOML) that configures an artifact or its section.
 - **Directive** — a Jinja2 helper like `donna.lib.view(...)` or `donna.lib.goto(...)` that adds meta information or special behavior to an artifact.
@@ -38,7 +38,6 @@ We may need coding agents on each step of the process, but there is no reason fo
 - **Specification** — a text artifact of kind `donna.lib.specification` that documents behavior, rules, or project guidance.
 - **Story** — a semantically consistent scope of work within a session; a conceptual unit not directly represented in the tool.
 - **Tail section** — each H2 section of an artifact.
-- **World** — a storage namespace (filesystem or other backends) that contains artifacts.
 - **Workspace** — the `.donna` directory at `<project-root>/.donna` that stores Donna's configuration, and runtime state.
 - **Workflow** — a `donna.lib.workflow` artifact that encodes a finite-state machine of operations guiding the agent's work.
 - **Workflow operation** — a single step in a workflow, defined by a tail section with an `id`, `kind`, and instructions.

@@ -21,7 +21,7 @@ The code is separated by layers/subsystems into subpackages:
 - `donna.domain` — code that is required by all Donna'specific logic: ID classes, common types, etc.
 - `donna.machine` — code that implements the core Donna's logic — how Donna works regardless of external environments, i.e. pure domain behavior.
 - `donna.context` — code that stores and provides execution-scoped runtime context for Donna's domain logic: artifact/state/primitive caches and scoped values like current actor/work unit/operation identifiers.
-- `donna.world` — code that implements various worlds where Donna can find and manage artifacts: from artifacts discovery to their loading, parsing, updating. Also contains code related to configuration of Donna.
+- `donna.workspaces` — code that integrates Donna with the project workspace and filesystem: runtime configuration, artifact discovery/loading, session storage, source parsing, and workspace initialization.
 - `donna.protocol` — code that implements protocol via which Donna's core domain logic interacts with external environments: CLI, API, etc. Includes basic classes for information representing (for the external environments) and its formatting.
 - `donna.cli` — code that implements the `donna` CLI tool, its commands, arguments parsing, etc.
 - `donna.primitives` — code that implements basic building blocks for Donna's behavior: concrete implementations of various classes from the `donna.machine`.

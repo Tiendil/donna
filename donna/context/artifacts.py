@@ -10,7 +10,7 @@ from donna.workspaces.templates import RenderMode
 
 if TYPE_CHECKING:
     from donna.workspaces.artifacts import ArtifactRenderContext
-    from donna.workspaces.worlds.base import RawArtifact
+    from donna.workspaces.artifacts import FilesystemRawArtifact
 
 
 class _ArtifactCacheValue(TimedCacheValue):
@@ -18,7 +18,7 @@ class _ArtifactCacheValue(TimedCacheValue):
 
     def __init__(
         self,
-        raw_artifact: "RawArtifact",
+        raw_artifact: "FilesystemRawArtifact",
         rendered_artifacts: dict[RenderMode, Artifact],
         loaded_at_ms: Milliseconds,
         checked_at_ms: Milliseconds,
@@ -36,18 +36,16 @@ class ArtifactsCache(TimedCache):
 
     @unwrap_to_error
     def _is_cache_stale(self, artifact_id: ArtifactId, loaded_at_ms: Milliseconds) -> Result[bool, ErrorsList]:
-        from donna.workspaces.config import config
+        from donna.workspaces.artifacts import has_artifact_changed
 
-        world = config().project_world
-        return Ok(world.has_artifact_changed(artifact_id, since=loaded_at_ms).unwrap())
+        return Ok(has_artifact_changed(artifact_id, since=loaded_at_ms).unwrap())
 
     @staticmethod
     @unwrap_to_error
-    def _load_raw_artifact(artifact_id: ArtifactId) -> Result["RawArtifact", ErrorsList]:
-        from donna.workspaces.config import config
+    def _load_raw_artifact(artifact_id: ArtifactId) -> Result["FilesystemRawArtifact", ErrorsList]:
+        from donna.workspaces.artifacts import fetch_raw_artifact
 
-        world = config().project_world
-        return Ok(world.fetch(artifact_id).unwrap())
+        return Ok(fetch_raw_artifact(artifact_id).unwrap())
 
     @unwrap_to_error
     def _refresh_cache_value(
@@ -71,7 +69,7 @@ class ArtifactsCache(TimedCache):
         if cached is None:
             return Ok(self._refresh_cache_value(artifact_id, now_ms).unwrap())
 
-        # Skip expensive world checks when cache lifetime has not elapsed yet.
+        # Skip expensive filesystem checks when cache lifetime has not elapsed yet.
         if self._is_within_lifetime(cached, now_ms):
             return Ok(cached)
 
@@ -144,14 +142,12 @@ class ArtifactsCache(TimedCache):
         render_context: "ArtifactRenderContext",
         predicate: ArtifactPredicate | None = None,
     ) -> Result[list[Artifact], ErrorsList]:
-        from donna.workspaces.config import config
+        from donna.workspaces.artifacts import list_artifact_ids
 
         artifacts: list[Artifact] = []
         errors: ErrorsList = []
 
-        world = config().project_world
-
-        for artifact_id in world.list_artifacts(pattern):
+        for artifact_id in list_artifact_ids(pattern):
             artifact_result = self._list_artifact_if_matches(artifact_id, render_context, predicate)
 
             if artifact_result.is_err():

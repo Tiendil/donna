@@ -124,8 +124,6 @@ def initialize_workspace(
         encoding="utf-8",
     )
 
-    default_config.project_world.initialize().unwrap()
-
     workspace_sessions.ensure_dir()
 
     if install_skills:

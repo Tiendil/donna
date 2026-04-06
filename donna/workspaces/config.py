@@ -13,7 +13,6 @@ from donna.machine.primitives import resolve_primitive
 from donna.workspaces import errors as world_errors
 from donna.workspaces.sources.base import SourceConfig as SourceConfigValue
 from donna.workspaces.sources.base import SourceConstructor
-from donna.workspaces.worlds.base import World as BaseWorld
 
 if TYPE_CHECKING:
     from donna.protocol.modes import Mode
@@ -39,17 +38,8 @@ def _default_sources() -> list[SourceConfig]:
     ]
 
 
-def _construct_project_world() -> BaseWorld:
-    from donna.workspaces.worlds.filesystem import World as FilesystemWorld
-
-    return FilesystemWorld(
-        path=project_dir().resolve(),
-    )
-
-
 class Config(BaseEntity):
     sources: list[SourceConfig] = pydantic.Field(default_factory=_default_sources)
-    _project_world: BaseWorld | None = pydantic.PrivateAttr(default=None)
     _sources_instances: list[SourceConfigValue] = pydantic.PrivateAttr(default_factory=list)
 
     cache_lifetime: float = 1.0
@@ -70,15 +60,7 @@ class Config(BaseEntity):
 
             sources.append(primitive.construct_source(source_config))
 
-        object.__setattr__(self, "_project_world", _construct_project_world())
         object.__setattr__(self, "_sources_instances", sources)
-
-    @property
-    def project_world(self) -> BaseWorld:
-        if self._project_world is None:
-            raise world_errors.GlobalConfigNotSet()
-
-        return self._project_world
 
     @property
     def sources_instances(self) -> list[SourceConfigValue]:
