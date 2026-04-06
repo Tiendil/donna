@@ -40,7 +40,10 @@ def _absolute_artifact_section_id_or_exit(value: str) -> str:
     return value
 
 
-def _absolute_artifact_pattern_or_exit(value: str) -> str:
+def _absolute_artifact_pattern_or_exit(value: str | ArtifactIdPattern) -> str:
+    if isinstance(value, ArtifactIdPattern):
+        return str(value)
+
     if value in {"*", "**"} or value.startswith("*/") or value.startswith("**/"):
         return f"{ArtifactId.prefix}{value}"
 
@@ -55,7 +58,10 @@ def _parse_artifact_id(value: str) -> ArtifactId:
     return _parse_result_or_exit(result.ok(), result.err())
 
 
-def _parse_artifact_id_pattern(value: str) -> ArtifactIdPattern:
+def _parse_artifact_id_pattern(value: str | ArtifactIdPattern) -> ArtifactIdPattern:
+    if isinstance(value, ArtifactIdPattern):
+        return value
+
     result = ArtifactIdPattern.parse(_absolute_artifact_pattern_or_exit(value))
     return _parse_result_or_exit(result.ok(), result.err())
 
