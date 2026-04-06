@@ -23,8 +23,9 @@ class Formatter(BaseFormatter):
             lines.append(cell.content.strip())
 
         lines.append(f"--DONNA-CELL {id} END--")
+        lines.append("")
 
-        return "\n".join(lines).strip().encode()
+        return "\n".join(lines).encode()
 
     def format_journal(self, record: JournalRecord) -> bytes:
         timestamp = record.timestamp.isoformat()
