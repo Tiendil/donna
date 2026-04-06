@@ -6,10 +6,11 @@ from typing import TYPE_CHECKING
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result
-from donna.domain.artifact_ids import ArtifactId, FullArtifactId, FullArtifactIdPattern
+from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern
 from donna.domain.ids import WorldId
 from donna.domain.types import Milliseconds
 from donna.machine.artifacts import Artifact
+
 if TYPE_CHECKING:
     from donna.workspaces.artifacts import ArtifactRenderContext
 
@@ -21,7 +22,7 @@ class RawArtifact(BaseEntity, ABC):
     def get_bytes(self) -> bytes: ...  # noqa: E704
 
     @abstractmethod
-    def render(self, full_id: FullArtifactId, render_context: "ArtifactRenderContext") -> Result[Artifact, ErrorsList]:
+    def render(self, artifact_id: ArtifactId, render_context: "ArtifactRenderContext") -> Result[Artifact, ErrorsList]:
         pass
 
 
@@ -39,7 +40,7 @@ class World(BaseEntity, ABC):
         pass
 
     @abstractmethod
-    def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]: ...  # noqa: E704
+    def list_artifacts(self, pattern: ArtifactIdPattern) -> list[ArtifactId]: ...  # noqa: E704
 
     def initialize(self, reset: bool = False) -> Result[None, ErrorsList]:
         return Ok(None)

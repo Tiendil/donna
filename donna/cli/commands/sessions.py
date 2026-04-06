@@ -3,7 +3,7 @@ from collections.abc import Iterable
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import ActionRequestIdArgument, FullArtifactIdArgument, FullArtifactSectionIdArgument
+from donna.cli.types import ActionRequestIdArgument, ArtifactIdArgument, FullArtifactSectionIdArgument
 from donna.cli.utils import cells_cli
 from donna.machine import sessions
 from donna.protocol.cells import Cell
@@ -46,7 +46,7 @@ def details() -> Iterable[Cell]:
 
 @sessions_cli.command(help="Run a workflow from an artifact to drive the current session forward.")
 @cells_cli
-def run(workflow_id: FullArtifactIdArgument) -> Iterable[Cell]:
+def run(workflow_id: ArtifactIdArgument) -> Iterable[Cell]:
     return sessions.start_workflow(workflow_id).unwrap()
 
 

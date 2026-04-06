@@ -5,7 +5,7 @@ from jinja2.runtime import Context
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import FullArtifactIdPattern
+from donna.domain.artifact_ids import ArtifactIdPattern
 from donna.machine.artifacts import ArtifactPredicate
 from donna.machine.templates import Directive, PreparedDirectiveResult
 from donna.workspaces import config as workspace_config
@@ -52,7 +52,7 @@ class List(Directive):
             if keyword != "predicate":
                 return Err([ListInvalidKeyword(keyword=keyword)])
 
-        artifact_pattern = FullArtifactIdPattern.parse(str(argv[0])).unwrap()
+        artifact_pattern = ArtifactIdPattern.parse(str(argv[0])).unwrap()
 
         predicate = kwargs.get("predicate")
         if predicate is None:
@@ -65,7 +65,7 @@ class List(Directive):
         return Ok((artifact_pattern, parsed_predicate))
 
     def render_view(
-        self, context: Context, artifact_pattern: FullArtifactIdPattern, predicate: ArtifactPredicate | None
+        self, context: Context, artifact_pattern: ArtifactIdPattern, predicate: ArtifactPredicate | None
     ) -> Result[Any, ErrorsList]:
         protocol = workspace_config.protocol().value
         root_dir = workspace_config.project_dir()
@@ -79,7 +79,7 @@ class List(Directive):
         )
 
     def render_analyze(
-        self, context: Context, artifact_pattern: FullArtifactIdPattern, predicate: ArtifactPredicate | None
+        self, context: Context, artifact_pattern: ArtifactIdPattern, predicate: ArtifactPredicate | None
     ) -> Result[Any, ErrorsList]:
         if predicate is None:
             return Ok(f"$$donna {self.analyze_id} {artifact_pattern} donna$$")

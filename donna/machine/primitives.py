@@ -17,7 +17,6 @@ if TYPE_CHECKING:
     from donna.machine.tasks import Task, WorkUnit
     from donna.workspaces.config import SourceConfig as SourceConfigModel
     from donna.workspaces.sources.base import SourceConfig as SourceConfigValue
-    from donna.workspaces.worlds.base import World
 
 
 # TODO: Currently it is a kind of God interface. It is convenient for now.

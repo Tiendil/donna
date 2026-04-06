@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, ClassVar, cast
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import ArtifactSectionId, FullArtifactId
+from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta
@@ -37,7 +37,7 @@ class Output(MarkdownSectionMixin, OperationKind):
 
     def markdown_construct_meta(
         self,
-        artifact_id: "FullArtifactId",
+        artifact_id: "ArtifactId",
         source: markdown.SectionSource,
         section_config: ArtifactSectionConfig,
         description: str,

@@ -6,7 +6,7 @@ import pydantic
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result, unwrap_to_error
 from donna.domain import errors as domain_errors
-from donna.domain.artifact_ids import ArtifactSectionId, FullArtifactId
+from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
@@ -55,7 +55,7 @@ class RequestAction(MarkdownSectionMixin, OperationKind):
 
     def markdown_construct_meta(
         self,
-        artifact_id: "FullArtifactId",
+        artifact_id: "ArtifactId",
         source: markdown.SectionSource,
         section_config: ArtifactSectionConfig,
         description: str,

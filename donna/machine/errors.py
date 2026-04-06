@@ -1,5 +1,5 @@
 from donna.core import errors as core_errors
-from donna.domain.artifact_ids import ArtifactSectionId, FullArtifactId, FullArtifactSectionId
+from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId, FullArtifactSectionId
 from donna.domain.internal_ids import ActionRequestId
 
 
@@ -130,7 +130,7 @@ class ArtifactPredicateEvaluationFailed(EnvironmentError):
 
 class ArtifactValidationError(EnvironmentError):
     cell_kind: str = "artifact_validation_error"
-    artifact_id: FullArtifactId
+    artifact_id: ArtifactId
     section_id: ArtifactSectionId | None = None
 
     def content_intro(self) -> str:

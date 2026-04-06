@@ -1,7 +1,7 @@
 import pathlib
 
 from donna.core import errors as core_errors
-from donna.domain.artifact_ids import ArtifactId, FullArtifactId
+from donna.domain.artifact_ids import ArtifactId
 
 
 class InternalError(core_errors.InternalError):
@@ -90,7 +90,7 @@ class UnsupportedArtifactSourceExtension(ArtifactError):
 
 class MarkdownError(WorkspaceError):
     cell_kind: str = "markdown_error"
-    artifact_id: FullArtifactId | None = None
+    artifact_id: ArtifactId | None = None
 
     def content_intro(self) -> str:
         if self.artifact_id is None:
@@ -101,7 +101,7 @@ class MarkdownError(WorkspaceError):
 
 class TemplateDirectiveError(WorkspaceError):
     cell_kind: str = "template_directive_error"
-    artifact_id: FullArtifactId | None = None
+    artifact_id: ArtifactId | None = None
 
     def content_intro(self) -> str:
         if self.artifact_id is None:

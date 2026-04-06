@@ -5,13 +5,7 @@ from pydantic_core import core_schema
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain import errors as domain_errors
-from donna.domain.id_paths import (
-    IdPath,
-    IdPathPattern,
-    _invalid_format,
-    _pydantic_type_error,
-    _pydantic_value_error,
-)
+from donna.domain.id_paths import IdPath, IdPathPattern, _invalid_format, _pydantic_type_error, _pydantic_value_error
 
 
 def _is_artifact_slug_part(part: str) -> bool:
@@ -24,13 +18,32 @@ def _is_artifact_slug_part(part: str) -> bool:
         return False
 
     return any(character not in ".-" for character in part)
+
+
 class ArtifactId(IdPath):
     __slots__ = ()
     delimiter = ":"
+    validate_json = True
 
     @classmethod
     def _validate_parts(cls, parts: Sequence[str]) -> bool:
         return all(_is_artifact_slug_part(part) for part in parts)
+
+    def to_full_local(self, local_id: "ArtifactSectionId") -> "FullArtifactSectionId":
+        return FullArtifactSectionId(f"{self}:{local_id}")
+
+    @classmethod
+    def parse(cls, text: str) -> Result["ArtifactId", ErrorsList]:
+        if not isinstance(text, str) or not text:
+            return _invalid_format(cls.__name__, text)
+
+        if not cls.delimiter:
+            return _invalid_format(cls.__name__, text)
+
+        if not cls.validate(text):
+            return _invalid_format(cls.__name__, text)
+
+        return Ok(cls(text))
 
 
 class ArtifactIdPattern(IdPathPattern["ArtifactId"]):
@@ -97,67 +110,6 @@ class ArtifactSectionId(str):
         )
 
 
-class FullArtifactId(_ColonPath):
-    __slots__ = ()
-    min_parts = 1
-    validate_json = True
-
-    @classmethod
-    def _validate_parts(cls, parts: Sequence[str]) -> bool:
-        if len(parts) < cls.min_parts:
-            return False
-
-        if len(parts) > 1 and parts[0] == "project":
-            return False
-
-        return ArtifactId.validate(cls.delimiter.join(parts))
-
-    def __str__(self) -> str:
-        return str(self.artifact_id)
-
-    @property
-    def artifact_id(self) -> ArtifactId:
-        return ArtifactId(self.delimiter.join(self.parts))
-
-    def to_full_local(self, local_id: ArtifactSectionId) -> "FullArtifactSectionId":
-        return FullArtifactSectionId(f"{self}:{local_id}")
-
-    @classmethod
-    def parse(cls, text: str) -> Result["FullArtifactId", ErrorsList]:
-        if not isinstance(text, str) or not text:
-            return _invalid_format(f"{cls.__name__} format", text)
-
-        if not cls.delimiter:
-            return _invalid_format(f"{cls.__name__} format", text)
-
-        if text.startswith("project:"):
-            return _invalid_format(f"{cls.__name__} format", text)
-
-        if not ArtifactId.validate(text):
-            return _invalid_format(f"{cls.__name__} format", text)
-
-        return Ok(cls(text))
-
-
-class FullArtifactIdPattern(IdPathPattern["FullArtifactId"]):
-    __slots__ = ()
-    id_class = FullArtifactId
-
-    @classmethod
-    def _validate_pattern_part(cls, part: str) -> bool:
-        return ArtifactIdPattern._validate_pattern_part(part)
-
-    @classmethod
-    def parse(cls, text: str) -> Result["FullArtifactIdPattern", ErrorsList]:
-        if isinstance(text, str) and text.startswith("project:"):
-            return _invalid_format(cls.__name__, text)
-
-        return super().parse(text)
-
-    def matches_full_id(self, full_id: FullArtifactId) -> bool:
-        return self.matches(full_id)
-
-
 class FullArtifactSectionId(_ColonPath):
     __slots__ = ()
     min_parts = 2
@@ -166,9 +118,6 @@ class FullArtifactSectionId(_ColonPath):
     @classmethod
     def _validate_parts(cls, parts: Sequence[str]) -> bool:
         if len(parts) < cls.min_parts:
-            return False
-
-        if len(parts) > 2 and parts[0] == "project":
             return False
 
         return ArtifactId.validate(cls.delimiter.join(parts[:-1])) and ArtifactSectionId.validate(parts[-1])
@@ -181,8 +130,8 @@ class FullArtifactSectionId(_ColonPath):
         return ArtifactId(self.delimiter.join(self.parts[:-1]))
 
     @property
-    def full_artifact_id(self) -> FullArtifactId:
-        return FullArtifactId(self.artifact_id)
+    def full_artifact_id(self) -> ArtifactId:
+        return self.artifact_id
 
     @property
     def local_id(self) -> ArtifactSectionId:
@@ -207,13 +156,13 @@ class FullArtifactSectionId(_ColonPath):
         except ValueError:
             return _invalid_format(f"{cls.__name__} format", text)
 
-        full_artifact_id_result = FullArtifactId.parse(artifact_part)
+        full_artifact_id_result = ArtifactId.parse(artifact_part)
         errors = full_artifact_id_result.err()
         if errors is not None:
             return Err(errors)
 
-        full_artifact_id = full_artifact_id_result.ok()
-        if full_artifact_id is None:
+        artifact_id = full_artifact_id_result.ok()
+        if artifact_id is None:
             return _invalid_format(f"{cls.__name__} format", text)
 
         local_id_result = ArtifactSectionId.parse(local_part)
@@ -225,4 +174,4 @@ class FullArtifactSectionId(_ColonPath):
         if local_id is None:
             return _invalid_format(f"{cls.__name__} format", text)
 
-        return Ok(cls(f"{full_artifact_id}{cls.delimiter}{local_id}"))
+        return Ok(cls(f"{artifact_id}{cls.delimiter}{local_id}"))

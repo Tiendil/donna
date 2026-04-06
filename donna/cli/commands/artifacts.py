@@ -4,12 +4,12 @@ import typer
 
 from donna.cli.application import app
 from donna.cli.types import (
-    FullArtifactIdPatternArgument,
+    ArtifactIdPatternArgument,
     PredicateOption,
 )
 from donna.cli.utils import cells_cli
 from donna.context.context import context
-from donna.domain.artifact_ids import FullArtifactIdPattern
+from donna.domain.artifact_ids import ArtifactIdPattern
 from donna.machine import journal as machine_journal
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
@@ -17,7 +17,7 @@ from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
 
 artifacts_cli = typer.Typer()
 
-DEFAULT_ARTIFACT_PATTERN = FullArtifactIdPattern.parse("**").unwrap()
+DEFAULT_ARTIFACT_PATTERN = ArtifactIdPattern.parse("**").unwrap()
 
 
 def _log_artifact_operation(message: str) -> None:
@@ -26,7 +26,7 @@ def _log_artifact_operation(message: str) -> None:
 
 def _log_operation_on_artifacts(
     message: str,
-    pattern: FullArtifactIdPattern,
+    pattern: ArtifactIdPattern,
     predicate: PredicateOption | None,
 ) -> None:
     if predicate is None:
@@ -40,7 +40,7 @@ def _log_operation_on_artifacts(
 )
 @cells_cli
 def list(
-    pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
+    pattern: ArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
     predicate: PredicateOption = None,
 ) -> Iterable[Cell]:
     _log_operation_on_artifacts("List artifacts", pattern, predicate)
@@ -53,7 +53,7 @@ def list(
 @artifacts_cli.command(help="Displays artifacts matching a pattern or a specific id")
 @cells_cli
 def view(
-    pattern: FullArtifactIdPatternArgument,
+    pattern: ArtifactIdPatternArgument,
     predicate: PredicateOption = None,
 ) -> Iterable[Cell]:
     _log_operation_on_artifacts("View artifacts", pattern, predicate)
@@ -65,7 +65,7 @@ def view(
 @artifacts_cli.command(help="Validate artifacts matching a pattern (defaults to all artifacts) and return any errors.")
 @cells_cli
 def validate(
-    pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
+    pattern: ArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
     predicate: PredicateOption = None,
 ) -> Iterable[Cell]:  # noqa: CCR001
     _log_operation_on_artifacts("Validate artifacts", pattern, predicate)

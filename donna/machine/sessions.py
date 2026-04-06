@@ -4,7 +4,7 @@ from typing import Callable, ParamSpec
 from donna.context.context import context
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import FullArtifactId, FullArtifactSectionId
+from donna.domain.artifact_ids import ArtifactId, FullArtifactSectionId
 from donna.domain.internal_ids import ActionRequestId
 from donna.machine import errors as machine_errors
 from donna.machine import journal as machine_journal
@@ -105,7 +105,7 @@ def details() -> Result[list[Cell], ErrorsList]:
 
 @_session_required
 @unwrap_to_error
-def start_workflow(artifact_id: FullArtifactId) -> Result[list[Cell], ErrorsList]:  # noqa: CCR001
+def start_workflow(artifact_id: ArtifactId) -> Result[list[Cell], ErrorsList]:  # noqa: CCR001
     static_state = load_state().unwrap()
     workflow = context().artifacts.load(artifact_id, RENDER_CONTEXT_VIEW).unwrap()
     primary_section = workflow.primary_section().unwrap()

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, cast
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import ArtifactId, FullArtifactId, FullArtifactIdPattern
+from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern
 from donna.domain.types import Milliseconds
 from donna.workspaces import errors as world_errors
 from donna.workspaces.artifacts_discovery import ArtifactListingNode, list_artifacts_by_pattern
@@ -24,12 +24,12 @@ class FilesystemRawArtifact(RawArtifact):
 
     @unwrap_to_error
     def render(
-        self, full_id: FullArtifactId, render_context: "ArtifactRenderContext"
+        self, artifact_id: ArtifactId, render_context: "ArtifactRenderContext"
     ) -> Result["Artifact", ErrorsList]:
         from donna.workspaces.config import config
 
         source_config = config().get_source_config(self.source_id).unwrap()
-        return Ok(source_config.construct_artifact_from_bytes(full_id, self.get_bytes(), render_context).unwrap())
+        return Ok(source_config.construct_artifact_from_bytes(artifact_id, self.get_bytes(), render_context).unwrap())
 
 
 class World(BaseWorld):
@@ -107,7 +107,7 @@ class World(BaseWorld):
 
         return Ok((path.stat().st_mtime_ns // 1_000_000) > since)
 
-    def list_artifacts(self, pattern: FullArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
+    def list_artifacts(self, pattern: ArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
         return list_artifacts_by_pattern(
             root=self._artifact_listing_root(),
             pattern=pattern,

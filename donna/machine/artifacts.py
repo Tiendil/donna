@@ -6,7 +6,7 @@ import pydantic
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import ArtifactSectionId, FullArtifactId
+from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
 from donna.domain.python_path import PythonPath
 from donna.machine.errors import (
     ArtifactPrimarySectionMissing,
@@ -30,7 +30,7 @@ class ArtifactSectionMeta(BaseEntity):
 
 class ArtifactSection(BaseEntity):
     id: ArtifactSectionId
-    artifact_id: FullArtifactId
+    artifact_id: ArtifactId
     kind: PythonPath
     title: str
     description: str
@@ -47,7 +47,7 @@ class ArtifactSection(BaseEntity):
 
 
 class Artifact(BaseEntity):
-    id: FullArtifactId
+    id: ArtifactId
 
     sections: list[ArtifactSection]
 

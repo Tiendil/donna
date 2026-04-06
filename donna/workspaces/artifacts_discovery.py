@@ -2,7 +2,7 @@ import pathlib
 from functools import lru_cache
 from typing import Iterable, Protocol
 
-from donna.domain.artifact_ids import ArtifactId, FullArtifactId, FullArtifactIdPattern
+from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern
 from donna.workspaces.config import config
 
 
@@ -31,7 +31,7 @@ class ArtifactListingNode(Protocol):
 def list_artifacts_by_pattern(  # noqa: CCR001
     *,
     root: ArtifactListingNode | None,
-    pattern: FullArtifactIdPattern,
+    pattern: ArtifactIdPattern,
 ) -> list[ArtifactId]:
     if root is None or not root.is_dir():
         return []
@@ -66,8 +66,7 @@ def list_artifacts_by_pattern(  # noqa: CCR001
             artifact_name = ":".join(artifact_parts)
             if ArtifactId.validate(artifact_name):
                 artifact_id = ArtifactId(artifact_name)
-                full_id = FullArtifactId(artifact_id)
-                if pattern.matches_full_id(full_id):
+                if pattern.matches(artifact_id):
                     artifacts.add(artifact_id)
 
     walk(root, [])

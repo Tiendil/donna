@@ -5,7 +5,7 @@ import typer
 
 from donna.cli.utils import output_cells
 from donna.core.errors import ErrorsList
-from donna.domain.artifact_ids import FullArtifactId, FullArtifactIdPattern, FullArtifactSectionId
+from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern, FullArtifactSectionId
 from donna.domain.internal_ids import ActionRequestId
 from donna.machine.artifacts import ArtifactPredicate
 from donna.protocol.modes import Mode
@@ -16,8 +16,8 @@ def _exit_with_errors(errors: ErrorsList) -> None:
     raise typer.Exit(code=0)
 
 
-def _parse_full_artifact_id(value: str) -> FullArtifactId:
-    result = FullArtifactId.parse(value)
+def _parse_artifact_id(value: str) -> ArtifactId:
+    result = ArtifactId.parse(value)
     errors = result.err()
     if errors is not None:
         _exit_with_errors(errors)
@@ -25,8 +25,8 @@ def _parse_full_artifact_id(value: str) -> FullArtifactId:
     return result.unwrap()
 
 
-def _parse_full_artifact_id_pattern(value: str) -> FullArtifactIdPattern:
-    result = FullArtifactIdPattern.parse(value)
+def _parse_artifact_id_pattern(value: str) -> ArtifactIdPattern:
+    result = ArtifactIdPattern.parse(value)
     errors = result.err()
     if errors is not None:
         _exit_with_errors(errors)
@@ -92,19 +92,19 @@ ActionRequestIdArgument = Annotated[
 ]
 
 
-FullArtifactIdArgument = Annotated[
-    FullArtifactId,
+ArtifactIdArgument = Annotated[
+    ArtifactId,
     typer.Argument(
-        parser=_parse_full_artifact_id,
+        parser=_parse_artifact_id,
         help="Artifact ID in project-relative form 'artifact[:path]' (e.g., 'specs:intro').",
     ),
 ]
 
 
-FullArtifactIdPatternArgument = Annotated[
-    FullArtifactIdPattern,
+ArtifactIdPatternArgument = Annotated[
+    ArtifactIdPattern,
     typer.Argument(
-        parser=_parse_full_artifact_id_pattern,
+        parser=_parse_artifact_id_pattern,
         help="Artifact pattern (supports '*' and '**', e.g. 'specs:*' or '**:intro').",
     ),
 ]
