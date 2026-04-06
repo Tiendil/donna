@@ -178,7 +178,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
             changes.append(ChangeSetTaskContext(task_id=task.id, key=meta.save_stderr_to, value=stderr))
 
         next_operation = meta.select_next_operation(exit_code)
-        full_operation_id = unit.operation_id.full_artifact_id.to_full_local(next_operation)
+        full_operation_id = unit.operation_id.artifact_id.to_full_local(next_operation)
 
         changes.append(ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id))
         return Ok(changes)

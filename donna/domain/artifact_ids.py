@@ -66,10 +66,6 @@ class ArtifactSectionId(_ColonPath):
         return ArtifactId(self.delimiter.join(self.parts[:-1]))
 
     @property
-    def full_artifact_id(self) -> ArtifactId:
-        return self.artifact_id
-
-    @property
     def local_id(self) -> SectionId:
         return SectionId(self.parts[-1])
 

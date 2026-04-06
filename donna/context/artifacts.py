@@ -111,7 +111,7 @@ class ArtifactsCache(TimedCache):
         target_id: ArtifactSectionId,
         render_context: "ArtifactRenderContext",
     ) -> Result[ArtifactSection, ErrorsList]:
-        artifact = self.load(target_id.full_artifact_id, render_context).unwrap()
+        artifact = self.load(target_id.artifact_id, render_context).unwrap()
         return Ok(artifact.get_section(target_id.local_id).unwrap())
 
     @unwrap_to_error

@@ -71,7 +71,7 @@ class Output(MarkdownSectionMixin, OperationKind):
 
         next_operation_id = meta.next_operation_id
         assert next_operation_id is not None
-        full_operation_id = unit.operation_id.full_artifact_id.to_full_local(next_operation_id)
+        full_operation_id = unit.operation_id.artifact_id.to_full_local(next_operation_id)
 
         return Ok([ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id)])
 

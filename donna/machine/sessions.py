@@ -121,7 +121,7 @@ def _validate_operation_transition(
     state: MutableState, request_id: ActionRequestId, next_operation_id: ArtifactSectionId
 ) -> Result[None, ErrorsList]:
     operation_id = state.get_action_request(request_id).unwrap().operation_id
-    workflow = context().artifacts.load(operation_id.full_artifact_id, RENDER_CONTEXT_VIEW).unwrap()
+    workflow = context().artifacts.load(operation_id.artifact_id, RENDER_CONTEXT_VIEW).unwrap()
     operation = workflow.get_section(operation_id.local_id).unwrap()
 
     assert isinstance(operation.meta, OperationMeta)
