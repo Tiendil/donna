@@ -8,9 +8,10 @@ from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.core.utils import now
-from donna.domain.ids import FullArtifactSectionId, TaskId, WorkUnitId
+from donna.domain.artifact_ids import ArtifactSectionId
+from donna.domain.internal_ids import TaskId, WorkUnitId
 from donna.machine import errors as machine_errors
-from donna.workspaces import utils as workspace_utils
+from donna.workspaces import sessions as workspace_sessions
 from donna.workspaces.config import protocol as protocol_mode
 
 
@@ -24,7 +25,7 @@ class JournalRecord(BaseEntity):
     message: str
     current_task_id: TaskId | None
     current_work_unit_id: WorkUnitId | None
-    current_operation_id: FullArtifactSectionId | None
+    current_operation_id: ArtifactSectionId | None
 
     @pydantic.field_validator("message", mode="after")
     @classmethod
@@ -51,7 +52,7 @@ def deserialize_record(content: bytes) -> JournalRecord:
 
 @unwrap_to_error
 def reset() -> Result[None, ErrorsList]:
-    workspace_utils.session_world().unwrap().journal_reset().unwrap()
+    workspace_sessions.reset_journal()
     return Ok(None)
 
 
@@ -87,7 +88,7 @@ def add(  # noqa: CCR001
     state = ctx.state.load().unwrap()
     parsed_task_id: TaskId | None = state.current_task.id if state.current_task else None
     parsed_work_unit_id: WorkUnitId | None = ctx.current_work_unit_id.get()
-    parsed_operation_id: FullArtifactSectionId | None = ctx.current_operation_id.get()
+    parsed_operation_id: ArtifactSectionId | None = ctx.current_operation_id.get()
 
     record = JournalRecord(
         timestamp=now(),
@@ -99,7 +100,7 @@ def add(  # noqa: CCR001
     )
 
     serialized = serialize_record(record)
-    workspace_utils.session_world().unwrap().journal_add(serialized).unwrap()
+    workspace_sessions.append_journal_record(serialized)
 
     instant_output_journal(record)
 
@@ -107,15 +108,5 @@ def add(  # noqa: CCR001
 
 
 def read(lines: int | None = None, follow: bool = False) -> Iterable[Result[JournalRecord, ErrorsList]]:
-    session_world_result = workspace_utils.session_world()
-    if session_world_result.is_err():
-        yield Err(session_world_result.unwrap_err())
-        return
-
-    raw_records = session_world_result.unwrap().journal_read(lines=lines, follow=follow)
-    for raw_record_result in raw_records:
-        if raw_record_result.is_err():
-            yield Err(raw_record_result.unwrap_err())
-            continue
-
-        yield Ok(deserialize_record(raw_record_result.unwrap()))
+    for raw_record in workspace_sessions.read_journal(lines=lines, follow=follow):
+        yield Ok(deserialize_record(raw_record))

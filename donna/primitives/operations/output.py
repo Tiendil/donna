@@ -2,7 +2,8 @@ from typing import TYPE_CHECKING, ClassVar, cast
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import ArtifactSectionId, FullArtifactId
+from donna.domain.artifact_ids import ArtifactId
+from donna.domain.ids import SectionId
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta
@@ -25,11 +26,11 @@ class OutputMissingNextOperation(ArtifactValidationError):
 
 
 class OutputConfig(OperationConfig):
-    next_operation_id: ArtifactSectionId | None = None
+    next_operation_id: SectionId | None = None
 
 
 class OutputMeta(OperationMeta):
-    next_operation_id: ArtifactSectionId | None = None
+    next_operation_id: SectionId | None = None
 
 
 class Output(MarkdownSectionMixin, OperationKind):
@@ -37,7 +38,7 @@ class Output(MarkdownSectionMixin, OperationKind):
 
     def markdown_construct_meta(
         self,
-        artifact_id: "FullArtifactId",
+        artifact_id: "ArtifactId",
         source: markdown.SectionSource,
         section_config: ArtifactSectionConfig,
         description: str,
@@ -45,7 +46,7 @@ class Output(MarkdownSectionMixin, OperationKind):
     ) -> Result[ArtifactSectionMeta, ErrorsList]:
         output_config = cast(OutputConfig, section_config)
 
-        allowed_transitions: set[ArtifactSectionId] = set()
+        allowed_transitions: set[SectionId] = set()
         if output_config.next_operation_id is not None:
             allowed_transitions.add(output_config.next_operation_id)
 
@@ -70,11 +71,11 @@ class Output(MarkdownSectionMixin, OperationKind):
 
         next_operation_id = meta.next_operation_id
         assert next_operation_id is not None
-        full_operation_id = unit.operation_id.full_artifact_id.to_full_local(next_operation_id)
+        full_operation_id = unit.operation_id.artifact_id.to_full_local(next_operation_id)
 
         return Ok([ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id)])
 
-    def validate_section(self, artifact: Artifact, section_id: ArtifactSectionId) -> Result[None, ErrorsList]:
+    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None, ErrorsList]:
         section = artifact.get_section(section_id).unwrap()
         meta = cast(OutputMeta, section.meta)
 

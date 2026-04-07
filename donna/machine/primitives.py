@@ -6,7 +6,8 @@ from jinja2.runtime import Context
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import ArtifactSectionId, PythonImportPath
+from donna.domain.ids import SectionId
+from donna.domain.python_path import PythonPath
 from donna.machine import errors as machine_errors
 from donna.machine.artifacts import ArtifactSectionConfig
 
@@ -15,9 +16,7 @@ if TYPE_CHECKING:
     from donna.machine.changes import Change
     from donna.machine.tasks import Task, WorkUnit
     from donna.workspaces.config import SourceConfig as SourceConfigModel
-    from donna.workspaces.config import WorldConfig
     from donna.workspaces.sources.base import SourceConfig as SourceConfigValue
-    from donna.workspaces.worlds.base import World
 
 
 # TODO: Currently it is a kind of God interface. It is convenient for now.
@@ -25,7 +24,7 @@ if TYPE_CHECKING:
 class Primitive(BaseEntity):
     config_class: ClassVar[type[ArtifactSectionConfig]] = ArtifactSectionConfig
 
-    def validate_section(self, artifact: "Artifact", section_id: ArtifactSectionId) -> Result[None, ErrorsList]:
+    def validate_section(self, artifact: "Artifact", section_id: SectionId) -> Result[None, ErrorsList]:
         return Ok(None)
 
     def execute_section(
@@ -40,11 +39,6 @@ class Primitive(BaseEntity):
             primitive_name=self.__class__.__name__, method_name="apply_directive()"
         )
 
-    def construct_world(self, config: "WorldConfig") -> "World":
-        raise machine_errors.PrimitiveMethodUnsupported(
-            primitive_name=self.__class__.__name__, method_name="construct_world()"
-        )
-
     def construct_source(self, config: "SourceConfigModel") -> "SourceConfigValue":
         raise machine_errors.PrimitiveMethodUnsupported(
             primitive_name=self.__class__.__name__, method_name="construct_source()"
@@ -52,11 +46,11 @@ class Primitive(BaseEntity):
 
 
 @unwrap_to_error
-def resolve_primitive(primitive_id: PythonImportPath | str) -> Result[Primitive, ErrorsList]:  # noqa: CCR001
-    if isinstance(primitive_id, PythonImportPath):
+def resolve_primitive(primitive_id: PythonPath | str) -> Result[Primitive, ErrorsList]:  # noqa: CCR001
+    if isinstance(primitive_id, PythonPath):
         import_path = str(primitive_id)
     else:
-        import_path = str(PythonImportPath.parse(primitive_id).unwrap())
+        import_path = str(PythonPath.parse(primitive_id).unwrap())
 
     if "." not in import_path:
         return Err([machine_errors.PrimitiveInvalidImportPath(import_path=import_path)])

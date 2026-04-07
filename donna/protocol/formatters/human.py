@@ -22,6 +22,9 @@ class Formatter(BaseFormatter):
             lines.append("")
             lines.append(cell.content.strip())
 
+        lines.append("")
+        lines.append("")
+
         return "\n".join(lines).encode()
 
     def format_journal(self, record: JournalRecord) -> bytes:

@@ -9,7 +9,8 @@ import pydantic
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import ArtifactSectionId, FullArtifactId
+from donna.domain.artifact_ids import ArtifactId
+from donna.domain.ids import SectionId
 from donna.machine import journal as machine_journal
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
@@ -71,9 +72,9 @@ class RunScriptInvalidExitCode(ArtifactValidationError):
 class RunScriptConfig(OperationConfig):
     save_stdout_to: str | None = None
     save_stderr_to: str | None = None
-    goto_on_success: ArtifactSectionId | None = None
-    goto_on_failure: ArtifactSectionId | None = None
-    goto_on_code: dict[str, ArtifactSectionId] = pydantic.Field(default_factory=dict)
+    goto_on_success: SectionId | None = None
+    goto_on_failure: SectionId | None = None
+    goto_on_code: dict[str, SectionId] = pydantic.Field(default_factory=dict)
     timeout: int = 60
 
 
@@ -81,12 +82,12 @@ class RunScriptMeta(OperationMeta):
     script: str | None = None
     save_stdout_to: str | None = None
     save_stderr_to: str | None = None
-    goto_on_success: ArtifactSectionId | None = None
-    goto_on_failure: ArtifactSectionId | None = None
-    goto_on_code: dict[str, ArtifactSectionId] = pydantic.Field(default_factory=dict)
+    goto_on_success: SectionId | None = None
+    goto_on_failure: SectionId | None = None
+    goto_on_code: dict[str, SectionId] = pydantic.Field(default_factory=dict)
     timeout: int = 60
 
-    def select_next_operation(self, exit_code: int) -> ArtifactSectionId:
+    def select_next_operation(self, exit_code: int) -> SectionId:
         if exit_code == 0:
             next_operation = self.goto_on_success
         else:
@@ -104,7 +105,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
     @unwrap_to_error
     def markdown_construct_meta(
         self,
-        artifact_id: "FullArtifactId",
+        artifact_id: "ArtifactId",
         source: markdown.SectionSource,
         section_config: ArtifactSectionConfig,
         description: str,
@@ -114,7 +115,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         script = source.script().unwrap()
         if script is None:
             return Err([RunScriptMissingScriptBlock(artifact_id=artifact_id, section_id=run_config.id)])
-        allowed_transitions: set[ArtifactSectionId] = set()
+        allowed_transitions: set[SectionId] = set()
 
         if run_config.goto_on_success is not None:
             allowed_transitions.add(run_config.goto_on_success)
@@ -177,14 +178,12 @@ class RunScript(MarkdownSectionMixin, OperationKind):
             changes.append(ChangeSetTaskContext(task_id=task.id, key=meta.save_stderr_to, value=stderr))
 
         next_operation = meta.select_next_operation(exit_code)
-        full_operation_id = unit.operation_id.full_artifact_id.to_full_local(next_operation)
+        full_operation_id = unit.operation_id.artifact_id.to_full_local(next_operation)
 
         changes.append(ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id))
         return Ok(changes)
 
-    def validate_section(  # noqa: CCR001
-        self, artifact: Artifact, section_id: ArtifactSectionId
-    ) -> Result[None, ErrorsList]:
+    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None, ErrorsList]:  # noqa: CCR001
         section = artifact.get_section(section_id).unwrap()
 
         meta = cast(RunScriptMeta, section.meta)

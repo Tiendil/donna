@@ -3,9 +3,12 @@
 - Move project-specific specs from `.donna/project` to `specs`, or set an explicit `project` world path in your Donna workspace config before upgrading.
 - Run `donna workspaces update` in existing projects so bundled Donna specs are installed into `.agents/donna` for the new filesystem-backed `donna` world.
 - Update your scripts and specs to use external tools or direct file edits to create, update, move, copy, or delete world artifacts instead using removed Donna commands.
+- Update artifact references from legacy ids like `specs:intro` to filepath ids like `@/specs/intro.md`, and include file extensions on all artifact references.
 
 ### Changes
 
+- Added configurable artifact file filters. Donna will see only files that pass all of the filters.
+- Replaced artifact ids with project-relative filepaths like `@/specs/intro.md` and `@/.donna/session/plans/plan.md:finish`.
 - Changed the default location of project specs to `specs/`.
   - Updated the default `project` world path to load from `specs/` instead of `.donna/project/`.
   - Rewrote the moved project specs and repository docs to reference the new `specs/` location.
@@ -21,6 +24,7 @@
 
 ### Breaking Changes
 
+- Donna artifact ids now use project-relative filepaths with required file extensions, and legacy colon-delimited artifact ids are no longer supported.
 - Donna no longer exposes bundled specs through the Python-backed `donna` world; `donna workspaces init|update` now sync them into `.agents/donna`.
 - `donna artifacts` no longer supports `update`, `copy`, `move`, or `remove`.
 - Donna no longer mutates world artifacts through workspace APIs or world configuration.

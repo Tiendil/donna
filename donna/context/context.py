@@ -4,7 +4,8 @@ from donna.context.artifacts import ArtifactsCache
 from donna.context.primitives import PrimitivesCache
 from donna.context.state import StateCache
 from donna.context.value_scope import ValueScope
-from donna.domain.ids import FullArtifactSectionId, WorkUnitId
+from donna.domain.artifact_ids import ArtifactSectionId
+from donna.domain.internal_ids import WorkUnitId
 
 
 class Context:
@@ -21,7 +22,7 @@ class Context:
         self._state = StateCache()
         self._primitives = PrimitivesCache()
         self.current_work_unit_id: ValueScope[WorkUnitId] = ValueScope()
-        self.current_operation_id: ValueScope[FullArtifactSectionId] = ValueScope()
+        self.current_operation_id: ValueScope[ArtifactSectionId] = ValueScope()
 
     @property
     def artifacts(self) -> ArtifactsCache:

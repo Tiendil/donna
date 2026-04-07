@@ -1,5 +1,7 @@
 from donna.core import errors as core_errors
-from donna.domain.ids import ActionRequestId, ArtifactSectionId, FullArtifactId, FullArtifactSectionId
+from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
+from donna.domain.ids import SectionId
+from donna.domain.internal_ids import ActionRequestId
 
 
 class InternalError(core_errors.InternalError):
@@ -55,8 +57,8 @@ class InvalidOperationTransition(EnvironmentError):
         "Check the next operation id for typos.",
         "Use one of the allowed transitions listed in the action request.",
     ]
-    operation_id: FullArtifactSectionId
-    next_operation_id: FullArtifactSectionId
+    operation_id: ArtifactSectionId
+    next_operation_id: ArtifactSectionId
 
 
 class PrimitiveInvalidImportPath(EnvironmentError):
@@ -129,8 +131,8 @@ class ArtifactPredicateEvaluationFailed(EnvironmentError):
 
 class ArtifactValidationError(EnvironmentError):
     cell_kind: str = "artifact_validation_error"
-    artifact_id: FullArtifactId
-    section_id: ArtifactSectionId | None = None
+    artifact_id: ArtifactId
+    section_id: SectionId | None = None
 
     def content_intro(self) -> str:
         if self.section_id:
@@ -143,7 +145,7 @@ class MultiplePrimarySectionsError(ArtifactValidationError):
     code: str = "donna.artifacts.multiple_primary_sections"
     message: str = "Artifact must have exactly one primary section, found multiple: `{error.primary_sections}`"
     ways_to_fix: list[str] = ["Keep a single primary section in the artifact."]
-    primary_sections: list[ArtifactSectionId]
+    primary_sections: list[SectionId]
 
 
 class ArtifactPrimarySectionMissing(ArtifactValidationError):

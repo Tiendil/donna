@@ -1,7 +1,7 @@
 import pathlib
 
 from donna.core import errors as core_errors
-from donna.domain.ids import ArtifactId, FullArtifactId, WorldId
+from donna.domain.artifact_ids import ArtifactId
 
 
 class InternalError(core_errors.InternalError):
@@ -43,16 +43,6 @@ class WorkspaceAlreadyInitialized(WorkspaceError):
     project_dir: pathlib.Path
 
 
-class WorldError(WorkspaceError):
-    cell_kind: str = "world_error"
-    world_id: WorldId
-
-
-class WorldNotConfigured(WorldError):
-    code: str = "donna.workspaces.world_not_configured"
-    message: str = "World with id `{error.world_id}` is not configured"
-
-
 class SourceError(WorkspaceError):
     cell_kind: str = "source_error"
     source_id: str
@@ -64,51 +54,34 @@ class SourceConfigNotConfigured(SourceError):
     kind: str
 
 
-class WorldStateStorageUnsupported(WorldError):
-    code: str = "donna.workspaces.state_storage_unsupported"
-    message: str = "World `{error.world_id}` does not support state storage"
-    ways_to_fix: list[str] = [
-        "Use the session world.",
-    ]
-
-
-class CanNotResetNonSessionWorld(WorldError):
-    code: str = "donna.workspaces.can_not_reset_non_session_world"
-    message: str = "Can not reset non-session world `{error.world_id}`"
-    ways_to_fix: list[str] = [
-        "Mark the world as a session world in the config or do not initialize it.",
-    ]
-
-
 class ArtifactError(WorkspaceError):
     cell_kind: str = "artifact_error"
     artifact_id: ArtifactId
-    world_id: WorldId
 
     def content_intro(self) -> str:
-        return f"Error for artifact '{self.artifact_id}' in world '{self.world_id}'"
+        return f"Error for artifact '{self.artifact_id}'"
 
 
 class ArtifactNotFound(ArtifactError):
     code: str = "donna.workspaces.artifact_not_found"
-    message: str = "Artifact `{error.artifact_id}` does not exist in world `{error.world_id}`"
+    message: str = "Artifact `{error.artifact_id}` does not exist"
     ways_to_fix: list[str] = [
         "Check the artifact id for typos.",
-        "Ensure the artifact exists in the specified world.",
+        "Ensure the artifact exists in the project workspace.",
     ]
 
 
 class ArtifactMultipleFiles(ArtifactError):
     code: str = "donna.workspaces.artifact_multiple_files"
-    message: str = "Artifact `{error.artifact_id}` has multiple files in world `{error.world_id}`"
+    message: str = "Artifact `{error.artifact_id}` has multiple source files"
     ways_to_fix: list[str] = [
-        "Keep a single source file per artifact in the world.",
+        "Keep a single source file per artifact.",
     ]
 
 
 class UnsupportedArtifactSourceExtension(ArtifactError):
     code: str = "donna.workspaces.unsupported_artifact_source_extension"
-    message: str = "Unsupported artifact source extension `{error.extension}` in world `{error.world_id}`"
+    message: str = "Unsupported artifact source extension `{error.extension}` for `{error.artifact_id}`"
     ways_to_fix: list[str] = [
         "Use a supported extension for the configured sources.",
     ]
@@ -117,7 +90,7 @@ class UnsupportedArtifactSourceExtension(ArtifactError):
 
 class MarkdownError(WorkspaceError):
     cell_kind: str = "markdown_error"
-    artifact_id: FullArtifactId | None = None
+    artifact_id: ArtifactId | None = None
 
     def content_intro(self) -> str:
         if self.artifact_id is None:
@@ -128,7 +101,7 @@ class MarkdownError(WorkspaceError):
 
 class TemplateDirectiveError(WorkspaceError):
     cell_kind: str = "template_directive_error"
-    artifact_id: FullArtifactId | None = None
+    artifact_id: ArtifactId | None = None
 
     def content_intro(self) -> str:
         if self.artifact_id is None:

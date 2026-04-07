@@ -1,7 +1,8 @@
 import textwrap
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import ActionRequestId, FullArtifactSectionId
+from donna.domain.artifact_ids import ArtifactSectionId
+from donna.domain.internal_ids import ActionRequestId
 from donna.protocol.cells import Cell
 from donna.protocol.nodes import Node
 
@@ -9,11 +10,11 @@ from donna.protocol.nodes import Node
 class ActionRequest(BaseEntity):
     id: ActionRequestId | None
     request: str
-    operation_id: FullArtifactSectionId
+    operation_id: ArtifactSectionId
     title: str = "unknown"  # TODO: remove default value after 2026.05.01
 
     @classmethod
-    def build(cls, title: str, request: str, operation_id: FullArtifactSectionId) -> "ActionRequest":
+    def build(cls, title: str, request: str, operation_id: ArtifactSectionId) -> "ActionRequest":
         return cls(
             id=None,
             request=request,

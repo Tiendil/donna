@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from donna.context.entity_cache import TimedCache, TimedCacheValue
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import PythonImportPath
+from donna.domain.python_path import PythonPath
 from donna.domain.types import Milliseconds
 from donna.machine import errors as machine_errors
 
@@ -24,10 +24,10 @@ class PrimitivesCache(TimedCache):
     __slots__ = ("_cache",)
 
     def __init__(self) -> None:
-        self._cache: dict[PythonImportPath, _PrimitiveCacheValue] = {}
+        self._cache: dict[PythonPath, _PrimitiveCacheValue] = {}
 
     @unwrap_to_error
-    def resolve(self, primitive_id: PythonImportPath) -> Result["Primitive", ErrorsList]:  # noqa: CCR001
+    def resolve(self, primitive_id: PythonPath) -> Result["Primitive", ErrorsList]:  # noqa: CCR001
         from donna.machine.primitives import Primitive
 
         cached = self._cache.get(primitive_id)

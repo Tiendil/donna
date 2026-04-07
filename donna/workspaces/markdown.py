@@ -9,7 +9,7 @@ from mdformat.renderer import MDRenderer
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import FullArtifactId
+from donna.domain.artifact_ids import ArtifactId
 from donna.workspaces import errors as world_errors
 
 
@@ -118,7 +118,7 @@ def clear_heading(text: str) -> str:
 
 
 def _parse_h1(
-    sections: list[SectionSource], node: SyntaxTreeNode, artifact_id: FullArtifactId | None
+    sections: list[SectionSource], node: SyntaxTreeNode, artifact_id: ArtifactId | None
 ) -> Result[SyntaxTreeNode | None, ErrorsList]:
     if sections and any(section.level == SectionLevel.h1 for section in sections):
         return Err([world_errors.MarkdownMultipleH1Sections(artifact_id=artifact_id)])
@@ -140,7 +140,7 @@ def _parse_h1(
 
 
 def _parse_h2(
-    sections: list[SectionSource], node: SyntaxTreeNode, artifact_id: FullArtifactId | None
+    sections: list[SectionSource], node: SyntaxTreeNode, artifact_id: ArtifactId | None
 ) -> Result[SyntaxTreeNode | None, ErrorsList]:
 
     if not sections:
@@ -160,7 +160,7 @@ def _parse_h2(
 
 
 def _parse_heading(
-    sections: list[SectionSource], node: SyntaxTreeNode, artifact_id: FullArtifactId | None
+    sections: list[SectionSource], node: SyntaxTreeNode, artifact_id: ArtifactId | None
 ) -> Result[SyntaxTreeNode | None, ErrorsList]:
 
     if node.tag == "h1":
@@ -180,7 +180,7 @@ def _parse_heading(
 def _parse_fence(  # noqa: CCR001
     sections: list[SectionSource],
     node: SyntaxTreeNode,
-    artifact_id: FullArtifactId | None,
+    artifact_id: ArtifactId | None,
 ) -> Result[SyntaxTreeNode | None, ErrorsList]:
     if not sections:
         return Err([world_errors.MarkdownH1SectionMustBeFirst(artifact_id=artifact_id)])
@@ -255,7 +255,7 @@ def _parse_others(sections: list[SectionSource], node: SyntaxTreeNode) -> Syntax
 
 @unwrap_to_error
 def parse(  # noqa: CCR001, CFQ001
-    text: str, *, artifact_id: FullArtifactId | None = None
+    text: str, *, artifact_id: ArtifactId | None = None
 ) -> Result[list[SectionSource], ErrorsList]:  # pylint: disable=R0912, R0915
     md = MarkdownIt("commonmark")  # TODO: later we may want to customize it with plugins
 

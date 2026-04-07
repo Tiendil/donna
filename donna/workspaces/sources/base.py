@@ -11,7 +11,7 @@ from donna.core.result import Result
 from donna.machine.primitives import Primitive
 
 if TYPE_CHECKING:
-    from donna.domain.ids import FullArtifactId
+    from donna.domain.artifact_ids import ArtifactId
     from donna.machine.artifacts import Artifact
     from donna.workspaces.artifacts import ArtifactRenderContext
     from donna.workspaces.config import SourceConfig as SourceConfigModel
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 class SourceConfig(BaseEntity, ABC):
     kind: str
-    supported_extensions: list[str] = pydantic.Field(default_factory=list)
+    extension: str
 
     @classmethod
     def normalize_extension(cls, extension: str) -> str:
@@ -36,24 +36,17 @@ class SourceConfig(BaseEntity, ABC):
 
         return normalized
 
-    @pydantic.field_validator("supported_extensions")
+    @pydantic.field_validator("extension")
     @classmethod
-    def _normalize_supported_extensions(cls, values: list[str]) -> list[str]:
-        normalized: list[str] = []
-
-        for value in values:
-            extension = cls.normalize_extension(value)
-            if extension not in normalized:
-                normalized.append(extension)
-
-        return normalized
+    def _normalize_extension(cls, value: str) -> str:
+        return cls.normalize_extension(value)
 
     def supports_extension(self, extension: str) -> bool:
-        return self.normalize_extension(extension) in self.supported_extensions
+        return self.normalize_extension(extension) == self.extension
 
     @abstractmethod
     def construct_artifact_from_bytes(  # noqa: E704
-        self, full_id: "FullArtifactId", content: bytes, render_context: "ArtifactRenderContext"
+        self, artifact_id: "ArtifactId", content: bytes, render_context: "ArtifactRenderContext"
     ) -> Result["Artifact", ErrorsList]: ...  # noqa: E704
 
 

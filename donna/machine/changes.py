@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from donna.core.entities import BaseEntity
-from donna.domain.ids import ActionRequestId, FullArtifactSectionId, TaskId, WorkUnitId
+from donna.domain.artifact_ids import ArtifactSectionId
+from donna.domain.internal_ids import ActionRequestId, TaskId, WorkUnitId
 from donna.machine.action_requests import ActionRequest
 from donna.machine.tasks import Task, WorkUnit
 
@@ -24,7 +25,7 @@ class ChangeFinishTask(Change):
 
 class ChangeAddWorkUnit(Change):
     task_id: TaskId
-    operation_id: FullArtifactSectionId
+    operation_id: ArtifactSectionId
 
     def apply_to(self, state: "MutableState") -> None:
         work_unit = WorkUnit.build(id=state.next_work_unit_id(), task_id=self.task_id, operation_id=self.operation_id)
@@ -32,7 +33,7 @@ class ChangeAddWorkUnit(Change):
 
 
 class ChangeAddTask(Change):
-    operation_id: FullArtifactSectionId
+    operation_id: ArtifactSectionId
 
     def apply_to(self, state: "MutableState") -> None:
         task = Task.build(

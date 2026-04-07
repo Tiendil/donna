@@ -5,7 +5,8 @@ import pydantic
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import ArtifactSectionId, FullArtifactId
+from donna.domain.artifact_ids import ArtifactId
+from donna.domain.ids import SectionId
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import FsmMode, OperationMeta
@@ -26,14 +27,14 @@ class WrongStartOperation(ArtifactValidationError):
     code: str = "donna.workflows.wrong_start_operation"
     message: str = "Can not find the start operation `{error.start_operation_id}` in the workflow."
     ways_to_fix: list[str] = ["Ensure that the artifact contains the section with the specified start operation ID."]
-    start_operation_id: ArtifactSectionId
+    start_operation_id: SectionId
 
 
 class SectionIsNotAnOperation(ArtifactValidationError):
     code: str = "donna.workflows.section_is_not_an_operation"
     message: str = "Section `{error.workflow_section_id}` is not an operation and cannot be part of the workflow."
     ways_to_fix: list[str] = ["Ensure that the section has a kind of one of operation primitives."]
-    workflow_section_id: ArtifactSectionId
+    workflow_section_id: SectionId
 
 
 class WorkflowSectionNotWorkflow(ArtifactValidationError):
@@ -50,7 +51,7 @@ class FinalOperationHasTransitions(ArtifactValidationError):
         "Approach B: Change the `fsm_mode` of this operation from `final` to `normal`",
         "Approach C: Remove the `fsm_mode` setting from this operation, as `normal` is the default.",
     ]
-    workflow_section_id: ArtifactSectionId
+    workflow_section_id: SectionId
 
 
 class NoOutgoingTransitions(ArtifactValidationError):
@@ -63,10 +64,10 @@ class NoOutgoingTransitions(ArtifactValidationError):
         "Approach B: Change the kind of this operation to `donna.lib.finish`",
         "Approach C: Mark this operation as final by setting its `fsm_mode` to `final`.",
     ]
-    workflow_section_id: ArtifactSectionId
+    workflow_section_id: SectionId
 
 
-def find_workflow_sections(start_operation_id: ArtifactSectionId, artifact: Artifact) -> set[ArtifactSectionId]:
+def find_workflow_sections(start_operation_id: SectionId, artifact: Artifact) -> set[SectionId]:
     workflow_sections = set()
     to_visit = [start_operation_id]
 
@@ -93,7 +94,7 @@ def find_workflow_sections(start_operation_id: ArtifactSectionId, artifact: Arti
 
 
 class WorkflowConfig(ArtifactSectionConfig):
-    start_operation_id: ArtifactSectionId
+    start_operation_id: SectionId
 
     @pydantic.field_validator("tags", mode="after")
     @classmethod
@@ -104,7 +105,7 @@ class WorkflowConfig(ArtifactSectionConfig):
 
 
 class WorkflowMeta(ArtifactSectionMeta):
-    start_operation_id: ArtifactSectionId
+    start_operation_id: SectionId
 
     def cells_meta(self) -> dict[str, object]:
         return {"start_operation_id": str(self.start_operation_id)}
@@ -115,7 +116,7 @@ class Workflow(MarkdownSectionMixin, Primitive):
 
     def markdown_construct_meta(
         self,
-        artifact_id: FullArtifactId,
+        artifact_id: ArtifactId,
         source: markdown.SectionSource,
         section_config: ArtifactSectionConfig,
         description: str,
@@ -139,7 +140,7 @@ class Workflow(MarkdownSectionMixin, Primitive):
 
     @unwrap_to_error
     def validate_section(  # noqa: CCR001, CFQ001
-        self, artifact: Artifact, section_id: ArtifactSectionId
+        self, artifact: Artifact, section_id: SectionId
     ) -> Result[None, ErrorsList]:
         section = artifact.get_section(section_id).unwrap()
 

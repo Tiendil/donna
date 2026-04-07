@@ -10,7 +10,7 @@ import jinja2
 from donna.core import errors as core_errors
 from donna.core.errors import EnvironmentErrorsProxy, ErrorsList
 from donna.core.result import Err, Ok, Result
-from donna.domain.ids import FullArtifactId
+from donna.domain.artifact_ids import ArtifactId
 from donna.machine.templates import Directive
 from donna.workspaces import errors as world_errors
 
@@ -163,9 +163,7 @@ def env() -> jinja2.Environment:
     return _ENVIRONMENT
 
 
-def render(
-    artifact_id: FullArtifactId, template: str, render_context: "ArtifactRenderContext"
-) -> Result[str, ErrorsList]:
+def render(artifact_id: ArtifactId, template: str, render_context: "ArtifactRenderContext") -> Result[str, ErrorsList]:
     context = {"render_mode": render_context.primary_mode, "artifact_id": artifact_id}
 
     if render_context.current_task is not None:

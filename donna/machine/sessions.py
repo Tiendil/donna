@@ -4,14 +4,15 @@ from typing import Callable, ParamSpec
 from donna.context.context import context
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import ActionRequestId, FullArtifactId, FullArtifactSectionId
+from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
+from donna.domain.internal_ids import ActionRequestId
 from donna.machine import errors as machine_errors
 from donna.machine import journal as machine_journal
 from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
-from donna.workspaces import utils as workspace_utils
+from donna.workspaces import sessions as workspace_sessions
 from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
 
 
@@ -60,7 +61,7 @@ def _session_required(
 
 @unwrap_to_error
 def start() -> Result[list[Cell], ErrorsList]:
-    workspace_utils.session_world().unwrap().initialize(reset=True).unwrap()
+    workspace_sessions.reset_dir()
 
     machine_journal.reset().unwrap()
     _save_state(MutableState.build().freeze()).unwrap()
@@ -78,7 +79,7 @@ def reset() -> Result[list[Cell], ErrorsList]:
 
 @unwrap_to_error
 def clear() -> Result[list[Cell], ErrorsList]:
-    workspace_utils.session_world().unwrap().initialize(reset=True).unwrap()
+    workspace_sessions.reset_dir()
     return Ok([operation_succeeded("Cleared session.")])
 
 
@@ -104,7 +105,7 @@ def details() -> Result[list[Cell], ErrorsList]:
 
 @_session_required
 @unwrap_to_error
-def start_workflow(artifact_id: FullArtifactId) -> Result[list[Cell], ErrorsList]:  # noqa: CCR001
+def start_workflow(artifact_id: ArtifactId) -> Result[list[Cell], ErrorsList]:  # noqa: CCR001
     static_state = load_state().unwrap()
     workflow = context().artifacts.load(artifact_id, RENDER_CONTEXT_VIEW).unwrap()
     primary_section = workflow.primary_section().unwrap()
@@ -117,10 +118,10 @@ def start_workflow(artifact_id: FullArtifactId) -> Result[list[Cell], ErrorsList
 
 @unwrap_to_error
 def _validate_operation_transition(
-    state: MutableState, request_id: ActionRequestId, next_operation_id: FullArtifactSectionId
+    state: MutableState, request_id: ActionRequestId, next_operation_id: ArtifactSectionId
 ) -> Result[None, ErrorsList]:
     operation_id = state.get_action_request(request_id).unwrap().operation_id
-    workflow = context().artifacts.load(operation_id.full_artifact_id, RENDER_CONTEXT_VIEW).unwrap()
+    workflow = context().artifacts.load(operation_id.artifact_id, RENDER_CONTEXT_VIEW).unwrap()
     operation = workflow.get_section(operation_id.local_id).unwrap()
 
     assert isinstance(operation.meta, OperationMeta)
@@ -136,7 +137,7 @@ def _validate_operation_transition(
 @_session_required
 @unwrap_to_error
 def complete_action_request(
-    request_id: ActionRequestId, next_operation_id: FullArtifactSectionId
+    request_id: ActionRequestId, next_operation_id: ArtifactSectionId
 ) -> Result[list[Cell], ErrorsList]:
     mutator = load_state().unwrap().mutator()
     _validate_operation_transition(mutator, request_id, next_operation_id).unwrap()

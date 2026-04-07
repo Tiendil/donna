@@ -3,14 +3,13 @@ from typing import TYPE_CHECKING
 from donna.context.entity_cache import TimedCache, TimedCacheValue
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.ids import FullArtifactId, FullArtifactIdPattern, FullArtifactSectionId
+from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern, ArtifactSectionId
 from donna.domain.types import Milliseconds
 from donna.machine.artifacts import Artifact, ArtifactPredicate, ArtifactSection
 from donna.workspaces.templates import RenderMode
 
 if TYPE_CHECKING:
-    from donna.workspaces.artifacts import ArtifactRenderContext
-    from donna.workspaces.worlds.base import RawArtifact
+    from donna.workspaces.artifacts import ArtifactRenderContext, FilesystemRawArtifact
 
 
 class _ArtifactCacheValue(TimedCacheValue):
@@ -18,7 +17,7 @@ class _ArtifactCacheValue(TimedCacheValue):
 
     def __init__(
         self,
-        raw_artifact: "RawArtifact",
+        raw_artifact: "FilesystemRawArtifact",
         rendered_artifacts: dict[RenderMode, Artifact],
         loaded_at_ms: Milliseconds,
         checked_at_ms: Milliseconds,
@@ -32,75 +31,73 @@ class ArtifactsCache(TimedCache):
     __slots__ = ("_cache",)
 
     def __init__(self) -> None:
-        self._cache: dict[FullArtifactId, _ArtifactCacheValue] = {}
+        self._cache: dict[ArtifactId, _ArtifactCacheValue] = {}
 
     @unwrap_to_error
-    def _is_cache_stale(self, full_id: FullArtifactId, loaded_at_ms: Milliseconds) -> Result[bool, ErrorsList]:
-        from donna.workspaces.config import config
+    def _is_cache_stale(self, artifact_id: ArtifactId, loaded_at_ms: Milliseconds) -> Result[bool, ErrorsList]:
+        from donna.workspaces.artifacts import has_artifact_changed
 
-        world = config().get_world(full_id.world_id).unwrap()
-        return Ok(world.has_artifact_changed(full_id.artifact_id, since=loaded_at_ms).unwrap())
+        return Ok(has_artifact_changed(artifact_id, since=loaded_at_ms).unwrap())
 
     @staticmethod
     @unwrap_to_error
-    def _load_raw_artifact(full_id: FullArtifactId) -> Result["RawArtifact", ErrorsList]:
-        from donna.workspaces.config import config
+    def _load_raw_artifact(artifact_id: ArtifactId) -> Result["FilesystemRawArtifact", ErrorsList]:
+        from donna.workspaces.artifacts import fetch_raw_artifact
 
-        world = config().get_world(full_id.world_id).unwrap()
-        return Ok(world.fetch(full_id.artifact_id).unwrap())
+        return Ok(fetch_raw_artifact(artifact_id).unwrap())
 
     @unwrap_to_error
     def _refresh_cache_value(
-        self, full_id: FullArtifactId, now_ms: Milliseconds
+        self, artifact_id: ArtifactId, now_ms: Milliseconds
     ) -> Result[_ArtifactCacheValue, ErrorsList]:
-        raw_artifact = self._load_raw_artifact(full_id).unwrap()
+        raw_artifact = self._load_raw_artifact(artifact_id).unwrap()
         refreshed = _ArtifactCacheValue(
             raw_artifact=raw_artifact,
             rendered_artifacts={},
             loaded_at_ms=now_ms,
             checked_at_ms=now_ms,
         )
-        self._cache[full_id] = refreshed
+        self._cache[artifact_id] = refreshed
         return Ok(refreshed)
 
     @unwrap_to_error
-    def _get_cache_value(self, full_id: FullArtifactId) -> Result[_ArtifactCacheValue, ErrorsList]:
-        cached = self._cache.get(full_id)
+    def _get_cache_value(self, artifact_id: ArtifactId) -> Result[_ArtifactCacheValue, ErrorsList]:
+        cached = self._cache.get(artifact_id)
         now_ms = self._now_ms()
 
         if cached is None:
-            return Ok(self._refresh_cache_value(full_id, now_ms).unwrap())
+            return Ok(self._refresh_cache_value(artifact_id, now_ms).unwrap())
 
-        # Skip expensive world checks when cache lifetime has not elapsed yet.
+        # Skip expensive filesystem checks when cache lifetime has not elapsed yet.
         if self._is_within_lifetime(cached, now_ms):
             return Ok(cached)
 
-        cache_stale = self._is_cache_stale(full_id, cached.loaded_at_ms).unwrap()
+        cache_stale = self._is_cache_stale(artifact_id, cached.loaded_at_ms).unwrap()
         self._mark_checked(cached, now_ms)
         if not cache_stale:
             return Ok(cached)
 
-        return Ok(self._refresh_cache_value(full_id, now_ms).unwrap())
+        return Ok(self._refresh_cache_value(artifact_id, now_ms).unwrap())
 
-    def invalidate(self, full_id: FullArtifactId) -> None:
-        self._cache.pop(full_id, None)
+    def invalidate(self, artifact_id: ArtifactId) -> None:
+        self._cache.pop(artifact_id, None)
 
     @unwrap_to_error
     def load(  # noqa: CCR001
         self,
-        full_id: FullArtifactId,
+        artifact_id: ArtifactId,
         render_context: "ArtifactRenderContext",
     ) -> Result[Artifact, ErrorsList]:
-        cached = self._get_cache_value(full_id).unwrap()
+        cached = self._get_cache_value(artifact_id).unwrap()
 
         if render_context.primary_mode == RenderMode.execute:
-            return Ok(cached.raw_artifact.render(full_id, render_context).unwrap())
+            return Ok(cached.raw_artifact.render(artifact_id, render_context).unwrap())
 
         cached_artifact = cached.rendered_artifacts.get(render_context.primary_mode)
         if cached_artifact is not None:
             return Ok(cached_artifact)
 
-        artifact = cached.raw_artifact.render(full_id, render_context).unwrap()
+        artifact = cached.raw_artifact.render(artifact_id, render_context).unwrap()
         cached.rendered_artifacts[render_context.primary_mode] = artifact
 
         return Ok(artifact)
@@ -108,20 +105,20 @@ class ArtifactsCache(TimedCache):
     @unwrap_to_error
     def resolve_section(
         self,
-        target_id: FullArtifactSectionId,
+        target_id: ArtifactSectionId,
         render_context: "ArtifactRenderContext",
     ) -> Result[ArtifactSection, ErrorsList]:
-        artifact = self.load(target_id.full_artifact_id, render_context).unwrap()
+        artifact = self.load(target_id.artifact_id, render_context).unwrap()
         return Ok(artifact.get_section(target_id.local_id).unwrap())
 
     @unwrap_to_error
     def _list_artifact_if_matches(
         self,
-        full_id: FullArtifactId,
+        artifact_id: ArtifactId,
         render_context: "ArtifactRenderContext",
         predicate: ArtifactPredicate | None,
     ) -> Result[Artifact | None, ErrorsList]:
-        artifact = self.load(full_id, render_context).unwrap()
+        artifact = self.load(artifact_id, render_context).unwrap()
 
         if predicate is None:
             return Ok(artifact)
@@ -140,30 +137,27 @@ class ArtifactsCache(TimedCache):
     @unwrap_to_error
     def list(  # noqa: CCR001
         self,
-        pattern: FullArtifactIdPattern,
+        pattern: ArtifactIdPattern,
         render_context: "ArtifactRenderContext",
         predicate: ArtifactPredicate | None = None,
     ) -> Result[list[Artifact], ErrorsList]:
-        from donna.workspaces.config import config
+        from donna.workspaces.artifacts import list_artifact_ids
 
         artifacts: list[Artifact] = []
         errors: ErrorsList = []
 
-        for world in reversed(config().worlds_instances):
-            for artifact_id in world.list_artifacts(pattern):
-                full_id = FullArtifactId((world.id, artifact_id))
+        for artifact_id in list_artifact_ids(pattern):
+            artifact_result = self._list_artifact_if_matches(artifact_id, render_context, predicate)
 
-                artifact_result = self._list_artifact_if_matches(full_id, render_context, predicate)
+            if artifact_result.is_err():
+                errors.extend(artifact_result.unwrap_err())
+                continue
 
-                if artifact_result.is_err():
-                    errors.extend(artifact_result.unwrap_err())
-                    continue
+            artifact = artifact_result.unwrap()
+            if artifact is None:
+                continue
 
-                artifact = artifact_result.unwrap()
-                if artifact is None:
-                    continue
-
-                artifacts.append(artifact)
+            artifacts.append(artifact)
 
         if errors:
             return Err(errors)

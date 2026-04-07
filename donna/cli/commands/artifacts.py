@@ -4,12 +4,13 @@ import typer
 
 from donna.cli.application import app
 from donna.cli.types import (
-    FullArtifactIdPatternArgument,
+    ArtifactIdPatternArgument,
     PredicateOption,
+    validate_supported_artifact_pattern,
 )
 from donna.cli.utils import cells_cli
 from donna.context.context import context
-from donna.domain.ids import FullArtifactIdPattern
+from donna.domain.artifact_ids import ArtifactIdPattern
 from donna.machine import journal as machine_journal
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.cells import Cell
@@ -17,7 +18,7 @@ from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
 
 artifacts_cli = typer.Typer()
 
-DEFAULT_ARTIFACT_PATTERN = FullArtifactIdPattern.parse("**").unwrap()
+DEFAULT_ARTIFACT_PATTERN = ArtifactIdPattern.parse("**").unwrap()
 
 
 def _log_artifact_operation(message: str) -> None:
@@ -26,7 +27,7 @@ def _log_artifact_operation(message: str) -> None:
 
 def _log_operation_on_artifacts(
     message: str,
-    pattern: FullArtifactIdPattern,
+    pattern: ArtifactIdPattern,
     predicate: PredicateOption | None,
 ) -> None:
     if predicate is None:
@@ -36,13 +37,17 @@ def _log_operation_on_artifacts(
 
 
 @artifacts_cli.command(
-    help="List artifacts matching a pattern and show their status summaries. Lists all all artifacts by default."
+    help=(
+        "List artifacts matching a pattern with a supported source extension "
+        "and show their status summaries. Lists all artifacts by default."
+    )
 )
 @cells_cli
 def list(
-    pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
+    pattern: ArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
     predicate: PredicateOption = None,
 ) -> Iterable[Cell]:
+    validate_supported_artifact_pattern(pattern)
     _log_operation_on_artifacts("List artifacts", pattern, predicate)
 
     artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, predicate=predicate).unwrap()
@@ -50,24 +55,33 @@ def list(
     return [artifact.node().status() for artifact in artifacts]
 
 
-@artifacts_cli.command(help="Displays artifacts matching a pattern or a specific id")
+@artifacts_cli.command(
+    help="Display artifacts matching a pattern or specific id that uses a supported source extension."
+)
 @cells_cli
 def view(
-    pattern: FullArtifactIdPatternArgument,
+    pattern: ArtifactIdPatternArgument,
     predicate: PredicateOption = None,
 ) -> Iterable[Cell]:
+    validate_supported_artifact_pattern(pattern)
     _log_operation_on_artifacts("View artifacts", pattern, predicate)
 
     artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, predicate=predicate).unwrap()
     return [artifact.node().info() for artifact in artifacts]
 
 
-@artifacts_cli.command(help="Validate artifacts matching a pattern (defaults to all artifacts) and return any errors.")
+@artifacts_cli.command(
+    help=(
+        "Validate artifacts matching a pattern with a supported source extension "
+        "(defaults to all artifacts) and return any errors."
+    )
+)
 @cells_cli
 def validate(
-    pattern: FullArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
+    pattern: ArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
     predicate: PredicateOption = None,
 ) -> Iterable[Cell]:  # noqa: CCR001
+    validate_supported_artifact_pattern(pattern)
     _log_operation_on_artifacts("Validate artifacts", pattern, predicate)
 
     artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, predicate=predicate).unwrap()
@@ -88,5 +102,5 @@ def validate(
 app.add_typer(
     artifacts_cli,
     name="artifacts",
-    help="Inspect and validate stored artifacts across all Donna worlds.",
+    help="Inspect and validate stored artifacts in the project workspace.",
 )
