@@ -152,12 +152,17 @@ Commands that accept an artifact pattern (`artifacts list`, `artifacts view`, `a
 The format of `<artifact-pattern>` is as follows:
 
 - full artifact identifier: `@/...`
-- `*` — single wildcard matches a single level in the rooted artifact path. Examples:
-  - `*/intro.donna.md` — matches all artifacts with filename `intro.donna.md` exactly one directory below the project root.
-  - `@/*/intro.donna.md` — equivalent full form.
-- `**` — double wildcard matches multiple levels in the rooted artifact path. Examples:
-  - `**/name.donna.md` — matches all artifacts with filename `name.donna.md` anywhere in the project workspace.
-  - `@/**/intro.donna.md` — equivalent full form.
+- `/` separates path levels; wildcard characters do not match `/`
+- `*` — matches zero or more characters inside one path level. Examples:
+  - `@/*.donna.md` — matches all artifacts directly under the project root.
+  - `@/**/test_*.donna.md` — matches artifacts whose filename starts with `test_` and ends with `.donna.md`.
+- `?` — matches exactly one character inside one path level. Examples:
+  - `@/**/step?.donna.md` — matches `step1.donna.md` and `stepA.donna.md`, but not `step10.donna.md`.
+- `[]` — character class that matches one character inside one path level. Examples:
+  - `@/**/step[0-9].donna.md` — matches artifacts with a single digit after `step`.
+  - `@/**/[ab]rchive.donna.md` — matches `archive.donna.md` and `brchive.donna.md`.
+- `**` — recursive wildcard that matches zero or more path levels. Examples:
+  - `@/**/intro.donna.md` — matches all artifacts with filename `intro.donna.md` anywhere in the project workspace.
   - `@/.donna/**` — matches all artifacts under `.donna`.
 
 CLI arguments MUST NOT use relative artifact paths like `./...` or `../../...`; use absolute `@/...` paths or rooted wildcard forms.

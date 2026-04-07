@@ -44,7 +44,8 @@ def _absolute_artifact_pattern_or_exit(value: str | ArtifactIdPattern) -> str:
     if isinstance(value, ArtifactIdPattern):
         return str(value)
 
-    if value in {"*", "**"} or value.startswith("*/") or value.startswith("**/"):
+    first_part = value.split(ArtifactId.delimiter, maxsplit=1)[0]
+    if any(character in first_part for character in "*?[]"):
         return f"{ArtifactId.prefix}{value}"
 
     if not value.startswith(ArtifactId.prefix):

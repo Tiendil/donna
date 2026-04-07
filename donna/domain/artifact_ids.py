@@ -1,10 +1,35 @@
 import pathlib
 from typing import Sequence
 
-from donna.domain.id_paths import IdPath, IdPathPattern, NormalizedRawIdPath
+from donna.domain.id_paths import (
+    IdPath,
+    IdPathPattern,
+    IdPathSegmentLiteralMatcher,
+    IdPathSegmentMatcher,
+    IdPathSegmentRecursiveMatcher,
+    IdPathSegmentSingleMatcher,
+    NormalizedRawIdPath,
+)
 from donna.domain.ids import SectionId, _is_artifact_slug_part
 
 ARTIFACT_ID_PREFIX = "@/"
+_ARTIFACT_PATTERN_EXTRA_CHARACTERS = set("*?[]")
+
+
+def _is_artifact_pattern_part(part: str) -> bool:
+    if not part:
+        return False
+
+    if part == "**":
+        return True
+
+    allowed_characters = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-")
+    allowed_characters.update(_ARTIFACT_PATTERN_EXTRA_CHARACTERS)
+
+    if any(character not in allowed_characters for character in part):
+        return False
+
+    return any(character not in ".-" for character in part)
 
 
 def normalize_path(  # noqa: CCR001
@@ -42,11 +67,10 @@ def normalize_path(  # noqa: CCR001
             normalized_parts.pop()
             continue
 
-        if allow_wildcards and part in {"*", "**"}:
-            normalized_parts.append(part)
-            continue
-
-        if not _is_artifact_slug_part(part):
+        if allow_wildcards:
+            if not _is_artifact_pattern_part(part):
+                return None
+        elif not _is_artifact_slug_part(part):
             return None
 
         normalized_parts.append(part)
@@ -103,18 +127,24 @@ class ArtifactIdPattern(IdPathPattern["ArtifactId"]):
     id_class = ArtifactId
 
     def __str__(self) -> str:
-        rendered = self.id_class.delimiter.join(self)
-        if self and self[0] in {"*", "**"}:
+        rendered = self.id_class.delimiter.join(str(part) for part in self)
+        if self and not isinstance(self[0], IdPathSegmentLiteralMatcher):
             return rendered
 
         return f"{self.id_class.prefix}{rendered}"
 
     @classmethod
-    def _validate_pattern_part(cls, part: str) -> bool:
-        if part in {"*", "**"}:
-            return True
+    def _parse_pattern_part(cls, part: str) -> IdPathSegmentMatcher | None:
+        if part == "**":
+            return IdPathSegmentRecursiveMatcher(part)
 
-        return _is_artifact_slug_part(part)
+        if not _is_artifact_pattern_part(part):
+            return None
+
+        if any(char in part for char in _ARTIFACT_PATTERN_EXTRA_CHARACTERS):
+            return IdPathSegmentSingleMatcher(part)
+
+        return IdPathSegmentLiteralMatcher(part)
 
 
 class ArtifactSectionId(IdPath):

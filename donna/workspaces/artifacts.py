@@ -1,5 +1,4 @@
 import pathlib
-from functools import lru_cache
 from typing import TYPE_CHECKING
 
 from donna.core.entities import BaseEntity
@@ -60,7 +59,6 @@ def list_artifact_ids(pattern: ArtifactIdPattern) -> list[ArtifactId]:  # noqa: 
     if not root.exists() or not root.is_dir():
         return []
 
-    pattern_parts = tuple(pattern)
     supported_extensions = config().supported_extensions()
     artifacts: set[ArtifactId] = set()
 
@@ -71,7 +69,7 @@ def list_artifact_ids(pattern: ArtifactIdPattern) -> list[ArtifactId]:  # noqa: 
                     continue
 
                 next_parts = parts + [entry.name]
-                if not _pattern_allows_prefix(pattern_parts, tuple(next_parts)):
+                if not pattern.matches_prefix(next_parts):
                     continue
 
                 walk(entry, next_parts)
@@ -176,25 +174,3 @@ def has_artifact_changed(artifact_id: ArtifactId, since: Milliseconds) -> Result
         return Ok(True)
 
     return Ok((artifact_path.stat().st_mtime_ns // 1_000_000) > since)
-
-
-def _pattern_allows_prefix(pattern_parts: tuple[str, ...], prefix_parts: tuple[str, ...]) -> bool:
-    @lru_cache(maxsize=None)
-    def match_at(p_index: int, v_index: int) -> bool:  # noqa: CCR001
-        if v_index >= len(prefix_parts):
-            return True
-
-        if p_index >= len(pattern_parts):
-            return False
-
-        token = pattern_parts[p_index]
-
-        if token == "**":  # noqa: S105
-            return match_at(p_index + 1, v_index) or match_at(p_index, v_index + 1)
-
-        if token == "*" or token == prefix_parts[v_index]:  # noqa: S105
-            return match_at(p_index + 1, v_index + 1)
-
-        return False
-
-    return match_at(0, 0)

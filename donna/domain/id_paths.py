@@ -1,4 +1,6 @@
-from functools import total_ordering
+import fnmatch
+import re
+from functools import lru_cache, total_ordering
 from typing import Any, Generic, Self, Sequence, TypeVar
 
 from pydantic_core import PydanticCustomError, core_schema
@@ -8,15 +10,15 @@ from donna.core.result import Err, Ok, Result
 from donna.domain import errors as domain_errors
 
 
-def _match_pattern_parts(pattern_parts: Sequence[str], value_parts: Sequence[str]) -> bool:  # noqa: CCR001
+def _match_pattern_parts(pattern_parts: Sequence["IdPathSegmentMatcher"], value_parts: Sequence[str]) -> bool:  # noqa: CCR001
     def match_at(p_index: int, v_index: int) -> bool:  # noqa: CCR001
         while True:
             if p_index >= len(pattern_parts):
                 return v_index >= len(value_parts)
 
-            token = pattern_parts[p_index]
+            matcher = pattern_parts[p_index]
 
-            if token == "**":  # noqa: S105
+            if matcher.is_recursive():
                 for next_index in range(v_index, len(value_parts) + 1):
                     if match_at(p_index + 1, next_index):
                         return True
@@ -25,11 +27,33 @@ def _match_pattern_parts(pattern_parts: Sequence[str], value_parts: Sequence[str
             if v_index >= len(value_parts):
                 return False
 
-            if token != "*" and token != value_parts[v_index]:  # noqa: S105
+            if not matcher.matches_segment(value_parts[v_index]):
                 return False
 
             p_index += 1
             v_index += 1
+
+    return match_at(0, 0)
+
+
+def _match_pattern_prefix(pattern_parts: Sequence["IdPathSegmentMatcher"], prefix_parts: Sequence[str]) -> bool:
+    @lru_cache(maxsize=None)
+    def match_at(p_index: int, v_index: int) -> bool:  # noqa: CCR001
+        if v_index >= len(prefix_parts):
+            return True
+
+        if p_index >= len(pattern_parts):
+            return False
+
+        matcher = pattern_parts[p_index]
+
+        if matcher.is_recursive():
+            return match_at(p_index + 1, v_index) or match_at(p_index, v_index + 1)
+
+        if matcher.matches_segment(prefix_parts[v_index]):
+            return match_at(p_index + 1, v_index + 1)
+
+        return False
 
     return match_at(0, 0)
 
@@ -69,6 +93,64 @@ def _invalid_pattern(id_type: str, value: Any) -> Result[TParsed, ErrorsList]:
 
 class NormalizedRawIdPath(str):
     __slots__ = ()
+
+
+class IdPathSegmentMatcher:
+    __slots__ = ("pattern_text",)
+    pattern_text: str
+
+    def __init__(self, pattern_text: str) -> None:
+        self.pattern_text = pattern_text
+
+    def __str__(self) -> str:
+        return self.pattern_text
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({self.pattern_text!r})"
+
+    def __hash__(self) -> int:
+        return hash((type(self), self.pattern_text))
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        return self.pattern_text == other.pattern_text
+
+    def matches_segment(self, value: str) -> bool:
+        raise NotImplementedError
+
+    def is_recursive(self) -> bool:
+        return False
+
+
+class IdPathSegmentLiteralMatcher(IdPathSegmentMatcher):
+    __slots__ = ()
+
+    def matches_segment(self, value: str) -> bool:
+        return self.pattern_text == value
+
+
+class IdPathSegmentSingleMatcher(IdPathSegmentMatcher):
+    __slots__ = ("_regex",)
+    _regex: re.Pattern[str]
+
+    def __init__(self, pattern_text: str) -> None:
+        super().__init__(pattern_text)
+        self._regex = re.compile(fnmatch.translate(pattern_text))
+
+    def matches_segment(self, value: str) -> bool:
+        return self._regex.fullmatch(value) is not None
+
+
+class IdPathSegmentRecursiveMatcher(IdPathSegmentMatcher):
+    __slots__ = ()
+
+    def matches_segment(self, value: str) -> bool:
+        return True
+
+    def is_recursive(self) -> bool:
+        return True
 
 
 @total_ordering
@@ -209,19 +291,28 @@ TIdPath = TypeVar("TIdPath", bound="IdPath")
 TIdPathPattern = TypeVar("TIdPathPattern", bound="IdPathPattern[Any]")
 
 
-class IdPathPattern(tuple[str, ...], Generic[TIdPath]):
+class IdPathPattern(tuple[IdPathSegmentMatcher, ...], Generic[TIdPath]):
     __slots__ = ()
     id_class: type[TIdPath]
 
     def __str__(self) -> str:
-        return self.id_class.delimiter.join(self)
+        return self.id_class.delimiter.join(str(part) for part in self)
 
     @classmethod
-    def _validate_pattern_part(cls, part: str) -> bool:
-        if part in {"*", "**"}:
-            return True
+    def _parse_pattern_part(cls, part: str) -> IdPathSegmentMatcher | None:
+        if part == "**":
+            return IdPathSegmentRecursiveMatcher(part)
 
-        return part.isidentifier()
+        if part == "":
+            return None
+
+        if any(char in part for char in "*?[]"):
+            return IdPathSegmentSingleMatcher(part)
+
+        if not part.isidentifier():
+            return None
+
+        return IdPathSegmentLiteralMatcher(part)
 
     @classmethod
     def parse(cls: type[TIdPathPattern], text: str) -> Result[TIdPathPattern, ErrorsList]:  # noqa: CCR001
@@ -239,14 +330,21 @@ class IdPathPattern(tuple[str, ...], Generic[TIdPath]):
         if any(part == "" for part in parts):
             return _invalid_pattern(cls.__name__, text)
 
-        for part in parts:
-            if not cls._validate_pattern_part(part):
-                return _invalid_pattern(cls.__name__, text)
+        compiled_parts: list[IdPathSegmentMatcher] = []
 
-        return Ok(cls(parts))
+        for part in parts:
+            matcher = cls._parse_pattern_part(part)
+            if matcher is None:
+                return _invalid_pattern(cls.__name__, text)
+            compiled_parts.append(matcher)
+
+        return Ok(cls(compiled_parts))
 
     def matches(self, value: TIdPath) -> bool:
         return _match_pattern_parts(self, value.parts)
+
+    def matches_prefix(self, prefix_parts: Sequence[str]) -> bool:
+        return _match_pattern_prefix(self, prefix_parts)
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:  # noqa: CCR001
