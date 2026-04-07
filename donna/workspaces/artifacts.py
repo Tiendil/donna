@@ -1,5 +1,5 @@
 import pathlib
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterator, Sequence
 
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
@@ -13,6 +13,7 @@ from donna.workspaces.templates import RenderMode
 
 if TYPE_CHECKING:
     from donna.machine.artifacts import Artifact
+    from donna.workspaces import config as workspace_config
 
 
 class ArtifactRenderContext(BaseEntity):
@@ -51,49 +52,120 @@ def _match_supported_extension(path: pathlib.Path, supported_extensions: set[str
     return None
 
 
-def list_artifact_ids(pattern: ArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
+def _required_filters_match_prefix(
+    prefix_parts: Sequence[str], filters: Sequence["workspace_config.FileFilter"]
+) -> bool:
+    from donna.workspaces import config as workspace_config
+
+    for file_filter in filters:
+        if file_filter.mode != workspace_config.FileFilterMode.required:
+            continue
+
+        if not file_filter.pattern.matches_prefix(prefix_parts):
+            return False
+
+    return True
+
+
+def _is_artifact_visible(  # noqa: CCR001
+    artifact_id: ArtifactId, filters: Sequence["workspace_config.FileFilter"]
+) -> bool:
+    from donna.workspaces import config as workspace_config
+
+    included = False
+
+    for file_filter in filters:
+        if file_filter.mode == workspace_config.FileFilterMode.required:
+            if not file_filter.pattern.matches(artifact_id):
+                return False
+
+            continue
+
+        if included:
+            continue
+
+        matches = file_filter.pattern.matches(artifact_id)
+        if not matches:
+            continue
+
+        if file_filter.mode == workspace_config.FileFilterMode.ignore:
+            return False
+
+        included = True
+
+    return True
+
+
+def _artifact_id_from_parts(parts: Sequence[str]) -> ArtifactId | None:
+    artifact_name = "/".join(parts)
+    if not ArtifactId.validate(artifact_name):
+        return None
+
+    return ArtifactId(NormalizedRawIdPath(artifact_name))
+
+
+def _artifact_is_visible_in_workspace(artifact_id: ArtifactId) -> bool:
+    from donna.workspaces import config as workspace_config
+
+    return _is_artifact_visible(artifact_id, workspace_config.config().file_filters)
+
+
+def walk_filesystem(filters: list["workspace_config.FileFilter"]) -> Iterator[pathlib.Path]:  # noqa: CCR001
     from donna.workspaces.config import config, project_dir
 
     root = project_dir()
-
     if not root.exists() or not root.is_dir():
-        return []
+        return
 
     supported_extensions = config().supported_extensions()
-    artifacts: set[ArtifactId] = set()
 
-    def walk(node: pathlib.Path, parts: list[str]) -> None:  # noqa: CCR001
+    def walk(node: pathlib.Path, parts: list[str]) -> Iterator[pathlib.Path]:  # noqa: CCR001
         for entry in sorted(node.iterdir(), key=lambda item: item.name):
             if entry.is_dir():
                 if _should_skip_directory(parts, entry.name):
                     continue
 
                 next_parts = parts + [entry.name]
-                if not pattern.matches_prefix(next_parts):
+                if not _required_filters_match_prefix(next_parts, filters):
                     continue
 
-                walk(entry, next_parts)
+                yield from walk(entry, next_parts)
                 continue
 
             if not entry.is_file():
                 continue
 
-            extension = _match_supported_extension(entry, supported_extensions)
-            if extension is None:
+            if _match_supported_extension(entry, supported_extensions) is None:
                 continue
 
             artifact_parts = parts + [entry.name]
-            artifact_name = "/".join(artifact_parts)
-            if not ArtifactId.validate(artifact_name):
+            artifact_id = _artifact_id_from_parts(artifact_parts)
+            if artifact_id is None or not _is_artifact_visible(artifact_id, filters):
                 continue
 
-            artifact_id = ArtifactId(NormalizedRawIdPath(artifact_name))
-            if pattern.matches(artifact_id):
-                artifacts.add(artifact_id)
+            yield pathlib.Path(*artifact_parts)
 
-    walk(root, [])
+    yield from walk(root, [])
 
-    return list(sorted(artifacts))
+
+def list_artifact_ids(pattern: ArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
+    from donna.workspaces import config as workspace_config
+
+    filters = [
+        *workspace_config.config().file_filters,
+        workspace_config.FileFilter(mode=workspace_config.FileFilterMode.required, pattern=pattern),
+    ]
+
+    artifacts: list[ArtifactId] = []
+
+    for relative_path in walk_filesystem(filters):
+        artifact_id = _artifact_id_from_parts(relative_path.parts)
+        if artifact_id is None:
+            continue
+
+        artifacts.append(artifact_id)
+
+    return artifacts
 
 
 def resolve_artifact_path(artifact_id: ArtifactId) -> Result[pathlib.Path | None, ErrorsList]:
@@ -118,6 +190,9 @@ def fetch_artifact_bytes(artifact_id: ArtifactId) -> Result[tuple[str, bytes], E
 @unwrap_to_error
 def fetch_raw_artifact(artifact_id: ArtifactId) -> Result[FilesystemRawArtifact, ErrorsList]:
     from donna.workspaces.config import config
+
+    if not _artifact_is_visible_in_workspace(artifact_id):
+        return Err([world_errors.ArtifactNotFound(artifact_id=artifact_id)])
 
     artifact_path = resolve_artifact_path(artifact_id).unwrap()
     if artifact_path is None:

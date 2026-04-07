@@ -7,6 +7,7 @@
 
 ### Changes
 
+- Added configurable artifact file filters. Donna will see only files that pass all of the filters.
 - Replaced artifact ids with project-relative filepaths like `@/specs/intro.md` and `@/.donna/session/plans/plan.md:finish`.
 - Changed the default location of project specs to `specs/`.
   - Updated the default `project` world path to load from `specs/` instead of `.donna/project/`.

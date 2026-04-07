@@ -10,7 +10,9 @@ from donna.core.result import Err, Ok, Result
 from donna.domain import errors as domain_errors
 
 
-def _match_pattern_parts(pattern_parts: Sequence["IdPathSegmentMatcher"], value_parts: Sequence[str]) -> bool:  # noqa: CCR001
+def _match_pattern_parts(  # noqa: CCR001
+    pattern_parts: Sequence["IdPathSegmentMatcher"], value_parts: Sequence[str]
+) -> bool:
     def match_at(p_index: int, v_index: int) -> bool:  # noqa: CCR001
         while True:
             if p_index >= len(pattern_parts):

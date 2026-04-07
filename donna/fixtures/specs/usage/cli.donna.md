@@ -145,6 +145,9 @@ Use the next commands to work with artifacts:
 - `donna -p <protocol> artifacts view <artifact-pattern>` — get the meaningful (rendered) content of all matching artifacts. This command shows the rendered information about each artifact. Use this command when you need to read artifact content.
 - `donna -p <protocol> artifacts validate [<artifact-pattern>]` — validate all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, validate all artifacts in the project workspace.
 
+These commands only operate on artifact files admitted by the configured
+`<project-root>/.donna/config.toml:file_filters`.
+
 Donna does not mutate artifacts stored in the project workspace. Developers and external tools are responsible for creating, updating, moving, copying, or deleting artifacts before Donna reads or validates them.
 
 Commands that accept an artifact pattern (`artifacts list`, `artifacts view`, `artifacts validate`) also accept `--predicate/-p <python-expression>` to filter by artifact primary section. The expression is evaluated as `bool` with `section` global available (for example: `--predicate '"workflow" in section.tags'`).

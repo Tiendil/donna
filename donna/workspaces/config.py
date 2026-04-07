@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import enum
 import pathlib
 from typing import TYPE_CHECKING, Any
 
@@ -8,6 +9,7 @@ import pydantic
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
+from donna.domain.artifact_ids import ArtifactIdPattern
 from donna.domain.python_path import PythonPath
 from donna.machine.primitives import resolve_primitive
 from donna.workspaces import errors as world_errors
@@ -29,6 +31,17 @@ class SourceConfig(BaseEntity):
     model_config = pydantic.ConfigDict(extra="allow")
 
 
+class FileFilterMode(str, enum.Enum):
+    ignore = "ignore"
+    include = "include"
+    required = "required"
+
+
+class FileFilter(BaseEntity):
+    mode: FileFilterMode
+    pattern: ArtifactIdPattern
+
+
 def _default_sources() -> list[SourceConfig]:
     return [
         SourceConfig.model_validate(
@@ -40,8 +53,21 @@ def _default_sources() -> list[SourceConfig]:
     ]
 
 
+def _default_file_filters() -> list[FileFilter]:
+    return [
+        FileFilter(
+            mode=FileFilterMode.include, pattern=ArtifactIdPattern.parse("@/.donna/session/**/*.donna.md").unwrap()
+        ),
+        FileFilter(mode=FileFilterMode.include, pattern=ArtifactIdPattern.parse("@/.agents/**/*.donna.md").unwrap()),
+        FileFilter(mode=FileFilterMode.ignore, pattern=ArtifactIdPattern.parse(".*/**").unwrap()),
+        FileFilter(mode=FileFilterMode.include, pattern=ArtifactIdPattern.parse("**/*.donna.md").unwrap()),
+        FileFilter(mode=FileFilterMode.ignore, pattern=ArtifactIdPattern.parse("**").unwrap()),
+    ]
+
+
 class Config(BaseEntity):
     sources: list[SourceConfig] = pydantic.Field(default_factory=_default_sources)
+    file_filters: list[FileFilter] = pydantic.Field(default_factory=_default_file_filters)
     _sources_instances: list[SourceConfigValue] = pydantic.PrivateAttr(default_factory=list)
 
     cache_lifetime: float = 1.0

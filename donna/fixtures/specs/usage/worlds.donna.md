@@ -16,6 +16,8 @@ These artifacts are represented as text files, primary in Markdown format, howev
 formats can be used as well, if explicitly requested by the developer or by the workflows.
 
 Donna discovers these artifacts directly in the project filesystem rooted at `<project-root>`.
+The filesystem layout is still defined by code, but Donna MAY limit which files are visible as artifacts via
+`<project-root>/.donna/config.toml:file_filters`.
 
 The primary artifact areas are:
 
@@ -27,7 +29,7 @@ The project filesystem has a free layout, defined by the developers who own the 
 
 ## Artifact Access
 
-Donna has read access to artifacts stored in the project filesystem. It discovers, fetches, renders, and validates project artifacts, but it does not create, update, move, copy, or delete them.
+Donna has read access to artifacts stored in the project filesystem. It discovers, fetches, renders, and validates project artifacts that are allowed by the configured file filters, but it does not create, update, move, copy, or delete them.
 
 Developers and external tools are responsible for mutating project artifacts before Donna reads or validates them.
 
