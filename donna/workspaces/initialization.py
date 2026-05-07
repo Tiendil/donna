@@ -120,7 +120,7 @@ def initialize_workspace(
 
     config_path = workspace_dir / config.DONNA_CONFIG_NAME
     config_path.write_text(
-        tomli_w.dumps(default_config.model_dump(mode="json")),
+        tomli_w.dumps(default_config.model_dump(mode="json", exclude_none=True)),
         encoding="utf-8",
     )
 

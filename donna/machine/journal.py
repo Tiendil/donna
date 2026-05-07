@@ -1,6 +1,5 @@
 import datetime
 import json
-from collections.abc import Iterable
 
 import pydantic
 
@@ -11,7 +10,7 @@ from donna.core.utils import now
 from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import TaskId, WorkUnitId
 from donna.machine import errors as machine_errors
-from donna.workspaces import sessions as workspace_sessions
+from donna.workspaces import journal as workspace_journal
 from donna.workspaces.config import protocol as protocol_mode
 
 
@@ -43,17 +42,6 @@ def serialize_record(record: JournalRecord) -> bytes:
         separators=(",", ":"),
         sort_keys=True,
     ).encode("utf-8")
-
-
-def deserialize_record(content: bytes) -> JournalRecord:
-    payload = json.loads(content.decode("utf-8").strip())
-    return JournalRecord.model_validate(payload)
-
-
-@unwrap_to_error
-def reset() -> Result[None, ErrorsList]:
-    workspace_sessions.reset_journal()
-    return Ok(None)
 
 
 def smart_agent_id() -> str:
@@ -99,14 +87,7 @@ def add(  # noqa: CCR001
         current_operation_id=parsed_operation_id,
     )
 
-    serialized = serialize_record(record)
-    workspace_sessions.append_journal_record(serialized)
-
+    workspace_journal.write_record(record).unwrap()
     instant_output_journal(record)
 
     return Ok(record)
-
-
-def read(lines: int | None = None, follow: bool = False) -> Iterable[Result[JournalRecord, ErrorsList]]:
-    for raw_record in workspace_sessions.read_journal(lines=lines, follow=follow):
-        yield Ok(deserialize_record(raw_record))

@@ -4,6 +4,7 @@
 - Run `donna workspaces update` in existing projects so bundled Donna specs are installed into `.agents/donna` for the new filesystem-backed `donna` world.
 - Update your scripts and specs to use external tools or direct file edits to create, update, move, copy, or delete world artifacts instead using removed Donna commands.
 - Update artifact references from legacy ids like `specs:intro` to filepath ids like `@/specs/intro.md`, and include file extensions on all artifact references.
+- Set `journal.cmd` in the `.donna/config.toml` as a list of command arguments if you relied on `donna journal` output or session journal files.
 
 ### Changes
 
@@ -21,6 +22,7 @@
   - Removed `readonly` world-artifact mutability modeling from workspace config and world abstractions.
   - Updated artifact and world usage specs to state that developers and external tools mutate world artifacts while Donna validates them.
 - Removed `donna artifacts fetch` and `donna artifacts tmp` commands and all related code.
+- Removed native journal CLI functionality in favor of external journal integrations.
 
 ### Breaking Changes
 
@@ -28,7 +30,9 @@
 - Donna no longer exposes bundled specs through the Python-backed `donna` world; `donna workspaces init|update` now sync them into `.agents/donna`.
 - `donna artifacts` no longer supports `update`, `copy`, `move`, or `remove`.
 - Donna no longer mutates world artifacts through workspace APIs or world configuration.
+- Donna no longer exposes the `donna journal` CLI command or session journal viewing/following.
 
 ### Removals
 
 - Removed the Python world implementation and the `donna.artifacts` package-backed source of bundled Donna specs.
+- Removed the `donna journal` CLI command and session journal JSONL read/follow support.

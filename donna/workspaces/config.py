@@ -42,6 +42,49 @@ class FileFilter(BaseEntity):
     pattern: ArtifactIdPattern
 
 
+class JournalRecordAttribute(str, enum.Enum):
+    timestamp = "timestamp"
+    actor_id = "actor_id"
+    message = "message"
+    current_task_id = "current_task_id"
+    current_work_unit_id = "current_work_unit_id"
+    current_operation_id = "current_operation_id"
+
+    @classmethod
+    def has_attribute(cls, name: str) -> bool:
+        return name in cls.__members__
+
+
+def _is_journal_variable_argument(argument: str) -> bool:
+    return len(argument) >= 2 and argument[0] == "{" and argument[-1] == "}"
+
+
+class JournalConfig(BaseEntity):
+    cmd: list[str] | None = None
+
+    @pydantic.field_validator("cmd", mode="after")
+    @classmethod
+    def validate_cmd(cls, value: list[str] | None) -> list[str] | None:
+        if value is None:
+            return value
+
+        if not value:
+            raise ValueError("Journal command config is invalid: Configured command is empty.")
+
+        for argument in value:
+            if not _is_journal_variable_argument(argument):
+                continue
+
+            name = argument[1:-1]
+
+            if not JournalRecordAttribute.has_attribute(name):
+                raise ValueError(
+                    f"Journal command config is invalid: `{name}` is not a supported `JournalRecord` argument."
+                )
+
+        return value
+
+
 def _default_sources() -> list[SourceConfig]:
     return [
         SourceConfig.model_validate(
@@ -68,6 +111,7 @@ def _default_file_filters() -> list[FileFilter]:
 class Config(BaseEntity):
     sources: list[SourceConfig] = pydantic.Field(default_factory=_default_sources)
     file_filters: list[FileFilter] = pydantic.Field(default_factory=_default_file_filters)
+    journal: JournalConfig = pydantic.Field(default_factory=JournalConfig)
     _sources_instances: list[SourceConfigValue] = pydantic.PrivateAttr(default_factory=list)
 
     cache_lifetime: float = 1.0

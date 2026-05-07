@@ -70,12 +70,11 @@ Donna renders cells differently, depending on the protocol used.
 
 ### Commands
 
-There are four sets of commands:
+There are three sets of commands:
 
 - `donna -p <protocol> workspaces …` — manages workspaces. Most-likely it will be used once per your project to initialize it.
 - `donna -p <protocol> sessions …` — manages sessions. You will use these commands to start, push forward, and manage your work.
 - `donna -p <protocol> artifacts …` — manages artifact discovery, reading, and validation.
-- `donna -p <protocol> journal …` — manages session actions journal. You will use these commands to log and inspect the history of actions performed during the session.
 
 Use:
 
@@ -170,42 +169,39 @@ The format of `<artifact-pattern>` is as follows:
 
 CLI arguments MUST NOT use relative artifact paths like `./...` or `../../...`; use absolute `@/...` paths or rooted wildcard forms.
 
-### Working with journal
+### Journal integrations
 
-Use the next commands to work with session journal:
+Donna creates internal `JournalRecord` values for important workflow events.
+Donna does not expose a journal CLI command.
 
-- `donna -p <protocol> journal write <message>` — record a single new entry to the journal with the given **single-line** `message` (newlines are not allowed). Donna automatically adds a timestamp and other relevant information to the journal entry.
-- `donna -p <protocol> journal view [--lines N] [--follow]` — display journal records.
+To forward journal records to a third-party tool, configure the workspace
+`<project-root>/.donna/config.toml` file:
 
-Agents MUST use `donna -p <protocol> journal write <message>` to log:
+```toml
+[journal]
+cmd = ["cli-tool", "--message", "{message}"]
+```
 
-- Goals of the long-running agent-side operations: `Goal: <goal description>`.
-- Significant steps of the long-running agent-side operations: `Step: <phase progress or completion handoff>`.
-- Significant thoughts during the long-running operations: `Thought: <important thought>`.
-- Significant assumptions during the long-running operations: `Assumption: <important assumption>`.
-- Changes in the project source code or in the project structure: `Change: <what changed and where>`.
+`cmd` is a list of command arguments. If an argument starts with `{` and ends
+with `}`, Donna treats the whole argument as a `JournalRecord` attribute name
+and replaces it with that value. Donna validates placeholders when loading
+config.
 
-For each non-trivial action request, agents MUST follow this journaling contract:
+Supported attributes:
 
-1. Write exactly one `Goal:` record at action-request start.
-2. Write `Step:` records at significant phase boundaries. If an action request describes a multi-step process, there MUST be at least one `Step:` record per specified step and one `Step:` record for the completion handoff.
-3. Write `Change:` records after each meaningful source update batch.
-4. Write one final `Step:` record immediately before `sessions action-request-completed`.
+- `timestamp` — record creation time, formatted as ISO-8601.
+- `actor_id` — actor that created the record; empty string when unknown.
+- `message` — single-line journal message.
+- `current_task_id` — current task id; empty string when no task is active.
+- `current_work_unit_id` — current work unit id; empty string when no work unit is active.
+- `current_operation_id` — current operation artifact section id; empty string when no operation is active.
 
-Agents MUST consider these cases as significant phase boundaries:
+If `journal.cmd` is omitted, Donna treats it as `None` and performs no journal
+writing.
 
-- A work phase expected to take more than 10 seconds.
-- Transition from analysis/research to implementation/editing.
-- Transition to a new step in a multi-step process described in the action request.
-- Start or completion of a multi-file or multi-artifact change batch.
-- A decision that changes implementation direction.
-
-Before `sessions action-request-completed`, agents MUST check journal completeness for the current action request.
-
-Agents MUST NOT log:
-
-- CLI commands they execute.
-- Elementary/trivial steps.
+Donna still prints newly created internal journal records immediately using the
+selected protocol formatter, so agents receive live feedback even when no
+external journal command is configured.
 
 ## IMPORTANT ON DONNA TOOL USAGE
 

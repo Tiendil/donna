@@ -43,6 +43,31 @@ class WorkspaceAlreadyInitialized(WorkspaceError):
     project_dir: pathlib.Path
 
 
+class JournalCommandConfigInvalid(WorkspaceError):
+    code: str = "donna.workspaces.journal_command_config_invalid"
+    message: str = "Journal command config is invalid: {error.details}"
+    ways_to_fix: list[str] = [
+        "Configure `[journal].cmd` as a list of command arguments.",
+        "Use whole-argument placeholders like `{message}` for `JournalRecord` attributes.",
+        "Omit `journal.cmd` to disable external journal writing.",
+    ]
+    argument: str
+    details: str
+
+
+class JournalCommandFailed(WorkspaceError):
+    code: str = "donna.workspaces.journal_command_failed"
+    message: str = "Journal command failed: {error.details}"
+    ways_to_fix: list[str] = [
+        "Check that the configured journal command exists and is executable.",
+        "Check command arguments generated from `[journal].cmd`.",
+        "Omit `journal.cmd` to disable external journal writing.",
+    ]
+    command: list[str]
+    returncode: int | None
+    details: str
+
+
 class SourceError(WorkspaceError):
     cell_kind: str = "source_error"
     source_id: str
