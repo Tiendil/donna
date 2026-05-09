@@ -9,11 +9,7 @@ from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
-from donna.machine.errors import (
-    ArtifactPrimarySectionMissing,
-    ArtifactSectionNotFound,
-    MultiplePrimarySectionsError,
-)
+from donna.machine.errors import ArtifactPrimarySectionMissing, ArtifactSectionNotFound, MultiplePrimarySectionsError
 from donna.protocol.cells import Cell
 from donna.protocol.nodes import Node
 

@@ -38,7 +38,7 @@ class JournalMessageContainsNewlines(EnvironmentError):
     code: str = "donna.machine.journal_message_contains_newlines"
     message: str = "Journal message must be a single line and must not contain newline characters."
     ways_to_fix: list[str] = [
-        "Provide `journal write` message as a single line.",
+        "Provide journal messages as single-line strings.",
         "Replace newline characters with spaces or split the text into multiple journal records.",
     ]
 

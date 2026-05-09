@@ -33,7 +33,7 @@ Donna has read access to artifacts stored in the project filesystem. It discover
 
 Developers and external tools are responsible for mutating project artifacts before Donna reads or validates them.
 
-Donna still writes its own session state and journal data under `<project-root>/.donna/session`, but that internal state storage is separate from project-artifact mutation.
+Donna still writes its own session state under `<project-root>/.donna/session`, but that internal state storage is separate from project-artifact mutation.
 
 ## Intro Artifacts
 

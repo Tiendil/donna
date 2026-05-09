@@ -63,7 +63,6 @@ def _session_required(
 def start() -> Result[list[Cell], ErrorsList]:
     workspace_sessions.reset_dir()
 
-    machine_journal.reset().unwrap()
     _save_state(MutableState.build().freeze()).unwrap()
 
     machine_journal.add(message="Started new session.").unwrap()

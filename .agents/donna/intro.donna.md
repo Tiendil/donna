@@ -39,21 +39,10 @@ Artifact type tags:
 
 ## Journaling
 
-You MUST use `donna journal write` to track your actions and thoughts, according the description in `{{ donna.lib.view("./usage/cli.donna.md") }}`.
+Donna creates internal journal records for important workflow events, according to the description in `{{ donna.lib.view("./usage/cli.donna.md") }}`.
 
-Journaling is a required part of workflow execution. An action request MUST be considered incomplete until required journal records are written.
+Journal records can be forwarded to a third-party tool by configuring `[journal].cmd` in `<project-root>/.donna/config.toml`.
 
-Journaling lifecycle for each non-trivial action request:
+The configured command is a list of command arguments. Arguments whose first and last characters are `{` and `}` are replaced with attributes of `JournalRecord`.
 
-1. Start intent (`Goal:`) before substantial work begins.
-2. Progress updates (`Step:`) at significant phase boundaries.
-3. Concrete edits (`Change:`) after meaningful source/artifact update batches.
-4. Completion handoff (`Step:`) before calling `sessions action-request-completed`.
-
-Journal records MUST be change/decision-oriented and SHOULD be sufficient for another agent to continue work without re-discovery.
-
-If you perform a long operation (e.g., exploring the codebase, designing a solution) that takes more than 10 seconds, you MUST journal your progress.
-
-You MUST use `donna journal view --lines 100` to read the last records after you compress your context.
-
-If your work is interrupted and you resume later, you MUST first journal `Resume context and next action`.
+If `[journal].cmd` is omitted, Donna treats it as `None` and performs no journal writing.

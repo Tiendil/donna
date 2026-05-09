@@ -3,11 +3,7 @@ from collections.abc import Iterable
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import (
-    ArtifactIdPatternArgument,
-    PredicateOption,
-    validate_supported_artifact_pattern,
-)
+from donna.cli.types import ArtifactIdPatternArgument, PredicateOption, validate_supported_artifact_pattern
 from donna.cli.utils import cells_cli
 from donna.context.context import context
 from donna.domain.artifact_ids import ArtifactIdPattern

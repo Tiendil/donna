@@ -7,8 +7,6 @@ Your agent will generate [state machines](https://en.wikipedia.org/wiki/Finite-s
 
 Donna allows your agent to execute hundreds of consecutive steps without swaying away from the defined workflow. Branching, loops, nested calls, and recursion — all possible.
 
-![Journal log demonstration](./docs/images/journal-demo.gif)
-
 ## What is Donna?
 
 Donna is a CLI tool that helps coding agents like Codex focus on the task at hand by keeping high-level control flow in explicit Donna workflows. Donna dictates what should be done at each step of the work, so the agent can focus on the actual piece.
@@ -162,18 +160,33 @@ If you upgrade Donna later, run `donna workspaces update` to refresh `.agents/do
 
 **Donna is a CLI tool for agents.** You rarely need to use it directly.
 
-However, it is convenient to run `donna journal view --follow` in a separate terminal to see what is going on in the current session.
-
 Commands you may need:
 
 - `donna workspaces init` — Initialize Donna in your project.
 - `donna sessions start` — start a new working session, remove everything from the previous session.
 - `donna artifacts list <pattern>` — list artifacts with short descriptions.
-- `donna journal view [--lines N] [--follow]` — view the log of work performed in the current session.
 
-Here is an example of the real Donna session work log:
+Donna can send internal journal records to a third-party tool. Configure it in `.donna/config.toml`:
 
-![Journal log demonstration](./docs/images/journal-demo.gif)
+```toml
+[journal]
+cmd = ["cli-tool", "--message", "{message}"]
+```
+
+`cmd` is a list of command arguments. If an argument starts with `{` and ends with `}`, Donna treats the whole argument as a `JournalRecord` attribute name and replaces it with that value. Donna validates placeholders when loading config.
+
+Supported attributes:
+
+- `timestamp` — record creation time, formatted as ISO-8601.
+- `actor_id` — actor that created the record; empty string when unknown.
+- `message` — single-line journal message.
+- `current_task_id` — current task id; empty string when no task is active.
+- `current_work_unit_id` — current work unit id; empty string when no work unit is active.
+- `current_operation_id` — current operation artifact section id; empty string when no operation is active.
+
+By default `journal.cmd` is omitted and Donna treats it as `None`, so no journal writing is performed.
+
+Donna still prints newly created internal journal records immediately using the selected protocol formatter, so agents receive live feedback even when no external journal command is configured.
 
 Use `donna --help` for a quick reference.
 
