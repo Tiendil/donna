@@ -1,17 +1,17 @@
-import functools
 import pathlib
 import sys
-from collections.abc import Iterable
-from typing import Callable, ParamSpec
+from collections.abc import Iterable, Iterator
+from contextlib import contextmanager
 
 import typer
 
+from donna.cli.entities import GLOBAL_OPTIONS_CONTEXT_KEY, GlobalOptions
 from donna.core.errors import EnvironmentError, ErrorsList
 from donna.core.result import UnwrapError
 from donna.protocol.cells import Cell
 from donna.protocol.modes import Mode, get_cell_formatter
 from donna.workspaces import config as workspace_config
-from donna.workspaces.initialization import initialize_runtime
+from donna.workspaces.initialization import load_workspace
 
 
 def output_cells(cells: Iterable[Cell]) -> None:
@@ -22,7 +22,61 @@ def output_cells(cells: Iterable[Cell]) -> None:
         sys.stdout.buffer.write(output)
 
 
-P = ParamSpec("P")
+def global_options(context: typer.Context) -> GlobalOptions:
+    global_options = context.find_root().meta.get(GLOBAL_OPTIONS_CONTEXT_KEY)
+
+    if isinstance(global_options, GlobalOptions):
+        return global_options
+
+    return GlobalOptions(protocol=Mode.human)
+
+
+class CommandContext:
+    __slots__ = ("global_options", "protocol")
+
+    def __init__(self, context: typer.Context) -> None:
+        self.global_options = global_options(context)
+        self.protocol = self.global_options.protocol
+
+    def install_protocol(self) -> None:
+        if not workspace_config.protocol.is_set():
+            workspace_config.protocol.set(self.protocol)
+
+    def load_workspace(self) -> workspace_config.Workspace:
+        workspace = load_workspace(root_dir=self.global_options.root_dir).unwrap()
+        workspace_config.install_workspace(workspace)
+        return workspace
+
+    def target_dir(self) -> pathlib.Path:
+        if self.global_options.root_dir is not None:
+            return self.global_options.root_dir
+
+        if workspace_config.project_dir.is_set():
+            return workspace_config.project_dir()
+
+        return pathlib.Path.cwd()
+
+    def write_cells(self, cells: Iterable[Cell]) -> None:
+        output_cells(cells)
+
+
+@contextmanager
+def command_context(context: typer.Context, *, load_environment: bool = True) -> Iterator[CommandContext]:
+    from donna.context import Context, set_context
+
+    command = CommandContext(context)
+
+    try:
+        command.install_protocol()
+
+        if load_environment:
+            command.load_workspace()
+            set_context(Context())
+
+        yield command
+    except UnwrapError as error:
+        command.write_cells(_cells_from_unwrap(error))
+        raise typer.Exit(code=0) from error
 
 
 def _write_errors_to_journal(errors: ErrorsList) -> None:
@@ -37,55 +91,22 @@ def _write_errors_to_journal(errors: ErrorsList) -> None:
         )
 
 
-def cells_cli(func: Callable[P, Iterable[Cell]]) -> Callable[P, None]:  # noqa: CCR001
+def _errors_from_unwrap(error: UnwrapError) -> ErrorsList:
+    unwrapped = error.arguments["error"]
 
-    @functools.wraps(func)
-    def wrapper(*args: P.args, **kwargs: P.kwargs) -> None:  # noqa: CCR001
-        try:
-            cells = func(*args, **kwargs)
-        except UnwrapError as e:
-            errors: ErrorsList
-            if isinstance(e.arguments["error"], EnvironmentError):
-                errors = [e.arguments["error"]]
-            elif isinstance(e.arguments["error"], Iterable):
-                errors = [error for error in e.arguments["error"] if isinstance(error, EnvironmentError)]
-            else:
-                raise
+    if isinstance(unwrapped, EnvironmentError):
+        return [unwrapped]
 
-            _write_errors_to_journal(errors)
-            cells = [error.node().info() for error in errors]
+    if isinstance(unwrapped, Iterable):
+        return [item for item in unwrapped if isinstance(item, EnvironmentError)]
 
-        output_cells(cells)
-
-    return wrapper
+    raise error
 
 
-def _is_workspace_init_command() -> bool:
-    args = sys.argv[1:]
-    if "workspaces" not in args:
-        return False
+def _cells_from_unwrap(error: UnwrapError) -> Iterable[Cell]:
+    errors = _errors_from_unwrap(error)
 
-    index = args.index("workspaces")
-    return len(args) > index + 1 and args[index + 1] == "init"
+    if workspace_config.config.is_set():
+        _write_errors_to_journal(errors)
 
-
-def try_initialize_donna(project_dir: pathlib.Path | None, protocol: Mode) -> None:
-    from donna.context import Context, set_context
-
-    if _is_workspace_init_command():
-        workspace_config.protocol.set(protocol)
-        if project_dir is not None:
-            workspace_config.project_dir.set(project_dir)
-        return
-
-    result = initialize_runtime(root_dir=project_dir, protocol=protocol)
-
-    if result.is_ok():
-        set_context(Context())
-        return
-
-    errors = result.unwrap_err()
-
-    output_cells([error.node().info() for error in errors])
-
-    raise typer.Exit(code=0)
+    return [item.node().info() for item in errors]
