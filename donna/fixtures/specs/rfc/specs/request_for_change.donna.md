@@ -16,7 +16,7 @@ If not otherwise specified, RFC documents for the session MUST be stored as `@/.
 
 ## RFC structure
 
-The RFC document is Donna artifact (check `{{ donna.lib.view("../../usage/artifacts.donna.md") }}`) with the next structure:
+The RFC document is Donna artifact (check `donna skill artifacts`) with the next structure:
 
 - **Primary section** — title and short description of the proposed change.
 - **Original description** — original description of the requested changes from the developer or parent workflow.
@@ -34,7 +34,7 @@ The RFC document is Donna artifact (check `{{ donna.lib.view("../../usage/artifa
 ## General language and format
 
 - You MUST follow [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.txt) for keywords like MUST, SHOULD, MAY, etc.
-- You MUST follow `{{ donna.lib.view("../../usage/artifacts.donna.md") }}`.
+- You MUST follow `donna skill artifacts`.
 - You MUST follow the structure specified in this document.
 
 ### List format

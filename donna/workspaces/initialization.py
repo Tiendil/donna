@@ -50,17 +50,8 @@ def _sync_donna_specs(project_dir: pathlib.Path) -> None:
 
 
 @unwrap_to_error
-def initialize_runtime(  # noqa: CCR001
-    root_dir: pathlib.Path | None = None,
-    protocol: Mode | None = None,
-) -> Result[None, core_errors.ErrorsList]:
-    """Initialize the runtime environment for the application.
-
-    This function MUST be called before any other operations.
-    """
-    if protocol is not None:
-        config.protocol.set(protocol)
-
+def load_workspace(root_dir: pathlib.Path | None = None) -> Result[config.Workspace, core_errors.ErrorsList]:
+    """Load workspace configuration without mutating process-global state."""
     if root_dir is None:
         project_dir = utils.discover_project_dir(config.DONNA_DIR_NAME).unwrap()
     else:
@@ -68,17 +59,12 @@ def initialize_runtime(  # noqa: CCR001
         if not (project_dir / config.DONNA_DIR_NAME).is_dir():
             return Err([core_errors.ProjectDirNotFound(donna_dir_name=config.DONNA_DIR_NAME)])
 
-    config.project_dir.set(project_dir)
-
     config_dir = project_dir / config.DONNA_DIR_NAME
-
-    config.config_dir.set(config_dir)
 
     config_path = config_dir / config.DONNA_CONFIG_NAME
 
     if not config_path.exists():
-        config.config.set(config.Config())
-        return Ok(None)
+        return Ok(config.Workspace(root=project_dir, config_dir=config_dir, config=config.Config()))
 
     try:
         data = tomllib.loads(config_path.read_text(encoding="utf-8"))
@@ -90,9 +76,25 @@ def initialize_runtime(  # noqa: CCR001
     except Exception as e:
         return Err([world_errors.ConfigValidationFailed(config_path=config_path, details=str(e))])
 
-    config.config.set(loaded_config)
+    return Ok(config.Workspace(root=project_dir, config_dir=config_dir, config=loaded_config))
 
-    return Ok(None)
+
+@unwrap_to_error
+def initialize_runtime(
+    root_dir: pathlib.Path | None = None,
+    protocol: Mode | None = None,
+) -> Result[config.Workspace, core_errors.ErrorsList]:
+    """Initialize the runtime environment for the application.
+
+    This function MUST be called before any other operations.
+    """
+    if protocol is not None:
+        config.protocol.set(protocol)
+
+    workspace = load_workspace(root_dir=root_dir).unwrap()
+    config.install_workspace(workspace)
+
+    return Ok(workspace)
 
 
 @unwrap_to_error
@@ -100,7 +102,7 @@ def initialize_workspace(
     project_dir: pathlib.Path,
     install_skills: bool = True,
     install_specs: bool = True,
-) -> Result[None, core_errors.ErrorsList]:
+) -> Result[config.Workspace, core_errors.ErrorsList]:
     """Initialize the physical workspace for the project (`.donna` directory)."""
     project_dir = project_dir.resolve()
     workspace_dir = project_dir / config.DONNA_DIR_NAME
@@ -108,15 +110,11 @@ def initialize_workspace(
     if workspace_dir.exists():
         return Err([world_errors.WorkspaceAlreadyInitialized(project_dir=project_dir)])
 
-    if not config.project_dir.is_set():
-        config.project_dir.set(project_dir)
-
-    config.config_dir.set(workspace_dir)
-
     workspace_dir.mkdir(parents=True, exist_ok=True)
 
     default_config = config.Config()
-    config.config.set(default_config)
+    workspace = config.Workspace(root=project_dir, config_dir=workspace_dir, config=default_config)
+    config.install_workspace(workspace)
 
     config_path = workspace_dir / config.DONNA_CONFIG_NAME
     config_path.write_text(
@@ -132,7 +130,7 @@ def initialize_workspace(
     if install_specs:
         _sync_donna_specs(project_dir)
 
-    return Ok(None)
+    return Ok(workspace)
 
 
 @unwrap_to_error

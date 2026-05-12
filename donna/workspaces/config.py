@@ -168,6 +168,14 @@ class Config(BaseEntity):
         return extensions
 
 
+class Workspace(BaseEntity):
+    model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
+
+    root: pydantic.DirectoryPath
+    config_dir: pydantic.DirectoryPath
+    config: Config
+
+
 class GlobalConfig[V]():
     __slots__ = ("_value",)
 
@@ -197,3 +205,14 @@ project_dir = GlobalConfig[pathlib.Path]()
 config_dir = GlobalConfig[pathlib.Path]()
 config = GlobalConfig[Config]()
 protocol: GlobalConfig["Mode"] = GlobalConfig()
+
+
+def install_workspace(workspace: Workspace) -> None:
+    if not project_dir.is_set():
+        project_dir.set(pathlib.Path(workspace.root))
+
+    if not config_dir.is_set():
+        config_dir.set(pathlib.Path(workspace.config_dir))
+
+    if not config.is_set():
+        config.set(workspace.config)
