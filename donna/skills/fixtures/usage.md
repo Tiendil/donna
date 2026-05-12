@@ -1,0 +1,200 @@
+# `donna` Usage
+
+Donna is a CLI tool for orchestrating AI-agent work with project-local workflows, artifacts, and session state.
+
+Use this document as the first reference for command usage. For narrower topics, use:
+
+- `donna skill configuration` for `.donna/config.toml`.
+- `donna skill initialization` for creating or refreshing Donna workspace files.
+- `donna skill artifacts` for artifact layout, discovery, and authoring rules.
+- `donna skill usage` for this command overview.
+
+## Project Root
+
+Donna works inside a project root. If `--root/-r` is omitted, commands that load a workspace discover the project root by searching upward from the current directory for `.donna`.
+
+Use `--root PATH` when running Donna from outside the project tree or when targeting a specific project:
+
+```bash
+donna -p llm --root /path/to/project sessions status
+```
+
+`donna skill ...` does not load a workspace and can run from any directory.
+
+## Output Protocols
+
+Donna supports three protocol modes:
+
+- `llm`: structured cells optimized for agents.
+- `human`: compact terminal output for people.
+- `automation`: output intended for programs.
+
+Agents should use `-p llm` for normal Donna workflow commands:
+
+```bash
+donna -p llm sessions status
+```
+
+The root option goes before the command:
+
+```bash
+donna -p llm --root /path/to/project artifacts list '**'
+```
+
+## Skill Documents
+
+The `skill` command prints built-in agent documentation as plain Markdown. It does not require an initialized workspace.
+
+Examples:
+
+```bash
+donna skill usage
+donna skill configuration
+donna skill initialization
+donna skill artifacts
+```
+
+Use these documents when an agent needs stable instructions before a workspace exists or when synced artifacts are not available.
+
+## Workspace Commands
+
+Workspace commands create or refresh Donna-owned files.
+
+Initialize a workspace in the current directory:
+
+```bash
+donna -p llm workspaces init
+```
+
+Initialize a workspace in an explicit existing directory:
+
+```bash
+donna -p llm --root /path/to/project workspaces init
+```
+
+Refresh synced Donna skills and specifications in an existing workspace:
+
+```bash
+donna -p llm workspaces update
+```
+
+Use `--no-skills` or `--no-specs` when only one fixture family should be changed:
+
+```bash
+donna -p llm workspaces update --no-specs
+donna -p llm workspaces update --no-skills
+```
+
+## Session Commands
+
+All workflow execution happens in the active session. Session state lives under `<project-root>/.donna/session`.
+
+Start a new session:
+
+```bash
+donna -p llm sessions start
+```
+
+Starting a session resets session state and removes session artifacts. Only start a new session when the developer asks for it or when no active session exists.
+
+Show concise status:
+
+```bash
+donna -p llm sessions status
+```
+
+Show detailed session state and action requests:
+
+```bash
+donna -p llm sessions details
+```
+
+Continue queued workflow execution:
+
+```bash
+donna -p llm sessions continue
+```
+
+Run a workflow artifact:
+
+```bash
+donna -p llm sessions run @/.agents/donna/work/polish.donna.md
+```
+
+Complete an action request by passing its id and the next operation id exactly as Donna instructed:
+
+```bash
+donna -p llm sessions action-request-completed AR-12-x @/.donna/session/workflow.donna.md:next_step
+```
+
+## Artifact Commands
+
+Artifacts are project files admitted by Donna's configured sources and file filters. Agents use artifacts to discover workflows, read specifications, and validate Donna-readable files.
+
+List all visible artifacts:
+
+```bash
+donna -p llm artifacts list '**'
+```
+
+List workflows:
+
+```bash
+donna -p llm artifacts list '**' --predicate '"workflow" in section.tags'
+```
+
+View an artifact:
+
+```bash
+donna -p llm artifacts view '@/specs/intro.donna.md'
+```
+
+Validate all visible artifacts:
+
+```bash
+donna -p llm artifacts validate '**'
+```
+
+Artifact patterns use `@/` for project-root paths. Recursive `**` patterns are allowed:
+
+```bash
+donna -p llm artifacts view '**/intro.donna.md'
+```
+
+## Normal Agent Flow
+
+1. Read project instructions and `donna skill usage`.
+2. Check session state:
+
+```bash
+donna -p llm sessions status
+```
+
+3. If there is no active work and a workflow is needed, list workflows:
+
+```bash
+donna -p llm artifacts list '**' --predicate '"workflow" in section.tags'
+```
+
+4. Start the selected workflow:
+
+```bash
+donna -p llm sessions run @/.agents/donna/work/polish.donna.md
+```
+
+5. Execute Donna action requests exactly.
+6. Report completion with `sessions action-request-completed`.
+7. Continue until Donna finishes the workflow.
+
+## Journal Forwarding
+
+Donna creates internal journal records for workflow events. To forward them to another tool, configure `[journal].cmd` in `<project-root>/.donna/config.toml`.
+
+Example:
+
+```toml
+[journal]
+cmd = ["./bin/taskwarior.sh", "log", "+journal", "+donna", "{message}"]
+```
+
+Supported placeholders are `timestamp`, `actor_id`, `message`, `current_task_id`, `current_work_unit_id`, and `current_operation_id`.

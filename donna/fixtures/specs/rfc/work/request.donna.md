@@ -17,7 +17,7 @@ fsm_mode = "start"
 ```
 
 1. Read the specification `{{ donna.lib.view("../specs/request_for_change.donna.md") }}` if you haven't done it yet.
-2. Read the specification `{{ donna.lib.view("../../usage/artifacts.donna.md") }}` if you haven't done it yet.
+2. Read the artifact instructions by running `donna skill artifacts` if you haven't done it yet.
 3. `{{ donna.lib.goto("ensure_work_description_exists") }}`
 
 ## Ensure work description exists

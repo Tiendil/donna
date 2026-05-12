@@ -16,7 +16,7 @@ The agent (via workflows) creates the artifact and updates it iteratively as the
 
 ## Research report structure
 
-The research report is a Donna artifact (check `{{ donna.lib.view("../../usage/artifacts.donna.md") }}`) with the next structure:
+The research report is a Donna artifact (check `donna skill artifacts`) with the next structure:
 
 - **Primary section** -- title and short description of the research problem.
 - **Original problem description** -- original problem statement from the developer or parent workflow.
@@ -35,7 +35,7 @@ The research report is a Donna artifact (check `{{ donna.lib.view("../../usage/a
 ## General language and format
 
 - You MUST follow [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.txt) for keywords like MUST, SHOULD, MAY, etc.
-- You MUST follow `{{ donna.lib.view("../../usage/artifacts.donna.md") }}`.
+- You MUST follow `donna skill artifacts`.
 - You MUST follow the structure specified in this document.
 
 ### List format

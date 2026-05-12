@@ -24,7 +24,7 @@ The Design document MUST NOT be a high-level description of the problem and solu
 
 ## Design document structure
 
-The RFC document is Donna artifact (check `{{ donna.lib.view("../../usage/artifacts.donna.md") }}`) with the next structure:
+The RFC document is Donna artifact (check `donna skill artifacts`) with the next structure:
 
 - **Primary section** — title and short description of the proposed change.
 - **Inputs** — list of input documents that are relevant for the proposed change, starting from the RFC document.
@@ -40,7 +40,7 @@ The RFC document is Donna artifact (check `{{ donna.lib.view("../../usage/artifa
 ## General language and format
 
 - You MUST follow [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.txt) for keywords like MUST, SHOULD, MAY, etc.
-- You MUST follow `{{ donna.lib.view("../../usage/artifacts.donna.md") }}`.
+- You MUST follow `donna skill artifacts`.
 - You MUST follow the structure specified in this document.
 
 ### List format

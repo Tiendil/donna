@@ -190,11 +190,12 @@ Donna still prints newly created internal journal records immediately using the 
 
 Use `donna --help` for a quick reference.
 
-You find detailed documentation in the agent instructions — they are readable and always accurate:
+You find detailed documentation in the built-in skill documents — they are readable and always accurate:
 
-- [CLI specification](./.agents/donna/usage/cli.donna.md) — full list of commands and how to use them.
-- [Artifacts](./.agents/donna/usage/artifacts.donna.md) — what Donna artifacts are and how to use them.
-- [Filesystem layout](./.agents/donna/usage/worlds.donna.md) — how Donna discovers and manages artifacts on the filesystem.
+- `donna skill usage` — full list of commands and how to use them.
+- `donna skill artifacts` — what Donna artifacts are and how to use them on the filesystem.
+- `donna skill configuration` — how to configure `.donna/config.toml`.
+- `donna skill initialization` — how to initialize or refresh a Donna workspace.
 
 The documentation below covers aspects important to humans and partially duplicates the agent's instructions.
 
@@ -249,7 +250,7 @@ Artifact ids are project-relative filepaths prefixed with `@/`. Section ids appe
 Examples:
 
 - `@/specs/work/polish.donna.md`
-- `@/.agents/donna/usage/cli.donna.md`
+- `@/.agents/donna/work/polish.donna.md`
 - `@/.donna/session/execute_rfc.donna.md:review_changes`
 
 You and agents can `list`, `view`, and `validate` artifacts.
@@ -316,7 +317,7 @@ To execute a workflow, Donna uses a simplified virtual machine (VM) that maintai
 
 ### Operations
 
-You can find detailed docs on built-in operations in the [artifacts documentation](./.agents/donna/usage/artifacts.donna.md).
+You can find detailed docs on built-in operations in `donna skill artifacts`.
 
 Here is a short list of them:
 
@@ -391,7 +392,7 @@ Donna defines a set of built-in Jinja2 functions that provide artifacts with the
 
 Directives are used in the next way: `{{ python.import.path(<args>) }}`.
 
-You can find a detailed documentation of all built-in directives in the [artifacts documentation](./.agents/donna/usage/artifacts.donna.md).
+You can find detailed documentation of all built-in directives in `donna skill artifacts`.
 
 Here they are:
 

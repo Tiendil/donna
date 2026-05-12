@@ -16,7 +16,7 @@ fsm_mode = "start"
 ```
 
 1. Read the specification `{{ donna.lib.view("../specs/design.donna.md") }}` if you haven't done it yet.
-2. Read the specification `{{ donna.lib.view("../../usage/artifacts.donna.md") }}` if you haven't done it yet.
+2. Read the artifact instructions by running `donna skill artifacts` if you haven't done it yet.
 3. `{{ donna.lib.goto("ensure_rfc_artifact_exists") }}`
 
 ## Ensure RFC artifact exists

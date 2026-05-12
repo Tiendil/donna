@@ -30,7 +30,7 @@ Artifact type tags:
 
 ## Instructions
 
-1. On start of the YOUR session you **MUST** read and understand instruction on using the Donna tool `{{ donna.lib.view("./usage/cli.donna.md") }}`. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
+1. On start of the YOUR session you **MUST** read and understand instruction on using the Donna tool by running `donna skill usage`. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
 2. If you need to perform a work with Donna, you **MUST** select an appropriate Donna workflow to perform the work and run it.
 3. If there is no appropriate workflow, ask the developer for a precise instructions on what to do.
 4. If you are executing a workflow operation and need to perform a complex action or changes, you SHOULD search for an appropriate workflow and run it as a child workflow — it is the intended way to use Donna.
@@ -39,7 +39,7 @@ Artifact type tags:
 
 ## Journaling
 
-Donna creates internal journal records for important workflow events, according to the description in `{{ donna.lib.view("./usage/cli.donna.md") }}`.
+Donna creates internal journal records for important workflow events, according to the description in `donna skill usage`.
 
 Journal records can be forwarded to a third-party tool by configuring `[journal].cmd` in `<project-root>/.donna/config.toml`.
 
