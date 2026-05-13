@@ -4,14 +4,14 @@ Donna is a CLI tool for orchestrating AI-agent work with project-local workflows
 
 Use this document as the first reference for command usage. For narrower topics, use:
 
-- `donna skill configuration` for `.donna/config.toml`.
-- `donna skill initialization` for creating or refreshing Donna workspace files.
+- `donna skill configuration` for `donna.toml`.
+- `donna skill initialization` for creating or refreshing Donna project files.
 - `donna skill artifacts` for artifact layout, discovery, and authoring rules.
 - `donna skill usage` for this command overview.
 
 ## Project Root
 
-Donna works inside a project root. If `--root/-r` is omitted, commands that load a workspace discover the project root by searching upward from the current directory for `.donna`.
+Donna works inside a project root. If `--root/-r` is omitted, commands that load a project discover the project root by searching upward from the current directory for `donna.toml`.
 
 Use `--root PATH` when running Donna from outside the project tree or when targeting a specific project:
 
@@ -19,7 +19,7 @@ Use `--root PATH` when running Donna from outside the project tree or when targe
 donna -p llm --root /path/to/project sessions status
 ```
 
-`donna skill ...` does not load a workspace and can run from any directory.
+`donna skill ...` does not load a project config and can run from any directory.
 
 ## Output Protocols
 
@@ -43,7 +43,7 @@ donna -p llm --root /path/to/project artifacts list '**'
 
 ## Skill Documents
 
-The `skill` command prints built-in agent documentation as plain Markdown. It does not require an initialized workspace.
+The `skill` command prints built-in agent documentation as plain Markdown. It does not require an initialized Donna project.
 
 Examples:
 
@@ -54,25 +54,25 @@ donna skill initialization
 donna skill artifacts
 ```
 
-Use these documents when an agent needs stable instructions before a workspace exists or when synced artifacts are not available.
+Use these documents when an agent needs stable instructions before `donna.toml` exists or when synced artifacts are not available.
 
-## Workspace Commands
+## Project Commands
 
-Workspace commands create or refresh Donna-owned files.
+Workspace commands create or refresh Donna-owned project files.
 
-Initialize a workspace in the current directory:
+Initialize Donna in the current directory:
 
 ```bash
 donna -p llm workspaces init
 ```
 
-Initialize a workspace in an explicit existing directory:
+Initialize Donna in an explicit existing directory:
 
 ```bash
 donna -p llm --root /path/to/project workspaces init
 ```
 
-Refresh synced Donna skills and specifications in an existing workspace:
+Refresh synced Donna skills and specifications in an existing Donna project:
 
 ```bash
 donna -p llm workspaces update
@@ -87,7 +87,7 @@ donna -p llm workspaces update --no-skills
 
 ## Session Commands
 
-All workflow execution happens in the active session. Session state lives under `<project-root>/.donna/session`.
+All workflow execution happens in the active session. Session state lives under the configured session directory, `.session/donna` by default.
 
 Start a new session:
 
@@ -124,7 +124,7 @@ donna -p llm sessions run @/.agents/donna/work/polish.donna.md
 Complete an action request by passing its id and the next operation id exactly as Donna instructed:
 
 ```bash
-donna -p llm sessions action-request-completed AR-12-x @/.donna/session/workflow.donna.md:next_step
+donna -p llm sessions action-request-completed AR-12-x @/.session/donna/workflow.donna.md:next_step
 ```
 
 ## Artifact Commands
@@ -188,7 +188,7 @@ donna -p llm sessions run @/.agents/donna/work/polish.donna.md
 
 ## Journal Forwarding
 
-Donna creates internal journal records for workflow events. To forward them to another tool, configure `[journal].cmd` in `<project-root>/.donna/config.toml`.
+Donna creates internal journal records for workflow events. To forward them to another tool, configure `[journal].cmd` in `<project-root>/donna.toml`.
 
 Example:
 

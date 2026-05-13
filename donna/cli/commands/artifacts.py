@@ -99,5 +99,5 @@ def validate(
 app.add_typer(
     artifacts_cli,
     name="artifacts",
-    help="Inspect and validate stored artifacts in the project workspace.",
+    help="Inspect and validate stored artifacts in the Donna project.",
 )

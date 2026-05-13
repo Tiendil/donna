@@ -6,7 +6,7 @@ kind = "donna.lib.workflow"
 start_operation_id = "start"
 ```
 
-This workflow plans the work required to implement a specified Design document. The RFC document SHOULD be used as a helper context. The result of this workflow is a new workflow stored as a `@/.donna/session/**` artifact under `<project-root>/.donna/session` with detailed steps to implement the designed changes.
+This workflow plans the work required to implement a specified Design document. The RFC document SHOULD be used as a helper context. The result of this workflow is a new workflow stored as a `@/.session/donna/**` artifact under `<project-root>/.session/donna` with detailed steps to implement the designed changes.
 
 ## Start Work
 
@@ -28,7 +28,7 @@ id = "prepare_workflow_artifact"
 kind = "donna.lib.request_action"
 ```
 
-1. If the name of the artifact is not specified explicitly, assume it to `@/.donna/session/plans/<short-id-equal-to-design-slug>.donna.md`.
+1. If the name of the artifact is not specified explicitly, assume it to `@/.session/donna/plans/<short-id-equal-to-design-slug>.donna.md`.
 2. Create a workflow with the next operations:
    - Start
    - A step for each action point in the RFC document and each item in the `Order of implementation` in Design document with the goal to minimize dependencies between steps and introduce changes incrementally.

@@ -41,7 +41,7 @@ When an agent invokes Donna, it SHOULD use the `llm` protocol (pass an `-p llm` 
 ### Project root
 
 `-r <project-root>` sets the project root explicitly for any command (long form: `--root`).
-If it is omitted, Donna discovers the project root by searching from the current working directory upwards for the `.donna` workspace directory.
+If it is omitted, Donna discovers the project root by searching from the current working directory upwards for `donna.toml`.
 Use this option when you run Donna from outside the project tree or when you want to target a specific project.
 
 ### Protocol cells
@@ -72,7 +72,7 @@ Donna renders cells differently, depending on the protocol used.
 
 There are three sets of commands:
 
-- `donna -p <protocol> workspaces …` — manages workspaces. Most-likely it will be used once per your project to initialize it.
+- `donna -p <protocol> workspaces …` — initializes and refreshes Donna project files. Most likely it will be used once per project.
 - `donna -p <protocol> sessions …` — manages sessions. You will use these commands to start, push forward, and manage your work.
 - `donna -p <protocol> artifacts …` — manages artifact discovery, reading, and validation.
 
@@ -83,9 +83,9 @@ Use:
 
 ### Workspaces
 
-Run `donna -p <protocol> workspaces init [<directory-path>]` to initialize Donna workspace in the given directory. If `<directory-path>` is omitted, Donna will initialize workspace in the current working directory.
+Run `donna -p <protocol> workspaces init [<directory-path>]` to initialize Donna in the given directory. If `<directory-path>` is omitted, Donna will initialize the current working directory.
 
-It is a one time operation you need to perform once per project to create a place where Donna will store all its data.
+It is a one time operation you need to perform once per project to create `donna.toml`, the configured session directory, and synced Donna fixtures.
 
 ### Starting sessions
 
@@ -107,7 +107,7 @@ After the session starts you MUST follow the next workflow to perform your work:
 3. Start chosen workflow by calling `donna -p <protocol> sessions run <workflow-id>`.
 4. Donna will output descriptions of all operations it performs to complete the work.
 5. Donna will output **action requests** that you MUST perform. You MUST follow these instructions precisely.
-6. When you done processing an action request, call `donna -p <protocol> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report request completion. `<next-full-operation-id>` MUST contain the full identifier of the next operation, for example `@/.donna/session/execute_rfc.donna.md:review_changes`.
+6. When you done processing an action request, call `donna -p <protocol> sessions action-request-completed <action-request-id> <next-full-operation-id>` to report request completion. `<next-full-operation-id>` MUST contain the full identifier of the next operation, for example `@/.session/donna/execute_rfc.donna.md:review_changes`.
 7. After you complete an action request, Donna will continue workflow execution and output what you need to do next.
 
 You MUST continue following Donna's instructions until the workflow is completed.
@@ -136,15 +136,15 @@ If Donna tells you there is no work left, you MUST inform the developer that the
 
 ### Working with artifacts
 
-An artifact is a markdown document with extra metadata stored in the project workspace.
+An artifact is a markdown document with extra metadata stored in the Donna project.
 
 Use the next commands to work with artifacts:
 
-- `donna -p <protocol> artifacts list [<artifact-pattern>]` — list all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, list all artifacts in the project workspace. Use this command when you need to find an artifact or see what artifacts are available.
+- `donna -p <protocol> artifacts list [<artifact-pattern>]` — list all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, list all artifacts in the Donna project. Use this command when you need to find an artifact or see what artifacts are available.
 - `donna -p <protocol> artifacts view <artifact-pattern>` — get the meaningful (rendered) content of all matching artifacts. This command shows the rendered information about each artifact. Use this command when you need to read artifact content.
-- `donna -p <protocol> artifacts validate [<artifact-pattern>]` — validate all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, validate all artifacts in the project workspace.
+- `donna -p <protocol> artifacts validate [<artifact-pattern>]` — validate all artifacts corresponding to the given pattern. If `<artifact-pattern>` is omitted, validate all artifacts in the Donna project.
 
-Donna does not mutate artifacts stored in the project workspace. Developers and external tools are responsible for creating, updating, moving, copying, or deleting artifacts before Donna reads or validates them.
+Donna does not mutate artifacts stored in the project. Developers and external tools are responsible for creating, updating, moving, copying, or deleting artifacts before Donna reads or validates them.
 
 Commands that accept an artifact pattern (`artifacts list`, `artifacts view`, `artifacts validate`) also accept `--predicate/-p <python-expression>` to filter by artifact primary section. The expression is evaluated as `bool` with `section` global available (for example: `--predicate '"workflow" in section.tags'`).
 
@@ -155,9 +155,9 @@ The format of `<artifact-pattern>` is as follows:
   - `*/intro.donna.md` — matches all artifacts with filename `intro.donna.md` exactly one directory below the project root.
   - `@/*/intro.donna.md` — equivalent full form.
 - `**` — double wildcard matches multiple levels in the rooted artifact path. Examples:
-  - `**/name.donna.md` — matches all artifacts with filename `name.donna.md` anywhere in the project workspace.
+  - `**/name.donna.md` — matches all artifacts with filename `name.donna.md` anywhere in the Donna project.
   - `@/**/intro.donna.md` — equivalent full form.
-  - `@/.donna/**` — matches all artifacts under `.donna`.
+  - `@/.session/donna/**` — matches all artifacts under the default configured session directory.
 
 CLI arguments MUST NOT use relative artifact paths like `./...` or `../../...`; use absolute `@/...` paths or rooted wildcard forms.
 
@@ -166,8 +166,7 @@ CLI arguments MUST NOT use relative artifact paths like `./...` or `../../...`; 
 Donna creates internal `JournalRecord` values for important workflow events.
 Donna does not expose a journal CLI command.
 
-To forward journal records to a third-party tool, configure the workspace
-`<project-root>/.donna/config.toml` file:
+To forward journal records to a third-party tool, configure `<project-root>/donna.toml`:
 
 ```toml
 [journal]

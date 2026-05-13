@@ -1,11 +1,11 @@
 import pathlib
 import shutil
 
-from donna.workspaces.config import DONNA_DIR_NAME, DONNA_WORLD_SESSION_DIR_NAME, project_dir
+from donna.workspaces.config import config, project_dir
 
 
 def dir() -> pathlib.Path:
-    return project_dir() / DONNA_DIR_NAME / DONNA_WORLD_SESSION_DIR_NAME
+    return project_dir() / config().session
 
 
 def ensure_dir() -> None:

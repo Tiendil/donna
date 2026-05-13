@@ -211,7 +211,7 @@ ArtifactSectionIdArgument = Annotated[
         parser=_parse_artifact_section_id,
         help=(
             "Artifact section ID in absolute project-root form 'artifact:section' "
-            "(e.g. '@/.donna/session/plans/artifact_id_filepaths.donna.md:finish')."
+            "(e.g. '@/.session/donna/plans/artifact_id_filepaths.donna.md:finish')."
         ),
     ),
 ]
@@ -239,7 +239,7 @@ RootOption = Annotated[
         exists=True,
         help=(
             "Optional project root directory. "
-            "If omitted, Donna discovers it by searching parent directories for the workspace."
+            "If omitted, Donna discovers it by searching parent directories for donna.toml."
         ),
     ),
 ]

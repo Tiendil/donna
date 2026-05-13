@@ -29,7 +29,7 @@ kind = "donna.lib.request_action"
 At this point, you SHOULD have a clear RFC to design.
 
 1. If you have an RFC artifact id in your context, view it and `{{ donna.lib.goto("prepare_design_artifact") }}`.
-2. If you have no RFC artifact id in your context, but you know it is in one of `{{ donna.lib.list("@/.donna/session/**") }}` artifacts, find and view it. Then `{{ donna.lib.goto("prepare_design_artifact") }}`.
+2. If you have no RFC artifact id in your context, but you know it is in one of `{{ donna.lib.list("@/.session/donna/**") }}` artifacts, find and view it. Then `{{ donna.lib.goto("prepare_design_artifact") }}`.
 3. If you have no RFC artifact id in your context, and you don't know where it is, ask the developer to provide the RFC artifact id or to create a new RFC. After you get it and view the artifact, `{{ donna.lib.goto("prepare_design_artifact") }}`.
 
 ## Prepare Design artifact
@@ -39,7 +39,7 @@ id = "prepare_design_artifact"
 kind = "donna.lib.request_action"
 ```
 
-1. If the name of the artifact is not specified explicitly, assume it to be `@/.donna/session/design/<short-problem-related-identifier>.donna.md`, where `<short-problem-related-identifier>` SHOULD correspond to the RFC slug.
+1. If the name of the artifact is not specified explicitly, assume it to be `@/.session/donna/design/<short-problem-related-identifier>.donna.md`, where `<short-problem-related-identifier>` SHOULD correspond to the RFC slug.
 2. Save the next template into the artifact, replace `<variables>` with appropriate values.
 
 ~~~

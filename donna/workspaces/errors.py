@@ -17,7 +17,7 @@ class WorkspaceConfigError(WorkspaceError):
     config_path: pathlib.Path
 
     def content_intro(self) -> str:
-        return f"Error in workspace config file '{self.config_path}'"
+        return f"Error in Donna config file '{self.config_path}'"
 
 
 class ConfigParseFailed(WorkspaceConfigError):
@@ -34,13 +34,13 @@ class ConfigValidationFailed(WorkspaceConfigError):
 
 class WorkspaceAlreadyInitialized(WorkspaceError):
     code: str = "donna.workspaces.workspace_already_initialized"
-    message: str = "Workspace already initialized at `{error.project_dir}`"
+    message: str = "Donna project config already exists at `{error.config_path}`"
     ways_to_fix: list[str] = [
-        "Continue using the existing workspace.",
-        "Remove the existing `.donna` directory if you want to reinitialize.",
+        "Continue using the existing project config.",
+        "Remove the existing `donna.toml` file if you want to reinitialize.",
         "Choose a different project directory.",
     ]
-    project_dir: pathlib.Path
+    config_path: pathlib.Path
 
 
 class JournalCommandConfigInvalid(WorkspaceError):
@@ -92,7 +92,7 @@ class ArtifactNotFound(ArtifactError):
     message: str = "Artifact `{error.artifact_id}` does not exist"
     ways_to_fix: list[str] = [
         "Check the artifact id for typos.",
-        "Ensure the artifact exists in the project workspace.",
+        "Ensure the artifact exists in the Donna project.",
     ]
 
 

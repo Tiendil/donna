@@ -37,11 +37,6 @@ class FilesystemRawArtifact(BaseEntity):
         return Ok(render_artifact_from_source(artifact_id, self.source_id, self.get_bytes(), render_context).unwrap())
 
 
-def _should_skip_directory(parts: list[str], name: str) -> bool:
-    # `.donna/tmp` contains scratch files and must not be treated as durable artifacts.
-    return parts == [".donna"] and name == "tmp"
-
-
 def _match_supported_extension(path: pathlib.Path, supported_extensions: set[str]) -> str | None:
     name = path.name.lower()
 
@@ -122,9 +117,6 @@ def walk_filesystem(filters: list["workspace_config.FileFilter"]) -> Iterator[pa
     def walk(node: pathlib.Path, parts: list[str]) -> Iterator[pathlib.Path]:  # noqa: CCR001
         for entry in sorted(node.iterdir(), key=lambda item: item.name):
             if entry.is_dir():
-                if _should_skip_directory(parts, entry.name):
-                    continue
-
                 next_parts = parts + [entry.name]
                 if not _required_filters_match_prefix(next_parts, filters):
                     continue

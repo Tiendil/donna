@@ -19,9 +19,8 @@ from donna.workspaces.sources.base import SourceConstructor
 if TYPE_CHECKING:
     from donna.protocol.modes import Mode
 
-DONNA_DIR_NAME = ".donna"
-DONNA_CONFIG_NAME = "config.toml"
-DONNA_WORLD_SESSION_DIR_NAME = "session"
+DONNA_CONFIG_NAME = "donna.toml"
+DONNA_DEFAULT_SESSION_DIR = pathlib.Path(".session") / "donna"
 
 
 class SourceConfig(BaseEntity):
@@ -98,9 +97,6 @@ def _default_sources() -> list[SourceConfig]:
 
 def _default_file_filters() -> list[FileFilter]:
     return [
-        FileFilter(
-            mode=FileFilterMode.include, pattern=ArtifactIdPattern.parse("@/.donna/session/**/*.donna.md").unwrap()
-        ),
         FileFilter(mode=FileFilterMode.include, pattern=ArtifactIdPattern.parse("@/.agents/**/*.donna.md").unwrap()),
         FileFilter(mode=FileFilterMode.ignore, pattern=ArtifactIdPattern.parse(".*/**").unwrap()),
         FileFilter(mode=FileFilterMode.include, pattern=ArtifactIdPattern.parse("**/*.donna.md").unwrap()),
@@ -109,6 +105,7 @@ def _default_file_filters() -> list[FileFilter]:
 
 
 class Config(BaseEntity):
+    session: pathlib.Path = DONNA_DEFAULT_SESSION_DIR
     sources: list[SourceConfig] = pydantic.Field(default_factory=_default_sources)
     file_filters: list[FileFilter] = pydantic.Field(default_factory=_default_file_filters)
     journal: JournalConfig = pydantic.Field(default_factory=JournalConfig)
@@ -133,6 +130,16 @@ class Config(BaseEntity):
             sources.append(primitive.construct_source(source_config))
 
         object.__setattr__(self, "_sources_instances", sources)
+        session_filter = FileFilter(mode=FileFilterMode.include, pattern=self.session_artifact_pattern())
+        if session_filter not in self.file_filters:
+            object.__setattr__(self, "file_filters", [session_filter, *self.file_filters])
+
+    def session_artifact_pattern(self) -> ArtifactIdPattern:
+        session_path = self.session.as_posix().strip("/")
+        if session_path in {"", "."}:
+            return ArtifactIdPattern.parse("@/**/*.donna.md").unwrap()
+
+        return ArtifactIdPattern.parse(f"@/{session_path}/**/*.donna.md").unwrap()
 
     @property
     def sources_instances(self) -> list[SourceConfigValue]:
@@ -172,7 +179,6 @@ class Workspace(BaseEntity):
     model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 
     root: pydantic.DirectoryPath
-    config_dir: pydantic.DirectoryPath
     config: Config
 
 
@@ -202,7 +208,6 @@ class GlobalConfig[V]():
 
 
 project_dir = GlobalConfig[pathlib.Path]()
-config_dir = GlobalConfig[pathlib.Path]()
 config = GlobalConfig[Config]()
 protocol: GlobalConfig["Mode"] = GlobalConfig()
 
@@ -210,9 +215,6 @@ protocol: GlobalConfig["Mode"] = GlobalConfig()
 def install_workspace(workspace: Workspace) -> None:
     if not project_dir.is_set():
         project_dir.set(pathlib.Path(workspace.root))
-
-    if not config_dir.is_set():
-        config_dir.set(pathlib.Path(workspace.config_dir))
 
     if not config.is_set():
         config.set(workspace.config)

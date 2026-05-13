@@ -1,0 +1,29 @@
+session = ".session/donna"
+cache_lifetime = 1.0
+
+[[sources]]
+kind = "donna.lib.sources.markdown"
+extension = ".donna.md"
+
+[[file_filters]]
+mode = "include"
+pattern = "@/.session/donna/**/*.donna.md"
+
+[[file_filters]]
+mode = "include"
+pattern = "@/.agents/**/*.donna.md"
+
+[[file_filters]]
+mode = "ignore"
+pattern = ".*/**"
+
+[[file_filters]]
+mode = "include"
+pattern = "**/*.donna.md"
+
+[[file_filters]]
+mode = "ignore"
+pattern = "**"
+
+[journal]
+cmd = ["./bin/taskwarior.sh", "log", "+journal", "+donna", "kind:event", "{message}"]
