@@ -38,7 +38,7 @@ donna -p llm sessions status
 The root option goes before the command:
 
 ```bash
-donna -p llm --root /path/to/project artifacts list '**'
+donna -p llm --root /path/to/project artifacts list
 ```
 
 ## Skill Documents
@@ -124,22 +124,10 @@ donna -p llm sessions action-request-completed AR-12-x @/.session/donna/workflow
 
 Artifacts are `*.donna.md` project files under Donna's configured `workflow_dirs`. Agents use artifacts to discover workflows, read documentation, and validate Donna-readable files.
 
-List all visible artifacts:
-
-```bash
-donna -p llm artifacts list '**'
-```
-
 List workflows:
 
 ```bash
-donna -p llm artifacts list '**' --predicate '"workflow" in section.tags'
-```
-
-View an artifact:
-
-```bash
-donna -p llm artifacts view '@/workflows/polish.donna.md'
+donna -p llm artifacts list
 ```
 
 Validate all visible artifacts:
@@ -148,10 +136,10 @@ Validate all visible artifacts:
 donna -p llm artifacts validate '**'
 ```
 
-Artifact patterns use `@/` for project-root paths. Recursive `**` patterns are allowed:
+Artifact patterns use `@/` for project-root paths. Recursive `**` patterns are allowed for commands that accept patterns:
 
 ```bash
-donna -p llm artifacts view '**/*.donna.md'
+donna -p llm artifacts validate '**/*.donna.md'
 ```
 
 ## Normal Agent Flow
@@ -166,7 +154,7 @@ donna -p llm sessions status
 3. If there is no active work and a workflow is needed, list workflows:
 
 ```bash
-donna -p llm artifacts list '**' --predicate '"workflow" in section.tags'
+donna -p llm artifacts list
 ```
 
 4. Start the selected workflow:

@@ -160,7 +160,7 @@ Commands you may need:
 
 - `donna workspaces init` — Initialize Donna in your project.
 - `donna sessions start` — start a new working session, remove everything from the previous session.
-- `donna artifacts list <pattern>` — list artifacts with short descriptions.
+- `donna artifacts list` — list workflows with short descriptions.
 
 Donna can send internal journal records to a third-party tool. Configure it in `donna.toml`:
 
@@ -248,13 +248,12 @@ Examples:
 - `@/workflows/rfc/request.donna.md`
 - `@/.session/donna/execute_rfc.donna.md:review_changes`
 
-You and agents can `list`, `view`, and `validate` artifacts.
+You and agents can `list` workflow artifacts and `validate` Donna artifacts.
 
-- `donna -p llm artifacts list [<pattern>]` — shows a short description from its h1 section.
-- `donna -p llm artifacts view <pattern>` — shows the full content of the artifact with proper rendering.
+- `donna -p llm artifacts list` — shows workflow descriptions from their h1 sections.
 - `donna -p llm artifacts validate [<pattern>]` — validates matching artifacts.
 
-Commands accept both precise artifact ids and glob patterns. Patterns may use absolute ids like `@/...` or rooted wildcard forms like `**/*.donna.md`.
+The `validate` command accepts both precise artifact ids and glob patterns. Patterns may use absolute ids like `@/...` or rooted wildcard forms like `**/*.donna.md`.
 
 Patterns allow using:
 
@@ -276,8 +275,7 @@ Currently, Donna supports one standard artifact type tag:
 
 - `workflow` — marks a workflow artifact — is set automatically by Donna.
 
-You can find all workflows with the command
-`donna -p llm artifacts list --predicate '"workflow" in section.tags'`.
+You can find all workflows with `donna -p llm artifacts list`.
 
 ## Sessions
 

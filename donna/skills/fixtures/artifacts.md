@@ -2,7 +2,7 @@
 
 Donna artifacts are project files that Donna can discover, render, validate, and execute as workflow input. They are usually Markdown files with the `.donna.md` extension.
 
-Donna reads artifacts from the project filesystem. It does not mutate project artifacts through `artifacts` commands. Developers and agents edit files directly, then ask Donna to list, view, or validate them.
+Donna reads artifacts from the project filesystem. It does not mutate project artifacts through `artifacts` commands. Developers and agents edit files directly, then ask Donna to list workflows or validate artifacts.
 
 ## Artifact Locations
 
@@ -22,41 +22,15 @@ workflows/rfc/request.donna.md
 
 Donna sees only `.donna.md` files under directories listed in `donna.toml:workflow_dirs`.
 
-## List Artifacts
-
-List all visible artifacts:
-
-```bash
-donna -p llm artifacts list '**'
-```
-
-List Donna Markdown artifacts:
-
-```bash
-donna -p llm artifacts list '**/*.donna.md'
-```
+## List Workflows
 
 List workflow artifacts:
 
 ```bash
-donna -p llm artifacts list '**' --predicate '"workflow" in section.tags'
+donna -p llm artifacts list
 ```
 
-## View Artifacts
-
-View rendered artifact content when you need information from an artifact:
-
-```bash
-donna -p llm artifacts view '@/workflows/polish.donna.md'
-```
-
-View all matching artifacts:
-
-```bash
-donna -p llm artifacts view '**/*.donna.md'
-```
-
-Agents should prefer rendered views for reading Donna artifacts. Read plain `.md` documentation files directly.
+Read artifact source files directly when you need details beyond the workflow introduction.
 
 ## Validate Artifacts
 
@@ -76,16 +50,16 @@ Run validation after creating or editing Donna artifacts.
 
 ## Artifact Patterns
 
-Use `@/` for project-root paths:
+Use `@/` for project-root paths in commands that accept artifact patterns:
 
 ```bash
-donna -p llm artifacts view '@/workflows/polish.donna.md'
+donna -p llm artifacts validate '@/workflows/polish.donna.md'
 ```
 
 Use recursive wildcards when the exact location is unknown:
 
 ```bash
-donna -p llm artifacts list '**/*.donna.md'
+donna -p llm artifacts validate '**/*.donna.md'
 ```
 
 Pattern examples:
@@ -166,22 +140,16 @@ Use direct file edits to create, update, move, or delete artifact files. Then us
 Recommended loop:
 
 1. Edit the artifact source file.
-2. View the rendered artifact:
-
-```bash
-donna -p llm artifacts view '@/specs/example.donna.md'
-```
-
-3. Validate the artifact:
+2. Validate the artifact:
 
 ```bash
 donna -p llm artifacts validate '@/specs/example.donna.md'
 ```
 
-4. If it is a workflow, list it with the workflow predicate:
+3. If it is a workflow, list it:
 
 ```bash
-donna -p llm artifacts list '**' --predicate '"workflow" in section.tags'
+donna -p llm artifacts list
 ```
 
 Keep artifact files concise. Put project-wide explanations in specifications and operational step-by-step instructions in workflows.

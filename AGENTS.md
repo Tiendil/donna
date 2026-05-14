@@ -10,7 +10,7 @@ Since this is the repository that contains the Donna project itself, you have di
 
 In all commands that use `donna`, you MUST replace `donna` with `./bin/donna.sh` when you run the command.
 
-For example, instead of `donna artifacts view '*:intro'` you MUST run `./bin/donna.sh artifacts view '*:intro'`.
+For example, instead of `donna artifacts list` you MUST run `./bin/donna.sh artifacts list`.
 
 ## Top priority tools
 

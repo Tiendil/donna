@@ -131,7 +131,7 @@ Use a smaller value when artifacts are edited rapidly by external tools. Use the
 After editing `donna.toml`, run:
 
 ```bash
-donna -p llm artifacts list '**'
+donna -p llm artifacts list
 donna -p llm artifacts validate '**'
 ```
 

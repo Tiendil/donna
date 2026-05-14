@@ -53,16 +53,10 @@ Verify the project config can load:
 donna -p llm sessions status
 ```
 
-List available artifacts:
-
-```bash
-donna -p llm artifacts list '**'
-```
-
 List available workflows:
 
 ```bash
-donna -p llm artifacts list '**' --predicate '"workflow" in section.tags'
+donna -p llm artifacts list
 ```
 
 Validate artifacts:

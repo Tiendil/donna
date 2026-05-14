@@ -29,40 +29,16 @@ def _log_operation_on_artifacts(
     return _log_artifact_operation(f"{message} `{pattern}` with predicate `{predicate.source}`")
 
 
-@artifacts_cli.command(
-    help=(
-        "List artifacts matching a pattern with the Donna artifact extension "
-        "and show their status summaries. Lists all artifacts by default."
-    )
-)
+@artifacts_cli.command(help="List available workflow artifacts and show their status summaries.")
 def list(
     typer_context: typer.Context,
-    pattern: ArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
-    predicate: PredicateOption = None,
 ) -> None:
     with command_context(typer_context) as command:
-        validate_supported_artifact_pattern(pattern)
-        _log_operation_on_artifacts("List artifacts", pattern, predicate)
+        _log_artifact_operation("List artifacts")
 
-        artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, predicate=predicate).unwrap()
+        artifacts = context().artifacts.list(DEFAULT_ARTIFACT_PATTERN, RENDER_CONTEXT_VIEW).unwrap()
 
         command.write_cells(artifact.node().status() for artifact in artifacts)
-
-
-@artifacts_cli.command(
-    help="Display artifacts matching a pattern or specific id that uses the Donna artifact extension."
-)
-def view(
-    typer_context: typer.Context,
-    pattern: ArtifactIdPatternArgument,
-    predicate: PredicateOption = None,
-) -> None:
-    with command_context(typer_context) as command:
-        validate_supported_artifact_pattern(pattern)
-        _log_operation_on_artifacts("View artifacts", pattern, predicate)
-
-        artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, predicate=predicate).unwrap()
-        command.write_cells(artifact.node().info() for artifact in artifacts)
 
 
 @artifacts_cli.command(
