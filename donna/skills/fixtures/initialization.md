@@ -45,7 +45,7 @@ Skip built-in skills:
 donna -p llm workspaces init --no-skills
 ```
 
-Skip synced Donna specs and workflows:
+Skip synced Donna documentation and workflows:
 
 ```bash
 donna -p llm workspaces init --no-specs
@@ -67,7 +67,7 @@ Refresh only built-in skills:
 donna -p llm workspaces update --no-specs
 ```
 
-Refresh only synced Donna specs and workflows:
+Refresh only synced Donna documentation and workflows:
 
 ```bash
 donna -p llm workspaces update --no-skills
@@ -105,4 +105,4 @@ donna -p llm artifacts validate '**'
 
 Initialize Donna only when the developer asks for it or when the task explicitly requires Donna and no `donna.toml` exists.
 
-Do not overwrite project-owned workflows or specifications by hand. Use `workspaces update` for built-in fixtures, and edit project-owned artifacts directly when the developer asks for project-specific behavior changes.
+Do not overwrite project-owned workflows or documentation by hand. Use `workspaces update` for built-in fixtures, and edit project-owned artifacts directly when the developer asks for project-specific behavior changes.

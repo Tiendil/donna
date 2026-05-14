@@ -1,9 +1,5 @@
 
 # Introduction to the Donna development
-
-```toml donna
-kind = "donna.lib.specification"
-```
 This document provides an introduction to the Donna project for agents and developers who want to understand how to work with the Donna codebase.
 
 ## Project overview
@@ -28,14 +24,14 @@ We may need coding agents on each step of the process, but there is no reason fo
 - **Artifact** — any text or binary document managed by Donna in the project filesystem; text artifacts are typically Markdown templates with metadata and are the primary units of knowledge and instructions.
 - **Artifact Section** — a part of a text artifact separated by markdown headers, has its own configuration block and semantics depending on section kind.
 - **Configuration block** — a fenced code block with the `donna` keyword (preferably TOML) that configures an artifact or its section.
-- **Directive** — a Jinja2 helper like `donna.lib.view(...)` or `donna.lib.goto(...)` that adds meta information or special behavior to an artifact.
+- **Directive** — a Jinja2 helper like `donna.lib.goto(...)` that adds meta information or special behavior to an artifact.
 - **Environment error** — a structured, user-facing error describing problem in the environment Donna operates in (e.g., missing artifact, invalid config). These errors are expected to be handled by agents or users.
 - **Head section** — the H1 section of a markdown artifact (before the first H2) that contains the primary description and mandatory config block.
 - **Internal error** — an error caused by a bug or unexpected state in Donna itself. These errors are not expected to be handled by agents or users.
 - **Protocol** — the output/interaction mode for Donna (e.g., `llm`) that governs CLI behavior and rendering.
 - **Session** — the active unit of work tracked by Donna; its state and artifacts live under `<project-root>/.session/donna`.
 - **Source** — the entity that implements logic of building an artifact from its raw data (text or binary).
-- **Specification** — a text artifact of kind `donna.lib.specification` that documents behavior, rules, or project guidance.
+- **Specification** — a normal Markdown document that describes behavior, rules, or project guidance.
 - **Story** — a semantically consistent scope of work within a session; a conceptual unit not directly represented in the tool.
 - **Tail section** — each H2 section of an artifact.
 - **Workspace** — the Donna project rooted at the directory containing `donna.toml`; runtime state lives under the configured session directory.
@@ -45,17 +41,17 @@ We may need coding agents on each step of the process, but there is no reason fo
 ## Points of interest
 
 - `./donna/` — a directory containing source code of project — `donna` CLI tool.
-- `./specs/` — a directory containing project-specific donna artifacts that is used to manage the work of AI agents on this project.
+- `./specs/` — a directory containing project-specific documentation and Donna workflows used to manage the work of AI agents on this project.
 - `./.session/donna/` — the configured temporary session directory used by Donna for runtime state and session artifacts.
 
-## Specifications of interest
+## Documentation of interest
 
 Since this is the repository that contains the Donna project itself, you MUST pay additional attention to which project-scoped artifact ids you are viewing.
 
-- `@/.agents/donna/**` contains synced Donna specifications and workflows related to the Donna tool behavior. You access them when you need to use Donna itself. You change the source fixtures when you make changes to Donna behavior.
-- `@/specs/**` contains project-specific specifications and workflows for developing the Donna codebase. You access them when you need to understand how to introduce changes to this repository. You change them when you change the development processes or documentation of the Donna project as a software project.
+- `@/.agents/donna/**` contains synced Donna documentation and workflows related to the Donna tool behavior. You access them when you need to use Donna itself. You change the source fixtures when you make changes to Donna behavior.
+- `@/specs/**` contains project-specific documentation and workflows for developing the Donna codebase. You access them when you need to understand how to introduce changes to this repository. You change them when you change the development processes or documentation of the Donna project as a software project.
 
-Check the next specifications:
+Check the next documents:
 
-- `{{ donna.lib.view("@/specs/core/top_level_architecture.donna.md") }}` when you need to introduce any changes in Donna or to research its code.
-- `{{ donna.lib.view("@/specs/core/error_handling.donna.md") }}` when you need to implement any new feature in Donna that may produce, process or propagate errors.
+- Read the `@/specs/core/top_level_architecture.md` file when you need to introduce any changes in Donna or to research its code.
+- Read the `@/specs/core/error_handling.md` file when you need to implement any new feature in Donna that may produce, process or propagate errors.

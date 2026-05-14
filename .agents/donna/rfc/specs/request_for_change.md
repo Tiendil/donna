@@ -1,9 +1,5 @@
 # Format of the Request for Change document
 
-```toml donna
-kind = "donna.lib.specification"
-```
-
 This document describes the format and structure of a Request for Change (RFC) document used to propose changes to a project by Donna workflows from `../**` namespace. This document is an input for a Design document creation.
 
 ## Overview
@@ -12,11 +8,11 @@ Donna introduces a group of workflows located in `../**` namespace that organize
 
 You create RFC documents to propose changes to the project.
 
-If not otherwise specified, RFC documents for the session MUST be stored as `@/.session/donna/rfc/<short-problem-related-identifier>.donna.md` artifacts under `<project-root>/.session/donna`.
+If not otherwise specified, RFC documents for the session MUST be stored as `@/.session/donna/rfc/<short-problem-related-identifier>.md` files under `<project-root>/.session/donna`.
 
 ## RFC structure
 
-The RFC document is Donna artifact (check `{{ donna.lib.view("../../usage/artifacts.donna.md") }}`) with the next structure:
+The RFC document is a Markdown file with the next structure:
 
 - **Primary section** — title and short description of the proposed change.
 - **Original description** — original description of the requested changes from the developer or parent workflow.
@@ -34,7 +30,7 @@ The RFC document is Donna artifact (check `{{ donna.lib.view("../../usage/artifa
 ## General language and format
 
 - You MUST follow [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.txt) for keywords like MUST, SHOULD, MAY, etc.
-- You MUST follow `{{ donna.lib.view("../../usage/artifacts.donna.md") }}`.
+- You MUST follow the guidance in the `../../usage/artifacts.md` file.
 - You MUST follow the structure specified in this document.
 
 ### List format
@@ -136,7 +132,7 @@ Examples:
 - Bad: `- Use clean architecture.`
 - Good: `- The solution MUST be compatible with Python 3.12.`
 - Good: `- The solution MUST NOT introduce new runtime dependencies.`
-- Good: `- The solution MUST follow the specification ../../../../specs/abc.donna.md`
+- Good: `- The solution MUST follow the specification ../../../../specs/abc.md`
 - Good: `MUST not change public CLI flags`
 
 ## `Requirements` section
@@ -216,7 +212,7 @@ Examples:
 - Bad: `- Verify that authentication works correctly.`
 - Bad: `- Review the implementation manually.`
 - Good: `- Run test suite `tests/auth/test_login.py`; all tests MUST pass.`
-- Good: `- Inspect artifact `../../../../specs/authentication.donna.md`; it MUST exist and contain section "Login flow".`
+- Good: `- Inspect artifact `../../../../specs/authentication.md`; it MUST exist and contain section "Login flow".`
 - Good: `- Execute CLI command `tool login` with invalid credentials; command MUST exit with non-zero code.`
 
 ## `Deliverables` section
@@ -238,7 +234,7 @@ Examples:
 - Bad: `- Implement authentication code`
 - Bad: `- Refactor auth module.`
 - Good: `- Module app/auth/authentication.py exists.`
-- Good: `- Donna artifact ../../../../specs/authentication.donna.md exists.`
+- Good: `- Markdown document ../../../../specs/authentication.md exists.`
 - Good: `- Test suite tests/auth/ exists.`
 
 ## `Action items` section
@@ -259,7 +255,7 @@ Examples:
 - Bad: `- Work on authentication.`
 - Bad: `- Improve security everywhere.`
 - Bad: `- Fix the bugs A`
-- Good: `- Create an artifact ../../../../specs/authentication.donna.md with sections "Login flow" and "Token lifecycle".`
+- Good: `- Create an artifact ../../../../specs/authentication.md with sections "Login flow" and "Token lifecycle".`
 - Good: `- Add test file tests/auth/test_login.py covering invalid credential cases.`
 - Good: `- Implement test tests/auth/test_login.py:TestLogin:test_invalid_credentials.`
 - Good: `- Update CLI help text to include login command description.`

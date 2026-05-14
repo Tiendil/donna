@@ -20,8 +20,8 @@ kind = "donna.lib.request_action"
 fsm_mode = "start"
 ```
 
-1. Read the specification `{{ donna.lib.view("../../usage/artifacts.donna.md") }}` if you haven't done it yet.
-2. Read the specification `{{ donna.lib.view("../specs/report.donna.md") }}` if you haven't done it yet.
+1. Read the `../../usage/artifacts.md` file if you haven't done it yet.
+2. Read the `../specs/report.md` file if you haven't done it yet.
 3. `{{ donna.lib.goto("ensure_problem_description_exists") }}`
 
 ## Ensure problem description exists
@@ -44,8 +44,8 @@ id = "prepare_artifact"
 kind = "donna.lib.request_action"
 ```
 
-1. Based on the problem description you have, suggest an artifact name in the format `@/.session/donna/research/<short-problem-related-identifier>.donna.md`. `<short-problem-related-identifier>` MUST be unique within the session.
-{# TODO: we can add donna.lib.list('@/.session/donna/**') here as the command to list all session artifacts #}
+1. Based on the problem description you have, suggest an artifact name in the format `@/.session/donna/research/<short-problem-related-identifier>.md`. `<short-problem-related-identifier>` MUST be unique within the session.
+{# TODO: we can point agents at @/.session/donna/** when they need to inspect session files. #}
 2. Create the artifact and specify an original problem description in it.
 3. `{{ donna.lib.goto("formalize_research") }}`
 

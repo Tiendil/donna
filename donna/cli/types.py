@@ -176,7 +176,7 @@ ArtifactIdArgument = Annotated[
         parser=_parse_artifact_id,
         help=(
             "Artifact ID in absolute project-root form with a supported source "
-            "extension (e.g., '@/specs/intro.donna.md')."
+            "extension (e.g., '@/specs/work/polish.donna.md')."
         ),
     ),
 ]

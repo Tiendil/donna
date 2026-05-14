@@ -1,10 +1,6 @@
 
 # Error handling
 
-```toml donna
-kind = "donna.lib.specification"
-```
-
 This document describes how Donna handles errors that may occur during its operation, including error propagation, logging, and recovery strategies.
 
 ## Error kinds

@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 
 class InternalError(core_errors.InternalError):
-    """Base class for internal errors in donna.primitives.operations.run_script."""
+    """Base class for internal errors in donna.primitives.sections.run_script."""
 
 
 class RunScriptMissingGotoOnSuccess(ArtifactValidationError):

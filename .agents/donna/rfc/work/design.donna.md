@@ -5,7 +5,7 @@ kind = "donna.lib.workflow"
 start_operation_id = "start"
 ```
 
-This workflow creates a Design document artifact based on an RFC and aligned with `../specs/design.donna.md`.
+This workflow creates a Design document artifact based on an RFC and aligned with `../specs/design.md`.
 
 ## Start Work
 
@@ -15,8 +15,8 @@ kind = "donna.lib.request_action"
 fsm_mode = "start"
 ```
 
-1. Read the specification `{{ donna.lib.view("../specs/design.donna.md") }}` if you haven't done it yet.
-2. Read the specification `{{ donna.lib.view("../../usage/artifacts.donna.md") }}` if you haven't done it yet.
+1. Read the `../specs/design.md` file if you haven't done it yet.
+2. Read the `../../usage/artifacts.md` file if you haven't done it yet.
 3. `{{ donna.lib.goto("ensure_rfc_artifact_exists") }}`
 
 ## Ensure RFC artifact exists
@@ -28,26 +28,22 @@ kind = "donna.lib.request_action"
 
 At this point, you SHOULD have a clear RFC to design.
 
-1. If you have an RFC artifact id in your context, view it and `{{ donna.lib.goto("prepare_design_artifact") }}`.
-2. If you have no RFC artifact id in your context, but you know it is in one of `{{ donna.lib.list("@/.session/donna/**") }}` artifacts, find and view it. Then `{{ donna.lib.goto("prepare_design_artifact") }}`.
-3. If you have no RFC artifact id in your context, and you don't know where it is, ask the developer to provide the RFC artifact id or to create a new RFC. After you get it and view the artifact, `{{ donna.lib.goto("prepare_design_artifact") }}`.
+1. If you have an RFC artifact id in your context, view it and `{{ donna.lib.goto("prepare_design_document") }}`.
+2. If you have no RFC artifact id in your context, but you know it is in one of the files matching `@/.session/donna/**`, find and view it. Then `{{ donna.lib.goto("prepare_design_document") }}`.
+3. If you have no RFC artifact id in your context, and you don't know where it is, ask the developer to provide the RFC artifact id or to create a new RFC. After you get it and view the artifact, `{{ donna.lib.goto("prepare_design_document") }}`.
 
-## Prepare Design artifact
+## Prepare Design document
 
 ```toml donna
-id = "prepare_design_artifact"
+id = "prepare_design_document"
 kind = "donna.lib.request_action"
 ```
 
-1. If the name of the artifact is not specified explicitly, assume it to be `@/.session/donna/design/<short-problem-related-identifier>.donna.md`, where `<short-problem-related-identifier>` SHOULD correspond to the RFC slug.
+1. If the name of the artifact is not specified explicitly, assume it to be `@/.session/donna/design/<short-problem-related-identifier>.md`, where `<short-problem-related-identifier>` SHOULD correspond to the RFC slug.
 2. Save the next template into the artifact, replace `<variables>` with appropriate values.
 
 ~~~
 # <Title>
-
-```toml donna
-kind = "donna.lib.specification"
-```
 
 <short description of the proposed design>
 
@@ -81,10 +77,10 @@ id = "initial_fill"
 kind = "donna.lib.request_action"
 ```
 
-1. Read the specification `{{ donna.lib.view("../specs/design.donna.md") }}` if you haven't done it yet.
+1. Read the `../specs/design.md` file if you haven't done it yet.
 2. Read the RFC artifact selected in the previous step if you haven't done it yet.
 3. Analyze the project if needed to understand the requested change context.
-4. Fill in all sections of the Design draft artifact.
+4. Fill in all sections of the Design draft document.
 5. Ensure the first item in `Inputs` section is the RFC artifact id.
 6. `{{ donna.lib.goto("review_design_format") }}`
 
@@ -95,8 +91,8 @@ id = "review_design_format"
 kind = "donna.lib.request_action"
 ```
 
-1. List mismatches between the Design artifact and the Design specification `{{ donna.lib.view("../specs/design.donna.md") }}`.
-2. For each mismatch, make necessary edits to the Design draft artifact to ensure compliance.
+1. List mismatches between the Design artifact and the specification in the `../specs/design.md` file.
+2. For each mismatch, make necessary edits to the Design draft document to ensure compliance.
 3. `{{ donna.lib.goto("review_design_content") }}`
 
 ## Review Design Content
@@ -106,8 +102,8 @@ id = "review_design_content"
 kind = "donna.lib.request_action"
 ```
 
-1. Read the Design document and identify gaps, inconsistencies, or areas for improvement in accordance with the RFC and current project context. Use `{{ donna.lib.view("../../research/work/research.donna.md") }}` workflow if you need to make a complex decision.
-2. Make necessary edits to the Design draft artifact to address identified issues.
+1. Read the Design document and identify gaps, inconsistencies, or areas for improvement in accordance with the RFC and current project context. Use the workflow in the `../../research/work/research.donna.md` file if you need to make a complex decision.
+2. Make necessary edits to the Design draft document to address identified issues.
 3. If there were changes made on this step or the previous `review_design_format` step `{{ donna.lib.goto("review_design_format") }}`.
 4. If no changes were made, `{{ donna.lib.goto("finish") }}`.
 

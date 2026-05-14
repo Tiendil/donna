@@ -8,15 +8,15 @@ Donna reads artifacts from the project filesystem. It does not mutate project ar
 
 The common artifact areas are:
 
-- `<project-root>/specs`: project-owned specifications and workflows.
-- `<project-root>/.agents/donna`: synced built-in Donna specs and workflows.
+- `<project-root>/specs`: project-owned documentation and workflows.
+- `<project-root>/.agents/donna`: synced built-in Donna documentation and workflows.
 - `<project-root>/.session/donna`: session artifacts and active workflow state.
 
 Example:
 
 ```text
-specs/intro.donna.md
-.agents/donna/work/polish.donna.md
+specs/work/polish.donna.md
+.agents/donna/rfc/work/request.donna.md
 .session/donna/current_task.donna.md
 ```
 
@@ -30,10 +30,10 @@ List all visible artifacts:
 donna -p llm artifacts list '**'
 ```
 
-List introductions:
+List Donna Markdown artifacts:
 
 ```bash
-donna -p llm artifacts list '**/intro.donna.md'
+donna -p llm artifacts list '**/*.donna.md'
 ```
 
 List workflow artifacts:
@@ -47,23 +47,23 @@ donna -p llm artifacts list '**' --predicate '"workflow" in section.tags'
 View rendered artifact content when you need information from an artifact:
 
 ```bash
-donna -p llm artifacts view '@/specs/intro.donna.md'
+donna -p llm artifacts view '@/specs/work/polish.donna.md'
 ```
 
-View all matching introductions:
+View all matching artifacts:
 
 ```bash
-donna -p llm artifacts view '**/intro.donna.md'
+donna -p llm artifacts view '**/*.donna.md'
 ```
 
-Agents should prefer rendered views for reading. Read source files directly only when editing the artifact or investigating rendering problems.
+Agents should prefer rendered views for reading Donna artifacts. Read plain `.md` documentation files directly.
 
 ## Validate Artifacts
 
 Validate one artifact:
 
 ```bash
-donna -p llm artifacts validate '@/specs/intro.donna.md'
+donna -p llm artifacts validate '@/specs/work/polish.donna.md'
 ```
 
 Validate all visible artifacts:
@@ -79,7 +79,7 @@ Run validation after creating or editing Donna artifacts.
 Use `@/` for project-root paths:
 
 ```bash
-donna -p llm artifacts view '@/specs/core/top_level_architecture.donna.md'
+donna -p llm artifacts view '@/specs/work/polish.donna.md'
 ```
 
 Use recursive wildcards when the exact location is unknown:
@@ -91,32 +91,23 @@ donna -p llm artifacts list '**/*.donna.md'
 Pattern examples:
 
 - `@/*.donna.md`: Donna Markdown artifacts directly under the project root.
-- `@/**/intro.donna.md`: any introduction artifact.
+- `@/**/polish.donna.md`: any artifact named `polish.donna.md`.
 - `@/.agents/donna/**`: synced Donna artifacts.
 - `@/.session/donna/**`: session artifacts.
 
-Do not pass relative filesystem paths such as `./specs/intro.donna.md`. Use `@/specs/intro.donna.md`.
+Do not pass relative filesystem paths such as `./specs/work/polish.donna.md`. Use `@/specs/work/polish.donna.md`.
 
 ## Creating Artifacts
 
-Create artifacts as source files in an included location. A minimal specification artifact:
+Create normal documentation as plain Markdown files. A minimal documentation file:
 
 ````markdown
 # Example Specification
 
-```toml donna
-kind = "donna.lib.specification"
-tags = ["specification"]
-```
-
-This artifact documents one stable project rule.
+This document describes one stable project rule.
 ````
 
-After creating it, validate:
-
-```bash
-donna -p llm artifacts validate '@/specs/example.donna.md'
-```
+Documentation files are not Donna artifacts and do not need artifact validation.
 
 ## Creating Workflows
 

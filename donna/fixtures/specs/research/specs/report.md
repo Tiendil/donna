@@ -1,22 +1,18 @@
 # Format of the Research Report document
 
-```toml donna
-kind = "donna.lib.specification"
-```
-
 This document describes the format and structure of a Research Report document used by Donna workflows from `../**` namespace.
 
 ## Overview
 
 Donna introduces a group of workflows located in `../**` namespace that organize the process of researching a problem, collecting information, analyzing it, synthesizing options, and producing a final solution.
 
-Session-related research artifacts MUST be stored as `@/.session/donna/research/<short-problem-related-identifier>.donna.md`, unless the developer or parent workflow specifies a different location. The `<short-problem-related-identifier>` MUST be unique within the session.
+Session-related research documents MUST be stored as `@/.session/donna/research/<short-problem-related-identifier>.md`, unless the developer or parent workflow specifies a different location. The `<short-problem-related-identifier>` MUST be unique within the session.
 
 The agent (via workflows) creates the artifact and updates it iteratively as the research process progresses.
 
 ## Research report structure
 
-The research report is a Donna artifact (check `donna skill artifacts`) with the next structure:
+The research report is a Markdown file with the next structure:
 
 - **Primary section** -- title and short description of the research problem.
 - **Original problem description** -- original problem statement from the developer or parent workflow.

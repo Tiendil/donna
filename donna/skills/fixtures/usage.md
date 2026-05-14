@@ -72,7 +72,7 @@ Initialize Donna in an explicit existing directory:
 donna -p llm --root /path/to/project workspaces init
 ```
 
-Refresh synced Donna skills and specifications in an existing Donna project:
+Refresh synced Donna skills and documentation in an existing Donna project:
 
 ```bash
 donna -p llm workspaces update
@@ -129,7 +129,7 @@ donna -p llm sessions action-request-completed AR-12-x @/.session/donna/workflow
 
 ## Artifact Commands
 
-Artifacts are project files admitted by Donna's configured sources and file filters. Agents use artifacts to discover workflows, read specifications, and validate Donna-readable files.
+Artifacts are project files admitted by Donna's configured sources and file filters. Agents use artifacts to discover workflows, read documentation, and validate Donna-readable files.
 
 List all visible artifacts:
 
@@ -146,7 +146,7 @@ donna -p llm artifacts list '**' --predicate '"workflow" in section.tags'
 View an artifact:
 
 ```bash
-donna -p llm artifacts view '@/specs/intro.donna.md'
+donna -p llm artifacts view '@/specs/work/polish.donna.md'
 ```
 
 Validate all visible artifacts:
@@ -158,7 +158,7 @@ donna -p llm artifacts validate '**'
 Artifact patterns use `@/` for project-root paths. Recursive `**` patterns are allowed:
 
 ```bash
-donna -p llm artifacts view '**/intro.donna.md'
+donna -p llm artifacts view '**/*.donna.md'
 ```
 
 ## Normal Agent Flow

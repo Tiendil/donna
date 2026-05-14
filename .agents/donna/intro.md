@@ -1,8 +1,4 @@
 # Introduction to the Donna tool
-
-```toml donna
-kind = "donna.lib.specification"
-```
 This document provides an introduction to the Donna — a CLI tool that helps manage the work of AI agents like Codex.
 
 ## Overview
@@ -19,27 +15,18 @@ The core idea is that most of high-level workflows are more algorithmic than it 
 
 We may need coding agents on the each step of the process, but there no reason for agents to manage the whole grooming loop by themselves — it take longer time, spends tokens and may lead to confusion of agents.
 
-## Artifact Tags
-
-To simplify searching for artifacts by their semantics, Donna allows tagging artifacts with semantically valuable keywords. The synced Donna artifacts addressed under `**` use the next set of tags.
-
-Artifact type tags:
-
-- `workflow` — workflow artifact — is set automatically by Donna.
-- `specification` — specification artifact — is set automatically by Donna.
-
 ## Instructions
 
-1. On start of the YOUR session you **MUST** read and understand instruction on using the Donna tool `{{ donna.lib.view("./usage/cli.donna.md") }}`. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
+1. On start of the YOUR session you **MUST** read and understand instructions on using the Donna tool in the `./usage/cli.md` file. It **MUST** be a one time operation. Do not repeat it unless you forget how to use the tool.
 2. If you need to perform a work with Donna, you **MUST** select an appropriate Donna workflow to perform the work and run it.
 3. If there is no appropriate workflow, ask the developer for a precise instructions on what to do.
 4. If you are executing a workflow operation and need to perform a complex action or changes, you SHOULD search for an appropriate workflow and run it as a child workflow — it is the intended way to use Donna.
-5. Run to list all workflows: `{{ donna.lib.list("**", predicate='"workflow" in section.tags') }}`
-6. Run to list all specifications: `{{ donna.lib.list("**", predicate='"specification" in section.tags') }}`
+5. To find workflows, read the following files: `**/*.donna.md`.
+6. To find documentation, read the following files: `**/*.md`.
 
 ## Journaling
 
-Donna creates internal journal records for important workflow events, according to the description in `{{ donna.lib.view("./usage/cli.donna.md") }}`.
+Donna creates internal journal records for important workflow events, according to the description in the `./usage/cli.md` file.
 
 Journal records can be forwarded to a third-party tool by configuring `[journal].cmd` in `<project-root>/donna.toml`.
 

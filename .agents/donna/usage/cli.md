@@ -1,9 +1,5 @@
 # Donna Usage Instructions
 
-```toml donna
-kind = "donna.lib.specification"
-```
-
 This document describes how agents MUST use Donna CLI to manage and perform their workflows.
 
 **Agents MUST follow the instructions and guidelines outlined in this document precisely.**
@@ -152,11 +148,11 @@ The format of `<artifact-pattern>` is as follows:
 
 - full artifact identifier: `@/...`
 - `*` — single wildcard matches a single level in the rooted artifact path. Examples:
-  - `*/intro.donna.md` — matches all artifacts with filename `intro.donna.md` exactly one directory below the project root.
-  - `@/*/intro.donna.md` — equivalent full form.
+  - `*/work.donna.md` — matches all artifacts with filename `work.donna.md` exactly one directory below the project root.
+  - `@/*/work.donna.md` — equivalent full form.
 - `**` — double wildcard matches multiple levels in the rooted artifact path. Examples:
   - `**/name.donna.md` — matches all artifacts with filename `name.donna.md` anywhere in the Donna project.
-  - `@/**/intro.donna.md` — equivalent full form.
+  - `@/**/name.donna.md` — equivalent full form.
   - `@/.session/donna/**` — matches all artifacts under the default configured session directory.
 
 CLI arguments MUST NOT use relative artifact paths like `./...` or `../../...`; use absolute `@/...` paths or rooted wildcard forms.
@@ -202,7 +198,7 @@ external journal command is configured.
 
   1. Direct instructions from the developer.
   2. `AGENTS.md` document.
-  3. Project-relative specifications under `../../../specs/**` or `../**`.
+  3. Project-relative documentation under `../../../specs/**` or `../**`.
   4. This document.
 
 **All Donna CLI commands MUST include an explicit protocol selection using `-p <protocol>`.** Like `donna -p llm <command>`.

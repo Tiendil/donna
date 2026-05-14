@@ -1,9 +1,5 @@
 # Default Text Artifacts Behavior
 
-```toml donna
-kind = "donna.lib.specification"
-```
-
 This document describes the default format and behavior of Donna's text artifacts.
 This format and behavior is what should be expected by default from an artifact if not specified otherwise.
 
@@ -22,7 +18,7 @@ To get information from the artifact, developers, agents and Donna view one of i
 
 **If you need an information from the artifact, you MUST view its representation**. Artifact sources are only for editing.
 
-Read the specification `{{ donna.lib.view("./cli.donna.md") }}` to learn how to work with artifacts via Donna CLI.
+Read the `./cli.md` file to learn how to work with artifacts via Donna CLI.
 
 ## Source Format and Rendering
 
@@ -32,12 +28,10 @@ When rendering the artifact, Donna processes the Jinja2 template with a predefin
 
 **Artifact source should not use Jinja2 inheritance features** like `{{ "{% extends %}" }}` and `{{ "{% block %}" }}`.
 
-Donna provides a set of special directives that can and MUST be used in the artifact source to enhance its behavior. Some of these directives are valid for all artifacts, some are valid only for specific section kinds.
+Donna provides a set of special directives that can and MUST be used in workflow artifact sources to enhance their behavior. Some of these directives are valid for all artifacts, some are valid only for specific section kinds.
 
 Here are some examples:
 
-- `{{ "{{ donna.lib.view(<artifact-id-pattern>) }}" }}` — references another artifact (supports `*` and `**` wildcard patterns). In `view`/`execute` modes it renders an exact CLI command to view the artifact; in `analysis` mode it renders a `$$donna ... $$` marker used for internal parsing.
-- `{{ "{{ donna.lib.list(<artifact-id-pattern>) }}" }}` — references artifact listing by pattern (supports `*` and `**` wildcard patterns). In `view`/`execute` modes it renders an exact CLI command to list artifacts; in `analysis` mode it renders a `$$donna ... $$` marker used for internal parsing.
 - `{{ "{{ donna.lib.goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. In `view`/`execute` modes it renders an exact CLI command to advance the workflow; in `analysis` mode it renders a `$$donna goto ... $$` marker used to extract workflow transitions.
 
 ## Jinja2 rendering
@@ -117,27 +111,24 @@ Artifacts can include semantic tags via a `tags` field in the section configurat
 
 Tags are used for deterministic artifact filtering and discovery (for example, via `donna -p <protocol> artifacts list ... --predicate '"workflow" in section.tags'`). Tags are typically attached to the primary section and describe the artifact as a whole.
 
-The canonical list of standard tags is documented in `../intro.donna.md`.
+The canonical list of standard tags is documented in `../intro.md`.
 
 ## Section Kinds, Their Formats and Behaviors
 
 ### Header section
 
-Header section MUST contain a config block with a `kind` property. The `kind` MUST be a full Python import path pointing to the primary section kind instance.
+Donna artifact header sections MUST contain a config block with a `kind` property. The `kind` MUST be a full Python import path pointing to the primary section kind instance.
 
 Example (`donna` keyword skipped for examples):
 
 ```toml
-kind = "donna.lib.specification"
+kind = "donna.lib.workflow"
+start_operation_id = "start_operation"
 ```
 
 Header section MUST also contain short human-readable description of the artifact outside of the config block.
 
-### Kind: Specification
-
-Specification artifacts describe various aspects of the project in a structured way.
-
-Currently there is no additional structure or semantics for this kind of artifact.
+Plain Markdown documentation does not need a Donna config block and should use the `.md` extension.
 
 ### Kind: Workflow
 
@@ -265,7 +256,5 @@ Donna provides multiple directives that MUST be used in the artifact source to e
 
 Here they are:
 
-1. `{{ "{{ donna.lib.view(<artifact-id-pattern>) }}" }}` — references another artifact (supports `*` and `**` wildcard patterns). In `view`/`execute` modes it renders an exact CLI command to view the artifact; in `analysis` mode it renders a `$$donna ... $$` marker.
-2. `{{ "{{ donna.lib.list(<artifact-id-pattern>) }}" }}` — references artifact listing by pattern (supports `*` and `**` wildcard patterns). In `view`/`execute` modes it renders an exact CLI command to list artifacts; in `analysis` mode, it renders a `$$donna ... $$` marker.
-3. `{{ "{{ donna.lib.goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. In `view`/`execute` modes it renders an exact CLI command to advance the workflow; in `analysis` mode, it renders a `$$donna goto ... $$` marker used for transition extraction.
-4. `{{ "{{ donna.lib.task_variable(<variable_name>) }}" }}` — in `view` mode renders a placeholder note about task-variable substitution, in `execute` mode renders the actual task-context value (or an explicit error marker if missing), and in `analysis` mode renders a `$$donna task_variable ... $$` marker.
+1. `{{ "{{ donna.lib.goto(<workflow-operation-id>) }}" }}` — references the next workflow operation to execute. In `view`/`execute` modes it renders an exact CLI command to advance the workflow; in `analysis` mode, it renders a `$$donna goto ... $$` marker used for transition extraction.
+2. `{{ "{{ donna.lib.task_variable(<variable_name>) }}" }}` — in `view` mode renders a placeholder note about task-variable substitution, in `execute` mode renders the actual task-context value (or an explicit error marker if missing), and in `analysis` mode renders a `$$donna task_variable ... $$` marker.

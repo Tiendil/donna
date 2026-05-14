@@ -18,7 +18,7 @@ fsm_mode = "start"
 
 1. Read the Design document that the developer or parent workflow wants you to implement.
 2. Read the RFC document that the developer or parent workflow wants you to implement, if it exists.
-3. Read the specification `{{ donna.lib.view("../../usage/artifacts.donna.md") }}` if you haven't done it yet.
+3. Read the `../../usage/artifacts.md` file if you haven't done it yet.
 4. `{{ donna.lib.goto("prepare_workflow_artifact") }}`
 
 ## Prepare workflow artifact
