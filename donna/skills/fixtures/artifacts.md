@@ -9,7 +9,7 @@ Donna reads artifacts from the project filesystem. It does not mutate project ar
 The common artifact areas are:
 
 - `<project-root>/workflows`: project-owned workflows.
-- `<project-root>/.agents/donna`: synced built-in Donna documentation.
+- `<project-root>/.agents/donna`: project-local Donna documentation, when present.
 - `<project-root>/.session/donna`: session artifacts and active workflow state.
 
 Example:

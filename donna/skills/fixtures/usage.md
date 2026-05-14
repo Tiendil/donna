@@ -5,7 +5,7 @@ Donna is a CLI tool for orchestrating AI-agent work with project-local workflows
 Use this document as the first reference for command usage. For narrower topics, use:
 
 - `donna skill configuration` for `donna.toml`.
-- `donna skill initialization` for creating or refreshing Donna project files.
+- `donna skill initialization` for creating or checking Donna project files.
 - `donna skill artifacts` for artifact layout, discovery, and authoring rules.
 - `donna skill usage` for this command overview.
 
@@ -58,7 +58,7 @@ Use these documents when an agent needs stable instructions before `donna.toml` 
 
 ## Project Commands
 
-Workspace commands create or refresh Donna-owned project files.
+Workspace commands create or check Donna project configuration.
 
 Initialize Donna in the current directory:
 
@@ -72,17 +72,10 @@ Initialize Donna in an explicit existing directory:
 donna -p llm --root /path/to/project workspaces init
 ```
 
-Refresh synced Donna skills and documentation in an existing Donna project:
+Check an existing Donna project:
 
 ```bash
 donna -p llm workspaces update
-```
-
-Use `--no-skills` or `--no-specs` when only one fixture family should be changed:
-
-```bash
-donna -p llm workspaces update --no-specs
-donna -p llm workspaces update --no-skills
 ```
 
 ## Session Commands

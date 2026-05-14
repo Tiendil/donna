@@ -40,15 +40,17 @@ We may need coding agents on each step of the process, but there is no reason fo
 ## Points of interest
 
 - `./donna/` — a directory containing source code of project — `donna` CLI tool.
-- `./specs/` — a directory containing project-specific documentation and Donna workflows used to manage the work of AI agents on this project.
+- `./specs/` — a directory containing project-specific documentation.
+- `./workflows/` — a directory containing project-specific Donna workflows used to manage the work of AI agents on this project.
 - `./.session/donna/` — the configured temporary session directory used by Donna for runtime state and session artifacts.
 
 ## Documentation of interest
 
 Since this is the repository that contains the Donna project itself, you MUST pay additional attention to which project-scoped artifact ids you are viewing.
 
-- `@/.agents/donna/**` contains synced Donna documentation and workflows related to the Donna tool behavior. You access them when you need to use Donna itself. You change the source fixtures when you make changes to Donna behavior.
-- `@/specs/**` contains project-specific documentation and workflows for developing the Donna codebase. You access them when you need to understand how to introduce changes to this repository. You change them when you change the development processes or documentation of the Donna project as a software project.
+- `@/.agents/donna/**` contains local Donna documentation for this repository.
+- `@/specs/**` contains project-specific documentation for developing the Donna codebase. You access it when you need to understand how to introduce changes to this repository.
+- `@/workflows/**` contains project-specific workflows for developing the Donna codebase. You change them when you change the development processes of the Donna project as a software project.
 
 Check the next documents:
 

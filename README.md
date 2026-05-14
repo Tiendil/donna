@@ -143,10 +143,6 @@ donna workspaces init
 Donna will:
 
 - Create `donna.toml` in your project root and the configured session directory.
-- Sync bundled Donna specs into `.agents/donna/`.
-- Install skills into `.agents/skills/` folder.
-
-If you upgrade Donna later, run `donna workspaces update` to refresh `.agents/donna/` and `.agents/skills/`.
 
 3. Ask your agent to do something like `$donna-do Add a button that …`. The agent will discover the appropriate workflow and execute it.
 
@@ -233,7 +229,7 @@ Points of interest:
 By default, Donna uses these artifact areas:
 
 - `workflows/` — project-owned workflows.
-- `.agents/donna/` — bundled Donna documentation synced by `donna workspaces init` or `donna workspaces update`.
+- `.agents/donna/` — project-local Donna documentation, when present.
 - `.session/donna/` — session artifacts and Donna runtime state.
 
 ### Rendering

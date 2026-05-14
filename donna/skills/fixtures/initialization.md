@@ -1,8 +1,8 @@
 # `donna` Initialization
 
-Initialization creates the Donna project config and optionally installs built-in Donna skills and specs into the project.
+Initialization creates the Donna project config and session directory.
 
-Use this document when a project has no `donna.toml`, when built-in Donna fixtures are missing, or when synced fixture files need to be refreshed.
+Use this document when a project has no `donna.toml` or when you need to check an existing Donna project.
 
 ## What Initialization Creates
 
@@ -11,11 +11,9 @@ Use this document when a project has no `donna.toml`, when built-in Donna fixtur
 ```text
 <project-root>/donna.toml
 <project-root>/.session/donna/
-<project-root>/.agents/skills/
-<project-root>/.agents/donna/
 ```
 
-`donna.toml` stores configuration. The configured session directory stores Donna runtime state and session artifacts. The `.agents/skills` and `.agents/donna` directories contain built-in agent-facing Donna skills and specifications.
+`donna.toml` stores configuration. The configured session directory stores Donna runtime state and session artifacts.
 
 ## Initialize The Current Directory
 
@@ -37,40 +35,12 @@ donna -p llm --root /path/to/project workspaces init
 
 The target directory must already exist. Donna creates `donna.toml` and the configured session directory inside it.
 
-## Install Only Part Of The Fixtures
-
-Skip built-in skills:
-
-```bash
-donna -p llm workspaces init --no-skills
-```
-
-Skip synced Donna documentation:
-
-```bash
-donna -p llm workspaces init --no-specs
-```
-
-Use these options only when the project deliberately manages those files another way.
-
-## Refresh Existing Fixtures
+## Check Existing Project
 
 Use `update`, not `init`, for an existing Donna project:
 
 ```bash
 donna -p llm workspaces update
-```
-
-Refresh only built-in skills:
-
-```bash
-donna -p llm workspaces update --no-specs
-```
-
-Refresh only synced Donna documentation:
-
-```bash
-donna -p llm workspaces update --no-skills
 ```
 
 `update` requires an existing `donna.toml`.
@@ -105,4 +75,4 @@ donna -p llm artifacts validate '**'
 
 Initialize Donna only when the developer asks for it or when the task explicitly requires Donna and no `donna.toml` exists.
 
-Do not overwrite project-owned workflows or documentation by hand. Use `workspaces update` for built-in fixtures, and edit project-owned artifacts directly when the developer asks for project-specific behavior changes.
+Edit project-owned artifacts directly when the developer asks for project-specific behavior changes.

@@ -232,23 +232,6 @@ RootOption = Annotated[
     ),
 ]
 
-SkillsOption = Annotated[
-    bool,
-    typer.Option(
-        "--skills/--no-skills",
-        help="Enable or disable skills updates in `.agents/skills`.",
-    ),
-]
-
-SpecsOption = Annotated[
-    bool,
-    typer.Option(
-        "--specs/--no-specs",
-        help="Enable or disable Donna specs updates in `.agents/donna`.",
-    ),
-]
-
-
 InputPathArgument = Annotated[
     pathlib.Path,
     typer.Argument(
