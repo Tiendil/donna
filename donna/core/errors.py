@@ -50,12 +50,12 @@ class CoreEnvironmentError(EnvironmentError):
 
 class ProjectDirNotFound(CoreEnvironmentError):
     code: str = "donna.core.project_dir_not_found"
-    message: str = "Could not find a project directory containing `{error.donna_dir_name}`."
+    message: str = "Could not find a project directory containing `{error.config_name}`."
     ways_to_fix: list[str] = [
-        "Run Donna from within a project directory that contains the donna directory.",
-        "Create the donna workspace via CLI command if it does not exist yet.",
+        "Run Donna from within a project directory that contains the Donna config file.",
+        "Create the Donna project config via CLI command if it does not exist yet.",
     ]
-    donna_dir_name: str
+    config_name: str
 
 
 class EnvironmentErrorNode(Node):

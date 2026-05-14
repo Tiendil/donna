@@ -1,2 +1,0 @@
-[journal]
-cmd = ["./bin/taskwarior.sh", "log", "+journal", "+donna", "kind:event", "{message}"]

@@ -53,18 +53,16 @@ def _sync_donna_specs(project_dir: pathlib.Path) -> None:
 def load_workspace(root_dir: pathlib.Path | None = None) -> Result[config.Workspace, core_errors.ErrorsList]:
     """Load workspace configuration without mutating process-global state."""
     if root_dir is None:
-        project_dir = utils.discover_project_dir(config.DONNA_DIR_NAME).unwrap()
+        project_dir = utils.discover_project_dir(config.DONNA_CONFIG_NAME).unwrap()
     else:
         project_dir = root_dir.resolve()
-        if not (project_dir / config.DONNA_DIR_NAME).is_dir():
-            return Err([core_errors.ProjectDirNotFound(donna_dir_name=config.DONNA_DIR_NAME)])
+        if not (project_dir / config.DONNA_CONFIG_NAME).is_file():
+            return Err([core_errors.ProjectDirNotFound(config_name=config.DONNA_CONFIG_NAME)])
 
-    config_dir = project_dir / config.DONNA_DIR_NAME
-
-    config_path = config_dir / config.DONNA_CONFIG_NAME
+    config_path = project_dir / config.DONNA_CONFIG_NAME
 
     if not config_path.exists():
-        return Ok(config.Workspace(root=project_dir, config_dir=config_dir, config=config.Config()))
+        return Ok(config.Workspace(root=project_dir, config=config.Config()))
 
     try:
         data = tomllib.loads(config_path.read_text(encoding="utf-8"))
@@ -76,7 +74,7 @@ def load_workspace(root_dir: pathlib.Path | None = None) -> Result[config.Worksp
     except Exception as e:
         return Err([world_errors.ConfigValidationFailed(config_path=config_path, details=str(e))])
 
-    return Ok(config.Workspace(root=project_dir, config_dir=config_dir, config=loaded_config))
+    return Ok(config.Workspace(root=project_dir, config=loaded_config))
 
 
 @unwrap_to_error
@@ -103,20 +101,17 @@ def initialize_workspace(
     install_skills: bool = True,
     install_specs: bool = True,
 ) -> Result[config.Workspace, core_errors.ErrorsList]:
-    """Initialize the physical workspace for the project (`.donna` directory)."""
+    """Initialize Donna project configuration."""
     project_dir = project_dir.resolve()
-    workspace_dir = project_dir / config.DONNA_DIR_NAME
+    config_path = project_dir / config.DONNA_CONFIG_NAME
 
-    if workspace_dir.exists():
-        return Err([world_errors.WorkspaceAlreadyInitialized(project_dir=project_dir)])
-
-    workspace_dir.mkdir(parents=True, exist_ok=True)
+    if config_path.exists():
+        return Err([world_errors.WorkspaceAlreadyInitialized(config_path=config_path)])
 
     default_config = config.Config()
-    workspace = config.Workspace(root=project_dir, config_dir=workspace_dir, config=default_config)
+    workspace = config.Workspace(root=project_dir, config=default_config)
     config.install_workspace(workspace)
 
-    config_path = workspace_dir / config.DONNA_CONFIG_NAME
     config_path.write_text(
         tomli_w.dumps(default_config.model_dump(mode="json", exclude_none=True)),
         encoding="utf-8",
@@ -140,10 +135,10 @@ def update_workspace(
     install_specs: bool = True,
 ) -> Result[None, core_errors.ErrorsList]:
     project_dir = project_dir.resolve()
-    workspace_dir = project_dir / config.DONNA_DIR_NAME
+    config_path = project_dir / config.DONNA_CONFIG_NAME
 
-    if not workspace_dir.exists():
-        return Err([core_errors.ProjectDirNotFound(donna_dir_name=config.DONNA_DIR_NAME)])
+    if not config_path.exists():
+        return Err([core_errors.ProjectDirNotFound(config_name=config.DONNA_CONFIG_NAME)])
 
     if install_skills:
         _sync_donna_skill(project_dir)

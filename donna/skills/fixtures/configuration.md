@@ -1,25 +1,28 @@
 # `donna` Configuration
 
-Donna workspace configuration lives at:
+Donna project configuration lives at:
 
 ```text
-<project-root>/.donna/config.toml
+<project-root>/donna.toml
 ```
 
 The file is created by `donna -p llm workspaces init`. Edit it when the project needs custom artifact sources, artifact visibility rules, cache behavior, or journal forwarding.
 
 ## Minimal Configuration
 
-A default workspace can use the generated configuration without manual edits. The effective defaults are:
+A default project can use the generated configuration without manual edits. The effective defaults are:
 
 ```toml
+session = ".session/donna"
+cache_lifetime = 1.0
+
 [[sources]]
 kind = "donna.lib.sources.markdown"
 extension = ".donna.md"
 
 [[file_filters]]
 mode = "include"
-pattern = "@/.donna/session/**/*.donna.md"
+pattern = "@/.session/donna/**/*.donna.md"
 
 [[file_filters]]
 mode = "include"
@@ -38,9 +41,20 @@ mode = "ignore"
 pattern = "**"
 
 [journal]
-
-cache_lifetime = 1.0
 ```
+
+## Session Directory
+
+`session` points to Donna's temporary session directory.
+Donna stores runtime state, action requests, and session-created artifacts there.
+
+Default:
+
+```toml
+session = ".session/donna"
+```
+
+Relative paths are resolved from the project root; absolute paths are used as configured. Use a directory ignored by version control unless a project intentionally tracks session artifacts.
 
 ## Sources
 
@@ -144,7 +158,7 @@ cmd = [
 
 ## Cache Lifetime
 
-`cache_lifetime` controls how long Donna may reuse cached workspace data, in seconds.
+`cache_lifetime` controls how long Donna may reuse cached project data, in seconds.
 
 Example:
 
@@ -156,11 +170,11 @@ Use a smaller value when artifacts are edited rapidly by external tools. Use the
 
 ## Validation Workflow
 
-After editing `.donna/config.toml`, run:
+After editing `donna.toml`, run:
 
 ```bash
 donna -p llm artifacts list '**'
 donna -p llm artifacts validate '**'
 ```
 
-If Donna cannot load the workspace, inspect the reported configuration error and fix the TOML or unsupported source path before continuing workflow work.
+If Donna cannot load the project config, inspect the reported configuration error and fix the TOML or unsupported source path before continuing workflow work.

@@ -10,17 +10,17 @@ The common artifact areas are:
 
 - `<project-root>/specs`: project-owned specifications and workflows.
 - `<project-root>/.agents/donna`: synced built-in Donna specs and workflows.
-- `<project-root>/.donna/session`: session artifacts and active workflow state.
+- `<project-root>/.session/donna`: session artifacts and active workflow state.
 
 Example:
 
 ```text
 specs/intro.donna.md
 .agents/donna/work/polish.donna.md
-.donna/session/current_task.donna.md
+.session/donna/current_task.donna.md
 ```
 
-Donna sees only files allowed by `.donna/config.toml:file_filters`.
+Donna sees only files allowed by `donna.toml:file_filters`.
 
 ## List Artifacts
 
@@ -93,7 +93,7 @@ Pattern examples:
 - `@/*.donna.md`: Donna Markdown artifacts directly under the project root.
 - `@/**/intro.donna.md`: any introduction artifact.
 - `@/.agents/donna/**`: synced Donna artifacts.
-- `@/.donna/session/**`: session artifacts.
+- `@/.session/donna/**`: session artifacts.
 
 Do not pass relative filesystem paths such as `./specs/intro.donna.md`. Use `@/specs/intro.donna.md`.
 

@@ -12,7 +12,7 @@ Donna introduces a group of workflows located in `../**` namespace that organize
 
 You create RFC documents to propose changes to the project.
 
-If not otherwise specified, RFC documents for the session MUST be stored as `@/.donna/session/rfc/<short-problem-related-identifier>.donna.md` artifacts under `<project-root>/.donna/session`.
+If not otherwise specified, RFC documents for the session MUST be stored as `@/.session/donna/rfc/<short-problem-related-identifier>.donna.md` artifacts under `<project-root>/.session/donna`.
 
 ## RFC structure
 

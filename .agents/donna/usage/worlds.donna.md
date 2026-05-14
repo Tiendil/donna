@@ -17,13 +17,13 @@ formats can be used as well, if explicitly requested by the developer or by the 
 
 Donna discovers these artifacts in a single built-in project world rooted at `<project-root>`.
 The project world is a singleton object configured in code and backed by the project's filesystem.
-Donna does not read world definitions from `<project-root>/.donna/config.toml`.
+Donna does not read world definitions from `<project-root>/donna.toml`.
 
 The project world and its primary artifact areas are:
 
 - `../../../specs/**` — artifacts under `<project-root>/specs`, owned by the project itself.
 - `../**` — synced Donna usage specs and workflows under `<project-root>/.agents/donna`.
-- `@/.donna/session/**` — session artifacts under `<project-root>/.donna/session`.
+- `@/.session/donna/**` — session artifacts under `<project-root>/.session/donna`.
 
 The project world has a free layout, defined by the developers who own the project.
 
@@ -33,7 +33,7 @@ Donna has read access to artifacts stored in the project world. It discovers, fe
 
 Developers and external tools are responsible for mutating project artifacts before Donna reads or validates them.
 
-Donna still writes its own session state under `<project-root>/.donna/session`, but that internal state storage is separate from world-artifact mutation.
+Donna still writes its own session state under `<project-root>/.session/donna`, but that internal state storage is separate from world-artifact mutation.
 
 ## Intro Artifacts
 

@@ -41,7 +41,7 @@ Artifact type tags:
 
 Donna creates internal journal records for important workflow events, according to the description in `donna skill usage`.
 
-Journal records can be forwarded to a third-party tool by configuring `[journal].cmd` in `<project-root>/.donna/config.toml`.
+Journal records can be forwarded to a third-party tool by configuring `[journal].cmd` in `<project-root>/donna.toml`.
 
 The configured command is a list of command arguments. Arguments whose first and last characters are `{` and `}` are replaced with attributes of `JournalRecord`.
 

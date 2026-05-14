@@ -142,7 +142,7 @@ donna workspaces init
 
 Donna will:
 
-- Create a `.donna/` folder in your project root with a default configuration in `.donna/config.toml`.
+- Create `donna.toml` in your project root and the configured session directory.
 - Sync bundled Donna specs into `.agents/donna/`.
 - Install skills into `.agents/skills/` folder.
 
@@ -166,7 +166,7 @@ Commands you may need:
 - `donna sessions start` — start a new working session, remove everything from the previous session.
 - `donna artifacts list <pattern>` — list artifacts with short descriptions.
 
-Donna can send internal journal records to a third-party tool. Configure it in `.donna/config.toml`:
+Donna can send internal journal records to a third-party tool. Configure it in `donna.toml`:
 
 ```toml
 [journal]
@@ -194,7 +194,7 @@ You find detailed documentation in the built-in skill documents — they are rea
 
 - `donna skill usage` — full list of commands and how to use them.
 - `donna skill artifacts` — what Donna artifacts are and how to use them on the filesystem.
-- `donna skill configuration` — how to configure `.donna/config.toml`.
+- `donna skill configuration` — how to configure `donna.toml`.
 - `donna skill initialization` — how to initialize or refresh a Donna workspace.
 
 The documentation below covers aspects important to humans and partially duplicates the agent's instructions.
@@ -229,13 +229,13 @@ Points of interest:
 ## Artifacts on Filesystem
 
 - Artifacts are text files Donna reads and validates. In practice they are usually Markdown workflows and specifications stored as `.donna.md` files.
-- Donna discovers artifacts directly in the project filesystem and limits what is visible via `.donna/config.toml:file_filters`.
+- Donna discovers artifacts directly in the project filesystem and limits what is visible via `donna.toml:file_filters`.
 
 By default, Donna uses these artifact areas:
 
 - `specs/` — project-owned artifacts.
 - `.agents/donna/` — bundled Donna specs and workflows synced by `donna workspaces init` or `donna workspaces update`.
-- `.donna/session/` — session artifacts and Donna runtime state.
+- `.session/donna/` — session artifacts and Donna runtime state.
 
 ### Rendering
 
@@ -251,7 +251,7 @@ Examples:
 
 - `@/specs/work/polish.donna.md`
 - `@/.agents/donna/work/polish.donna.md`
-- `@/.donna/session/execute_rfc.donna.md:review_changes`
+- `@/.session/donna/execute_rfc.donna.md:review_changes`
 
 You and agents can `list`, `view`, and `validate` artifacts.
 
@@ -272,7 +272,7 @@ Examples:
 
 - `@/*.donna.md` — matches all artifacts directly under the project root.
 - `@/**/intro.donna.md` — matches all artifacts named `intro.donna.md`.
-- `@/.donna/session/**` — matches all session artifacts.
+- `@/.session/donna/**` — matches all session artifacts.
 - `**/test_*.donna.md` — matches artifact filenames that start with `test_`.
 
 Commands that accept an artifact pattern also support `--predicate '<python-expression>'` to filter by primary section properties available as `section`.
@@ -287,7 +287,7 @@ You can find all workflows with the command
 
 ## Sessions
 
-`<project-root>/.donna/session/` contains the current state of work performed by Donna: runtime state plus temporary documents and workflows created during the session.
+`<project-root>/.session/donna/` contains the current state of work performed by Donna: runtime state plus temporary documents and workflows created during the session.
 
 The developer is responsible for starting/resetting sessions with commands from `donna -p human sessions` group.
 
@@ -308,7 +308,7 @@ To execute a workflow, Donna uses a simplified virtual machine (VM) that maintai
 
 <details>
 <summary><strong>What you may want to know about workflows implementation</strong></summary>
-- `.donna/session/state.json` file contains the current state of all running workflows in the current session.
+- `.session/donna/state.json` file contains the current state of all running workflows in the current session.
 - Each workflow executes in the context of its own task, which is a distant analog of a call stack frame. So, we may look at workflows as functions.
 - Of course, workflows may call other workflows as subroutines. At any moment, only last executed workflow is active.
 - Task has a context that is accessible by operations. There is an issue [command to read/write task context](https://github.com/Tiendil/donna/issues/47) to allow agents and humans to edit task context.
@@ -420,7 +420,7 @@ What you can implement:
 - Custom rendering directives. Check [./donna/primitives/directives](./donna/primitives/directives) subpackage for examples.
 - Custom artifact parsers. Check [./donna/workspaces/sources](./donna/workspaces/sources) subpackage for examples.
 
-Sources and file filters are configured in the `.donna/config.toml` file of your project.
+Sources and file filters are configured in the `donna.toml` file of your project.
 
 Sections and directives are used directly in artifacts by their Python import paths.
 

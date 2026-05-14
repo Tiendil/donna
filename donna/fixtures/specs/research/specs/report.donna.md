@@ -10,7 +10,7 @@ This document describes the format and structure of a Research Report document u
 
 Donna introduces a group of workflows located in `../**` namespace that organize the process of researching a problem, collecting information, analyzing it, synthesizing options, and producing a final solution.
 
-Session-related research artifacts MUST be stored as `@/.donna/session/research/<short-problem-related-identifier>.donna.md`, unless the developer or parent workflow specifies a different location. The `<short-problem-related-identifier>` MUST be unique within the session.
+Session-related research artifacts MUST be stored as `@/.session/donna/research/<short-problem-related-identifier>.donna.md`, unless the developer or parent workflow specifies a different location. The `<short-problem-related-identifier>` MUST be unique within the session.
 
 The agent (via workflows) creates the artifact and updates it iteratively as the research process progresses.
 
