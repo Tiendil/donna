@@ -1,42 +1,16 @@
 import pathlib
 from typing import Sequence
 
-from donna.domain.id_paths import (
-    IdPath,
-    IdPathPattern,
-    IdPathSegmentLiteralMatcher,
-    IdPathSegmentMatcher,
-    IdPathSegmentRecursiveMatcher,
-    IdPathSegmentSingleMatcher,
-    NormalizedRawIdPath,
-)
+from donna.domain.id_paths import IdPath, NormalizedRawIdPath
 from donna.domain.ids import SectionId, _is_artifact_slug_part
 
 ARTIFACT_ID_PREFIX = "@/"
-_ARTIFACT_PATTERN_EXTRA_CHARACTERS = set("*?[]")
-
-
-def _is_artifact_pattern_part(part: str) -> bool:
-    if not part:
-        return False
-
-    if part == "**":
-        return True
-
-    allowed_characters = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-")
-    allowed_characters.update(_ARTIFACT_PATTERN_EXTRA_CHARACTERS)
-
-    if any(character not in allowed_characters for character in part):
-        return False
-
-    return any(character not in ".-" for character in part)
 
 
 def normalize_path(  # noqa: CCR001
     text: str,
     *,
     relative_to: "ArtifactId | None" = None,
-    allow_wildcards: bool,
 ) -> NormalizedRawIdPath | None:
     if not isinstance(text, str) or not text:
         return None
@@ -67,10 +41,7 @@ def normalize_path(  # noqa: CCR001
             normalized_parts.pop()
             continue
 
-        if allow_wildcards:
-            if not _is_artifact_pattern_part(part):
-                return None
-        elif not _is_artifact_slug_part(part):
+        if not _is_artifact_slug_part(part):
             return None
 
         normalized_parts.append(part)
@@ -79,9 +50,8 @@ def normalize_path(  # noqa: CCR001
         return None
 
     last_part = normalized_parts[-1]
-    if not allow_wildcards or last_part not in {"*", "**"}:
-        if not pathlib.PurePosixPath(last_part).suffix:
-            return None
+    if not pathlib.PurePosixPath(last_part).suffix:
+        return None
 
     return NormalizedRawIdPath("/".join(normalized_parts))
 
@@ -95,7 +65,7 @@ def normalize_artifact_section_id(text: str, *, relative_to: "ArtifactId | None"
     except ValueError:
         return None
 
-    normalized_artifact_id = normalize_path(artifact_part, relative_to=relative_to, allow_wildcards=False)
+    normalized_artifact_id = normalize_path(artifact_part, relative_to=relative_to)
     if normalized_artifact_id is None or not SectionId.validate(local_part):
         return None
 
@@ -120,31 +90,6 @@ class ArtifactId(IdPath):
 
     def to_full_local(self, local_id: SectionId) -> "ArtifactSectionId":
         return ArtifactSectionId(NormalizedRawIdPath(f"{self.raw_value}:{local_id}"))
-
-
-class ArtifactIdPattern(IdPathPattern["ArtifactId"]):
-    __slots__ = ()
-    id_class = ArtifactId
-
-    def __str__(self) -> str:
-        rendered = self.id_class.delimiter.join(str(part) for part in self)
-        if self and not isinstance(self[0], IdPathSegmentLiteralMatcher):
-            return rendered
-
-        return f"{self.id_class.prefix}{rendered}"
-
-    @classmethod
-    def _parse_pattern_part(cls, part: str) -> IdPathSegmentMatcher | None:
-        if part == "**":
-            return IdPathSegmentRecursiveMatcher(part)
-
-        if not _is_artifact_pattern_part(part):
-            return None
-
-        if any(char in part for char in _ARTIFACT_PATTERN_EXTRA_CHARACTERS):
-            return IdPathSegmentSingleMatcher(part)
-
-        return IdPathSegmentLiteralMatcher(part)
 
 
 class ArtifactSectionId(IdPath):

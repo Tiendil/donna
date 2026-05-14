@@ -251,25 +251,10 @@ Examples:
 You and agents can `list` workflow artifacts and `validate` Donna artifacts.
 
 - `donna -p llm artifacts list` — shows workflow descriptions from their h1 sections.
-- `donna -p llm artifacts validate [<pattern>]` — validates matching artifacts.
+- `donna -p llm artifacts validate <artifact-id>...` — validates one or more artifacts.
+- `donna -p llm artifacts validate --all` — validates every discovered artifact.
 
-The `validate` command accepts both precise artifact ids and glob patterns. Patterns may use absolute ids like `@/...` or rooted wildcard forms like `**/*.donna.md`.
-
-Patterns allow using:
-
-- `*` — matches zero or more characters inside one path level.
-- `?` — matches exactly one character inside one path level.
-- `[]` — matches a single character class inside one path level.
-- `**` — matches zero or more path levels.
-
-Examples:
-
-- `@/*.donna.md` — matches all artifacts directly under the project root.
-- `@/**/polish.donna.md` — matches all artifacts named `polish.donna.md`.
-- `@/.session/donna/**` — matches all session artifacts.
-- `**/test_*.donna.md` — matches artifact filenames that start with `test_`.
-
-Commands that accept an artifact pattern also support `--predicate '<python-expression>'` to filter by primary section properties available as `section`.
+Artifact ids use absolute project-root form like `@/workflows/polish.donna.md`.
 
 Currently, Donna supports one standard artifact type tag:
 

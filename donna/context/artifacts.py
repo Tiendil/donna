@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING
 from donna.context.entity_cache import TimedCache, TimedCacheValue
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern, ArtifactSectionId
+from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
 from donna.domain.types import Milliseconds
-from donna.machine.artifacts import Artifact, ArtifactPredicate, ArtifactSection
+from donna.machine.artifacts import Artifact, ArtifactSection
 from donna.workspaces.templates import RenderMode
 
 if TYPE_CHECKING:
@@ -112,51 +112,23 @@ class ArtifactsCache(TimedCache):
         return Ok(artifact.get_section(target_id.local_id).unwrap())
 
     @unwrap_to_error
-    def _list_artifact_if_matches(
-        self,
-        artifact_id: ArtifactId,
-        render_context: "ArtifactRenderContext",
-        predicate: ArtifactPredicate | None,
-    ) -> Result[Artifact | None, ErrorsList]:
-        artifact = self.load(artifact_id, render_context).unwrap()
-
-        if predicate is None:
-            return Ok(artifact)
-
-        section = artifact.primary_section().unwrap()
-
-        predicate_result = predicate.evaluate(section)
-        if predicate_result.is_err():
-            return Ok(None)
-
-        if not predicate_result.unwrap():
-            return Ok(None)
-
-        return Ok(artifact)
-
-    @unwrap_to_error
     def list(  # noqa: CCR001
         self,
-        pattern: ArtifactIdPattern,
         render_context: "ArtifactRenderContext",
-        predicate: ArtifactPredicate | None = None,
     ) -> Result[list[Artifact], ErrorsList]:
         from donna.workspaces.artifacts import list_artifact_ids
 
         artifacts: list[Artifact] = []
         errors: ErrorsList = []
 
-        for artifact_id in list_artifact_ids(pattern):
-            artifact_result = self._list_artifact_if_matches(artifact_id, render_context, predicate)
+        for artifact_id in list_artifact_ids():
+            artifact_result = self.load(artifact_id, render_context)
 
             if artifact_result.is_err():
                 errors.extend(artifact_result.unwrap_err())
                 continue
 
             artifact = artifact_result.unwrap()
-            if artifact is None:
-                continue
-
             artifacts.append(artifact)
 
         if errors:

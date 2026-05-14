@@ -62,7 +62,7 @@ donna -p llm artifacts list
 Validate artifacts:
 
 ```bash
-donna -p llm artifacts validate '**'
+donna -p llm artifacts validate --all
 ```
 
 ## Agent Guidance

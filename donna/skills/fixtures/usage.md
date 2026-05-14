@@ -133,13 +133,13 @@ donna -p llm artifacts list
 Validate all visible artifacts:
 
 ```bash
-donna -p llm artifacts validate '**'
+donna -p llm artifacts validate --all
 ```
 
-Artifact patterns use `@/` for project-root paths. Recursive `**` patterns are allowed for commands that accept patterns:
+Validate specific artifacts by absolute project-root id:
 
 ```bash
-donna -p llm artifacts validate '**/*.donna.md'
+donna -p llm artifacts validate '@/workflows/polish.donna.md'
 ```
 
 ## Normal Agent Flow

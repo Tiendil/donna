@@ -6,9 +6,8 @@ import typer
 from donna.cli.utils import output_cells
 from donna.core.errors import ErrorsList
 from donna.domain import errors as domain_errors
-from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern, ArtifactSectionId
+from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
 from donna.domain.internal_ids import ActionRequestId
-from donna.machine.artifacts import ArtifactPredicate
 from donna.protocol.modes import Mode
 from donna.workspaces.artifacts import has_donna_artifact_extension
 from donna.workspaces.constants import DONNA_ARTIFACT_EXTENSION
@@ -41,30 +40,8 @@ def _absolute_artifact_section_id_or_exit(value: str) -> str:
     return value
 
 
-def _absolute_artifact_pattern_or_exit(value: str | ArtifactIdPattern) -> str:
-    if isinstance(value, ArtifactIdPattern):
-        return str(value)
-
-    first_part = value.split(ArtifactId.delimiter, maxsplit=1)[0]
-    if any(character in first_part for character in "*?[]"):
-        return f"{ArtifactId.prefix}{value}"
-
-    if not value.startswith(ArtifactId.prefix):
-        _exit_with_errors([domain_errors.InvalidIdPattern(id_type=ArtifactIdPattern.__name__, value=value)])
-
-    return value
-
-
 def _parse_artifact_id(value: str) -> ArtifactId:
     result = ArtifactId.parse(_absolute_artifact_id_or_exit(value))
-    return _parse_result_or_exit(result.ok(), result.err())
-
-
-def _parse_artifact_id_pattern(value: str | ArtifactIdPattern) -> ArtifactIdPattern:
-    if isinstance(value, ArtifactIdPattern):
-        return value
-
-    result = ArtifactIdPattern.parse(_absolute_artifact_pattern_or_exit(value))
     return _parse_result_or_exit(result.ok(), result.err())
 
 
@@ -77,18 +54,6 @@ def _artifact_filename(value: str) -> str:
     return pathlib.PurePosixPath(value.split(ArtifactSectionId.delimiter, maxsplit=1)[0]).name
 
 
-def _pattern_filename(value: str) -> str | None:
-    last_part = pathlib.PurePosixPath(value).name
-    if last_part in {"*", "**"}:
-        return None
-
-    dot_index = last_part.find(".")
-    if dot_index == -1:
-        return None
-
-    return f"placeholder{last_part[dot_index:]}"
-
-
 def validate_supported_artifact_id(artifact_id: ArtifactId) -> None:
     if not has_donna_artifact_extension(_artifact_filename(str(artifact_id))):
         raise typer.BadParameter(
@@ -96,26 +61,20 @@ def validate_supported_artifact_id(artifact_id: ArtifactId) -> None:
         )
 
 
-def validate_supported_artifact_pattern(pattern: ArtifactIdPattern) -> None:
-    filename = _pattern_filename(str(pattern))
-    if filename is None:
-        return
-
-    if not has_donna_artifact_extension(filename):
-        raise typer.BadParameter(f"Unsupported artifact extension for '{pattern}'. Use '*{DONNA_ARTIFACT_EXTENSION}'.")
-
-
 def validate_supported_artifact_section_id(section_id: ArtifactSectionId) -> None:
     validate_supported_artifact_id(section_id.artifact_id)
 
 
-def _parse_artifact_predicate(value: str) -> ArtifactPredicate:
-    result = ArtifactPredicate.parse(value)
-    errors = result.err()
-    if errors is not None:
-        _exit_with_errors(errors)
+def _parse_supported_artifact_id(value: str) -> ArtifactId:
+    artifact_id = _parse_artifact_id(value)
+    validate_supported_artifact_id(artifact_id)
+    return artifact_id
 
-    return result.unwrap()
+
+def _parse_supported_artifact_section_id(value: str) -> ArtifactSectionId:
+    section_id = _parse_artifact_section_id(value)
+    validate_supported_artifact_section_id(section_id)
+    return section_id
 
 
 def _parse_action_request_id(value: str) -> ActionRequestId:
@@ -161,7 +120,7 @@ ActionRequestIdArgument = Annotated[
 ArtifactIdArgument = Annotated[
     ArtifactId,
     typer.Argument(
-        parser=_parse_artifact_id,
+        parser=_parse_supported_artifact_id,
         help=(
             "Artifact ID in absolute project-root form with the Donna artifact "
             "extension (e.g., '@/workflows/polish.donna.md')."
@@ -170,25 +129,14 @@ ArtifactIdArgument = Annotated[
 ]
 
 
-ArtifactIdPatternArgument = Annotated[
-    ArtifactIdPattern,
+ArtifactIdsArgument = Annotated[
+    list[ArtifactId] | None,
     typer.Argument(
-        parser=_parse_artifact_id_pattern,
+        parser=_parse_supported_artifact_id,
         help=(
-            "Artifact pattern in absolute form '@/...' or rooted wildcard form like "
-            "'*/x.donna.md' and '**/x.donna.md'. Patterns that name a file "
-            "extension must use the Donna artifact extension."
+            "Artifact IDs in absolute project-root form with the Donna artifact "
+            "extension (e.g., '@/workflows/polish.donna.md')."
         ),
-    ),
-]
-
-PredicateOption = Annotated[
-    ArtifactPredicate | None,
-    typer.Option(
-        "--predicate",
-        "-p",
-        parser=_parse_artifact_predicate,
-        help="Filter artifacts by predicate expression evaluated with `section` global.",
     ),
 ]
 
@@ -196,7 +144,7 @@ PredicateOption = Annotated[
 ArtifactSectionIdArgument = Annotated[
     ArtifactSectionId,
     typer.Argument(
-        parser=_parse_artifact_section_id,
+        parser=_parse_supported_artifact_section_id,
         help=(
             "Artifact section ID in absolute project-root form 'artifact:section' "
             "(e.g. '@/.session/donna/plans/artifact_id_filepaths.donna.md:finish')."

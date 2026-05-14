@@ -5,8 +5,6 @@ from donna.cli.types import (
     ActionRequestIdArgument,
     ArtifactIdArgument,
     ArtifactSectionIdArgument,
-    validate_supported_artifact_id,
-    validate_supported_artifact_section_id,
 )
 from donna.cli.utils import command_context
 from donna.machine import sessions
@@ -50,7 +48,6 @@ def details(context: typer.Context) -> None:
 @sessions_cli.command(help="Run a workflow from an artifact to drive the current session forward.")
 def run(context: typer.Context, workflow_id: ArtifactIdArgument) -> None:
     with command_context(context) as command:
-        validate_supported_artifact_id(workflow_id)
         command.write_cells(sessions.start_workflow(workflow_id).unwrap())
 
 
@@ -63,7 +60,6 @@ def action_request_completed(
     next_operation_id: ArtifactSectionIdArgument,
 ) -> None:
     with command_context(context) as command:
-        validate_supported_artifact_section_id(next_operation_id)
         command.write_cells(sessions.complete_action_request(request_id, next_operation_id).unwrap())
 
 

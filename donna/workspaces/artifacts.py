@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Iterator, Sequence
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern
+from donna.domain.artifact_ids import ArtifactId
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.types import Milliseconds
 from donna.machine.tasks import Task, WorkUnit
@@ -111,7 +111,7 @@ def walk_filesystem(workflow_dirs: Sequence[pathlib.Path]) -> Iterator[pathlib.P
         yield from _walk_workflow_dir(workflow_path, list(workflow_parts))
 
 
-def list_artifact_ids(pattern: ArtifactIdPattern) -> list[ArtifactId]:  # noqa: CCR001
+def list_artifact_ids() -> list[ArtifactId]:
     from donna.workspaces import config as workspace_config
 
     artifacts: list[ArtifactId] = []
@@ -122,7 +122,7 @@ def list_artifact_ids(pattern: ArtifactIdPattern) -> list[ArtifactId]:  # noqa: 
         if artifact_id is None:
             continue
 
-        if not pattern.matches(artifact_id) or artifact_id in seen:
+        if artifact_id in seen:
             continue
 
         artifacts.append(artifact_id)

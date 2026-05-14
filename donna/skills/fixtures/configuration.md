@@ -132,7 +132,7 @@ After editing `donna.toml`, run:
 
 ```bash
 donna -p llm artifacts list
-donna -p llm artifacts validate '**'
+donna -p llm artifacts validate --all
 ```
 
 If Donna cannot load the project config, inspect the reported configuration error and fix the TOML before continuing workflow work.

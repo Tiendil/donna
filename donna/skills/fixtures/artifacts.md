@@ -43,31 +43,24 @@ donna -p llm artifacts validate '@/workflows/polish.donna.md'
 Validate all visible artifacts:
 
 ```bash
-donna -p llm artifacts validate '**'
+donna -p llm artifacts validate --all
 ```
 
 Run validation after creating or editing Donna artifacts.
 
-## Artifact Patterns
+## Artifact IDs
 
-Use `@/` for project-root paths in commands that accept artifact patterns:
+Use `@/` for project-root artifact ids:
 
 ```bash
 donna -p llm artifacts validate '@/workflows/polish.donna.md'
 ```
 
-Use recursive wildcards when the exact location is unknown:
+Validate multiple specific artifacts by passing multiple ids:
 
 ```bash
-donna -p llm artifacts validate '**/*.donna.md'
+donna -p llm artifacts validate '@/workflows/polish.donna.md' '@/workflows/rfc/request.donna.md'
 ```
-
-Pattern examples:
-
-- `@/*.donna.md`: Donna Markdown artifacts directly under the project root.
-- `@/**/polish.donna.md`: any artifact named `polish.donna.md`.
-- `@/workflows/**`: project workflow artifacts.
-- `@/.session/donna/**`: session artifacts.
 
 Do not pass relative filesystem paths such as `./workflows/polish.donna.md`. Use `@/workflows/polish.donna.md`.
 
