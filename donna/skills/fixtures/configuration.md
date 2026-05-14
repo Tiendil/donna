@@ -6,7 +6,7 @@ Donna project configuration lives at:
 <project-root>/donna.toml
 ```
 
-The file is created by `donna -p llm workspaces init`. Edit it when the project needs artifact visibility rules, default section settings, cache behavior, or journal forwarding.
+The file is created by `donna -p llm workspaces init`. Edit it when the project needs workflow source directories, default section settings, cache behavior, or journal forwarding.
 
 ## Minimal Configuration
 
@@ -17,26 +17,7 @@ session = ".session/donna"
 default_section_kind = "donna.lib.text"
 default_primary_section_id = "primary"
 cache_lifetime = 1.0
-
-[[file_filters]]
-mode = "include"
-pattern = "@/.session/donna/**/*.donna.md"
-
-[[file_filters]]
-mode = "include"
-pattern = "@/.agents/**/*.donna.md"
-
-[[file_filters]]
-mode = "ignore"
-pattern = ".*/**"
-
-[[file_filters]]
-mode = "include"
-pattern = "**/*.donna.md"
-
-[[file_filters]]
-mode = "ignore"
-pattern = "**"
+workflow_dirs = ["./workflows", "./.session/donna"]
 
 [journal]
 ```
@@ -70,35 +51,29 @@ Fields:
 - `default_section_kind`: full Python path to the primitive used for sections without an explicit `kind`.
 - `default_primary_section_id`: section id assigned to the primary H1 section when it omits `id`.
 
-## File Filters
+## Workflow Directories
 
-`file_filters` control which project files Donna can see as artifacts. Filters are evaluated in order. The first matching rule decides whether a file is included, ignored, or required.
+`workflow_dirs` controls where Donna searches for workflow artifacts. Donna recursively scans each configured directory and recognizes only files ending with `.donna.md`.
 
-Modes:
+Default:
 
-- `include`: admit matching files when they exist.
-- `ignore`: hide matching files.
-- `required`: admit matching files and treat missing expected files as an error when relevant.
+```toml
+workflow_dirs = ["./workflows", "./.session/donna"]
+```
 
-Patterns are Donna artifact patterns rooted at the project. Use `@/` for explicit project-root paths and `**` for recursive matching.
+Paths are relative to the Donna project root. Missing directories are ignored, so a project can keep the default list before all of those directories exist.
 
 Example:
 
 ```toml
-[[file_filters]]
-mode = "include"
-pattern = "@/specs/**/*.donna.md"
-
-[[file_filters]]
-mode = "ignore"
-pattern = "@/specs/archive/**"
-
-[[file_filters]]
-mode = "ignore"
-pattern = "**"
+workflow_dirs = [
+  "./workflows",
+  "./.session/donna",
+  "./team-workflows",
+]
 ```
 
-Put narrow rules before broad rules. Keep a final `ignore "**"` rule when you want an allow-list.
+Use narrower directories when you want Donna to ignore unrelated `.donna.md` files elsewhere in the project.
 
 ## Journal Forwarding
 

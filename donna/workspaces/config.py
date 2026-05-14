@@ -2,34 +2,22 @@ from __future__ import annotations
 
 import enum
 import pathlib
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.domain.artifact_ids import ArtifactIdPattern
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
 from donna.workspaces import errors as world_errors
-from donna.workspaces.constants import DONNA_ARTIFACT_EXTENSION
 
 if TYPE_CHECKING:
     from donna.protocol.modes import Mode
 
 DONNA_CONFIG_NAME = "donna.toml"
 DONNA_DEFAULT_SESSION_DIR = pathlib.Path(".session") / "donna"
-
-
-class FileFilterMode(str, enum.Enum):
-    ignore = "ignore"
-    include = "include"
-    required = "required"
-
-
-class FileFilter(BaseEntity):
-    mode: FileFilterMode
-    pattern: ArtifactIdPattern
+DONNA_DEFAULT_WORKFLOW_DIR = pathlib.Path("workflows")
 
 
 class JournalRecordAttribute(str, enum.Enum):
@@ -75,46 +63,53 @@ class JournalConfig(BaseEntity):
         return value
 
 
-def _artifact_glob() -> str:
-    return f"*{DONNA_ARTIFACT_EXTENSION}"
-
-
-def _artifact_recursive_glob() -> str:
-    return f"**/{_artifact_glob()}"
-
-
-def _default_file_filters() -> list[FileFilter]:
+def _default_workflow_dirs() -> list[pathlib.Path]:
     return [
-        FileFilter(
-            mode=FileFilterMode.include,
-            pattern=ArtifactIdPattern.parse(f"@/.agents/{_artifact_recursive_glob()}").unwrap(),
-        ),
-        FileFilter(mode=FileFilterMode.ignore, pattern=ArtifactIdPattern.parse(".*/**").unwrap()),
-        FileFilter(mode=FileFilterMode.include, pattern=ArtifactIdPattern.parse(_artifact_recursive_glob()).unwrap()),
-        FileFilter(mode=FileFilterMode.ignore, pattern=ArtifactIdPattern.parse("**").unwrap()),
+        DONNA_DEFAULT_WORKFLOW_DIR,
+        DONNA_DEFAULT_SESSION_DIR,
     ]
+
+
+def _serialize_workflow_dir(path: pathlib.Path) -> str:
+    return f"./{path.as_posix()}"
+
+
+def _validate_workflow_dir(path: pathlib.Path) -> pathlib.Path:
+    if path.is_absolute():
+        raise ValueError("Workflow directories must be relative to the Donna project root.")
+
+    if any(part == ".." for part in path.parts):
+        raise ValueError("Workflow directories must not contain parent-directory references.")
+
+    return path
 
 
 class Config(BaseEntity):
     session: pathlib.Path = DONNA_DEFAULT_SESSION_DIR
     default_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.text"))
     default_primary_section_id: SectionId = SectionId("primary")
-    file_filters: list[FileFilter] = pydantic.Field(default_factory=_default_file_filters)
+    workflow_dirs: list[pathlib.Path] = pydantic.Field(default_factory=_default_workflow_dirs)
     journal: JournalConfig = pydantic.Field(default_factory=JournalConfig)
 
     cache_lifetime: float = 1.0
 
-    def model_post_init(self, __context: Any) -> None:
-        session_filter = FileFilter(mode=FileFilterMode.include, pattern=self.session_artifact_pattern())
-        if session_filter not in self.file_filters:
-            object.__setattr__(self, "file_filters", [session_filter, *self.file_filters])
+    @pydantic.field_validator("workflow_dirs", mode="after")
+    @classmethod
+    def validate_workflow_dirs(cls, value: list[pathlib.Path]) -> list[pathlib.Path]:
+        workflow_dirs: list[pathlib.Path] = []
 
-    def session_artifact_pattern(self) -> ArtifactIdPattern:
-        session_path = self.session.as_posix().strip("/")
-        if session_path in {"", "."}:
-            return ArtifactIdPattern.parse(f"@/{_artifact_recursive_glob()}").unwrap()
+        for path in value:
+            path = _validate_workflow_dir(path)
+            if path in workflow_dirs:
+                continue
 
-        return ArtifactIdPattern.parse(f"@/{session_path}/{_artifact_recursive_glob()}").unwrap()
+            workflow_dirs.append(path)
+
+        return workflow_dirs
+
+    @pydantic.field_serializer("workflow_dirs")
+    def serialize_workflow_dirs(self, value: list[pathlib.Path]) -> list[str]:
+        return [_serialize_workflow_dir(path) for path in value]
 
 
 class Workspace(BaseEntity):

@@ -15,7 +15,7 @@ Use this document when a project has no `donna.toml`, when built-in Donna fixtur
 <project-root>/.agents/donna/
 ```
 
-`donna.toml` stores configuration. The configured session directory stores Donna runtime state and session artifacts. The `.agents/skills` and `.agents/donna` directories contain built-in agent-facing Donna skills, workflows, and specifications.
+`donna.toml` stores configuration. The configured session directory stores Donna runtime state and session artifacts. The `.agents/skills` and `.agents/donna` directories contain built-in agent-facing Donna skills and specifications.
 
 ## Initialize The Current Directory
 
@@ -45,7 +45,7 @@ Skip built-in skills:
 donna -p llm workspaces init --no-skills
 ```
 
-Skip synced Donna documentation and workflows:
+Skip synced Donna documentation:
 
 ```bash
 donna -p llm workspaces init --no-specs
@@ -67,7 +67,7 @@ Refresh only built-in skills:
 donna -p llm workspaces update --no-specs
 ```
 
-Refresh only synced Donna documentation and workflows:
+Refresh only synced Donna documentation:
 
 ```bash
 donna -p llm workspaces update --no-skills

@@ -98,17 +98,6 @@ kind = "donna.lib.request_action"
 
 1. Find the workflow to polish the changes made.
 2. Run the chosen workflow if you found one.
-3. `{{ donna.lib.goto("log_changes") }}`.
-
-## Log changes
-
-```toml donna
-id = "log_changes"
-kind = "donna.lib.request_action"
-```
-
-1. Find the workflow to log the changes made in the scope of this RFC.
-2. Run the chosen workflow if you found one.
 3. `{{ donna.lib.goto("finish") }}`.
 
 ## Finish

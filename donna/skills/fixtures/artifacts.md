@@ -8,19 +8,19 @@ Donna reads artifacts from the project filesystem. It does not mutate project ar
 
 The common artifact areas are:
 
-- `<project-root>/specs`: project-owned documentation and workflows.
-- `<project-root>/.agents/donna`: synced built-in Donna documentation and workflows.
+- `<project-root>/workflows`: project-owned workflows.
+- `<project-root>/.agents/donna`: synced built-in Donna documentation.
 - `<project-root>/.session/donna`: session artifacts and active workflow state.
 
 Example:
 
 ```text
-specs/work/polish.donna.md
-.agents/donna/rfc/work/request.donna.md
+workflows/polish.donna.md
+workflows/rfc/request.donna.md
 .session/donna/current_task.donna.md
 ```
 
-Donna sees only files allowed by `donna.toml:file_filters`.
+Donna sees only `.donna.md` files under directories listed in `donna.toml:workflow_dirs`.
 
 ## List Artifacts
 
@@ -47,7 +47,7 @@ donna -p llm artifacts list '**' --predicate '"workflow" in section.tags'
 View rendered artifact content when you need information from an artifact:
 
 ```bash
-donna -p llm artifacts view '@/specs/work/polish.donna.md'
+donna -p llm artifacts view '@/workflows/polish.donna.md'
 ```
 
 View all matching artifacts:
@@ -63,7 +63,7 @@ Agents should prefer rendered views for reading Donna artifacts. Read plain `.md
 Validate one artifact:
 
 ```bash
-donna -p llm artifacts validate '@/specs/work/polish.donna.md'
+donna -p llm artifacts validate '@/workflows/polish.donna.md'
 ```
 
 Validate all visible artifacts:
@@ -79,7 +79,7 @@ Run validation after creating or editing Donna artifacts.
 Use `@/` for project-root paths:
 
 ```bash
-donna -p llm artifacts view '@/specs/work/polish.donna.md'
+donna -p llm artifacts view '@/workflows/polish.donna.md'
 ```
 
 Use recursive wildcards when the exact location is unknown:
@@ -92,10 +92,10 @@ Pattern examples:
 
 - `@/*.donna.md`: Donna Markdown artifacts directly under the project root.
 - `@/**/polish.donna.md`: any artifact named `polish.donna.md`.
-- `@/.agents/donna/**`: synced Donna artifacts.
+- `@/workflows/**`: project workflow artifacts.
 - `@/.session/donna/**`: session artifacts.
 
-Do not pass relative filesystem paths such as `./specs/work/polish.donna.md`. Use `@/specs/work/polish.donna.md`.
+Do not pass relative filesystem paths such as `./workflows/polish.donna.md`. Use `@/workflows/polish.donna.md`.
 
 ## Creating Artifacts
 
@@ -150,13 +150,13 @@ The workflow is complete.
 Validate the workflow before running it:
 
 ```bash
-donna -p llm artifacts validate '@/specs/work/example.donna.md'
+donna -p llm artifacts validate '@/workflows/example.donna.md'
 ```
 
 Run it:
 
 ```bash
-donna -p llm sessions run '@/specs/work/example.donna.md'
+donna -p llm sessions run '@/workflows/example.donna.md'
 ```
 
 ## Managing Artifacts

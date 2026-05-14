@@ -118,7 +118,7 @@ donna -p llm sessions continue
 Run a workflow artifact:
 
 ```bash
-donna -p llm sessions run @/.agents/donna/work/polish.donna.md
+donna -p llm sessions run @/workflows/polish.donna.md
 ```
 
 Complete an action request by passing its id and the next operation id exactly as Donna instructed:
@@ -129,7 +129,7 @@ donna -p llm sessions action-request-completed AR-12-x @/.session/donna/workflow
 
 ## Artifact Commands
 
-Artifacts are `*.donna.md` project files admitted by Donna's file filters. Agents use artifacts to discover workflows, read documentation, and validate Donna-readable files.
+Artifacts are `*.donna.md` project files under Donna's configured `workflow_dirs`. Agents use artifacts to discover workflows, read documentation, and validate Donna-readable files.
 
 List all visible artifacts:
 
@@ -146,7 +146,7 @@ donna -p llm artifacts list '**' --predicate '"workflow" in section.tags'
 View an artifact:
 
 ```bash
-donna -p llm artifacts view '@/specs/work/polish.donna.md'
+donna -p llm artifacts view '@/workflows/polish.donna.md'
 ```
 
 Validate all visible artifacts:
@@ -179,7 +179,7 @@ donna -p llm artifacts list '**' --predicate '"workflow" in section.tags'
 4. Start the selected workflow:
 
 ```bash
-donna -p llm sessions run @/.agents/donna/work/polish.donna.md
+donna -p llm sessions run @/workflows/polish.donna.md
 ```
 
 5. Execute Donna action requests exactly.

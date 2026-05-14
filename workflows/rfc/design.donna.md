@@ -5,7 +5,7 @@ kind = "donna.lib.workflow"
 start_operation_id = "start"
 ```
 
-This workflow creates a Design document artifact based on an RFC and aligned with `../specs/design.md`.
+This workflow creates a Design document artifact based on an RFC and aligned with `workflows/rfc/specs/design.md`.
 
 ## Start Work
 
@@ -15,7 +15,7 @@ kind = "donna.lib.request_action"
 fsm_mode = "start"
 ```
 
-1. Read the `../specs/design.md` file if you haven't done it yet.
+1. Read the `workflows/rfc/specs/design.md` file if you haven't done it yet.
 2. Read the artifact instructions by running `donna skill artifacts` if you haven't done it yet.
 3. `{{ donna.lib.goto("ensure_rfc_artifact_exists") }}`
 
@@ -77,7 +77,7 @@ id = "initial_fill"
 kind = "donna.lib.request_action"
 ```
 
-1. Read the `../specs/design.md` file if you haven't done it yet.
+1. Read the `workflows/rfc/specs/design.md` file if you haven't done it yet.
 2. Read the RFC artifact selected in the previous step if you haven't done it yet.
 3. Analyze the project if needed to understand the requested change context.
 4. Fill in all sections of the Design draft document.
@@ -91,7 +91,7 @@ id = "review_design_format"
 kind = "donna.lib.request_action"
 ```
 
-1. List mismatches between the Design artifact and the specification in the `../specs/design.md` file.
+1. List mismatches between the Design artifact and the specification in the `workflows/rfc/specs/design.md` file.
 2. For each mismatch, make necessary edits to the Design draft document to ensure compliance.
 3. `{{ donna.lib.goto("review_design_content") }}`
 
@@ -102,7 +102,7 @@ id = "review_design_content"
 kind = "donna.lib.request_action"
 ```
 
-1. Read the Design document and identify gaps, inconsistencies, or areas for improvement in accordance with the RFC and current project context. Use the workflow in the `../../research/work/research.donna.md` file if you need to make a complex decision.
+1. Read the Design document and identify gaps, inconsistencies, or areas for improvement in accordance with the RFC and current project context.
 2. Make necessary edits to the Design draft document to address identified issues.
 3. If there were changes made on this step or the previous `review_design_format` step `{{ donna.lib.goto("review_design_format") }}`.
 4. If no changes were made, `{{ donna.lib.goto("finish") }}`.
