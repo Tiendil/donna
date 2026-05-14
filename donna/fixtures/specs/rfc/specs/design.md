@@ -8,7 +8,7 @@ Donna introduces a group of workflows located in `../**` namespace that organize
 
 You create a Design document to explicitly describe the exact changes you want to make to the project in order to implement the RFC.
 
-If not otherwise specified, Design documents for the session MUST be stored as `@/.session/donna/design/<short-problem-related-identifier>.md` files under `<project-root>/.session/donna`.
+If not otherwise specified, Design documents for the session MUST be stored as `@/.session/donna/design/<short-problem-related-identifier>.donna.md` files under `<project-root>/.session/donna`.
 
 **The Design document MUST list exact changes to the project that will be implemented.** E.g. concrete function names and signatures, file paths, data structures, etc.
 

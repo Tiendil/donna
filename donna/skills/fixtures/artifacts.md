@@ -161,7 +161,7 @@ donna -p llm sessions run '@/specs/work/example.donna.md'
 
 ## Managing Artifacts
 
-Use direct file edits to create, update, move, or delete artifact sources. Then use Donna to inspect the result.
+Use direct file edits to create, update, move, or delete artifact files. Then use Donna to inspect the result.
 
 Recommended loop:
 

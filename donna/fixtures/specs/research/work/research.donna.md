@@ -44,7 +44,7 @@ id = "prepare_artifact"
 kind = "donna.lib.request_action"
 ```
 
-1. Based on the problem description you have, suggest an artifact name in the format `@/.session/donna/research/<short-problem-related-identifier>.md`. `<short-problem-related-identifier>` MUST be unique within the session.
+1. Based on the problem description you have, suggest an artifact name in the format `@/.session/donna/research/<short-problem-related-identifier>.donna.md`. `<short-problem-related-identifier>` MUST be unique within the session.
 {# TODO: we can point agents at @/.session/donna/** when they need to inspect session files. #}
 2. Create the artifact and specify an original problem description in it.
 3. `{{ donna.lib.goto("formalize_research") }}`

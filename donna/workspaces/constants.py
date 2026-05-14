@@ -1,0 +1,1 @@
+DONNA_ARTIFACT_EXTENSION = ".donna.md"

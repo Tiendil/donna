@@ -30,7 +30,6 @@ We may need coding agents on each step of the process, but there is no reason fo
 - **Internal error** — an error caused by a bug or unexpected state in Donna itself. These errors are not expected to be handled by agents or users.
 - **Protocol** — the output/interaction mode for Donna (e.g., `llm`) that governs CLI behavior and rendering.
 - **Session** — the active unit of work tracked by Donna; its state and artifacts live under `<project-root>/.session/donna`.
-- **Source** — the entity that implements logic of building an artifact from its raw data (text or binary).
 - **Specification** — a normal Markdown document that describes behavior, rules, or project guidance.
 - **Story** — a semantically consistent scope of work within a session; a conceptual unit not directly represented in the tool.
 - **Tail section** — each H2 section of an artifact.

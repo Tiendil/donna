@@ -37,7 +37,7 @@ Donna executes such loops for the agents, thereby saving time, context, and toke
 - **Readable artifacts** — all workflows and documentation are pure Markdown files with some [Jinja2](https://github.com/pallets/jinja) templating.
 - **Artifact management** — non-fuzzy navigation and smart agent-focused rendering of artifacts.
 - **Agent-centric behavior** — Donna guides agents through workflows, helps them be on the path, and fixes mistakes.
-- **Extensible architecture** — implement your own operations, validators, renderers, and artifact sources.
+- **Extensible architecture** — implement your own operations, validators, renderers, and directives.
 - **Batteries included** — Donna goes with a set of pre-defined workflows, so you can start using it right away.
 
 ## Example
@@ -413,9 +413,8 @@ What you can implement:
 
 - Custom sections (including operations) for Donna artifacts. Check [./donna/primitives/artifacts](./donna/primitives/artifacts) and [./donna/primitives/sections](./donna/primitives/sections) subpackages for examples.
 - Custom rendering directives. Check [./donna/primitives/directives](./donna/primitives/directives) subpackage for examples.
-- Custom artifact parsers. Check [./donna/workspaces/sources](./donna/workspaces/sources) subpackage for examples.
 
-Sources and file filters are configured in the `donna.toml` file of your project.
+Donna artifacts are Markdown files ending with `.donna.md`. File filters are configured in the `donna.toml` file of your project.
 
 Sections and directives are used directly in artifacts by their Python import paths.
 

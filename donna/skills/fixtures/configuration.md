@@ -6,7 +6,7 @@ Donna project configuration lives at:
 <project-root>/donna.toml
 ```
 
-The file is created by `donna -p llm workspaces init`. Edit it when the project needs custom artifact sources, artifact visibility rules, cache behavior, or journal forwarding.
+The file is created by `donna -p llm workspaces init`. Edit it when the project needs artifact visibility rules, default section settings, cache behavior, or journal forwarding.
 
 ## Minimal Configuration
 
@@ -14,11 +14,9 @@ A default project can use the generated configuration without manual edits. The 
 
 ```toml
 session = ".session/donna"
+default_section_kind = "donna.lib.text"
+default_primary_section_id = "primary"
 cache_lifetime = 1.0
-
-[[sources]]
-kind = "donna.lib.sources.markdown"
-extension = ".donna.md"
 
 [[file_filters]]
 mode = "include"
@@ -56,36 +54,21 @@ session = ".session/donna"
 
 Relative paths are resolved from the project root; absolute paths are used as configured. Use a directory ignored by version control unless a project intentionally tracks session artifacts.
 
-## Sources
+## Default Sections
 
-`sources` tell Donna how to load artifacts with specific filename extensions.
+Donna loads artifacts only from `*.donna.md` Markdown files.
 
-Default Markdown source:
+When a non-primary section omits `kind`, Donna uses `default_section_kind`. When the primary section omits `id`, Donna uses `default_primary_section_id`.
 
 ```toml
-[[sources]]
-kind = "donna.lib.sources.markdown"
-extension = ".donna.md"
+default_section_kind = "donna.lib.text"
+default_primary_section_id = "primary"
 ```
 
 Fields:
 
-- `kind`: full Python path to a Donna source constructor.
-- `extension`: filename suffix handled by that source.
-
-Add a source only when Donna has a source implementation for that artifact format. Keep `.donna.md` configured unless the project intentionally disables default Markdown artifacts.
-
-Example with an additional custom source:
-
-```toml
-[[sources]]
-kind = "donna.lib.sources.markdown"
-extension = ".donna.md"
-
-[[sources]]
-kind = "project.donna_sources.yaml"
-extension = ".donna.yaml"
-```
+- `default_section_kind`: full Python path to the primitive used for sections without an explicit `kind`.
+- `default_primary_section_id`: section id assigned to the primary H1 section when it omits `id`.
 
 ## File Filters
 
@@ -177,4 +160,4 @@ donna -p llm artifacts list '**'
 donna -p llm artifacts validate '**'
 ```
 
-If Donna cannot load the project config, inspect the reported configuration error and fix the TOML or unsupported source path before continuing workflow work.
+If Donna cannot load the project config, inspect the reported configuration error and fix the TOML before continuing workflow work.

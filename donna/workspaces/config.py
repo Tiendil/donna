@@ -7,27 +7,18 @@ from typing import TYPE_CHECKING, Any
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
 from donna.domain.artifact_ids import ArtifactIdPattern
+from donna.domain.id_paths import NormalizedRawIdPath
+from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
-from donna.machine.primitives import resolve_primitive
 from donna.workspaces import errors as world_errors
-from donna.workspaces.sources.base import SourceConfig as SourceConfigValue
-from donna.workspaces.sources.base import SourceConstructor
+from donna.workspaces.constants import DONNA_ARTIFACT_EXTENSION
 
 if TYPE_CHECKING:
     from donna.protocol.modes import Mode
 
 DONNA_CONFIG_NAME = "donna.toml"
 DONNA_DEFAULT_SESSION_DIR = pathlib.Path(".session") / "donna"
-
-
-class SourceConfig(BaseEntity):
-    kind: PythonPath
-    extension: str
-
-    model_config = pydantic.ConfigDict(extra="allow")
 
 
 class FileFilterMode(str, enum.Enum):
@@ -84,52 +75,36 @@ class JournalConfig(BaseEntity):
         return value
 
 
-def _default_sources() -> list[SourceConfig]:
-    return [
-        SourceConfig.model_validate(
-            {
-                "kind": "donna.lib.sources.markdown",
-                "extension": ".donna.md",
-            }
-        ),
-    ]
+def _artifact_glob() -> str:
+    return f"*{DONNA_ARTIFACT_EXTENSION}"
+
+
+def _artifact_recursive_glob() -> str:
+    return f"**/{_artifact_glob()}"
 
 
 def _default_file_filters() -> list[FileFilter]:
     return [
-        FileFilter(mode=FileFilterMode.include, pattern=ArtifactIdPattern.parse("@/.agents/**/*.donna.md").unwrap()),
+        FileFilter(
+            mode=FileFilterMode.include,
+            pattern=ArtifactIdPattern.parse(f"@/.agents/{_artifact_recursive_glob()}").unwrap(),
+        ),
         FileFilter(mode=FileFilterMode.ignore, pattern=ArtifactIdPattern.parse(".*/**").unwrap()),
-        FileFilter(mode=FileFilterMode.include, pattern=ArtifactIdPattern.parse("**/*.donna.md").unwrap()),
+        FileFilter(mode=FileFilterMode.include, pattern=ArtifactIdPattern.parse(_artifact_recursive_glob()).unwrap()),
         FileFilter(mode=FileFilterMode.ignore, pattern=ArtifactIdPattern.parse("**").unwrap()),
     ]
 
 
 class Config(BaseEntity):
     session: pathlib.Path = DONNA_DEFAULT_SESSION_DIR
-    sources: list[SourceConfig] = pydantic.Field(default_factory=_default_sources)
+    default_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.text"))
+    default_primary_section_id: SectionId = SectionId("primary")
     file_filters: list[FileFilter] = pydantic.Field(default_factory=_default_file_filters)
     journal: JournalConfig = pydantic.Field(default_factory=JournalConfig)
-    _sources_instances: list[SourceConfigValue] = pydantic.PrivateAttr(default_factory=list)
 
     cache_lifetime: float = 1.0
 
-    def model_post_init(self, __context: Any) -> None:  # noqa: CCR001
-        sources: list[SourceConfigValue] = []
-
-        for source_config in self.sources:
-            primitive_result = resolve_primitive(source_config.kind)
-            if primitive_result.is_err():
-                error = primitive_result.unwrap_err()[0]
-                raise ValueError(error.message.format(error=error))
-
-            primitive = primitive_result.unwrap()
-
-            if not isinstance(primitive, SourceConstructor):
-                raise ValueError(f"Source constructor '{source_config.kind}' is not supported")
-
-            sources.append(primitive.construct_source(source_config))
-
-        object.__setattr__(self, "_sources_instances", sources)
+    def model_post_init(self, __context: Any) -> None:
         session_filter = FileFilter(mode=FileFilterMode.include, pattern=self.session_artifact_pattern())
         if session_filter not in self.file_filters:
             object.__setattr__(self, "file_filters", [session_filter, *self.file_filters])
@@ -137,42 +112,9 @@ class Config(BaseEntity):
     def session_artifact_pattern(self) -> ArtifactIdPattern:
         session_path = self.session.as_posix().strip("/")
         if session_path in {"", "."}:
-            return ArtifactIdPattern.parse("@/**/*.donna.md").unwrap()
+            return ArtifactIdPattern.parse(f"@/{_artifact_recursive_glob()}").unwrap()
 
-        return ArtifactIdPattern.parse(f"@/{session_path}/**/*.donna.md").unwrap()
-
-    @property
-    def sources_instances(self) -> list[SourceConfigValue]:
-        return list(self._sources_instances)
-
-    def get_source_config(self, kind: str) -> Result[SourceConfigValue, ErrorsList]:
-        for source in self._sources_instances:
-            if source.kind == kind:
-                return Ok(source)
-
-        return Err(
-            [
-                world_errors.SourceConfigNotConfigured(
-                    source_id=kind,
-                    kind=kind,
-                )
-            ]
-        )
-
-    def find_source_for_extension(self, extension: str) -> SourceConfigValue | None:
-        for source in self._sources_instances:
-            if source.supports_extension(extension):
-                return source
-
-        return None
-
-    def supported_extensions(self) -> set[str]:
-        extensions: set[str] = set()
-
-        for source in self._sources_instances:
-            extensions.add(source.extension)
-
-        return extensions
+        return ArtifactIdPattern.parse(f"@/{session_path}/{_artifact_recursive_glob()}").unwrap()
 
 
 class Workspace(BaseEntity):

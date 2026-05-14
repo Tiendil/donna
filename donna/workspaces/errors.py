@@ -2,6 +2,7 @@ import pathlib
 
 from donna.core import errors as core_errors
 from donna.domain.artifact_ids import ArtifactId
+from donna.workspaces.constants import DONNA_ARTIFACT_EXTENSION
 
 
 class InternalError(core_errors.InternalError):
@@ -68,17 +69,6 @@ class JournalCommandFailed(WorkspaceError):
     details: str
 
 
-class SourceError(WorkspaceError):
-    cell_kind: str = "source_error"
-    source_id: str
-
-
-class SourceConfigNotConfigured(SourceError):
-    code: str = "donna.workspaces.source_config_not_configured"
-    message: str = "Source config `{error.kind}` is not configured"
-    kind: str
-
-
 class ArtifactError(WorkspaceError):
     cell_kind: str = "artifact_error"
     artifact_id: ArtifactId
@@ -104,11 +94,11 @@ class ArtifactMultipleFiles(ArtifactError):
     ]
 
 
-class UnsupportedArtifactSourceExtension(ArtifactError):
-    code: str = "donna.workspaces.unsupported_artifact_source_extension"
-    message: str = "Unsupported artifact source extension `{error.extension}` for `{error.artifact_id}`"
+class UnsupportedArtifactExtension(ArtifactError):
+    code: str = "donna.workspaces.unsupported_artifact_extension"
+    message: str = "Unsupported artifact extension `{error.extension}` for `{error.artifact_id}`"
     ways_to_fix: list[str] = [
-        "Use a supported extension for the configured sources.",
+        f"Use the Donna artifact extension: `*{DONNA_ARTIFACT_EXTENSION}`.",
     ]
     extension: str
 

@@ -31,7 +31,7 @@ def _log_operation_on_artifacts(
 
 @artifacts_cli.command(
     help=(
-        "List artifacts matching a pattern with a supported source extension "
+        "List artifacts matching a pattern with the Donna artifact extension "
         "and show their status summaries. Lists all artifacts by default."
     )
 )
@@ -50,7 +50,7 @@ def list(
 
 
 @artifacts_cli.command(
-    help="Display artifacts matching a pattern or specific id that uses a supported source extension."
+    help="Display artifacts matching a pattern or specific id that uses the Donna artifact extension."
 )
 def view(
     typer_context: typer.Context,
@@ -67,7 +67,7 @@ def view(
 
 @artifacts_cli.command(
     help=(
-        "Validate artifacts matching a pattern with a supported source extension "
+        "Validate artifacts matching a pattern with the Donna artifact extension "
         "(defaults to all artifacts) and return any errors."
     )
 )

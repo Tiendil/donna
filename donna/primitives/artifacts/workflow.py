@@ -12,7 +12,7 @@ from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import FsmMode, OperationMeta
 from donna.machine.primitives import Primitive
 from donna.workspaces import markdown
-from donna.workspaces.sources.markdown import MarkdownSectionMixin
+from donna.workspaces.markdown_parser import MarkdownSectionMixin
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change

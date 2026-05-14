@@ -1,10 +1,9 @@
 import uuid
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Protocol, cast
+from typing import Any, ClassVar, Protocol, cast
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId
-from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
@@ -12,7 +11,6 @@ from donna.machine.primitives import Primitive, resolve_primitive
 from donna.workspaces import errors as world_errors
 from donna.workspaces import markdown
 from donna.workspaces.artifacts import ArtifactRenderContext
-from donna.workspaces.sources.base import SourceConfig, SourceConstructor
 from donna.workspaces.templates import RenderMode, render
 
 
@@ -25,25 +23,6 @@ class MarkdownSectionConstructor(Protocol):
         primary: bool = False,
     ) -> Result[ArtifactSection, ErrorsList]:
         pass
-
-
-class Config(SourceConfig):
-    kind: Literal["markdown"] = "markdown"
-    extension: str = ".donna.md"
-    default_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.text"))
-    default_primary_section_id: SectionId = SectionId("primary")
-
-    def construct_artifact_from_bytes(
-        self, artifact_id: ArtifactId, content: bytes, render_context: ArtifactRenderContext
-    ) -> Result[Artifact, ErrorsList]:
-        return construct_artifact_from_bytes(artifact_id, content, render_context, self)
-
-
-class MarkdownSourceConstructor(SourceConstructor):
-    def construct_source(self, config: "SourceConfigModel") -> Config:
-        data = config.model_dump()
-        data.pop("kind", None)
-        return Config.model_validate(data)
 
 
 class MarkdownSectionMixin:
@@ -154,14 +133,28 @@ def parse_artifact_content(
 
 
 def construct_artifact_from_bytes(
-    artifact_id: ArtifactId, content: bytes, render_context: ArtifactRenderContext, config: Config
+    artifact_id: ArtifactId,
+    content: bytes,
+    render_context: ArtifactRenderContext,
+    default_section_kind: PythonPath,
+    default_primary_section_id: SectionId,
 ) -> Result[Artifact, ErrorsList]:
-    return construct_artifact_from_markdown_source(artifact_id, content.decode("utf-8"), render_context, config)
+    return construct_artifact_from_markdown_source(
+        artifact_id,
+        content.decode("utf-8"),
+        render_context,
+        default_section_kind=default_section_kind,
+        default_primary_section_id=default_primary_section_id,
+    )
 
 
 @unwrap_to_error
 def construct_artifact_from_markdown_source(  # noqa: CCR001
-    artifact_id: ArtifactId, content: str, render_context: ArtifactRenderContext, config: Config
+    artifact_id: ArtifactId,
+    content: str,
+    render_context: ArtifactRenderContext,
+    default_section_kind: PythonPath,
+    default_primary_section_id: SectionId,
 ) -> Result[Artifact, ErrorsList]:
     original_sections = parse_artifact_content(artifact_id, content, render_context).unwrap()
     head_config = dict(original_sections[0].config().unwrap())
@@ -172,7 +165,7 @@ def construct_artifact_from_markdown_source(  # noqa: CCR001
         head_kind = PythonPath.parse(head_kind_value).unwrap()
 
     if "id" not in head_config or head_config["id"] is None:
-        head_config["id"] = config.default_primary_section_id
+        head_config["id"] = default_primary_section_id
 
     primary_primitive = resolve_primitive(head_kind).unwrap()
     _ensure_markdown_constructible(primary_primitive, head_kind).unwrap()
@@ -191,7 +184,7 @@ def construct_artifact_from_markdown_source(  # noqa: CCR001
     sections = construct_sections_from_markdown(
         artifact_id=artifact_id,
         sections=original_sections[1:],
-        default_section_kind=config.default_section_kind,
+        default_section_kind=default_section_kind,
     ).unwrap()
     sections = [primary_section, *sections]
     return Ok(Artifact(id=artifact_id, sections=sections))
@@ -258,7 +251,3 @@ def _ensure_markdown_constructible(
     kind_label = f"'{primitive_id}'" if primitive_id is not None else repr(primitive)
 
     return Err([world_errors.PrimitiveDoesNotSupportMarkdown(primitive_id=kind_label)])
-
-
-if TYPE_CHECKING:
-    from donna.workspaces.config import SourceConfig as SourceConfigModel

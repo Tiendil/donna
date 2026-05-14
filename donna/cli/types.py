@@ -10,7 +10,8 @@ from donna.domain.artifact_ids import ArtifactId, ArtifactIdPattern, ArtifactSec
 from donna.domain.internal_ids import ActionRequestId
 from donna.machine.artifacts import ArtifactPredicate
 from donna.protocol.modes import Mode
-from donna.workspaces.config import config as workspace_config
+from donna.workspaces.artifacts import has_donna_artifact_extension
+from donna.workspaces.constants import DONNA_ARTIFACT_EXTENSION
 
 
 def _exit_with_errors(errors: ErrorsList) -> NoReturn:
@@ -72,17 +73,6 @@ def _parse_artifact_section_id(value: str) -> ArtifactSectionId:
     return _parse_result_or_exit(result.ok(), result.err())
 
 
-def _match_supported_extension(filename: str) -> str | None:
-    supported_extensions = workspace_config().supported_extensions()
-    normalized = filename.strip().lower()
-
-    for extension in sorted(supported_extensions, key=len, reverse=True):
-        if normalized.endswith(extension):
-            return extension
-
-    return None
-
-
 def _artifact_filename(value: str) -> str:
     return pathlib.PurePosixPath(value.split(ArtifactSectionId.delimiter, maxsplit=1)[0]).name
 
@@ -100,9 +90,9 @@ def _pattern_filename(value: str) -> str | None:
 
 
 def validate_supported_artifact_id(artifact_id: ArtifactId) -> None:
-    if _match_supported_extension(_artifact_filename(str(artifact_id))) is None:
+    if not has_donna_artifact_extension(_artifact_filename(str(artifact_id))):
         raise typer.BadParameter(
-            f"Unsupported artifact extension for '{artifact_id}'. Use a filename extension supported by the sources."
+            f"Unsupported artifact extension for '{artifact_id}'. Use '*{DONNA_ARTIFACT_EXTENSION}'."
         )
 
 
@@ -111,10 +101,8 @@ def validate_supported_artifact_pattern(pattern: ArtifactIdPattern) -> None:
     if filename is None:
         return
 
-    if _match_supported_extension(filename) is None:
-        raise typer.BadParameter(
-            f"Unsupported artifact extension for '{pattern}'. Use a filename extension supported by the sources."
-        )
+    if not has_donna_artifact_extension(filename):
+        raise typer.BadParameter(f"Unsupported artifact extension for '{pattern}'. Use '*{DONNA_ARTIFACT_EXTENSION}'.")
 
 
 def validate_supported_artifact_section_id(section_id: ArtifactSectionId) -> None:
@@ -175,7 +163,7 @@ ArtifactIdArgument = Annotated[
     typer.Argument(
         parser=_parse_artifact_id,
         help=(
-            "Artifact ID in absolute project-root form with a supported source "
+            "Artifact ID in absolute project-root form with the Donna artifact "
             "extension (e.g., '@/specs/work/polish.donna.md')."
         ),
     ),
@@ -189,7 +177,7 @@ ArtifactIdPatternArgument = Annotated[
         help=(
             "Artifact pattern in absolute form '@/...' or rooted wildcard form like "
             "'*/x.donna.md' and '**/x.donna.md'. Patterns that name a file "
-            "extension must use a supported source extension."
+            "extension must use the Donna artifact extension."
         ),
     ),
 ]

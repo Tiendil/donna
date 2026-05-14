@@ -8,7 +8,7 @@ Donna introduces a group of workflows located in `../**` namespace that organize
 
 You create RFC documents to propose changes to the project.
 
-If not otherwise specified, RFC documents for the session MUST be stored as `@/.session/donna/rfc/<short-problem-related-identifier>.md` files under `<project-root>/.session/donna`.
+If not otherwise specified, RFC documents for the session MUST be stored as `@/.session/donna/rfc/<short-problem-related-identifier>.donna.md` files under `<project-root>/.session/donna`.
 
 ## RFC structure
 
@@ -255,7 +255,7 @@ Examples:
 - Bad: `- Work on authentication.`
 - Bad: `- Improve security everywhere.`
 - Bad: `- Fix the bugs A`
-- Good: `- Create an artifact ../../../../specs/authentication.md with sections "Login flow" and "Token lifecycle".`
+- Good: `- Create an artifact ../../../../specs/authentication.donna.md with sections "Login flow" and "Token lifecycle".`
 - Good: `- Add test file tests/auth/test_login.py covering invalid credential cases.`
 - Good: `- Implement test tests/auth/test_login.py:TestLogin:test_invalid_credentials.`
 - Good: `- Update CLI help text to include login command description.`

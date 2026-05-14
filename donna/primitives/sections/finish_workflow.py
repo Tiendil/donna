@@ -8,7 +8,7 @@ from donna.machine.operations import FsmMode, OperationConfig, OperationKind, Op
 from donna.protocol import cell_shortcuts
 from donna.protocol.utils import instant_output_cell
 from donna.workspaces import markdown
-from donna.workspaces.sources.markdown import MarkdownSectionMixin
+from donna.workspaces.markdown_parser import MarkdownSectionMixin
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change

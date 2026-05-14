@@ -40,7 +40,7 @@ id = "prepare_rfc_document"
 kind = "donna.lib.request_action"
 ```
 
-1. If the name of the artifact is not specified explicitly, assume it to be `@/.session/donna/rfc/<short-problem-related-identifier>.md`, where `<short-problem-related-identifier>` MUST be unique within the session.
+1. If the name of the artifact is not specified explicitly, assume it to be `@/.session/donna/rfc/<short-problem-related-identifier>.donna.md`, where `<short-problem-related-identifier>` MUST be unique within the session.
 2. Save the next template into the artifact, replace `<variables>` with appropriate values.
 
 ~~~

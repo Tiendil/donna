@@ -39,7 +39,7 @@ id = "prepare_design_document"
 kind = "donna.lib.request_action"
 ```
 
-1. If the name of the artifact is not specified explicitly, assume it to be `@/.session/donna/design/<short-problem-related-identifier>.md`, where `<short-problem-related-identifier>` SHOULD correspond to the RFC slug.
+1. If the name of the artifact is not specified explicitly, assume it to be `@/.session/donna/design/<short-problem-related-identifier>.donna.md`, where `<short-problem-related-identifier>` SHOULD correspond to the RFC slug.
 2. Save the next template into the artifact, replace `<variables>` with appropriate values.
 
 ~~~

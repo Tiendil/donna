@@ -129,7 +129,7 @@ donna -p llm sessions action-request-completed AR-12-x @/.session/donna/workflow
 
 ## Artifact Commands
 
-Artifacts are project files admitted by Donna's configured sources and file filters. Agents use artifacts to discover workflows, read documentation, and validate Donna-readable files.
+Artifacts are `*.donna.md` project files admitted by Donna's file filters. Agents use artifacts to discover workflows, read documentation, and validate Donna-readable files.
 
 List all visible artifacts:
 

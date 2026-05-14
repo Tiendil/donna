@@ -17,7 +17,7 @@ from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta
 from donna.workspaces import config as workspace_config
 from donna.workspaces import markdown
-from donna.workspaces.sources.markdown import MarkdownSectionMixin
+from donna.workspaces.markdown_parser import MarkdownSectionMixin
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
