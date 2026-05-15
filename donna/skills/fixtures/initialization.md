@@ -2,7 +2,7 @@
 
 Initialization creates the Donna project config and session directory.
 
-Use this document when a project has no `donna.toml` or when you need to check an existing Donna project.
+Use this document when a project has no `donna.toml`.
 
 ## What Initialization Creates
 
@@ -34,16 +34,6 @@ donna -p llm --root /path/to/project workspaces init
 ```
 
 The target directory must already exist. Donna creates `donna.toml` and the configured session directory inside it.
-
-## Check Existing Project
-
-Use `update`, not `init`, for an existing Donna project:
-
-```bash
-donna -p llm workspaces update
-```
-
-`update` requires an existing `donna.toml`.
 
 ## First Checks After Initialization
 

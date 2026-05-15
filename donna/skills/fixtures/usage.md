@@ -72,12 +72,6 @@ Initialize Donna in an explicit existing directory:
 donna -p llm --root /path/to/project workspaces init
 ```
 
-Check an existing Donna project:
-
-```bash
-donna -p llm workspaces update
-```
-
 ## Session Commands
 
 All workflow execution happens in the active session. Session state lives under the configured session directory, `.session/donna` by default.

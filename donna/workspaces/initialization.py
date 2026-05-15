@@ -80,13 +80,3 @@ def initialize_workspace(project_dir: pathlib.Path) -> Result[config.Workspace, 
 
     return Ok(workspace)
 
-
-@unwrap_to_error
-def update_workspace(project_dir: pathlib.Path) -> Result[None, core_errors.ErrorsList]:
-    project_dir = project_dir.resolve()
-    config_path = project_dir / config.DONNA_CONFIG_NAME
-
-    if not config_path.exists():
-        return Err([core_errors.ProjectDirNotFound(config_name=config.DONNA_CONFIG_NAME)])
-
-    return Ok(None)

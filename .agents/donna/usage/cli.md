@@ -68,7 +68,7 @@ Donna renders cells differently, depending on the protocol used.
 
 There are three sets of commands:
 
-- `donna -p <protocol> workspaces …` — initializes and refreshes Donna project files. Most likely it will be used once per project.
+- `donna -p <protocol> workspaces …` — initializes Donna project files. Most likely it will be used once per project.
 - `donna -p <protocol> sessions …` — manages sessions. You will use these commands to start, push forward, and manage your work.
 - `donna -p <protocol> artifacts …` — manages artifact discovery, reading, and validation.
 
@@ -81,7 +81,7 @@ Use:
 
 Run `donna -p <protocol> workspaces init [<directory-path>]` to initialize Donna in the given directory. If `<directory-path>` is omitted, Donna will initialize the current working directory.
 
-It is a one time operation you need to perform once per project to create `donna.toml`, the configured session directory, and synced Donna fixtures.
+It is a one time operation you need to perform once per project to create `donna.toml` and the configured session directory.
 
 ### Starting sessions
 
