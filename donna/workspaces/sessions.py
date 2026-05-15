@@ -3,6 +3,8 @@ import shutil
 
 from donna.workspaces.config import config, project_dir
 
+STATE_FILE_NAME = "state.json"
+
 
 def dir() -> pathlib.Path:
     return project_dir() / config().session
@@ -21,7 +23,7 @@ def reset_dir() -> None:
 
 
 def read_state() -> bytes | None:
-    path = dir() / "state.json"
+    path = dir() / STATE_FILE_NAME
     if not path.exists():
         return None
 
@@ -29,6 +31,6 @@ def read_state() -> bytes | None:
 
 
 def write_state(content: bytes) -> None:
-    path = dir() / "state.json"
+    path = dir() / STATE_FILE_NAME
     ensure_dir()
     path.write_bytes(content)
