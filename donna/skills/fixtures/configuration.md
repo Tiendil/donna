@@ -13,7 +13,7 @@ The file is created by `donna -p llm workspaces init`. Edit it when the project 
 A default project can use the generated configuration without manual edits. The effective defaults are:
 
 ```toml
-session = ".session/donna"
+session_dir = ".session/donna"
 default_section_kind = "donna.lib.text"
 default_primary_section_kind = "donna.lib.workflow"
 default_primary_section_id = "primary"
@@ -25,13 +25,13 @@ workflow_dirs = ["./workflows", "./.session/donna"]
 
 ## Session Directory
 
-`session` points to Donna's temporary session directory.
+`session_dir` points to Donna's temporary session directory.
 Donna stores runtime state, action requests, and session-created artifacts there.
 
 Default:
 
 ```toml
-session = ".session/donna"
+session_dir = ".session/donna"
 ```
 
 Relative paths are resolved from the project root; absolute paths are used as configured. Use a directory ignored by version control unless a project intentionally tracks session artifacts.

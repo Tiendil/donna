@@ -6,16 +6,22 @@ from donna.workspaces.config import config, project_dir
 STATE_FILE_NAME = "state.json"
 
 
+def _path() -> pathlib.Path:
+    return project_dir() / config().session_dir
+
+
 def dir() -> pathlib.Path:
-    return project_dir() / config().session
+    session_dir = _path()
+    session_dir.mkdir(parents=True, exist_ok=True)
+    return session_dir
 
 
 def ensure_dir() -> None:
-    dir().mkdir(parents=True, exist_ok=True)
+    dir()
 
 
 def reset_dir() -> None:
-    session_dir = dir()
+    session_dir = _path()
     if session_dir.exists():
         shutil.rmtree(session_dir)
 
@@ -32,5 +38,4 @@ def read_state() -> bytes | None:
 
 def write_state(content: bytes) -> None:
     path = dir() / STATE_FILE_NAME
-    ensure_dir()
     path.write_bytes(content)
