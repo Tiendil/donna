@@ -1,15 +1,17 @@
+import sys
 from typing import Annotated
 
 import click
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import ArtifactIdsArgument
+from donna.cli.types import ArtifactIdArgument, ArtifactIdsArgument, RenderModeOption
 from donna.cli.utils import command_context
 from donna.context.context import context
 from donna.machine import journal as machine_journal
 from donna.protocol.cell_shortcuts import operation_succeeded
-from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
+from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW, ArtifactRenderContext, fetch_artifact_bytes
+from donna.workspaces.templates import render as render_template
 
 artifacts_cli = typer.Typer()
 
@@ -28,6 +30,22 @@ def list_(
         artifacts = context().artifacts.list(RENDER_CONTEXT_VIEW).unwrap()
 
         command.write_cells(artifact.node().status() for artifact in artifacts)
+
+
+@artifacts_cli.command(help="Render an artifact with the selected render mode and write the markdown to stdout.")
+def render(
+    typer_context: typer.Context,
+    artifact_id: ArtifactIdArgument,
+    mode: RenderModeOption,
+) -> None:
+    with command_context(typer_context):
+        _log_artifact_operation(f"Render artifact `{artifact_id}` in `{mode.value}` mode")
+
+        content = fetch_artifact_bytes(artifact_id).unwrap().decode("utf-8")
+        render_context = ArtifactRenderContext(primary_mode=mode)
+        rendered = render_template(artifact_id, content, render_context).unwrap()
+
+        sys.stdout.write(rendered)
 
 
 @artifacts_cli.command(help="Validate the given artifact ids, or validate every discovered artifact with --all.")

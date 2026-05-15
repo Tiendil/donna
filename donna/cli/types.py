@@ -11,6 +11,7 @@ from donna.domain.internal_ids import ActionRequestId
 from donna.protocol.modes import Mode
 from donna.workspaces.artifacts import has_donna_artifact_extension
 from donna.workspaces.constants import DONNA_ARTIFACT_EXTENSION
+from donna.workspaces.templates import RenderMode
 
 
 def _exit_with_errors(errors: ErrorsList) -> NoReturn:
@@ -160,6 +161,14 @@ ProtocolModeOption = Annotated[
         "-p",
         parser=_parse_protocol_mode,
         help="Protocol mode to use (required). Examples: --protocol=llm, -p llm.",
+    ),
+]
+
+RenderModeOption = Annotated[
+    RenderMode,
+    typer.Option(
+        "--mode",
+        help="Artifact render mode to use. Examples: --mode=view, --mode=execute, --mode=analysis.",
     ),
 ]
 
