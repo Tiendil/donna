@@ -256,10 +256,6 @@ You and agents can `list` workflow artifacts and `validate` Donna artifacts.
 
 Artifact ids use absolute project-root form like `@/workflows/polish.donna.md`.
 
-Currently, Donna supports one standard artifact type tag:
-
-- `workflow` — marks a workflow artifact — is set automatically by Donna.
-
 You can find all workflows with `donna -p llm artifacts list`.
 
 ## Sessions

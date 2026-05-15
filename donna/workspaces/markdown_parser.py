@@ -93,7 +93,6 @@ class MarkdownSectionMixin:
                 kind=section_config.kind,
                 title=title,
                 description=description,
-                tags=section_config.tags,
                 primary=primary,
                 meta=meta,
             )

@@ -1,7 +1,5 @@
 from typing import Any
 
-import pydantic
-
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
@@ -16,7 +14,6 @@ from donna.protocol.nodes import Node
 class ArtifactSectionConfig(BaseEntity):
     id: SectionId
     kind: PythonPath
-    tags: list[str] = pydantic.Field(default_factory=list)
 
 
 class ArtifactSectionMeta(BaseEntity):
@@ -30,7 +27,6 @@ class ArtifactSection(BaseEntity):
     kind: PythonPath
     title: str
     description: str
-    tags: list[str] = pydantic.Field(default_factory=list)
     primary: bool = False
 
     meta: ArtifactSectionMeta

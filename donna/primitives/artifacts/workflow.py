@@ -1,7 +1,5 @@
 from typing import TYPE_CHECKING, ClassVar, cast
 
-import pydantic
-
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
@@ -95,13 +93,6 @@ def find_workflow_sections(start_operation_id: SectionId, artifact: Artifact) ->
 
 class WorkflowConfig(ArtifactSectionConfig):
     start_operation_id: SectionId
-
-    @pydantic.field_validator("tags", mode="after")
-    @classmethod
-    def ensure_workflow_tag(cls, value: list[str]) -> list[str]:
-        if "workflow" in value:
-            return value
-        return [*value, "workflow"]
 
 
 class WorkflowMeta(ArtifactSectionMeta):

@@ -87,7 +87,6 @@ Minimal workflow:
 
 ```toml donna
 kind = "donna.lib.workflow"
-tags = ["workflow"]
 start_operation_id = "ask_agent"
 ```
 
