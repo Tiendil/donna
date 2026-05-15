@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING
 from donna.context.entity_cache import TimedCache, TimedCacheValue
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
+from donna.domain.artifact_ids import ArtifactId
 from donna.domain.types import Milliseconds
-from donna.machine.artifacts import Artifact, ArtifactSection
+from donna.machine.artifacts import Artifact
 from donna.workspaces.templates import RenderMode
 
 if TYPE_CHECKING:
@@ -101,15 +101,6 @@ class ArtifactsCache(TimedCache):
         cached.rendered_artifacts[render_context.primary_mode] = artifact
 
         return Ok(artifact)
-
-    @unwrap_to_error
-    def resolve_section(
-        self,
-        target_id: ArtifactSectionId,
-        render_context: "ArtifactRenderContext",
-    ) -> Result[ArtifactSection, ErrorsList]:
-        artifact = self.load(target_id.artifact_id, render_context).unwrap()
-        return Ok(artifact.get_section(target_id.local_id).unwrap())
 
     @unwrap_to_error
     def list(  # noqa: CCR001

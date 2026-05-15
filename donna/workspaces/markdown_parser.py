@@ -136,6 +136,7 @@ def construct_artifact_from_bytes(
     content: bytes,
     render_context: ArtifactRenderContext,
     default_section_kind: PythonPath,
+    default_primary_section_kind: PythonPath,
     default_primary_section_id: SectionId,
 ) -> Result[Artifact, ErrorsList]:
     return construct_artifact_from_markdown_source(
@@ -143,6 +144,7 @@ def construct_artifact_from_bytes(
         content.decode("utf-8"),
         render_context,
         default_section_kind=default_section_kind,
+        default_primary_section_kind=default_primary_section_kind,
         default_primary_section_id=default_primary_section_id,
     )
 
@@ -153,10 +155,15 @@ def construct_artifact_from_markdown_source(  # noqa: CCR001
     content: str,
     render_context: ArtifactRenderContext,
     default_section_kind: PythonPath,
+    default_primary_section_kind: PythonPath,
     default_primary_section_id: SectionId,
 ) -> Result[Artifact, ErrorsList]:
     original_sections = parse_artifact_content(artifact_id, content, render_context).unwrap()
     head_config = dict(original_sections[0].config().unwrap())
+
+    if "kind" not in head_config or head_config["kind"] is None:
+        head_config["kind"] = default_primary_section_kind
+
     head_kind_value = head_config["kind"]
     if isinstance(head_kind_value, PythonPath):
         head_kind = head_kind_value

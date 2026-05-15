@@ -15,6 +15,7 @@ A default project can use the generated configuration without manual edits. The 
 ```toml
 session = ".session/donna"
 default_section_kind = "donna.lib.text"
+default_primary_section_kind = "donna.lib.workflow"
 default_primary_section_id = "primary"
 cache_lifetime = 1.0
 workflow_dirs = ["./workflows", "./.session/donna"]
@@ -39,16 +40,18 @@ Relative paths are resolved from the project root; absolute paths are used as co
 
 Donna loads artifacts only from `*.donna.md` Markdown files.
 
-When a non-primary section omits `kind`, Donna uses `default_section_kind`. When the primary section omits `id`, Donna uses `default_primary_section_id`.
+When a non-primary section omits `kind`, Donna uses `default_section_kind`. When the primary section omits `kind`, Donna uses `default_primary_section_kind`. When the primary section omits `id`, Donna uses `default_primary_section_id`.
 
 ```toml
 default_section_kind = "donna.lib.text"
+default_primary_section_kind = "donna.lib.workflow"
 default_primary_section_id = "primary"
 ```
 
 Fields:
 
 - `default_section_kind`: full Python path to the primitive used for sections without an explicit `kind`.
+- `default_primary_section_kind`: full Python path to the primitive used for the primary H1 section without an explicit `kind`.
 - `default_primary_section_id`: section id assigned to the primary H1 section when it omits `id`.
 
 ## Workflow Directories

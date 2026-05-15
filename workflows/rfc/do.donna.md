@@ -1,11 +1,6 @@
 
 # Do Request For Change work
 
-```toml donna
-kind = "donna.lib.workflow"
-start_operation_id = "estimate_complexity"
-```
-
 This workflow uses a description of a problem or changes required from the developer or parent workflow to:
 
 1. Create a Request for Change (RFC) artifact.

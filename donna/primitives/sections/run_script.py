@@ -12,7 +12,7 @@ from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
 from donna.machine import journal as machine_journal
-from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
+from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta
 from donna.workspaces import config as workspace_config
@@ -142,10 +142,11 @@ class RunScript(MarkdownSectionMixin, OperationKind):
 
     @unwrap_to_error
     def execute_section(
-        self, task: "Task", unit: "WorkUnit", operation: ArtifactSection
+        self, task: "Task", unit: "WorkUnit", artifact: Artifact, section_id: SectionId
     ) -> Result[list["Change"], ErrorsList]:
         from donna.machine.changes import ChangeAddWorkUnit, ChangeSetTaskContext
 
+        operation = artifact.get_section(section_id).unwrap()
         meta = cast(RunScriptMeta, operation.meta)
 
         script = meta.script

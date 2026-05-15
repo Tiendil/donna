@@ -79,4 +79,3 @@ def initialize_workspace(project_dir: pathlib.Path) -> Result[config.Workspace, 
     workspace_sessions.ensure_dir()
 
     return Ok(workspace)
-

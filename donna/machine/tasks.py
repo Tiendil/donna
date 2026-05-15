@@ -66,7 +66,8 @@ class WorkUnit(BaseEntity):
         )
         ctx = context()
         with ctx.current_operation_id.scope(self.operation_id):
-            operation = ctx.artifacts.resolve_section(self.operation_id, render_context).unwrap()
+            artifact = ctx.artifacts.load(self.operation_id.artifact_id, render_context).unwrap()
+            operation = artifact.get_section(self.operation_id.local_id).unwrap()
             operation_kind = ctx.primitives.resolve(operation.kind).unwrap()
 
             machine_journal.add(
@@ -74,6 +75,6 @@ class WorkUnit(BaseEntity):
                 message=operation.title,
             ).unwrap()
 
-            changes = operation_kind.execute_section(task, self, operation).unwrap()
+            changes = operation_kind.execute_section(task, self, artifact, operation.id).unwrap()
 
         return Ok(changes)

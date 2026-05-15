@@ -87,6 +87,7 @@ def _validate_workflow_dir(path: pathlib.Path) -> pathlib.Path:
 class Config(BaseEntity):
     session: pathlib.Path = DONNA_DEFAULT_SESSION_DIR
     default_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.text"))
+    default_primary_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.workflow"))
     default_primary_section_id: SectionId = SectionId("primary")
     workflow_dirs: list[pathlib.Path] = pydantic.Field(default_factory=_default_workflow_dirs)
     journal: JournalConfig = pydantic.Field(default_factory=JournalConfig)

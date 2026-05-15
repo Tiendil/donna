@@ -1,10 +1,5 @@
 # Create a Design document
 
-```toml donna
-kind = "donna.lib.workflow"
-start_operation_id = "start"
-```
-
 This workflow creates a Design document artifact based on an RFC and aligned with `workflows/rfc/specs/design.md`.
 
 ## Start Work

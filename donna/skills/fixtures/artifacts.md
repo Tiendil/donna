@@ -78,17 +78,12 @@ Documentation files are not Donna artifacts and do not need artifact validation.
 
 ## Creating Workflows
 
-A workflow artifact defines a finite-state machine. The head section declares workflow metadata and the start operation. Each H2 section declares one operation.
+A workflow artifact defines a finite-state machine. The H1 section is a workflow by default. Each H2 section declares one operation. When the H1 config omits `start_operation_id`, Donna starts from the first H2 section.
 
 Minimal workflow:
 
 ````markdown
 # Example Workflow
-
-```toml donna
-kind = "donna.lib.workflow"
-start_operation_id = "ask_agent"
-```
 
 This workflow asks the agent to do one thing and finish.
 

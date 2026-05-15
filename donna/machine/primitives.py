@@ -12,7 +12,7 @@ from donna.machine import errors as machine_errors
 from donna.machine.artifacts import ArtifactSectionConfig
 
 if TYPE_CHECKING:
-    from donna.machine.artifacts import Artifact, ArtifactSection
+    from donna.machine.artifacts import Artifact
     from donna.machine.changes import Change
     from donna.machine.tasks import Task, WorkUnit
 
@@ -26,7 +26,7 @@ class Primitive(BaseEntity):
         return Ok(None)
 
     def execute_section(
-        self, task: "Task", unit: "WorkUnit", section: "ArtifactSection"
+        self, task: "Task", unit: "WorkUnit", artifact: "Artifact", section_id: SectionId
     ) -> Result[list["Change"], ErrorsList]:
         raise machine_errors.PrimitiveMethodUnsupported(
             primitive_name=self.__class__.__name__, method_name="execute_section()"

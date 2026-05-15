@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING, ClassVar, Literal, cast
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId
-from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
+from donna.domain.ids import SectionId
+from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
 from donna.protocol import cell_shortcuts
 from donna.protocol.utils import instant_output_cell
@@ -22,10 +23,11 @@ class FinishWorkflowConfig(OperationConfig):
 class FinishWorkflow(MarkdownSectionMixin, OperationKind):
     @unwrap_to_error
     def execute_section(
-        self, task: "Task", unit: "WorkUnit", operation: ArtifactSection
+        self, task: "Task", unit: "WorkUnit", artifact: Artifact, section_id: SectionId
     ) -> Result[list["Change"], ErrorsList]:
         from donna.machine.changes import ChangeFinishTask
 
+        operation = artifact.get_section(section_id).unwrap()
         info = cell_shortcuts.info(operation.description)
         instant_output_cell(info)
 

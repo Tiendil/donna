@@ -9,7 +9,7 @@ from donna.domain import errors as domain_errors
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
 from donna.machine.action_requests import ActionRequest
-from donna.machine.artifacts import ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
+from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
 from donna.workspaces import markdown
 from donna.workspaces.markdown_parser import MarkdownSectionMixin
@@ -74,10 +74,11 @@ class RequestAction(MarkdownSectionMixin, OperationKind):
 
     @unwrap_to_error
     def execute_section(
-        self, task: "Task", unit: "WorkUnit", operation: ArtifactSection
+        self, task: "Task", unit: "WorkUnit", artifact: Artifact, section_id: SectionId
     ) -> Result[list["Change"], ErrorsList]:
         from donna.machine.changes import ChangeAddActionRequest
 
+        operation = artifact.get_section(section_id).unwrap()
         request_text = operation.description
 
         full_operation_id = unit.operation_id

@@ -1,11 +1,6 @@
 
 # Plan work on base of Design & Request for Change documents
 
-```toml donna
-kind = "donna.lib.workflow"
-start_operation_id = "start"
-```
-
 This workflow plans the work required to implement a specified Design document. The RFC document SHOULD be used as a helper context. The result of this workflow is a new workflow stored as a `@/.session/donna/**` artifact under `<project-root>/.session/donna` with detailed steps to implement the designed changes.
 
 ## Start Work
