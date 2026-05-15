@@ -1,9 +1,8 @@
 import pathlib
 import shutil
 
+from donna.domain.constants import STATE_FILE_NAME
 from donna.workspaces.config import config, project_dir
-
-STATE_FILE_NAME = "state.json"
 
 
 def _path() -> pathlib.Path:

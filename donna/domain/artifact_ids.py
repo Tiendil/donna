@@ -1,10 +1,9 @@
 import pathlib
 from typing import Sequence
 
+from donna.domain.constants import ARTIFACT_ID_PREFIX
 from donna.domain.id_paths import IdPath, NormalizedRawIdPath
 from donna.domain.ids import SectionId, _is_artifact_slug_part
-
-ARTIFACT_ID_PREFIX = "@/"
 
 
 def normalize_path(  # noqa: CCR001

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import pydantic
 
 from donna.core.entities import BaseEntity
+from donna.domain.constants import DONNA_DEFAULT_SESSION_DIR, DONNA_DEFAULT_WORKFLOW_DIR
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
@@ -14,10 +15,6 @@ from donna.workspaces import errors as world_errors
 
 if TYPE_CHECKING:
     from donna.protocol.modes import Mode
-
-DONNA_CONFIG_NAME = "donna.toml"
-DONNA_DEFAULT_SESSION_DIR = pathlib.Path(".session") / "donna"
-DONNA_DEFAULT_WORKFLOW_DIR = pathlib.Path("workflows")
 
 
 class JournalRecordAttribute(str, enum.Enum):

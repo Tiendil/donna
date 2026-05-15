@@ -6,6 +6,7 @@ import tomli_w
 from donna.core import errors as core_errors
 from donna.core import utils
 from donna.core.result import Err, Ok, Result, unwrap_to_error
+from donna.domain.constants import DONNA_CONFIG_NAME
 from donna.protocol.modes import Mode
 from donna.workspaces import config
 from donna.workspaces import errors as world_errors
@@ -16,13 +17,13 @@ from donna.workspaces import sessions as workspace_sessions
 def load_workspace(root_dir: pathlib.Path | None = None) -> Result[config.Workspace, core_errors.ErrorsList]:
     """Load workspace configuration without mutating process-global state."""
     if root_dir is None:
-        project_dir = utils.discover_project_dir(config.DONNA_CONFIG_NAME).unwrap()
+        project_dir = utils.discover_project_dir(DONNA_CONFIG_NAME).unwrap()
     else:
         project_dir = root_dir.resolve()
-        if not (project_dir / config.DONNA_CONFIG_NAME).is_file():
-            return Err([core_errors.ProjectDirNotFound(config_name=config.DONNA_CONFIG_NAME)])
+        if not (project_dir / DONNA_CONFIG_NAME).is_file():
+            return Err([core_errors.ProjectDirNotFound(config_name=DONNA_CONFIG_NAME)])
 
-    config_path = project_dir / config.DONNA_CONFIG_NAME
+    config_path = project_dir / DONNA_CONFIG_NAME
 
     if not config_path.exists():
         return Ok(config.Workspace(root=project_dir, config=config.Config()))
@@ -62,7 +63,7 @@ def initialize_runtime(
 def initialize_workspace(project_dir: pathlib.Path) -> Result[config.Workspace, core_errors.ErrorsList]:
     """Initialize Donna project configuration."""
     project_dir = project_dir.resolve()
-    config_path = project_dir / config.DONNA_CONFIG_NAME
+    config_path = project_dir / DONNA_CONFIG_NAME
 
     if config_path.exists():
         return Err([world_errors.WorkspaceAlreadyInitialized(config_path=config_path)])
