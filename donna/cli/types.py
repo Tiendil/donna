@@ -7,10 +7,10 @@ from donna.cli.utils import output_cells
 from donna.core.errors import ErrorsList
 from donna.domain import errors as domain_errors
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
+from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 from donna.domain.internal_ids import ActionRequestId
 from donna.protocol.modes import Mode
 from donna.workspaces.artifacts import has_donna_artifact_extension
-from donna.workspaces.constants import DONNA_ARTIFACT_EXTENSION
 from donna.workspaces.templates import RenderMode
 
 

@@ -2,7 +2,7 @@ import pathlib
 
 from donna.core import errors as core_errors
 from donna.domain.artifact_ids import ArtifactId
-from donna.workspaces.constants import DONNA_ARTIFACT_EXTENSION
+from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 
 
 class InternalError(core_errors.InternalError):

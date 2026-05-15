@@ -5,11 +5,11 @@ from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId
+from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.types import Milliseconds
 from donna.machine.tasks import Task, WorkUnit
 from donna.workspaces import errors as world_errors
-from donna.workspaces.constants import DONNA_ARTIFACT_EXTENSION
 from donna.workspaces.templates import RenderMode
 
 if TYPE_CHECKING:
