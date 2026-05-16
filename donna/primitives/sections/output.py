@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, ClassVar, cast
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import ArtifactId
+from donna.domain.artifact_ids import ArtifactId, artifact_section_id, split_artifact_section_id
 from donna.domain.ids import SectionId
 from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
@@ -72,7 +72,9 @@ class Output(MarkdownSectionMixin, OperationKind):
 
         next_operation_id = meta.next_operation_id
         assert next_operation_id is not None
-        full_operation_id = unit.operation_id.artifact_id.to_full_local(next_operation_id)
+        operation_parts = split_artifact_section_id(unit.operation_id)
+        assert operation_parts is not None
+        full_operation_id = artifact_section_id(operation_parts.artifact_id, next_operation_id)
 
         return Ok([ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id)])
 

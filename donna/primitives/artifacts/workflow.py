@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, ClassVar, cast
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import ArtifactId
+from donna.domain.artifact_ids import ArtifactId, artifact_section_id
 from donna.domain.ids import SectionId
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
@@ -135,7 +135,7 @@ class Workflow(MarkdownSectionMixin, Primitive):
 
         section = artifact.get_section(section_id).unwrap()
         start_operation_id = self._resolve_start_operation_id(artifact, section).unwrap()
-        full_id = artifact.id.to_full_local(start_operation_id)
+        full_id = artifact_section_id(artifact.id, start_operation_id)
 
         return Ok([ChangeAddWorkUnit(task_id=task.id, operation_id=full_id)])
 

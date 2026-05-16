@@ -6,9 +6,15 @@ import typer
 from donna.cli.utils import output_cells
 from donna.core.errors import ErrorsList
 from donna.domain import errors as domain_errors
-from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
+from donna.domain.artifact_ids import (
+    ARTIFACT_SECTION_DELIMITER,
+    ArtifactId,
+    ArtifactSectionId,
+    split_artifact_section_id,
+)
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 from donna.domain.internal_ids import ActionRequestId
+from donna.domain.paths import UntrustedPath
 from donna.protocol.modes import Mode
 from donna.workspaces import paths as workspace_paths
 from donna.workspaces.artifacts import has_donna_artifact_extension
@@ -28,7 +34,7 @@ def _parse_raw_artifact_path(value: str) -> str:
 
 
 def _artifact_filename(value: str) -> str:
-    return pathlib.PurePosixPath(value.split(ArtifactSectionId.delimiter, maxsplit=1)[0]).name
+    return pathlib.PurePosixPath(value.split(ARTIFACT_SECTION_DELIMITER, maxsplit=1)[0]).name
 
 
 def validate_supported_artifact_id(artifact_id: ArtifactId) -> None:
@@ -39,11 +45,17 @@ def validate_supported_artifact_id(artifact_id: ArtifactId) -> None:
 
 
 def validate_supported_artifact_section_id(section_id: ArtifactSectionId) -> None:
-    validate_supported_artifact_id(section_id.artifact_id)
+    parts = split_artifact_section_id(section_id)
+    if parts is None:
+        raise typer.BadParameter(f"Invalid artifact section id '{section_id}'.")
+
+    validate_supported_artifact_id(parts.artifact_id)
 
 
 def parse_artifact_id_argument(value: str, project_root: pathlib.Path) -> ArtifactId:
-    artifact_id = workspace_paths.normalize_artifact_id(value, project_root, cwd=pathlib.Path.cwd())
+    artifact_id = workspace_paths.normalize_artifact_id(
+        value, UntrustedPath(project_root), cwd=UntrustedPath(pathlib.Path.cwd())
+    )
     if artifact_id is None:
         _exit_with_errors([domain_errors.InvalidIdFormat(id_type=ArtifactId.__name__, value=value)])
 
@@ -52,7 +64,9 @@ def parse_artifact_id_argument(value: str, project_root: pathlib.Path) -> Artifa
 
 
 def parse_artifact_section_id_argument(value: str, project_root: pathlib.Path) -> ArtifactSectionId:
-    section_id = workspace_paths.normalize_artifact_section_id(value, project_root, cwd=pathlib.Path.cwd())
+    section_id = workspace_paths.normalize_artifact_section_id(
+        value, UntrustedPath(project_root), cwd=UntrustedPath(pathlib.Path.cwd())
+    )
     if section_id is None:
         _exit_with_errors([domain_errors.InvalidIdFormat(id_type=f"{ArtifactSectionId.__name__} format", value=value)])
 

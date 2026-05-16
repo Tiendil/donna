@@ -4,12 +4,13 @@ from typing import TYPE_CHECKING, Iterator, Sequence
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import ArtifactId
+from donna.domain.artifact_ids import ArtifactId, artifact_path_parts, validate_artifact_id
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
-from donna.domain.id_paths import NormalizedRawIdPath
+from donna.domain.paths import UntrustedPath
 from donna.domain.types import Milliseconds
 from donna.machine.tasks import Task, WorkUnit
 from donna.workspaces import errors as world_errors
+from donna.workspaces.paths import normalize_existing_path
 from donna.workspaces.templates import RenderMode
 
 if TYPE_CHECKING:
@@ -41,11 +42,11 @@ def has_donna_artifact_extension(path: pathlib.Path | str) -> bool:
 
 
 def _artifact_id_from_parts(parts: Sequence[str]) -> ArtifactId | None:
-    artifact_name = "/".join(parts)
-    if not ArtifactId.validate(artifact_name):
+    artifact_name = "@/" + "/".join(parts)
+    if not validate_artifact_id(artifact_name):
         return None
 
-    return ArtifactId(NormalizedRawIdPath(artifact_name))
+    return ArtifactId(artifact_name)
 
 
 def _workflow_dir_parts(path: pathlib.Path) -> tuple[str, ...]:
@@ -53,12 +54,14 @@ def _workflow_dir_parts(path: pathlib.Path) -> tuple[str, ...]:
 
 
 def _artifact_is_in_workflow_dirs(artifact_id: ArtifactId, workflow_dirs: Sequence[pathlib.Path]) -> bool:
+    artifact_parts = artifact_path_parts(artifact_id)
+
     for workflow_dir in workflow_dirs:
         workflow_parts = _workflow_dir_parts(workflow_dir)
-        if len(artifact_id.parts) <= len(workflow_parts):
+        if len(artifact_parts) <= len(workflow_parts):
             continue
 
-        if artifact_id.parts[: len(workflow_parts)] == workflow_parts:
+        if artifact_parts[: len(workflow_parts)] == workflow_parts:
             return True
 
     return False
@@ -134,11 +137,14 @@ def list_artifact_ids() -> list[ArtifactId]:
 def resolve_artifact_path(artifact_id: ArtifactId) -> Result[pathlib.Path | None, ErrorsList]:
     from donna.workspaces.config import project_dir
 
-    artifact_path = project_dir().joinpath(*artifact_id.parts)
+    artifact_path = project_dir().joinpath(*artifact_path_parts(artifact_id))
     if not artifact_path.parent.exists():
         return Ok(None)
 
     if not artifact_path.exists() or not artifact_path.is_file():
+        return Ok(None)
+
+    if normalize_existing_path(UntrustedPath(artifact_path), UntrustedPath(project_dir())) is None:
         return Ok(None)
 
     return Ok(artifact_path)
