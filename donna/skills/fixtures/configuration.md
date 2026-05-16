@@ -2,9 +2,10 @@
 
 `donna.toml` tells `donna` where a project's workflow virtual machine stores state, where it discovers workflow artifacts, which default section primitives to use, and how to forward workflow journal records.
 
-The configuration file has two main parts:
+The configuration file has three main parts:
 
-- Top-level workspace settings configure session storage, artifact discovery, and default artifact section behavior.
+- Top-level workspace settings configure schema version, session storage, and artifact discovery.
+- `defaults` configures fallback artifact section behavior.
 - `journal` configures optional forwarding of Donna journal records to an external command.
 
 The configuration file is TOML with schema version `1`. The presence of `donna.toml` marks a Donna project root.
@@ -37,10 +38,12 @@ Effective defaults:
 ```toml
 version = 1
 session_dir = ".session/donna"
-default_section_kind = "donna.lib.text"
-default_primary_section_kind = "donna.lib.workflow"
-default_primary_section_id = "primary"
 workflow_dirs = ["./workflows", "./.session/donna"]
+
+[defaults]
+section_kind = "donna.lib.text"
+primary_section_kind = "donna.lib.workflow"
+primary_section_id = "primary"
 
 [journal]
 ```
@@ -49,10 +52,8 @@ Top-level fields:
 
 - `version`: optional integer, currently `1`.
 - `session_dir`: optional relative path to Donna's session directory.
-- `default_section_kind`: optional Python path to the primitive used for non-primary sections without an explicit `kind`.
-- `default_primary_section_kind`: optional Python path to the primitive used for the primary H1 section without an explicit `kind`.
-- `default_primary_section_id`: optional section id assigned to the primary H1 section when it omits `id`.
 - `workflow_dirs`: optional list of relative directories scanned for `.donna.md` workflow artifacts.
+- `defaults`: optional default artifact section config.
 - `journal`: optional journal forwarding config.
 
 Unknown top-level fields are invalid.
@@ -119,22 +120,23 @@ Donna artifacts are Markdown files ending with `.donna.md`. Each artifact is spl
 The default section fields let a project omit repetitive config in common artifacts:
 
 ```toml
-default_section_kind = "donna.lib.text"
-default_primary_section_kind = "donna.lib.workflow"
-default_primary_section_id = "primary"
+[defaults]
+section_kind = "donna.lib.text"
+primary_section_kind = "donna.lib.workflow"
+primary_section_id = "primary"
 ```
 
 Fields:
 
-- `default_section_kind`: optional Python import path, default `donna.lib.text`.
-- `default_primary_section_kind`: optional Python import path, default `donna.lib.workflow`.
-- `default_primary_section_id`: optional section id, default `primary`.
+- `section_kind`: optional Python import path, default `donna.lib.text`.
+- `primary_section_kind`: optional Python import path, default `donna.lib.workflow`.
+- `primary_section_id`: optional section id, default `primary`.
 
-When a non-primary section omits `kind`, Donna uses `default_section_kind`.
+When a non-primary section omits `kind`, Donna uses `defaults.section_kind`.
 
-When the primary H1 section omits `kind`, Donna uses `default_primary_section_kind`.
+When the primary H1 section omits `kind`, Donna uses `defaults.primary_section_kind`.
 
-When the primary H1 section omits `id`, Donna uses `default_primary_section_id`.
+When the primary H1 section omits `id`, Donna uses `defaults.primary_section_id`.
 
 Most projects should not change these fields. Change them only when a project intentionally uses custom Donna primitives or a different artifact convention.
 

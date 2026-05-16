@@ -6,9 +6,10 @@ session_dir = ".session/donna"
 # Defaults to simplify initialization of a workflow.
 # Most likely you don't need to change these unless you implement a custom operation or workflow.
 #
-# default_section_kind = "donna.lib.text"
-# default_primary_section_kind = "donna.lib.workflow"
-# default_primary_section_id = "primary"
+# [defaults]
+# section_kind = "donna.lib.text"
+# primary_section_kind = "donna.lib.workflow"
+# primary_section_id = "primary"
 
 # Directories where Donna will look for workflow files.
 workflow_dirs = [

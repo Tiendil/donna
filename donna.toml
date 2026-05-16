@@ -1,10 +1,12 @@
 version = 1
 
 session_dir = ".session/donna"
-default_section_kind = "donna.lib.text"
-default_primary_section_kind = "donna.lib.workflow"
-default_primary_section_id = "primary"
 workflow_dirs = ["./workflows", "./.session/donna"]
+
+[defaults]
+section_kind = "donna.lib.text"
+primary_section_kind = "donna.lib.workflow"
+primary_section_id = "primary"
 
 [journal]
 cmd = ["./bin/taskwarior.sh", "log", "+journal", "+donna", "kind:event", "{message}"]

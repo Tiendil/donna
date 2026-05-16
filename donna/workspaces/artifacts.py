@@ -186,14 +186,15 @@ def render_markdown_artifact(
     from donna.workspaces.markdown_parser import construct_artifact_from_bytes
 
     workspace_config = config()
+    defaults = workspace_config.defaults
     return Ok(
         construct_artifact_from_bytes(
             artifact_id,
             content,
             render_context,
-            default_section_kind=workspace_config.default_section_kind,
-            default_primary_section_kind=workspace_config.default_primary_section_kind,
-            default_primary_section_id=workspace_config.default_primary_section_id,
+            default_section_kind=defaults.section_kind,
+            default_primary_section_kind=defaults.primary_section_kind,
+            default_primary_section_id=defaults.primary_section_id,
         ).unwrap()
     )
 

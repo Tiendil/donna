@@ -60,6 +60,12 @@ class JournalConfig(BaseEntity):
         return value
 
 
+class DefaultsConfig(BaseEntity):
+    section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.text"))
+    primary_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.workflow"))
+    primary_section_id: SectionId = SectionId("primary")
+
+
 def _default_workflow_dirs() -> list[RelativeProjectPath]:
     return [
         RelativeProjectPath(DONNA_DEFAULT_WORKFLOW_DIR),
@@ -84,9 +90,7 @@ def _validate_relative_project_path(path: RelativeProjectPath) -> RelativeProjec
 class Config(BaseEntity):
     version: Literal[1] = 1
     session_dir: RelativeProjectPath = RelativeProjectPath(DONNA_DEFAULT_SESSION_DIR)
-    default_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.text"))
-    default_primary_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.workflow"))
-    default_primary_section_id: SectionId = SectionId("primary")
+    defaults: DefaultsConfig = pydantic.Field(default_factory=DefaultsConfig)
     workflow_dirs: list[RelativeProjectPath] = pydantic.Field(default_factory=_default_workflow_dirs)
     journal: JournalConfig = pydantic.Field(default_factory=JournalConfig)
 
