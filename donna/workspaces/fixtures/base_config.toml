@@ -1,11 +1,35 @@
+
+# Directory where Donna will keep its state.
 session_dir = ".session/donna"
-default_section_kind = "donna.lib.text"
-default_primary_section_kind = "donna.lib.workflow"
-default_primary_section_id = "primary"
+
+# Defaults to simplify initialization of a workflow.
+# Most likely you don't need to change these unless you implement a custom operation or workflow.
+#
+# default_section_kind = "donna.lib.text"
+# default_primary_section_kind = "donna.lib.workflow"
+# default_primary_section_id = "primary"
+
+# Directories where Donna will look for workflow files.
 workflow_dirs = [
     "./workflows",
     "./.session/donna",
 ]
-cache_lifetime = 1.0
+
+# Lifetime of the cache of loaded files in seconds.
+# cache_lifetime = 1.0
 
 [journal]
+# Command Donna will execute to log a workflow execution progress.
+# If the command is not specified, Donna will not log anything.
+#
+# Example: append journal records to a project-local text file.
+# Uses only /bin/sh and printf, which are available on standard Linux systems.
+# cmd = [
+#     "/bin/sh",
+#     "-c",
+#     "printf '%s [%s] %s\\n' \"$1\" \"$2\" \"$3\" >> donna.log",
+#     "journal",
+#     "{timestamp}",
+#     "{actor_id}",
+#     "{message}",
+# ]
