@@ -93,17 +93,15 @@ primary_section_id = "primary"
 
 Fields:
 
-- `tail_section_kind`: optional Python import path used for H2 sections without explicit `kind`, default `donna.lib.text`.
-- `primary_section_kind`: optional Python import path used for the H1 section without explicit `kind`, default `donna.lib.workflow`.
-- `primary_section_id`: optional section id used for the H1 section without explicit `id`, default `primary`.
+- `tail_section_kind`: default primitive path used for H2 sections without explicit `kind`.
+- `primary_section_kind`: default primitive path used for the H1 section without explicit `kind`.
+- `primary_section_id`: default section id used for the H1 section without explicit `id`.
+
+Primitive is a Python object that is used to interpret the content of an artifact section.
+
+Read `donna -p llm skill workflows` for a deeper explanation.
 
 Explicit section config always wins over these defaults.
-
-The primary H1 section is the artifact-level section. In normal workflow artifacts, it can omit `id` and `kind` because Donna fills them from `defaults.primary_section_id` and `defaults.primary_section_kind`.
-
-Tail H2 sections are child sections. When a tail section omits `kind`, Donna fills it from `defaults.tail_section_kind`. When a tail section omits `id`, Donna generates a temporary Markdown section id; there is no configurable default tail id.
-
-The default `tail_section_kind` is `donna.lib.text`, so unconfigured H2 sections are treated as text/documentation sections. Workflow operation sections usually need explicit `kind` values such as `donna.lib.request_action`, `donna.lib.run_script`, `donna.lib.output`, or `donna.lib.finish`.
 
 Most projects should not change `defaults`. Change these fields only when a project intentionally uses custom Donna primitives or a different artifact convention.
 
