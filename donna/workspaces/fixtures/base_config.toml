@@ -20,15 +20,14 @@ workflow_dirs = [
 # Command Donna will execute to log a workflow execution progress.
 # If the command is not specified, Donna will not log anything.
 #
-# Example: append journal records to a project-local text file.
-# Uses only /bin/sh and printf, which are available on standard Linux systems.
+# Example: forward journal records to a project-specific journal tool.
 # [journal]
 # cmd = [
-#     "/bin/sh",
-#     "-c",
-#     "printf '%s [%s] %s\\n' \"$1\" \"$2\" \"$3\" >> donna.log",
-#     "journal",
+#     "./bin/journal-tool.sh",
+#     "record",
 #     "{timestamp}",
 #     "{actor_id}",
+#     "{current_task_id}",
+#     "{current_operation_id}",
 #     "{message}",
 # ]

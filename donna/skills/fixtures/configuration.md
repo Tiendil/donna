@@ -111,27 +111,20 @@ Most projects should not change `defaults`. Change these fields only when a proj
 
 ```toml
 [journal]
-cmd = ["./bin/taskwarior.sh", "log", "+journal", "+donna", "{message}"]
+cmd = [
+    "./bin/journal-tool.sh",
+    "record",
+    "{timestamp}",
+    "{actor_id}",
+    "{current_task_id}",
+    "{current_operation_id}",
+    "{message}",
+]
 ```
 
 Fields:
 
 - `cmd`: optional non-empty list of command arguments.
-
-Donna does not run a shell implicitly. If shell behavior is required, call a shell explicitly:
-
-```toml
-[journal]
-cmd = [
-    "/bin/sh",
-    "-c",
-    "printf '%s [%s] %s\n' \"$1\" \"$2\" \"$3\" >> donna.log",
-    "journal",
-    "{timestamp}",
-    "{actor_id}",
-    "{message}",
-]
-```
 
 Supported whole-argument placeholders:
 
