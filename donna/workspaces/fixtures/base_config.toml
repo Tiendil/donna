@@ -16,12 +16,13 @@ workflow_dirs = [
     "./workflows",
     "./.session/donna",
 ]
-[journal]
+
 # Command Donna will execute to log a workflow execution progress.
 # If the command is not specified, Donna will not log anything.
 #
 # Example: append journal records to a project-local text file.
 # Uses only /bin/sh and printf, which are available on standard Linux systems.
+# [journal]
 # cmd = [
 #     "/bin/sh",
 #     "-c",
