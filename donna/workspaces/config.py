@@ -89,8 +89,6 @@ class Config(BaseEntity):
     workflow_dirs: list[RelativeProjectPath] = pydantic.Field(default_factory=_default_workflow_dirs)
     journal: JournalConfig = pydantic.Field(default_factory=JournalConfig)
 
-    cache_lifetime: float = 1.0
-
     @pydantic.field_validator("session_dir", mode="after")
     @classmethod
     def validate_session_dir(cls, value: RelativeProjectPath) -> RelativeProjectPath:

@@ -1,43 +1,42 @@
 from typing import TYPE_CHECKING
 
-from donna.context.entity_cache import TimedCache, TimedCacheValue
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId
-from donna.domain.types import Milliseconds
 from donna.machine.artifacts import Artifact
+from donna.workspaces import errors as workspace_errors
 from donna.workspaces.templates import RenderMode
 
 if TYPE_CHECKING:
     from donna.workspaces.artifacts import ArtifactRenderContext, FilesystemRawArtifact
+    from donna.workspaces.files import FileFingerprint
 
 
-class _ArtifactCacheValue(TimedCacheValue):
-    __slots__ = ("raw_artifact", "rendered_artifacts")
+class _ArtifactCacheValue:
+    __slots__ = ("fingerprint", "raw_artifact", "rendered_artifacts")
 
     def __init__(
         self,
         raw_artifact: "FilesystemRawArtifact",
         rendered_artifacts: dict[RenderMode, Artifact],
-        loaded_at_ms: Milliseconds,
-        checked_at_ms: Milliseconds,
+        fingerprint: "FileFingerprint",
     ) -> None:
-        super().__init__(loaded_at_ms=loaded_at_ms, checked_at_ms=checked_at_ms)
         self.raw_artifact = raw_artifact
         self.rendered_artifacts = rendered_artifacts
+        self.fingerprint = fingerprint
 
 
-class ArtifactsCache(TimedCache):
+class ArtifactsCache:
     __slots__ = ("_cache",)
 
     def __init__(self) -> None:
         self._cache: dict[ArtifactId, _ArtifactCacheValue] = {}
 
     @unwrap_to_error
-    def _is_cache_stale(self, artifact_id: ArtifactId, loaded_at_ms: Milliseconds) -> Result[bool, ErrorsList]:
-        from donna.workspaces.artifacts import has_artifact_changed
+    def _is_cache_stale(self, artifact_id: ArtifactId, fingerprint: "FileFingerprint") -> Result[bool, ErrorsList]:
+        from donna.workspaces.artifacts import artifact_fingerprint
 
-        return Ok(has_artifact_changed(artifact_id, since=loaded_at_ms).unwrap())
+        return Ok(artifact_fingerprint(artifact_id).unwrap() != fingerprint)
 
     @staticmethod
     @unwrap_to_error
@@ -47,15 +46,18 @@ class ArtifactsCache(TimedCache):
         return Ok(fetch_raw_artifact(artifact_id).unwrap())
 
     @unwrap_to_error
-    def _refresh_cache_value(
-        self, artifact_id: ArtifactId, now_ms: Milliseconds
-    ) -> Result[_ArtifactCacheValue, ErrorsList]:
+    def _refresh_cache_value(self, artifact_id: ArtifactId) -> Result[_ArtifactCacheValue, ErrorsList]:
+        from donna.workspaces.files import FileFingerprint
+
         raw_artifact = self._load_raw_artifact(artifact_id).unwrap()
+        fingerprint = FileFingerprint.from_path(raw_artifact.path)
+        if fingerprint is None:
+            return Err([workspace_errors.ArtifactNotFound(artifact_id=artifact_id)])
+
         refreshed = _ArtifactCacheValue(
             raw_artifact=raw_artifact,
             rendered_artifacts={},
-            loaded_at_ms=now_ms,
-            checked_at_ms=now_ms,
+            fingerprint=fingerprint,
         )
         self._cache[artifact_id] = refreshed
         return Ok(refreshed)
@@ -63,21 +65,15 @@ class ArtifactsCache(TimedCache):
     @unwrap_to_error
     def _get_cache_value(self, artifact_id: ArtifactId) -> Result[_ArtifactCacheValue, ErrorsList]:
         cached = self._cache.get(artifact_id)
-        now_ms = self._now_ms()
 
         if cached is None:
-            return Ok(self._refresh_cache_value(artifact_id, now_ms).unwrap())
+            return Ok(self._refresh_cache_value(artifact_id).unwrap())
 
-        # Skip expensive filesystem checks when cache lifetime has not elapsed yet.
-        if self._is_within_lifetime(cached, now_ms):
-            return Ok(cached)
-
-        cache_stale = self._is_cache_stale(artifact_id, cached.loaded_at_ms).unwrap()
-        self._mark_checked(cached, now_ms)
+        cache_stale = self._is_cache_stale(artifact_id, cached.fingerprint).unwrap()
         if not cache_stale:
             return Ok(cached)
 
-        return Ok(self._refresh_cache_value(artifact_id, now_ms).unwrap())
+        return Ok(self._refresh_cache_value(artifact_id).unwrap())
 
     def invalidate(self, artifact_id: ArtifactId) -> None:
         self._cache.pop(artifact_id, None)

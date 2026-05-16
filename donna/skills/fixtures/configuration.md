@@ -6,7 +6,7 @@ Donna project configuration lives at:
 <project-root>/donna.toml
 ```
 
-The file is created by `donna -p llm init`. Edit it when the project needs workflow source directories, default section settings, cache behavior, or journal forwarding.
+The file is created by `donna -p llm init`. Edit it when the project needs workflow source directories, default section settings, or journal forwarding.
 
 ## Minimal Configuration
 
@@ -17,7 +17,6 @@ session_dir = ".session/donna"
 default_section_kind = "donna.lib.text"
 default_primary_section_kind = "donna.lib.workflow"
 default_primary_section_id = "primary"
-cache_lifetime = 1.0
 workflow_dirs = ["./workflows", "./.session/donna"]
 
 [journal]
@@ -116,18 +115,6 @@ cmd = [
   "{message}",
 ]
 ```
-
-## Cache Lifetime
-
-`cache_lifetime` controls how long Donna may reuse cached project data, in seconds.
-
-Example:
-
-```toml
-cache_lifetime = 0.25
-```
-
-Use a smaller value when artifacts are edited rapidly by external tools. Use the default unless stale reads are observed.
 
 ## Validation Workflow
 

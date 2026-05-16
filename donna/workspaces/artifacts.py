@@ -7,9 +7,9 @@ from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId, artifact_path_parts, validate_artifact_id
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 from donna.domain.paths import ProjectPathId, RelativeProjectPath, ResolvedProjectPath, UntrustedPath
-from donna.domain.types import Milliseconds
 from donna.machine.tasks import Task, WorkUnit
 from donna.workspaces import errors as world_errors
+from donna.workspaces.files import FileFingerprint
 from donna.workspaces.paths import normalize_existing_path
 from donna.workspaces.templates import RenderMode
 
@@ -199,10 +199,10 @@ def render_markdown_artifact(
 
 
 @unwrap_to_error
-def has_artifact_changed(artifact_id: ArtifactId, since: Milliseconds) -> Result[bool, ErrorsList]:
+def artifact_fingerprint(artifact_id: ArtifactId) -> Result[FileFingerprint | None, ErrorsList]:
     artifact_path = resolve_artifact_path(artifact_id).unwrap()
 
     if artifact_path is None:
-        return Ok(True)
+        return Ok(None)
 
-    return Ok((artifact_path.stat().st_mtime_ns // 1_000_000) > since)
+    return Ok(FileFingerprint.from_path(artifact_path))

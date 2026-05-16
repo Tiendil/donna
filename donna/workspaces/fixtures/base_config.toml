@@ -14,10 +14,6 @@ workflow_dirs = [
     "./workflows",
     "./.session/donna",
 ]
-
-# Lifetime of the cache of loaded files in seconds.
-# cache_lifetime = 1.0
-
 [journal]
 # Command Donna will execute to log a workflow execution progress.
 # If the command is not specified, Donna will not log anything.
