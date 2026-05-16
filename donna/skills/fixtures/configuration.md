@@ -147,7 +147,7 @@ Keep project-owned workflows in a dedicated workflow directory such as `./workfl
 
 Keep temporary or generated workflows under the configured `session_dir` and include that directory in `workflow_dirs` when those workflows should be executable.
 
-Do not broaden `workflow_dirs` to the whole repository unless the project intentionally treats every `.donna.md` file as an executable Donna artifact.
+Do not broaden `workflow_dirs` to the whole repository unless you plan to do some rocket science. In most cases a single specialized directory will enough.
 
 Keep default section settings unchanged unless the project has custom primitives and a clear convention for using them.
 
@@ -163,15 +163,3 @@ donna -p llm validate --all
 ```
 
 If Donna cannot load the project config, inspect the reported configuration error and fix the TOML before continuing workflow work.
-
-After creating or editing a workflow, validate that workflow directly:
-
-```bash
-donna -p llm validate @/workflows/example.donna.md
-```
-
-If the workflow should be discoverable, confirm it appears in:
-
-```bash
-donna -p llm list
-```
