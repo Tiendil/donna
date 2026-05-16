@@ -192,7 +192,7 @@ def render_markdown_artifact(
             artifact_id,
             content,
             render_context,
-            default_section_kind=defaults.section_kind,
+            default_section_kind=defaults.tail_section_kind,
             default_primary_section_kind=defaults.primary_section_kind,
             default_primary_section_id=defaults.primary_section_id,
         ).unwrap()

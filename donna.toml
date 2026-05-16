@@ -4,7 +4,7 @@ session_dir = ".session/donna"
 workflow_dirs = ["./workflows", "./.session/donna"]
 
 [defaults]
-section_kind = "donna.lib.text"
+tail_section_kind = "donna.lib.text"
 primary_section_kind = "donna.lib.workflow"
 primary_section_id = "primary"
 

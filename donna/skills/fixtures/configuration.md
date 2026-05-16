@@ -1,11 +1,11 @@
 # `donna` Configuration
 
-`donna.toml` tells `donna` where a project's workflow virtual machine stores state, where it discovers workflow artifacts, which default section primitives to use, and how to forward workflow journal records.
+`donna.toml` tells `donna` where a project's workflow virtual machine stores state, where it discovers workflow artifacts, which fallback Markdown section config values to use, and how to forward workflow journal records.
 
 The configuration file has three main parts:
 
 - Top-level workspace settings configure schema version, session storage, and artifact discovery.
-- `defaults` configures usable defaults. Most projects can omit this section.
+- `defaults` configures fallback config for Markdown artifact sections. Most projects can omit this section.
 - `journal` configures optional forwarding of Donna journal records to an external command.
 
 The configuration file is TOML with schema version `1`. The presence of `donna.toml` marks a Donna project root.
@@ -36,7 +36,7 @@ Top-level fields:
 - `version`: optional integer, currently `1`.
 - `session_dir`: optional relative path to Donna's session directory.
 - `workflow_dirs`: optional list of relative directories scanned for `.donna.md` workflow artifacts.
-- `defaults`: optional default artifact section config.
+- `defaults`: optional fallback config for Markdown artifact sections.
 - `journal`: optional journal forwarding config.
 
 Unknown top-level fields are invalid.
@@ -78,32 +78,34 @@ Missing directories are ignored.
 
 Use narrower directories when you want Donna to ignore unrelated `.donna.md` files elsewhere in the project.
 
-## Default Sections
+## Markdown Section Defaults
 
-Donna artifacts are Markdown files ending with `.donna.md`. Each artifact is split into sections. A fenced `toml donna` block configures the artifact or section that contains it.
+Donna artifacts are Markdown files ending with `.donna.md`. Each artifact is split into a primary H1 section and zero or more tail H2 sections. A fenced `toml donna` block configures the section that contains it.
 
-The default section fields let a project omit repetitive config in common artifacts:
+`defaults` supplies missing config values during Markdown artifact construction:
 
 ```toml
 [defaults]
-section_kind = "donna.lib.text"
+tail_section_kind = "donna.lib.text"
 primary_section_kind = "donna.lib.workflow"
 primary_section_id = "primary"
 ```
 
 Fields:
 
-- `section_kind`: optional Python import path, default `donna.lib.text`.
-- `primary_section_kind`: optional Python import path, default `donna.lib.workflow`.
-- `primary_section_id`: optional section id, default `primary`.
+- `tail_section_kind`: optional Python import path used for H2 sections without explicit `kind`, default `donna.lib.text`.
+- `primary_section_kind`: optional Python import path used for the H1 section without explicit `kind`, default `donna.lib.workflow`.
+- `primary_section_id`: optional section id used for the H1 section without explicit `id`, default `primary`.
 
-When a non-primary section omits `kind`, Donna uses `defaults.section_kind`.
+Explicit section config always wins over these defaults.
 
-When the primary H1 section omits `kind`, Donna uses `defaults.primary_section_kind`.
+The primary H1 section is the artifact-level section. In normal workflow artifacts, it can omit `id` and `kind` because Donna fills them from `defaults.primary_section_id` and `defaults.primary_section_kind`.
 
-When the primary H1 section omits `id`, Donna uses `defaults.primary_section_id`.
+Tail H2 sections are child sections. When a tail section omits `kind`, Donna fills it from `defaults.tail_section_kind`. When a tail section omits `id`, Donna generates a temporary Markdown section id; there is no configurable default tail id.
 
-Most projects should not change these fields. Change them only when a project intentionally uses custom Donna primitives or a different artifact convention.
+The default `tail_section_kind` is `donna.lib.text`, so unconfigured H2 sections are treated as text/documentation sections. Workflow operation sections usually need explicit `kind` values such as `donna.lib.request_action`, `donna.lib.run_script`, `donna.lib.output`, or `donna.lib.finish`.
+
+Most projects should not change `defaults`. Change these fields only when a project intentionally uses custom Donna primitives or a different artifact convention.
 
 ## Journal
 

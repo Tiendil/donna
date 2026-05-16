@@ -7,7 +7,7 @@ session_dir = ".session/donna"
 # Most likely you don't need to change these unless you implement a custom operation or workflow.
 #
 # [defaults]
-# section_kind = "donna.lib.text"
+# tail_section_kind = "donna.lib.text"
 # primary_section_kind = "donna.lib.workflow"
 # primary_section_id = "primary"
 

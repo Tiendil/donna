@@ -61,7 +61,7 @@ class JournalConfig(BaseEntity):
 
 
 class DefaultsConfig(BaseEntity):
-    section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.text"))
+    tail_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.text"))
     primary_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.workflow"))
     primary_section_id: SectionId = SectionId("primary")
 
