@@ -1,114 +1,96 @@
+from __future__ import annotations
+
 import pathlib
-from typing import Sequence
+from typing import NewType
 
 from donna.domain.constants import ARTIFACT_ID_PREFIX
-from donna.domain.id_paths import IdPath, NormalizedRawIdPath
 from donna.domain.ids import SectionId, _is_artifact_slug_part
 
+ArtifactId = NewType("ArtifactId", str)
+ArtifactSectionId = NewType("ArtifactSectionId", str)
 
-def normalize_path(  # noqa: CCR001
-    text: str,
-    *,
-    relative_to: "ArtifactId | None" = None,
-) -> NormalizedRawIdPath | None:
-    if not isinstance(text, str) or not text:
+ARTIFACT_SECTION_DELIMITER = ":"
+
+
+class ArtifactSectionParts:
+    __slots__ = ("artifact_id", "full_id", "section_id")
+
+    full_id: ArtifactSectionId
+    artifact_id: ArtifactId
+    section_id: SectionId
+
+    def __init__(self, *, full_id: ArtifactSectionId, artifact_id: ArtifactId, section_id: SectionId) -> None:
+        self.full_id = full_id
+        self.artifact_id = artifact_id
+        self.section_id = section_id
+
+
+def _raw_artifact_path(value: str) -> str | None:
+    if not isinstance(value, str) or not value.startswith(ARTIFACT_ID_PREFIX):
         return None
 
-    if text.startswith("/"):
-        return None
-
-    if text.startswith(ARTIFACT_ID_PREFIX):
-        raw = text.removeprefix(ARTIFACT_ID_PREFIX)
-        normalized_parts: list[str] = []
-    else:
-        raw = text
-        normalized_parts = list(relative_to.parts[:-1]) if relative_to is not None else []
-
+    raw = value.removeprefix(ARTIFACT_ID_PREFIX)
     if not raw:
         return None
 
-    for part in raw.split("/"):
-        if part == "":
-            return None
-
-        if part == ".":
-            continue
-
-        if part == "..":
-            if not normalized_parts:
-                return None
-            normalized_parts.pop()
-            continue
-
-        if not _is_artifact_slug_part(part):
-            return None
-
-        normalized_parts.append(part)
-
-    if not normalized_parts:
-        return None
-
-    last_part = normalized_parts[-1]
-    if not pathlib.PurePosixPath(last_part).suffix:
-        return None
-
-    return NormalizedRawIdPath("/".join(normalized_parts))
+    return raw
 
 
-def normalize_artifact_section_id(text: str, *, relative_to: "ArtifactId | None" = None) -> NormalizedRawIdPath | None:
-    if not isinstance(text, str) or not text:
+def validate_artifact_id(value: str) -> bool:
+    raw = _raw_artifact_path(value)
+    if raw is None:
+        return False
+
+    parts = tuple(raw.split("/"))
+    if any(part == "" for part in parts):
+        return False
+
+    if not all(_is_artifact_slug_part(part) for part in parts):
+        return False
+
+    return bool(pathlib.PurePosixPath(parts[-1]).suffix)
+
+
+def validate_artifact_section_id(value: str) -> bool:
+    parts = split_artifact_section_id(value)
+    return parts is not None
+
+
+def artifact_path_parts(artifact_id: ArtifactId) -> tuple[str, ...]:
+    raw = _raw_artifact_path(str(artifact_id))
+    if raw is None or not validate_artifact_id(str(artifact_id)):
+        raise ValueError(f"Invalid ArtifactId: {artifact_id}")
+
+    return tuple(raw.split("/"))
+
+
+def artifact_section_id(artifact_id: ArtifactId, local_id: SectionId | str) -> ArtifactSectionId:
+    local_id = SectionId(str(local_id))
+    section_id = f"{artifact_id}{ARTIFACT_SECTION_DELIMITER}{local_id}"
+
+    if not validate_artifact_section_id(section_id):
+        raise ValueError(f"Invalid ArtifactSectionId: {section_id}")
+
+    return ArtifactSectionId(section_id)
+
+
+def split_artifact_section_id(value: str | ArtifactSectionId) -> ArtifactSectionParts | None:
+    if not isinstance(value, str) or not value:
         return None
 
     try:
-        artifact_part, local_part = text.rsplit(ArtifactSectionId.delimiter, maxsplit=1)
+        artifact_part, local_part = value.rsplit(ARTIFACT_SECTION_DELIMITER, maxsplit=1)
     except ValueError:
         return None
 
-    normalized_artifact_id = normalize_path(artifact_part, relative_to=relative_to)
-    if normalized_artifact_id is None or not SectionId.validate(local_part):
+    if not validate_artifact_id(artifact_part) or not SectionId.validate(local_part):
         return None
 
-    return NormalizedRawIdPath(f"{normalized_artifact_id}{ArtifactSectionId.delimiter}{local_part}")
+    full_id = ArtifactSectionId(value)
+    artifact_id = ArtifactId(artifact_part)
 
-
-class ArtifactId(IdPath):
-    __slots__ = ()
-    prefix = ARTIFACT_ID_PREFIX
-    delimiter = "/"
-    validate_json = True
-
-    @classmethod
-    def _validate_parts(cls, parts: Sequence[str]) -> bool:
-        if not parts:
-            return False
-
-        if not all(_is_artifact_slug_part(part) for part in parts):
-            return False
-
-        return bool(pathlib.PurePosixPath(parts[-1]).suffix)
-
-    def to_full_local(self, local_id: SectionId) -> "ArtifactSectionId":
-        return ArtifactSectionId(NormalizedRawIdPath(f"{self.raw_value}:{local_id}"))
-
-
-class ArtifactSectionId(IdPath):
-    __slots__ = ()
-    prefix = ARTIFACT_ID_PREFIX
-    delimiter = ":"
-    min_parts = 2
-    validate_json = True
-
-    @classmethod
-    def _validate_parts(cls, parts: Sequence[str]) -> bool:
-        if len(parts) < cls.min_parts:
-            return False
-
-        return ArtifactId.validate(cls.delimiter.join(parts[:-1])) and SectionId.validate(parts[-1])
-
-    @property
-    def artifact_id(self) -> ArtifactId:
-        return ArtifactId(NormalizedRawIdPath(self.delimiter.join(self.parts[:-1])))
-
-    @property
-    def local_id(self) -> SectionId:
-        return SectionId(self.parts[-1])
+    return ArtifactSectionParts(
+        full_id=full_id,
+        artifact_id=artifact_id,
+        section_id=SectionId(local_part),
+    )

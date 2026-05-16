@@ -16,7 +16,7 @@ Donna works inside a project root. If `--root/-r` is omitted, commands that load
 Use `--root PATH` when running Donna from outside the project tree or when targeting a specific project:
 
 ```bash
-donna -p llm --root /path/to/project sessions status
+donna -p llm --root /path/to/project status
 ```
 
 `donna skill ...` does not load a project config and can run from any directory.
@@ -32,13 +32,13 @@ Donna supports three protocol modes:
 Agents should use `-p llm` for normal Donna workflow commands:
 
 ```bash
-donna -p llm sessions status
+donna -p llm status
 ```
 
 The root option goes before the command:
 
 ```bash
-donna -p llm --root /path/to/project artifacts list
+donna -p llm --root /path/to/project list
 ```
 
 ## Skill Documents
@@ -63,13 +63,13 @@ Workspace commands create or check Donna project configuration.
 Initialize Donna in the current directory:
 
 ```bash
-donna -p llm workspaces init
+donna -p llm init
 ```
 
 Initialize Donna in an explicit existing directory:
 
 ```bash
-donna -p llm --root /path/to/project workspaces init
+donna -p llm --root /path/to/project init
 ```
 
 ## Session Commands
@@ -79,7 +79,7 @@ All workflow execution happens in the active session. Session state lives under 
 Start a new session:
 
 ```bash
-donna -p llm sessions start
+donna -p llm start
 ```
 
 Starting a session resets session state and removes session artifacts. Only start a new session when the developer asks for it or when no active session exists.
@@ -87,31 +87,31 @@ Starting a session resets session state and removes session artifacts. Only star
 Show concise status:
 
 ```bash
-donna -p llm sessions status
+donna -p llm status
 ```
 
 Show detailed session state and action requests:
 
 ```bash
-donna -p llm sessions details
+donna -p llm details
 ```
 
 Continue queued workflow execution:
 
 ```bash
-donna -p llm sessions continue
+donna -p llm continue
 ```
 
 Run a workflow artifact:
 
 ```bash
-donna -p llm sessions run @/workflows/polish.donna.md
+donna -p llm run @/workflows/polish.donna.md
 ```
 
 Complete an action request by passing its id and the next operation id exactly as Donna instructed:
 
 ```bash
-donna -p llm sessions action-request-completed AR-12-x @/.session/donna/workflow.donna.md:next_step
+donna -p llm complete-action-request AR-12-x @/.session/donna/workflow.donna.md:next_step
 ```
 
 ## Artifact Commands
@@ -121,19 +121,19 @@ Artifacts are `*.donna.md` project files under Donna's configured `workflow_dirs
 List workflows:
 
 ```bash
-donna -p llm artifacts list
+donna -p llm list
 ```
 
 Validate all visible artifacts:
 
 ```bash
-donna -p llm artifacts validate --all
+donna -p llm validate --all
 ```
 
-Validate specific artifacts by absolute project-root id:
+Validate specific artifacts by project-root or relative path:
 
 ```bash
-donna -p llm artifacts validate '@/workflows/polish.donna.md'
+donna -p llm validate '@/workflows/polish.donna.md'
 ```
 
 ## Normal Agent Flow
@@ -142,23 +142,23 @@ donna -p llm artifacts validate '@/workflows/polish.donna.md'
 2. Check session state:
 
 ```bash
-donna -p llm sessions status
+donna -p llm status
 ```
 
 3. If there is no active work and a workflow is needed, list workflows:
 
 ```bash
-donna -p llm artifacts list
+donna -p llm list
 ```
 
 4. Start the selected workflow:
 
 ```bash
-donna -p llm sessions run @/workflows/polish.donna.md
+donna -p llm run @/workflows/polish.donna.md
 ```
 
 5. Execute Donna action requests exactly.
-6. Report completion with `sessions action-request-completed`.
+6. Report completion with `complete-action-request`.
 7. Continue until Donna finishes the workflow.
 
 ## Journal Forwarding

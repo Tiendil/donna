@@ -40,7 +40,7 @@ Issues = "https://github.com/Tiendil/donna/issues"
 Changelog = "https://github.com/Tiendil/donna/blob/main/CHANGELOG.md"
 
 [project.scripts]
-donna = "donna.cli.__main__:app"
+donna = "donna.cli.application:main"
 
 [tool.poetry.group.dev.dependencies]
 

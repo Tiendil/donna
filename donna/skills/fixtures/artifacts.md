@@ -2,7 +2,7 @@
 
 Donna artifacts are project files that Donna can discover, render, validate, and execute as workflow input. They are usually Markdown files with the `.donna.md` extension.
 
-Donna reads artifacts from the project filesystem. It does not mutate project artifacts through `artifacts` commands. Developers and agents edit files directly, then ask Donna to list workflows or validate artifacts.
+Donna reads artifacts from the project filesystem. It does not mutate project artifacts through artifact commands. Developers and agents edit files directly, then ask Donna to list workflows or validate artifacts.
 
 ## Artifact Locations
 
@@ -27,7 +27,7 @@ Donna sees only `.donna.md` files under directories listed in `donna.toml:workfl
 List workflow artifacts:
 
 ```bash
-donna -p llm artifacts list
+donna -p llm list
 ```
 
 Read artifact source files directly when you need details beyond the workflow introduction.
@@ -37,13 +37,13 @@ Read artifact source files directly when you need details beyond the workflow in
 Validate one artifact:
 
 ```bash
-donna -p llm artifacts validate '@/workflows/polish.donna.md'
+donna -p llm validate '@/workflows/polish.donna.md'
 ```
 
 Validate all visible artifacts:
 
 ```bash
-donna -p llm artifacts validate --all
+donna -p llm validate --all
 ```
 
 Run validation after creating or editing Donna artifacts.
@@ -53,16 +53,16 @@ Run validation after creating or editing Donna artifacts.
 Use `@/` for project-root artifact ids:
 
 ```bash
-donna -p llm artifacts validate '@/workflows/polish.donna.md'
+donna -p llm validate '@/workflows/polish.donna.md'
 ```
 
 Validate multiple specific artifacts by passing multiple ids:
 
 ```bash
-donna -p llm artifacts validate '@/workflows/polish.donna.md' '@/workflows/rfc/request.donna.md'
+donna -p llm validate '@/workflows/polish.donna.md' './workflows/rfc/request.donna.md'
 ```
 
-Do not pass relative filesystem paths such as `./workflows/polish.donna.md`. Use `@/workflows/polish.donna.md`.
+Artifact path arguments accept root-anchored paths such as `@/workflows/polish.donna.md`, relative paths such as `./workflows/polish.donna.md`, and absolute paths inside the project root.
 
 ## Creating Artifacts
 
@@ -111,13 +111,13 @@ The workflow is complete.
 Validate the workflow before running it:
 
 ```bash
-donna -p llm artifacts validate '@/workflows/example.donna.md'
+donna -p llm validate '@/workflows/example.donna.md'
 ```
 
 Run it:
 
 ```bash
-donna -p llm sessions run '@/workflows/example.donna.md'
+donna -p llm run '@/workflows/example.donna.md'
 ```
 
 ## Managing Artifacts
@@ -130,13 +130,13 @@ Recommended loop:
 2. Validate the artifact:
 
 ```bash
-donna -p llm artifacts validate '@/specs/example.donna.md'
+donna -p llm validate '@/specs/example.donna.md'
 ```
 
 3. If it is a workflow, list it:
 
 ```bash
-donna -p llm artifacts list
+donna -p llm list
 ```
 
 Keep artifact files concise. Put project-wide explanations in specifications and operational step-by-step instructions in workflows.

@@ -1,26 +1,25 @@
 # `donna` Initialization
 
-Initialization creates the Donna project config and session directory.
+Initialization creates the Donna project config. Runtime commands create the configured session directory lazily.
 
 Use this document when a project has no `donna.toml`.
 
 ## What Initialization Creates
 
-`donna -p llm workspaces init` creates:
+`donna -p llm init` creates:
 
 ```text
 <project-root>/donna.toml
-<project-root>/.session/donna/
 ```
 
-`donna.toml` stores configuration. The configured session directory stores Donna runtime state and session artifacts.
+`donna.toml` stores configuration. The configured session directory stores Donna runtime state and session artifacts after runtime commands create it.
 
 ## Initialize The Current Directory
 
 Run from the directory that should become the project root:
 
 ```bash
-donna -p llm workspaces init
+donna -p llm init
 ```
 
 This command fails if `donna.toml` already exists.
@@ -30,29 +29,29 @@ This command fails if `donna.toml` already exists.
 Pass an explicit root directory:
 
 ```bash
-donna -p llm --root /path/to/project workspaces init
+donna -p llm --root /path/to/project init
 ```
 
-The target directory must already exist. Donna creates `donna.toml` and the configured session directory inside it.
+The target directory must already exist. Donna creates `donna.toml` inside it.
 
 ## First Checks After Initialization
 
 Verify the project config can load:
 
 ```bash
-donna -p llm sessions status
+donna -p llm status
 ```
 
 List available workflows:
 
 ```bash
-donna -p llm artifacts list
+donna -p llm list
 ```
 
 Validate artifacts:
 
 ```bash
-donna -p llm artifacts validate --all
+donna -p llm validate --all
 ```
 
 ## Agent Guidance

@@ -4,7 +4,7 @@ from typing import Callable, ParamSpec
 from donna.context.context import context
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
+from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId, artifact_section_id, split_artifact_section_id
 from donna.domain.internal_ids import ActionRequestId
 from donna.machine import errors as machine_errors
 from donna.machine import journal as machine_journal
@@ -109,7 +109,7 @@ def start_workflow(artifact_id: ArtifactId) -> Result[list[Cell], ErrorsList]:  
     workflow = context().artifacts.load(artifact_id, RENDER_CONTEXT_VIEW).unwrap()
     primary_section = workflow.primary_section().unwrap()
     mutator = static_state.mutator()
-    mutator.start_workflow(workflow.id.to_full_local(primary_section.id)).unwrap()
+    mutator.start_workflow(artifact_section_id(workflow.id, primary_section.id)).unwrap()
     _save_state(mutator.freeze()).unwrap()
     _state_run(mutator).unwrap()
     return _state_cells()
@@ -120,12 +120,17 @@ def _validate_operation_transition(
     state: MutableState, request_id: ActionRequestId, next_operation_id: ArtifactSectionId
 ) -> Result[None, ErrorsList]:
     operation_id = state.get_action_request(request_id).unwrap().operation_id
-    workflow = context().artifacts.load(operation_id.artifact_id, RENDER_CONTEXT_VIEW).unwrap()
-    operation = workflow.get_section(operation_id.local_id).unwrap()
+    operation_parts = split_artifact_section_id(operation_id)
+    assert operation_parts is not None
+    next_operation_parts = split_artifact_section_id(next_operation_id)
+    assert next_operation_parts is not None
+
+    workflow = context().artifacts.load(operation_parts.artifact_id, RENDER_CONTEXT_VIEW).unwrap()
+    operation = workflow.get_section(operation_parts.section_id).unwrap()
 
     assert isinstance(operation.meta, OperationMeta)
 
-    if next_operation_id.local_id not in operation.meta.allowed_transtions:
+    if next_operation_parts.section_id not in operation.meta.allowed_transtions:
         return Err(
             [machine_errors.InvalidOperationTransition(operation_id=operation_id, next_operation_id=next_operation_id)]
         )

@@ -34,6 +34,15 @@ class SessionStateNotInitialized(EnvironmentError):
     ways_to_fix: list[str] = ["Run Donna session start to initialize session state."]
 
 
+class SessionStateChangedExternally(EnvironmentError):
+    code: str = "donna.machine.session_state_changed_externally"
+    message: str = "Session state changed after Donna loaded it in the current process."
+    ways_to_fix: list[str] = [
+        "Stop the current operation and reload the session state before continuing.",
+        "Avoid running multiple Donna processes that mutate the same session at the same time.",
+    ]
+
+
 class JournalMessageContainsNewlines(EnvironmentError):
     code: str = "donna.machine.journal_message_contains_newlines"
     message: str = "Journal message must be a single line and must not contain newline characters."

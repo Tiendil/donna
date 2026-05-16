@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import ArtifactSectionId
+from donna.domain.artifact_ids import ArtifactSectionId, split_artifact_section_id
 from donna.domain.internal_ids import TaskId, WorkUnitId
 
 if TYPE_CHECKING:
@@ -66,8 +66,10 @@ class WorkUnit(BaseEntity):
         )
         ctx = context()
         with ctx.current_operation_id.scope(self.operation_id):
-            artifact = ctx.artifacts.load(self.operation_id.artifact_id, render_context).unwrap()
-            operation = artifact.get_section(self.operation_id.local_id).unwrap()
+            operation_parts = split_artifact_section_id(self.operation_id)
+            assert operation_parts is not None
+            artifact = ctx.artifacts.load(operation_parts.artifact_id, render_context).unwrap()
+            operation = artifact.get_section(operation_parts.section_id).unwrap()
             operation_kind = ctx.primitives.resolve(operation.kind).unwrap()
 
             machine_journal.add(

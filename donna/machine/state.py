@@ -8,7 +8,7 @@ from donna.context.context import context
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import ArtifactSectionId
+from donna.domain.artifact_ids import ArtifactSectionId, split_artifact_section_id
 from donna.domain.internal_ids import ActionRequestId, InternalId, TaskId, WorkUnitId
 from donna.machine import errors as machine_errors
 from donna.machine import journal as machine_journal
@@ -175,8 +175,10 @@ class MutableState(BaseState):
 
     @unwrap_to_error
     def start_workflow(self, full_operation_id: ArtifactSectionId) -> Result[None, ErrorsList]:
-        artifact = context().artifacts.load(full_operation_id.artifact_id, RENDER_CONTEXT_VIEW).unwrap()
-        workflow = artifact.get_section(full_operation_id.local_id).unwrap()
+        operation_parts = split_artifact_section_id(full_operation_id)
+        assert operation_parts is not None
+        artifact = context().artifacts.load(operation_parts.artifact_id, RENDER_CONTEXT_VIEW).unwrap()
+        workflow = artifact.get_section(operation_parts.section_id).unwrap()
 
         machine_journal.add(
             message=f"Start workflow `{workflow.title}`",
@@ -189,8 +191,10 @@ class MutableState(BaseState):
     def finish_workflow(self, task_id: TaskId) -> None:
         task = self.current_task
         assert task is not None
-        artifact = context().artifacts.load(task.workflow_id.artifact_id, RENDER_CONTEXT_VIEW).unwrap()
-        workflow = artifact.get_section(task.workflow_id.local_id).unwrap()
+        workflow_parts = split_artifact_section_id(task.workflow_id)
+        assert workflow_parts is not None
+        artifact = context().artifacts.load(workflow_parts.artifact_id, RENDER_CONTEXT_VIEW).unwrap()
+        workflow = artifact.get_section(workflow_parts.section_id).unwrap()
 
         machine_journal.add(
             message=f"Finish workflow `{workflow.title}`",

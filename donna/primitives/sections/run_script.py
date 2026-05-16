@@ -1,5 +1,4 @@
 import os
-import pathlib
 import subprocess  # noqa: S404
 import tempfile
 from typing import TYPE_CHECKING, ClassVar, cast
@@ -9,8 +8,9 @@ import pydantic
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
-from donna.domain.artifact_ids import ArtifactId
+from donna.domain.artifact_ids import ArtifactId, artifact_section_id, split_artifact_section_id
 from donna.domain.ids import SectionId
+from donna.domain.paths import ProjectRootPath
 from donna.machine import journal as machine_journal
 from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
@@ -179,7 +179,9 @@ class RunScript(MarkdownSectionMixin, OperationKind):
             changes.append(ChangeSetTaskContext(task_id=task.id, key=meta.save_stderr_to, value=stderr))
 
         next_operation = meta.select_next_operation(exit_code)
-        full_operation_id = unit.operation_id.artifact_id.to_full_local(next_operation)
+        operation_parts = split_artifact_section_id(unit.operation_id)
+        assert operation_parts is not None
+        full_operation_id = artifact_section_id(operation_parts.artifact_id, next_operation)
 
         changes.append(ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id))
         return Ok(changes)
@@ -219,7 +221,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         return Ok(None)
 
 
-def _run_script(script: str, timeout: int, project_dir: pathlib.Path) -> tuple[str, str, int]:  # noqa: CCR001
+def _run_script(script: str, timeout: int, project_dir: ProjectRootPath) -> tuple[str, str, int]:  # noqa: CCR001
     temp_path = None
 
     try:
