@@ -141,44 +141,6 @@ Placeholders are recognized only when the whole argument starts with `{` and end
 
 Donna still prints newly created journal records through the selected output protocol even when `journal.cmd` is omitted.
 
-## Paths
-
-Paths in `donna.toml` are stable from the Donna project root, which is the directory containing the active `donna.toml`.
-
-Configuration paths should use `/`.
-
-Project paths in `session_dir` and `workflow_dirs` must be relative:
-
-```toml
-session_dir = ".session/donna"
-workflow_dirs = ["./workflows", "./.session/donna"]
-```
-
-Absolute paths are invalid:
-
-```toml
-session_dir = "/tmp/donna"
-```
-
-Parent-directory references are invalid:
-
-```toml
-workflow_dirs = ["../workflows"]
-```
-
-Workflow artifact ids use canonical root-anchored paths:
-
-```text
-@/workflows/polish.donna.md
-@/.session/donna/execute_rfc.donna.md
-```
-
-Artifact section ids append `:section_id`:
-
-```text
-@/workflows/polish.donna.md:finish
-```
-
 ## Recommendations
 
 Keep project-owned workflows in a dedicated workflow directory such as `./workflows`.
