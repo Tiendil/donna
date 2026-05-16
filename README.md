@@ -114,7 +114,7 @@ What you may notice:
 
 Directives, like `{{ goto("operation_id") }}`, render itself depending on the context:
 
-- For the agent, they render an exact CLI command to run, such as `donna -p llm sessions action-request-completed <action-request-id> '@/workflows/polish.donna.md:finish'`.
+- For the agent, they render an exact CLI command to run, such as `donna -p llm complete-action-request <action-request-id> '@/workflows/polish.donna.md:finish'`.
 - For Donna, they render a specific marker that can be extracted and used to analyze an artifact. For example, Donna uses `goto` directives to build an FSM of the workflow and validate it before running: does each operation exist, can the workflow be completed, are there unreachable operations, etc.
 
 Generally speaking, **all you need is `donna.lib.request_action` operation** — it is enough to achieve a great deal of automation by delegating some decisions to the agent. However, there are some more specific operations that simplify things and make workflows more agile or performant.
@@ -137,12 +137,10 @@ uv tool install donna
 
 ```bash
 cd <your-project-root>
-donna workspaces init
+donna init
 ```
 
-Donna will:
-
-- Create `donna.toml` in your project root and the configured session directory.
+Donna will create `donna.toml` in your project root. The configured session directory is created lazily by runtime commands.
 
 3. Ask your agent to do something like `$donna-do Add a button that …`. The agent will discover the appropriate workflow and execute it.
 
@@ -158,9 +156,9 @@ Donna will:
 
 Commands you may need:
 
-- `donna workspaces init` — Initialize Donna in your project.
-- `donna sessions start` — start a new working session, remove everything from the previous session.
-- `donna artifacts list` — list workflows with short descriptions.
+- `donna init` — Initialize Donna in your project.
+- `donna start` — start a new working session, remove everything from the previous session.
+- `donna list` — list workflows with short descriptions.
 
 Donna can send internal journal records to a third-party tool. Configure it in `donna.toml`:
 
@@ -250,19 +248,19 @@ Examples:
 
 You and agents can `list` workflow artifacts and `validate` Donna artifacts.
 
-- `donna -p llm artifacts list` — shows workflow descriptions from their h1 sections.
-- `donna -p llm artifacts validate <artifact-id>...` — validates one or more artifacts.
-- `donna -p llm artifacts validate --all` — validates every discovered artifact.
+- `donna -p llm list` — shows workflow descriptions from their h1 sections.
+- `donna -p llm validate <artifact-id>...` — validates one or more artifacts.
+- `donna -p llm validate --all` — validates every discovered artifact.
 
-Artifact ids use absolute project-root form like `@/workflows/polish.donna.md`.
+Artifact inputs accept root-anchored paths like `@/workflows/polish.donna.md`, relative paths like `./workflows/polish.donna.md`, and absolute paths inside the project root.
 
-You can find all workflows with `donna -p llm artifacts list`.
+You can find all workflows with `donna -p llm list`.
 
 ## Sessions
 
 `<project-root>/.session/donna/` contains the current state of work performed by Donna: runtime state plus temporary documents and workflows created during the session.
 
-The developer is responsible for starting/resetting sessions with commands from `donna -p human sessions` group.
+The developer is responsible for starting or resetting sessions with `donna -p human start` and `donna -p human reset`.
 
 - On session start, Donna removes everything from the previous session and creates a fresh session directory.
 - On session reset donna resets the state of the current session (tasks, action requests, etc.), but keeps artifacts.
@@ -275,7 +273,7 @@ Workflows are [state machines](https://en.wikipedia.org/wiki/Finite-state_machin
 
 Donna tracks dependencies between operations and validates the workflow before running it. So, if you or your agent do something wrong, you'll get a clear error message from Donna.
 
-You can run workflow as `donna -p llm sessions run <artifact-id>`.
+You can run workflow as `donna -p llm run <artifact-id>`.
 
 To execute a workflow, Donna uses a simplified virtual machine (VM) that maintains the current state of all workflows executed in the current session.
 
@@ -307,7 +305,7 @@ Donna can detect errors (in artifacts, in execution, etc). If an error can be fi
 <summary><strong>An example of error message from Donna</strong></summary>
 
 ```bash
-$ donna -p llm sessions run @/workflows/polish.donna.md
+$ donna -p llm run @/workflows/polish.donna.md
 
 kind=artifact_validation_error
 media_type=text/markdown

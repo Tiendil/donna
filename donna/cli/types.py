@@ -10,6 +10,7 @@ from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 from donna.domain.internal_ids import ActionRequestId
 from donna.protocol.modes import Mode
+from donna.workspaces import paths as workspace_paths
 from donna.workspaces.artifacts import has_donna_artifact_extension
 from donna.workspaces.templates import RenderMode
 
@@ -19,36 +20,11 @@ def _exit_with_errors(errors: ErrorsList) -> NoReturn:
     raise typer.Exit(code=0)
 
 
-def _parse_result_or_exit[T](result: T | None, errors: ErrorsList | None) -> T:
-    if errors is not None:
-        _exit_with_errors(errors)
-
-    assert result is not None
-    return result
-
-
-def _absolute_artifact_id_or_exit(value: str) -> str:
-    if not value.startswith(ArtifactId.prefix):
-        _exit_with_errors([domain_errors.InvalidIdFormat(id_type=ArtifactId.__name__, value=value)])
-
-    return value
-
-
-def _absolute_artifact_section_id_or_exit(value: str) -> str:
-    if not value.startswith(ArtifactId.prefix):
-        _exit_with_errors([domain_errors.InvalidIdFormat(id_type=f"{ArtifactSectionId.__name__} format", value=value)])
-
-    return value
-
-
-def _parse_artifact_id(value: str) -> ArtifactId:
-    result = ArtifactId.parse(_absolute_artifact_id_or_exit(value))
-    return _parse_result_or_exit(result.ok(), result.err())
-
-
-def _parse_artifact_section_id(value: str) -> ArtifactSectionId:
-    result = ArtifactSectionId.parse(_absolute_artifact_section_id_or_exit(value))
-    return _parse_result_or_exit(result.ok(), result.err())
+def _parse_raw_artifact_path(value: str) -> str:
+    normalized = value.strip()
+    if not normalized:
+        raise typer.BadParameter("Artifact path must not be empty.")
+    return normalized
 
 
 def _artifact_filename(value: str) -> str:
@@ -66,14 +42,20 @@ def validate_supported_artifact_section_id(section_id: ArtifactSectionId) -> Non
     validate_supported_artifact_id(section_id.artifact_id)
 
 
-def _parse_supported_artifact_id(value: str) -> ArtifactId:
-    artifact_id = _parse_artifact_id(value)
+def parse_artifact_id_argument(value: str, project_root: pathlib.Path) -> ArtifactId:
+    artifact_id = workspace_paths.normalize_artifact_id(value, project_root, cwd=pathlib.Path.cwd())
+    if artifact_id is None:
+        _exit_with_errors([domain_errors.InvalidIdFormat(id_type=ArtifactId.__name__, value=value)])
+
     validate_supported_artifact_id(artifact_id)
     return artifact_id
 
 
-def _parse_supported_artifact_section_id(value: str) -> ArtifactSectionId:
-    section_id = _parse_artifact_section_id(value)
+def parse_artifact_section_id_argument(value: str, project_root: pathlib.Path) -> ArtifactSectionId:
+    section_id = workspace_paths.normalize_artifact_section_id(value, project_root, cwd=pathlib.Path.cwd())
+    if section_id is None:
+        _exit_with_errors([domain_errors.InvalidIdFormat(id_type=f"{ArtifactSectionId.__name__} format", value=value)])
+
     validate_supported_artifact_section_id(section_id)
     return section_id
 
@@ -119,35 +101,35 @@ ActionRequestIdArgument = Annotated[
 
 
 ArtifactIdArgument = Annotated[
-    ArtifactId,
+    str,
     typer.Argument(
-        parser=_parse_supported_artifact_id,
+        parser=_parse_raw_artifact_path,
         help=(
-            "Artifact ID in absolute project-root form with the Donna artifact "
-            "extension (e.g., '@/workflows/polish.donna.md')."
+            "Artifact path with the Donna artifact extension "
+            "(e.g., '@/workflows/polish.donna.md' or './workflows/polish.donna.md')."
         ),
     ),
 ]
 
 
 ArtifactIdsArgument = Annotated[
-    list[ArtifactId] | None,
+    list[str] | None,
     typer.Argument(
-        parser=_parse_supported_artifact_id,
+        parser=_parse_raw_artifact_path,
         help=(
-            "Artifact IDs in absolute project-root form with the Donna artifact "
-            "extension (e.g., '@/workflows/polish.donna.md')."
+            "Artifact paths with the Donna artifact extension "
+            "(e.g., '@/workflows/polish.donna.md' or './workflows/polish.donna.md')."
         ),
     ),
 ]
 
 
 ArtifactSectionIdArgument = Annotated[
-    ArtifactSectionId,
+    str,
     typer.Argument(
-        parser=_parse_supported_artifact_section_id,
+        parser=_parse_raw_artifact_path,
         help=(
-            "Artifact section ID in absolute project-root form 'artifact:section' "
+            "Artifact section path in 'artifact:section' form "
             "(e.g. '@/.session/donna/plans/artifact_id_filepaths.donna.md:finish')."
         ),
     ),

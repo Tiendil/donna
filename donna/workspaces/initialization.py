@@ -1,7 +1,6 @@
+import importlib.resources
 import pathlib
 import tomllib
-
-import tomli_w
 
 from donna.core import errors as core_errors
 from donna.core import utils
@@ -10,7 +9,8 @@ from donna.domain.constants import DONNA_CONFIG_NAME
 from donna.protocol.modes import Mode
 from donna.workspaces import config
 from donna.workspaces import errors as world_errors
-from donna.workspaces import sessions as workspace_sessions
+
+BASE_CONFIG_FIXTURE = "base_config.toml"
 
 
 @unwrap_to_error
@@ -68,15 +68,12 @@ def initialize_workspace(project_dir: pathlib.Path) -> Result[config.Workspace, 
     if config_path.exists():
         return Err([world_errors.WorkspaceAlreadyInitialized(config_path=config_path)])
 
-    default_config = config.Config()
-    workspace = config.Workspace(root=project_dir, config=default_config)
-    config.install_workspace(workspace)
-
-    config_path.write_text(
-        tomli_w.dumps(default_config.model_dump(mode="json", exclude_none=True)),
-        encoding="utf-8",
+    config_text = (
+        importlib.resources.files(__package__).joinpath("fixtures", BASE_CONFIG_FIXTURE).read_text(encoding="utf-8")
     )
+    config_path.write_text(config_text, encoding="utf-8")
 
-    workspace_sessions.ensure_dir()
+    workspace = load_workspace(root_dir=project_dir).unwrap()
+    config.install_workspace(workspace)
 
     return Ok(workspace)

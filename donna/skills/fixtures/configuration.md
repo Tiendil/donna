@@ -6,7 +6,7 @@ Donna project configuration lives at:
 <project-root>/donna.toml
 ```
 
-The file is created by `donna -p llm workspaces init`. Edit it when the project needs workflow source directories, default section settings, cache behavior, or journal forwarding.
+The file is created by `donna -p llm init`. Edit it when the project needs workflow source directories, default section settings, cache behavior, or journal forwarding.
 
 ## Minimal Configuration
 
@@ -134,8 +134,8 @@ Use a smaller value when artifacts are edited rapidly by external tools. Use the
 After editing `donna.toml`, run:
 
 ```bash
-donna -p llm artifacts list
-donna -p llm artifacts validate --all
+donna -p llm list
+donna -p llm validate --all
 ```
 
 If Donna cannot load the project config, inspect the reported configuration error and fix the TOML before continuing workflow work.

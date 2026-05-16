@@ -1,0 +1,11 @@
+session_dir = ".session/donna"
+default_section_kind = "donna.lib.text"
+default_primary_section_kind = "donna.lib.workflow"
+default_primary_section_id = "primary"
+workflow_dirs = [
+    "./workflows",
+    "./.session/donna",
+]
+cache_lifetime = 1.0
+
+[journal]

@@ -41,7 +41,7 @@ class GoTo(Directive):
         root_dir = workspace_config.project_dir()
         return Ok(
             f"donna -p {protocol} -r '{root_dir}' "
-            f"sessions action-request-completed <action-request-id> '{next_operation_id}'"
+            f"complete-action-request <action-request-id> '{next_operation_id}'"
         )
 
     def render_analyze(self, context: Context, next_operation_id: ArtifactSectionId) -> Result[Any, ErrorsList]:
