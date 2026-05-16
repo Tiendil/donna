@@ -1,0 +1,88 @@
+import re
+from typing import TYPE_CHECKING, ClassVar, cast
+
+import pydantic
+
+from donna.core.errors import ErrorsList
+from donna.core.result import Ok, Result, unwrap_to_error
+from donna.domain import errors as domain_errors
+from donna.domain.artifact_ids import ArtifactId
+from donna.domain.ids import SectionId
+from donna.machine.action_requests import ActionRequest
+from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
+from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
+from donna.workspaces import markdown
+from donna.workspaces.markdown_parser import MarkdownSectionMixin
+
+if TYPE_CHECKING:
+    from donna.machine.changes import Change
+    from donna.machine.tasks import Task, WorkUnit
+
+
+def extract_transitions(text: str) -> set[SectionId]:
+    """Extracts all transitions from the text of action request.
+
+    Transition is specified as render of `goto` directive in the format:
+    ```
+    $$donna goto <full_artifact_local_id> donna$$
+    ```
+    """
+    pattern = r"\$\$donna\s+goto\s+([a-zA-Z0-9_\-./:]+)\s+donna\$\$"
+    matches = re.findall(pattern, text)
+
+    transitions: set[SectionId] = set()
+
+    for match in matches:
+        transition_result = SectionId.parse(match)
+        if transition_result.is_err():
+            raise domain_errors.InvalidIdentifier(value=match)
+        transitions.add(transition_result.unwrap())
+
+    return transitions
+
+
+class RequestActionConfig(OperationConfig):
+    @pydantic.field_validator("fsm_mode", mode="after")
+    @classmethod
+    def validate_fsm_mode(cls, v: FsmMode) -> FsmMode:
+        if v == FsmMode.final:
+            raise ValueError("RequestAction operation cannot have 'final' fsm_mode")
+
+        return v
+
+
+class RequestAction(MarkdownSectionMixin, OperationKind):
+    config_class: ClassVar[type[RequestActionConfig]] = RequestActionConfig
+
+    def markdown_construct_meta(
+        self,
+        artifact_id: "ArtifactId",
+        source: markdown.SectionSource,
+        section_config: ArtifactSectionConfig,
+        description: str,
+        primary: bool = False,
+    ) -> Result[ArtifactSectionMeta, ErrorsList]:
+        request_config = cast(RequestActionConfig, section_config)
+        analysis = source.as_analysis_markdown(with_title=True)
+
+        return Ok(
+            OperationMeta(
+                fsm_mode=request_config.fsm_mode,
+                allowed_transtions=extract_transitions(analysis),
+            )
+        )
+
+    @unwrap_to_error
+    def execute_section(
+        self, task: "Task", unit: "WorkUnit", artifact: Artifact, section_id: SectionId
+    ) -> Result[list["Change"], ErrorsList]:
+        from donna.machine.changes import ChangeAddActionRequest
+
+        operation = artifact.get_section(section_id).unwrap()
+        request_text = operation.description
+
+        full_operation_id = unit.operation_id
+
+        request = ActionRequest.build(operation.title, request_text, full_operation_id)
+
+        return Ok([ChangeAddActionRequest(action_request=request)])

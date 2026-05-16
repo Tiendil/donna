@@ -1,7 +1,4 @@
-import ast
 from typing import Any
-
-import pydantic
 
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
@@ -17,7 +14,6 @@ from donna.protocol.nodes import Node
 class ArtifactSectionConfig(BaseEntity):
     id: SectionId
     kind: PythonPath
-    tags: list[str] = pydantic.Field(default_factory=list)
 
 
 class ArtifactSectionMeta(BaseEntity):
@@ -31,7 +27,6 @@ class ArtifactSection(BaseEntity):
     kind: PythonPath
     title: str
     description: str
-    tags: list[str] = pydantic.Field(default_factory=list)
     primary: bool = False
 
     meta: ArtifactSectionMeta
@@ -131,71 +126,6 @@ class Artifact(BaseEntity):
             blocks.extend(section.markdown_blocks())
 
         return Ok(blocks)
-
-
-class ArtifactPredicate(BaseEntity):
-    source: str
-
-    @classmethod
-    def parse(cls, source: str) -> Result["ArtifactPredicate", ErrorsList]:
-        from donna.machine import errors as machine_errors
-
-        normalized = source.strip()
-        if not normalized:
-            return Err(
-                [
-                    machine_errors.InvalidArtifactPredicateExpression(
-                        predicate=source,
-                        reason="Predicate must not be empty.",
-                    )
-                ]
-            )
-
-        try:
-            tree = ast.parse(normalized, mode="eval")
-        except SyntaxError as exc:
-            return Err(
-                [
-                    machine_errors.InvalidArtifactPredicateExpression(
-                        predicate=normalized,
-                        reason=f"Invalid Python expression: {exc.msg}",
-                    )
-                ]
-            )
-
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Call):
-                return Err(
-                    [
-                        machine_errors.InvalidArtifactPredicateExpression(
-                            predicate=normalized,
-                            reason="Function calls are not allowed in artifact predicates.",
-                        )
-                    ]
-                )
-
-        return Ok(cls(source=normalized))
-
-    def evaluate(self, section: Any) -> Result[bool, ErrorsList]:
-        from donna.machine import errors as machine_errors
-
-        try:
-            result = eval(  # noqa: S307
-                compile(self.source, "<artifact-predicate>", "eval"),
-                {"__builtins__": {}},
-                {"section": section},
-            )
-        except Exception as exc:
-            return Err(
-                [
-                    machine_errors.ArtifactPredicateEvaluationFailed(
-                        predicate=self.source,
-                        reason=str(exc),
-                    )
-                ]
-            )
-
-        return Ok(bool(result))
 
 
 class ArtifactNode(Node):

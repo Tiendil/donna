@@ -6,116 +6,77 @@ Donna project configuration lives at:
 <project-root>/donna.toml
 ```
 
-The file is created by `donna -p llm workspaces init`. Edit it when the project needs custom artifact sources, artifact visibility rules, cache behavior, or journal forwarding.
+The file is created by `donna -p llm workspaces init`. Edit it when the project needs workflow source directories, default section settings, cache behavior, or journal forwarding.
 
 ## Minimal Configuration
 
 A default project can use the generated configuration without manual edits. The effective defaults are:
 
 ```toml
-session = ".session/donna"
+session_dir = ".session/donna"
+default_section_kind = "donna.lib.text"
+default_primary_section_kind = "donna.lib.workflow"
+default_primary_section_id = "primary"
 cache_lifetime = 1.0
-
-[[sources]]
-kind = "donna.lib.sources.markdown"
-extension = ".donna.md"
-
-[[file_filters]]
-mode = "include"
-pattern = "@/.session/donna/**/*.donna.md"
-
-[[file_filters]]
-mode = "include"
-pattern = "@/.agents/**/*.donna.md"
-
-[[file_filters]]
-mode = "ignore"
-pattern = ".*/**"
-
-[[file_filters]]
-mode = "include"
-pattern = "**/*.donna.md"
-
-[[file_filters]]
-mode = "ignore"
-pattern = "**"
+workflow_dirs = ["./workflows", "./.session/donna"]
 
 [journal]
 ```
 
 ## Session Directory
 
-`session` points to Donna's temporary session directory.
+`session_dir` points to Donna's temporary session directory.
 Donna stores runtime state, action requests, and session-created artifacts there.
 
 Default:
 
 ```toml
-session = ".session/donna"
+session_dir = ".session/donna"
 ```
 
 Relative paths are resolved from the project root; absolute paths are used as configured. Use a directory ignored by version control unless a project intentionally tracks session artifacts.
 
-## Sources
+## Default Sections
 
-`sources` tell Donna how to load artifacts with specific filename extensions.
+Donna loads artifacts only from `*.donna.md` Markdown files.
 
-Default Markdown source:
+When a non-primary section omits `kind`, Donna uses `default_section_kind`. When the primary section omits `kind`, Donna uses `default_primary_section_kind`. When the primary section omits `id`, Donna uses `default_primary_section_id`.
 
 ```toml
-[[sources]]
-kind = "donna.lib.sources.markdown"
-extension = ".donna.md"
+default_section_kind = "donna.lib.text"
+default_primary_section_kind = "donna.lib.workflow"
+default_primary_section_id = "primary"
 ```
 
 Fields:
 
-- `kind`: full Python path to a Donna source constructor.
-- `extension`: filename suffix handled by that source.
+- `default_section_kind`: full Python path to the primitive used for sections without an explicit `kind`.
+- `default_primary_section_kind`: full Python path to the primitive used for the primary H1 section without an explicit `kind`.
+- `default_primary_section_id`: section id assigned to the primary H1 section when it omits `id`.
 
-Add a source only when Donna has a source implementation for that artifact format. Keep `.donna.md` configured unless the project intentionally disables default Markdown artifacts.
+## Workflow Directories
 
-Example with an additional custom source:
+`workflow_dirs` controls where Donna searches for workflow artifacts. Donna recursively scans each configured directory and recognizes only files ending with `.donna.md`.
+
+Default:
 
 ```toml
-[[sources]]
-kind = "donna.lib.sources.markdown"
-extension = ".donna.md"
-
-[[sources]]
-kind = "project.donna_sources.yaml"
-extension = ".donna.yaml"
+workflow_dirs = ["./workflows", "./.session/donna"]
 ```
 
-## File Filters
-
-`file_filters` control which project files Donna can see as artifacts. Filters are evaluated in order. The first matching rule decides whether a file is included, ignored, or required.
-
-Modes:
-
-- `include`: admit matching files when they exist.
-- `ignore`: hide matching files.
-- `required`: admit matching files and treat missing expected files as an error when relevant.
-
-Patterns are Donna artifact patterns rooted at the project. Use `@/` for explicit project-root paths and `**` for recursive matching.
+Paths are relative to the Donna project root. Missing directories are ignored, so a project can keep the default list before all of those directories exist.
 
 Example:
 
 ```toml
-[[file_filters]]
-mode = "include"
-pattern = "@/specs/**/*.donna.md"
-
-[[file_filters]]
-mode = "ignore"
-pattern = "@/specs/archive/**"
-
-[[file_filters]]
-mode = "ignore"
-pattern = "**"
+workflow_dirs = [
+  "./workflows",
+  "./.session/donna",
+  "./team-workflows",
+]
 ```
 
-Put narrow rules before broad rules. Keep a final `ignore "**"` rule when you want an allow-list.
+Use narrower directories when you want Donna to ignore unrelated `.donna.md` files elsewhere in the project.
 
 ## Journal Forwarding
 
@@ -173,8 +134,8 @@ Use a smaller value when artifacts are edited rapidly by external tools. Use the
 After editing `donna.toml`, run:
 
 ```bash
-donna -p llm artifacts list '**'
-donna -p llm artifacts validate '**'
+donna -p llm artifacts list
+donna -p llm artifacts validate --all
 ```
 
-If Donna cannot load the project config, inspect the reported configuration error and fix the TOML or unsupported source path before continuing workflow work.
+If Donna cannot load the project config, inspect the reported configuration error and fix the TOML before continuing workflow work.

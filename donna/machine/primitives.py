@@ -12,11 +12,9 @@ from donna.machine import errors as machine_errors
 from donna.machine.artifacts import ArtifactSectionConfig
 
 if TYPE_CHECKING:
-    from donna.machine.artifacts import Artifact, ArtifactSection
+    from donna.machine.artifacts import Artifact
     from donna.machine.changes import Change
     from donna.machine.tasks import Task, WorkUnit
-    from donna.workspaces.config import SourceConfig as SourceConfigModel
-    from donna.workspaces.sources.base import SourceConfig as SourceConfigValue
 
 
 # TODO: Currently it is a kind of God interface. It is convenient for now.
@@ -28,7 +26,7 @@ class Primitive(BaseEntity):
         return Ok(None)
 
     def execute_section(
-        self, task: "Task", unit: "WorkUnit", section: "ArtifactSection"
+        self, task: "Task", unit: "WorkUnit", artifact: "Artifact", section_id: SectionId
     ) -> Result[list["Change"], ErrorsList]:
         raise machine_errors.PrimitiveMethodUnsupported(
             primitive_name=self.__class__.__name__, method_name="execute_section()"
@@ -37,11 +35,6 @@ class Primitive(BaseEntity):
     def apply_directive(self, context: Context, *argv: Any, **kwargs: Any) -> Result[Any, ErrorsList]:
         raise machine_errors.PrimitiveMethodUnsupported(
             primitive_name=self.__class__.__name__, method_name="apply_directive()"
-        )
-
-    def construct_source(self, config: "SourceConfigModel") -> "SourceConfigValue":
-        raise machine_errors.PrimitiveMethodUnsupported(
-            primitive_name=self.__class__.__name__, method_name="construct_source()"
         )
 
 

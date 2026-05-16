@@ -1,86 +1,80 @@
+import sys
+from typing import Annotated
+
+import click
 import typer
 
 from donna.cli.application import app
-from donna.cli.types import ArtifactIdPatternArgument, PredicateOption, validate_supported_artifact_pattern
+from donna.cli.types import ArtifactIdArgument, ArtifactIdsArgument, RenderModeOption
 from donna.cli.utils import command_context
 from donna.context.context import context
-from donna.domain.artifact_ids import ArtifactIdPattern
 from donna.machine import journal as machine_journal
 from donna.protocol.cell_shortcuts import operation_succeeded
-from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
+from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW, ArtifactRenderContext, fetch_artifact_bytes
+from donna.workspaces.templates import render as render_template
 
 artifacts_cli = typer.Typer()
-
-DEFAULT_ARTIFACT_PATTERN = ArtifactIdPattern.parse("**").unwrap()
 
 
 def _log_artifact_operation(message: str) -> None:
     machine_journal.add(message=message)
 
 
-def _log_operation_on_artifacts(
-    message: str,
-    pattern: ArtifactIdPattern,
-    predicate: PredicateOption | None,
-) -> None:
-    if predicate is None:
-        return _log_artifact_operation(f"{message} `{pattern}`")
-
-    return _log_artifact_operation(f"{message} `{pattern}` with predicate `{predicate.source}`")
-
-
-@artifacts_cli.command(
-    help=(
-        "List artifacts matching a pattern with a supported source extension "
-        "and show their status summaries. Lists all artifacts by default."
-    )
-)
-def list(
+@artifacts_cli.command(name="list", help="List available workflow artifacts and show their status summaries.")
+def list_(
     typer_context: typer.Context,
-    pattern: ArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
-    predicate: PredicateOption = None,
 ) -> None:
     with command_context(typer_context) as command:
-        validate_supported_artifact_pattern(pattern)
-        _log_operation_on_artifacts("List artifacts", pattern, predicate)
+        _log_artifact_operation("List artifacts")
 
-        artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, predicate=predicate).unwrap()
+        artifacts = context().artifacts.list(RENDER_CONTEXT_VIEW).unwrap()
 
         command.write_cells(artifact.node().status() for artifact in artifacts)
 
 
-@artifacts_cli.command(
-    help="Display artifacts matching a pattern or specific id that uses a supported source extension."
-)
-def view(
+@artifacts_cli.command(help="Render an artifact with the selected render mode and write the markdown to stdout.")
+def render(
     typer_context: typer.Context,
-    pattern: ArtifactIdPatternArgument,
-    predicate: PredicateOption = None,
+    artifact_id: ArtifactIdArgument,
+    mode: RenderModeOption,
+) -> None:
+    with command_context(typer_context):
+        _log_artifact_operation(f"Render artifact `{artifact_id}` in `{mode.value}` mode")
+
+        content = fetch_artifact_bytes(artifact_id).unwrap().decode("utf-8")
+        render_context = ArtifactRenderContext(primary_mode=mode)
+        rendered = render_template(artifact_id, content, render_context).unwrap()
+
+        sys.stdout.write(rendered)
+
+
+@artifacts_cli.command(help="Validate the given artifact ids, or validate every discovered artifact with --all.")
+def validate(  # noqa: CCR001
+    typer_context: typer.Context,
+    artifact_ids: ArtifactIdsArgument = None,
+    all_artifacts: Annotated[
+        bool,
+        typer.Option("--all", help="Validate every discovered artifact."),
+    ] = False,
 ) -> None:
     with command_context(typer_context) as command:
-        validate_supported_artifact_pattern(pattern)
-        _log_operation_on_artifacts("View artifacts", pattern, predicate)
+        if all_artifacts and artifact_ids:
+            raise click.UsageError("Pass artifact ids or --all, not both.")
 
-        artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, predicate=predicate).unwrap()
-        command.write_cells(artifact.node().info() for artifact in artifacts)
+        if not all_artifacts and not artifact_ids:
+            raise click.UsageError("Pass artifact ids or --all.")
 
-
-@artifacts_cli.command(
-    help=(
-        "Validate artifacts matching a pattern with a supported source extension "
-        "(defaults to all artifacts) and return any errors."
-    )
-)
-def validate(
-    typer_context: typer.Context,
-    pattern: ArtifactIdPatternArgument = DEFAULT_ARTIFACT_PATTERN,
-    predicate: PredicateOption = None,
-) -> None:  # noqa: CCR001
-    with command_context(typer_context) as command:
-        validate_supported_artifact_pattern(pattern)
-        _log_operation_on_artifacts("Validate artifacts", pattern, predicate)
-
-        artifacts = context().artifacts.list(pattern, RENDER_CONTEXT_VIEW, predicate=predicate).unwrap()
+        if all_artifacts:
+            _log_artifact_operation("Validate all artifacts")
+            artifacts = context().artifacts.list(RENDER_CONTEXT_VIEW).unwrap()
+        else:
+            assert artifact_ids is not None
+            _log_artifact_operation(
+                f"Validate artifacts {', '.join(f'`{artifact_id}`' for artifact_id in artifact_ids)}"
+            )
+            artifacts = [
+                context().artifacts.load(artifact_id, RENDER_CONTEXT_VIEW).unwrap() for artifact_id in artifact_ids
+            ]
 
         errors = []
 

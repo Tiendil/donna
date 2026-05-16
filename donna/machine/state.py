@@ -175,7 +175,8 @@ class MutableState(BaseState):
 
     @unwrap_to_error
     def start_workflow(self, full_operation_id: ArtifactSectionId) -> Result[None, ErrorsList]:
-        workflow = context().artifacts.resolve_section(full_operation_id, RENDER_CONTEXT_VIEW).unwrap()
+        artifact = context().artifacts.load(full_operation_id.artifact_id, RENDER_CONTEXT_VIEW).unwrap()
+        workflow = artifact.get_section(full_operation_id.local_id).unwrap()
 
         machine_journal.add(
             message=f"Start workflow `{workflow.title}`",
@@ -188,7 +189,8 @@ class MutableState(BaseState):
     def finish_workflow(self, task_id: TaskId) -> None:
         task = self.current_task
         assert task is not None
-        workflow = context().artifacts.resolve_section(task.workflow_id, RENDER_CONTEXT_VIEW).unwrap()
+        artifact = context().artifacts.load(task.workflow_id.artifact_id, RENDER_CONTEXT_VIEW).unwrap()
+        workflow = artifact.get_section(task.workflow_id.local_id).unwrap()
 
         machine_journal.add(
             message=f"Finish workflow `{workflow.title}`",

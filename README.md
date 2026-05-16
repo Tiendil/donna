@@ -34,15 +34,15 @@ Donna executes such loops for the agents, thereby saving time, context, and toke
 
 - **Deterministic workflows** — define fixed & validated control flow for agents to follow.
 - **Saves context, tokens and time** — agents do not need to think when thinking is not required.
-- **Readable artifacts** — all workflows and specifications are pure Markdown files with some [Jinja2](https://github.com/pallets/jinja) templating.
+- **Readable artifacts** — all workflows and documentation are pure Markdown files with some [Jinja2](https://github.com/pallets/jinja) templating.
 - **Artifact management** — non-fuzzy navigation and smart agent-focused rendering of artifacts.
 - **Agent-centric behavior** — Donna guides agents through workflows, helps them be on the path, and fixes mistakes.
-- **Extensible architecture** — implement your own operations, validators, renderers, and artifact sources.
-- **Batteries included** — Donna goes with a set of pre-defined workflows, so you can start using it right away.
+- **Extensible architecture** — implement your own operations, validators, renderers, and directives.
+- **Project-local workflows** — keep reusable work procedures in your repository and adjust them to your team.
 
 ## Example
 
-Donna is developed via Donna itself. You can find real-life examples of workflows and specifications in the [specs](./specs) folder of this repository.
+Donna is developed via Donna itself. You can find real-life workflow examples in [workflows](./workflows) and documentation in [specs](./specs).
 
 The example below is a simplified version of the polishing workflow that formats code, runs linters, and fixes found problems until all checks pass. It uses the single operation type `donna.lib.request_action` to ask the agent to perform specific instructions.
 
@@ -114,14 +114,14 @@ What you may notice:
 
 Directives, like `{{ goto("operation_id") }}`, render itself depending on the context:
 
-- For the agent, they render an exact CLI command to run, such as `donna -p llm sessions action-request-completed <action-request-id> '@/specs/work/polish.donna.md:finish'`.
+- For the agent, they render an exact CLI command to run, such as `donna -p llm sessions action-request-completed <action-request-id> '@/workflows/polish.donna.md:finish'`.
 - For Donna, they render a specific marker that can be extracted and used to analyze an artifact. For example, Donna uses `goto` directives to build an FSM of the workflow and validate it before running: does each operation exist, can the workflow be completed, are there unreachable operations, etc.
 
 Generally speaking, **all you need is `donna.lib.request_action` operation** — it is enough to achieve a great deal of automation by delegating some decisions to the agent. However, there are some more specific operations that simplify things and make workflows more agile or performant.
 
 </details>
 
-You can find a more complex implementation of the same workflow in the [polish.donna.md](./specs/work/polish.donna.md) file. It demonstrates other Donna operations, such as running scripts directly and branching.
+You can find a more complex implementation of the same workflow in the [polish.donna.md](./workflows/polish.donna.md) file. It demonstrates other Donna operations, such as running scripts directly and branching.
 
 ## Installation
 
@@ -143,10 +143,6 @@ donna workspaces init
 Donna will:
 
 - Create `donna.toml` in your project root and the configured session directory.
-- Sync bundled Donna specs into `.agents/donna/`.
-- Install skills into `.agents/skills/` folder.
-
-If you upgrade Donna later, run `donna workspaces update` to refresh `.agents/donna/` and `.agents/skills/`.
 
 3. Ask your agent to do something like `$donna-do Add a button that …`. The agent will discover the appropriate workflow and execute it.
 
@@ -164,7 +160,7 @@ Commands you may need:
 
 - `donna workspaces init` — Initialize Donna in your project.
 - `donna sessions start` — start a new working session, remove everything from the previous session.
-- `donna artifacts list <pattern>` — list artifacts with short descriptions.
+- `donna artifacts list` — list workflows with short descriptions.
 
 Donna can send internal journal records to a third-party tool. Configure it in `donna.toml`:
 
@@ -201,7 +197,7 @@ The documentation below covers aspects important to humans and partially duplica
 
 ## Batteries Included
 
-Donna comes with built-in workflows and specifications that empower agents to work in a smart way.
+Donna comes with documentation that helps agents work in a smart way, while workflows live in project-local `workflows/` directories.
 
 However, **I encourage you to experiment and implement your own workflows**. Meta-programming is fun; specialized workflows are more efficient.
 
@@ -215,26 +211,25 @@ Additionally, Donna will:
 
 - choose fast or slow route depending on the complexity of the changes required;
 - find and run (if any) polishing workflow to ensure the codebase is in a good state after the changes;
-- find and run (if any) workflow to update your changelog.
 
-Note that the default Donna workflows are designed to be reliable and useful for a wide range of projects. They may not be optimal in terms of token usage or speed for your particular project. The intended use of Donna is to implement your own workflows that account for your project's specifics.
+Note that example Donna workflows are designed to be reliable and useful for a wide range of projects. They may not be optimal in terms of token usage or speed for your particular project. The intended use of Donna is to implement your own workflows that account for your project's specifics.
 
 Points of interest:
 
-- [@/.agents/donna/rfc/specs/request_for_change.donna.md](./.agents/donna/rfc/specs/request_for_change.donna.md) — specification of the RFC document.
-- [@/.agents/donna/rfc/work/request.donna.md](./.agents/donna/rfc/work/request.donna.md) — workflow to create a RFC document.
-- [@/.agents/donna/rfc/work/plan.donna.md](./.agents/donna/rfc/work/plan.donna.md) — workflow to plan work on an RFC and create a new workflow.
-- [@/.agents/donna/rfc/work/do.donna.md](./.agents/donna/rfc/work/do.donna.md) — meta workflow to automate the whole work from a developer request to a changelog update.
+- [@/workflows/rfc/specs/request_for_change.md](./workflows/rfc/specs/request_for_change.md) — documentation for the RFC document.
+- [@/workflows/rfc/request.donna.md](./workflows/rfc/request.donna.md) — workflow to create a RFC document.
+- [@/workflows/rfc/plan.donna.md](./workflows/rfc/plan.donna.md) — workflow to plan work on an RFC and create a new workflow.
+- [@/workflows/rfc/do.donna.md](./workflows/rfc/do.donna.md) — meta workflow to automate the whole work from a developer request to final verification.
 
 ## Artifacts on Filesystem
 
-- Artifacts are text files Donna reads and validates. In practice they are usually Markdown workflows and specifications stored as `.donna.md` files.
-- Donna discovers artifacts directly in the project filesystem and limits what is visible via `donna.toml:file_filters`.
+- Artifacts are text files Donna reads and validates. In practice they are usually Markdown workflows stored as `.donna.md` files. General documentation uses normal `.md` files.
+- Donna discovers workflow artifacts by recursively scanning the directories listed in `donna.toml:workflow_dirs`.
 
 By default, Donna uses these artifact areas:
 
-- `specs/` — project-owned artifacts.
-- `.agents/donna/` — bundled Donna specs and workflows synced by `donna workspaces init` or `donna workspaces update`.
+- `workflows/` — project-owned workflows.
+- `.agents/donna/` — project-local Donna documentation, when present.
 - `.session/donna/` — session artifacts and Donna runtime state.
 
 ### Rendering
@@ -249,41 +244,19 @@ Artifact ids are project-relative filepaths prefixed with `@/`. Section ids appe
 
 Examples:
 
-- `@/specs/work/polish.donna.md`
-- `@/.agents/donna/work/polish.donna.md`
+- `@/workflows/polish.donna.md`
+- `@/workflows/rfc/request.donna.md`
 - `@/.session/donna/execute_rfc.donna.md:review_changes`
 
-You and agents can `list`, `view`, and `validate` artifacts.
+You and agents can `list` workflow artifacts and `validate` Donna artifacts.
 
-- `donna -p llm artifacts list [<pattern>]` — shows a short description from its h1 section.
-- `donna -p llm artifacts view <pattern>` — shows the full content of the artifact with proper rendering.
-- `donna -p llm artifacts validate [<pattern>]` — validates matching artifacts.
+- `donna -p llm artifacts list` — shows workflow descriptions from their h1 sections.
+- `donna -p llm artifacts validate <artifact-id>...` — validates one or more artifacts.
+- `donna -p llm artifacts validate --all` — validates every discovered artifact.
 
-Commands accept both precise artifact ids and glob patterns. Patterns may use absolute ids like `@/...` or rooted wildcard forms like `**/intro.donna.md`.
+Artifact ids use absolute project-root form like `@/workflows/polish.donna.md`.
 
-Patterns allow using:
-
-- `*` — matches zero or more characters inside one path level.
-- `?` — matches exactly one character inside one path level.
-- `[]` — matches a single character class inside one path level.
-- `**` — matches zero or more path levels.
-
-Examples:
-
-- `@/*.donna.md` — matches all artifacts directly under the project root.
-- `@/**/intro.donna.md` — matches all artifacts named `intro.donna.md`.
-- `@/.session/donna/**` — matches all session artifacts.
-- `**/test_*.donna.md` — matches artifact filenames that start with `test_`.
-
-Commands that accept an artifact pattern also support `--predicate '<python-expression>'` to filter by primary section properties available as `section`.
-
-Currently, Donna supports two artifact tags:
-
-- `workflow` — marks a workflow artifact — is set automatically by Donna.
-- `specification` — marks a specification artifact — is set automatically by Donna.
-
-You can find all workflows with the command
-`donna -p llm artifacts list --predicate '"workflow" in section.tags'`.
+You can find all workflows with `donna -p llm artifacts list`.
 
 ## Sessions
 
@@ -334,15 +307,15 @@ Donna can detect errors (in artifacts, in execution, etc). If an error can be fi
 <summary><strong>An example of error message from Donna</strong></summary>
 
 ```bash
-$ donna -p llm sessions run @/specs/work/polish.donna.md
+$ donna -p llm sessions run @/workflows/polish.donna.md
 
 kind=artifact_validation_error
 media_type=text/markdown
-artifact_id=@/specs/work/polish.donna.md
+artifact_id=@/workflows/polish.donna.md
 error_code=donna.artifacts.section_not_found
 section_id=run_autoflake_scriptx
 
-Error in artifact '@/specs/work/polish.donna.md', section 'run_autoflake_scriptx': Section `run_autoflake_scriptx` is not available in artifact `@/specs/work/polish.donna.md`.
+Error in artifact '@/workflows/polish.donna.md', section 'run_autoflake_scriptx': Section `run_autoflake_scriptx` is not available in artifact `@/workflows/polish.donna.md`.
 
 Ways to fix:
 
@@ -366,11 +339,11 @@ The simplest example of such generation is currently used as a primary way for D
 
 ### Discovering workflows
 
-If you want to run a child workflow from an operation, you can just instruct an agent like `Run the workflow @/specs/work/my-cool-workflow.donna.md` and the agent will find it and run.
+If you want to run a child workflow from an operation, you can just instruct an agent like `Run the workflow @/workflows/my-cool-workflow.donna.md` and the agent will find it and run.
 
 However, it is not very agile. Instead, I suggest you describe the desired outcome and let the agent find the most suitable workflow. In that case, you'll be able to define customized workflows for specific types of changes and let the agent choose the best one for the current situation.
 
-For example, you can have two workflows `@/specs/work/write-backend-test.donna.md` and `@/specs/work/write-frontend-test.donna.md`, and your operation can say `Run the workflow that will write a test for the current change`, and the agent will choose the most suitable workflow based on the context and the workflow descriptions.
+For example, you can have two workflows `@/workflows/write-backend-test.donna.md` and `@/workflows/write-frontend-test.donna.md`, and your operation can say `Run the workflow that will write a test for the current change`, and the agent will choose the most suitable workflow based on the context and the workflow descriptions.
 
 ## Jinja2 rendering
 
@@ -396,16 +369,12 @@ You can find detailed documentation of all built-in directives in `donna skill a
 
 Here they are:
 
-1. `donna.lib.view` — references another artifact. In `view`/`execute` modes, it renders an exact CLI command to view the artifact. In analysis mode, it will be used to validate the existence of the artifact and track dependencies between artifacts.
-2. `donna.lib.list` — references artifact listing. In `view`/`execute` modes, it renders an exact CLI command to list artifacts. In analysis mode, it will be used to validate the existence of the artifacts and track dependencies between artifacts.
-3. `donna.lib.goto` — references the next workflow operation to execute. In `view`/`execute` modes, it renders an exact CLI command to advance the workflow. In `analysis` mode, it is used to construct and validate an FSM for the workflow.
-4. `donna.lib.task_variable` — in `view` mode renders a placeholder with a note about task-variable substitution, in `execute` mode renders the actual task-context value. In `analysis`, it will be used to control a set of variables used in the artifact.
+1. `donna.lib.goto` — references the next workflow operation to execute. In `view`/`execute` modes, it renders an exact CLI command to advance the workflow. In `analysis` mode, it is used to construct and validate an FSM for the workflow.
+2. `donna.lib.task_variable` — in `view` mode renders a placeholder with a note about task-variable substitution, in `execute` mode renders the actual task-context value. In `analysis`, it will be used to control a set of variables used in the artifact.
 
-## Specifications
+## Documentation
 
-Specifications can be perceived just as documentation. There is no special handling for them.
-
-Later, they will be validated like workflows, but currently, it is just docs.
+Specifications are plain Markdown documentation. Donna does not treat them as artifacts or validate them as workflows.
 
 ## Extending Donna
 
@@ -416,11 +385,10 @@ All Donna logic is referenced by Python import paths. That means:
 
 What you can implement:
 
-- Custom sections (including operations) for Donna artifacts. Check [./donna/primitives/artifacts](./donna/primitives/artifacts) and [./donna/primitives/operations](./donna/primitives/operations) subpackages for examples.
+- Custom sections (including operations) for Donna artifacts. Check [./donna/primitives/artifacts](./donna/primitives/artifacts) and [./donna/primitives/sections](./donna/primitives/sections) subpackages for examples.
 - Custom rendering directives. Check [./donna/primitives/directives](./donna/primitives/directives) subpackage for examples.
-- Custom artifact parsers. Check [./donna/workspaces/sources](./donna/workspaces/sources) subpackage for examples.
 
-Sources and file filters are configured in the `donna.toml` file of your project.
+Donna workflow artifacts are Markdown files ending with `.donna.md` inside directories configured by `workflow_dirs` in your project `donna.toml`.
 
 Sections and directives are used directly in artifacts by their Python import paths.
 

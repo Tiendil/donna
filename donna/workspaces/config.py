@@ -2,43 +2,19 @@ from __future__ import annotations
 
 import enum
 import pathlib
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
-from donna.domain.artifact_ids import ArtifactIdPattern
+from donna.domain.constants import DONNA_DEFAULT_SESSION_DIR, DONNA_DEFAULT_WORKFLOW_DIR
+from donna.domain.id_paths import NormalizedRawIdPath
+from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
-from donna.machine.primitives import resolve_primitive
 from donna.workspaces import errors as world_errors
-from donna.workspaces.sources.base import SourceConfig as SourceConfigValue
-from donna.workspaces.sources.base import SourceConstructor
 
 if TYPE_CHECKING:
     from donna.protocol.modes import Mode
-
-DONNA_CONFIG_NAME = "donna.toml"
-DONNA_DEFAULT_SESSION_DIR = pathlib.Path(".session") / "donna"
-
-
-class SourceConfig(BaseEntity):
-    kind: PythonPath
-    extension: str
-
-    model_config = pydantic.ConfigDict(extra="allow")
-
-
-class FileFilterMode(str, enum.Enum):
-    ignore = "ignore"
-    include = "include"
-    required = "required"
-
-
-class FileFilter(BaseEntity):
-    mode: FileFilterMode
-    pattern: ArtifactIdPattern
 
 
 class JournalRecordAttribute(str, enum.Enum):
@@ -84,95 +60,54 @@ class JournalConfig(BaseEntity):
         return value
 
 
-def _default_sources() -> list[SourceConfig]:
+def _default_workflow_dirs() -> list[pathlib.Path]:
     return [
-        SourceConfig.model_validate(
-            {
-                "kind": "donna.lib.sources.markdown",
-                "extension": ".donna.md",
-            }
-        ),
+        DONNA_DEFAULT_WORKFLOW_DIR,
+        DONNA_DEFAULT_SESSION_DIR,
     ]
 
 
-def _default_file_filters() -> list[FileFilter]:
-    return [
-        FileFilter(mode=FileFilterMode.include, pattern=ArtifactIdPattern.parse("@/.agents/**/*.donna.md").unwrap()),
-        FileFilter(mode=FileFilterMode.ignore, pattern=ArtifactIdPattern.parse(".*/**").unwrap()),
-        FileFilter(mode=FileFilterMode.include, pattern=ArtifactIdPattern.parse("**/*.donna.md").unwrap()),
-        FileFilter(mode=FileFilterMode.ignore, pattern=ArtifactIdPattern.parse("**").unwrap()),
-    ]
+def _serialize_workflow_dir(path: pathlib.Path) -> str:
+    return f"./{path.as_posix()}"
+
+
+def _validate_workflow_dir(path: pathlib.Path) -> pathlib.Path:
+    if path.is_absolute():
+        raise ValueError("Workflow directories must be relative to the Donna project root.")
+
+    if any(part == ".." for part in path.parts):
+        raise ValueError("Workflow directories must not contain parent-directory references.")
+
+    return path
 
 
 class Config(BaseEntity):
-    session: pathlib.Path = DONNA_DEFAULT_SESSION_DIR
-    sources: list[SourceConfig] = pydantic.Field(default_factory=_default_sources)
-    file_filters: list[FileFilter] = pydantic.Field(default_factory=_default_file_filters)
+    session_dir: pathlib.Path = DONNA_DEFAULT_SESSION_DIR
+    default_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.text"))
+    default_primary_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.workflow"))
+    default_primary_section_id: SectionId = SectionId("primary")
+    workflow_dirs: list[pathlib.Path] = pydantic.Field(default_factory=_default_workflow_dirs)
     journal: JournalConfig = pydantic.Field(default_factory=JournalConfig)
-    _sources_instances: list[SourceConfigValue] = pydantic.PrivateAttr(default_factory=list)
 
     cache_lifetime: float = 1.0
 
-    def model_post_init(self, __context: Any) -> None:  # noqa: CCR001
-        sources: list[SourceConfigValue] = []
+    @pydantic.field_validator("workflow_dirs", mode="after")
+    @classmethod
+    def validate_workflow_dirs(cls, value: list[pathlib.Path]) -> list[pathlib.Path]:
+        workflow_dirs: list[pathlib.Path] = []
 
-        for source_config in self.sources:
-            primitive_result = resolve_primitive(source_config.kind)
-            if primitive_result.is_err():
-                error = primitive_result.unwrap_err()[0]
-                raise ValueError(error.message.format(error=error))
+        for path in value:
+            path = _validate_workflow_dir(path)
+            if path in workflow_dirs:
+                continue
 
-            primitive = primitive_result.unwrap()
+            workflow_dirs.append(path)
 
-            if not isinstance(primitive, SourceConstructor):
-                raise ValueError(f"Source constructor '{source_config.kind}' is not supported")
+        return workflow_dirs
 
-            sources.append(primitive.construct_source(source_config))
-
-        object.__setattr__(self, "_sources_instances", sources)
-        session_filter = FileFilter(mode=FileFilterMode.include, pattern=self.session_artifact_pattern())
-        if session_filter not in self.file_filters:
-            object.__setattr__(self, "file_filters", [session_filter, *self.file_filters])
-
-    def session_artifact_pattern(self) -> ArtifactIdPattern:
-        session_path = self.session.as_posix().strip("/")
-        if session_path in {"", "."}:
-            return ArtifactIdPattern.parse("@/**/*.donna.md").unwrap()
-
-        return ArtifactIdPattern.parse(f"@/{session_path}/**/*.donna.md").unwrap()
-
-    @property
-    def sources_instances(self) -> list[SourceConfigValue]:
-        return list(self._sources_instances)
-
-    def get_source_config(self, kind: str) -> Result[SourceConfigValue, ErrorsList]:
-        for source in self._sources_instances:
-            if source.kind == kind:
-                return Ok(source)
-
-        return Err(
-            [
-                world_errors.SourceConfigNotConfigured(
-                    source_id=kind,
-                    kind=kind,
-                )
-            ]
-        )
-
-    def find_source_for_extension(self, extension: str) -> SourceConfigValue | None:
-        for source in self._sources_instances:
-            if source.supports_extension(extension):
-                return source
-
-        return None
-
-    def supported_extensions(self) -> set[str]:
-        extensions: set[str] = set()
-
-        for source in self._sources_instances:
-            extensions.add(source.extension)
-
-        return extensions
+    @pydantic.field_serializer("workflow_dirs")
+    def serialize_workflow_dirs(self, value: list[pathlib.Path]) -> list[str]:
+        return [_serialize_workflow_dir(path) for path in value]
 
 
 class Workspace(BaseEntity):

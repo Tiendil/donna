@@ -35,13 +35,3 @@ class InvalidIdFormat(EnvironmentError):
     ]
     id_type: str
     value: str
-
-
-class InvalidIdPattern(EnvironmentError):
-    code: str = "donna.domain.invalid_id_pattern"
-    message: str = "Invalid {error.id_type}: '{error.value}'."
-    ways_to_fix: list[str] = [
-        "Use identifiers or '*'/'**' tokens separated by the expected delimiter.",
-    ]
-    id_type: str
-    value: str

@@ -1,7 +1,5 @@
 from typing import TYPE_CHECKING, ClassVar, cast
 
-import pydantic
-
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
@@ -12,7 +10,7 @@ from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import FsmMode, OperationMeta
 from donna.machine.primitives import Primitive
 from donna.workspaces import markdown
-from donna.workspaces.sources.markdown import MarkdownSectionMixin
+from donna.workspaces.markdown_parser import MarkdownSectionMixin
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -28,6 +26,15 @@ class WrongStartOperation(ArtifactValidationError):
     message: str = "Can not find the start operation `{error.start_operation_id}` in the workflow."
     ways_to_fix: list[str] = ["Ensure that the artifact contains the section with the specified start operation ID."]
     start_operation_id: SectionId
+
+
+class StartOperationMissing(ArtifactValidationError):
+    code: str = "donna.workflows.start_operation_missing"
+    message: str = "Workflow section `{error.section_id}` does not define a start operation and has no tail sections."
+    ways_to_fix: list[str] = [
+        "Add at least one H2 operation section.",
+        "Set `start_operation_id` explicitly in the workflow H1 config block.",
+    ]
 
 
 class SectionIsNotAnOperation(ArtifactValidationError):
@@ -94,20 +101,15 @@ def find_workflow_sections(start_operation_id: SectionId, artifact: Artifact) ->
 
 
 class WorkflowConfig(ArtifactSectionConfig):
-    start_operation_id: SectionId
-
-    @pydantic.field_validator("tags", mode="after")
-    @classmethod
-    def ensure_workflow_tag(cls, value: list[str]) -> list[str]:
-        if "workflow" in value:
-            return value
-        return [*value, "workflow"]
+    start_operation_id: SectionId | None = None
 
 
 class WorkflowMeta(ArtifactSectionMeta):
-    start_operation_id: SectionId
+    start_operation_id: SectionId | None = None
 
     def cells_meta(self) -> dict[str, object]:
+        if self.start_operation_id is None:
+            return {}
         return {"start_operation_id": str(self.start_operation_id)}
 
 
@@ -127,27 +129,41 @@ class Workflow(MarkdownSectionMixin, Primitive):
 
     @unwrap_to_error
     def execute_section(
-        self, task: "Task", unit: "WorkUnit", section: ArtifactSection
+        self, task: "Task", unit: "WorkUnit", artifact: Artifact, section_id: SectionId
     ) -> Result[list["Change"], ErrorsList]:
         from donna.machine.changes import ChangeAddWorkUnit
 
-        if not isinstance(section.meta, WorkflowMeta):
-            return Err([WorkflowSectionNotWorkflow(artifact_id=section.artifact_id, section_id=section.id)])
-
-        full_id = section.artifact_id.to_full_local(section.meta.start_operation_id)
+        section = artifact.get_section(section_id).unwrap()
+        start_operation_id = self._resolve_start_operation_id(artifact, section).unwrap()
+        full_id = artifact.id.to_full_local(start_operation_id)
 
         return Ok([ChangeAddWorkUnit(task_id=task.id, operation_id=full_id)])
+
+    def _resolve_start_operation_id(
+        self,
+        artifact: Artifact,
+        section: ArtifactSection,
+    ) -> Result[SectionId, ErrorsList]:
+        if not isinstance(section.meta, WorkflowMeta):
+            return Err([WorkflowSectionNotWorkflow(artifact_id=artifact.id, section_id=section.id)])
+
+        if section.meta.start_operation_id is not None:
+            return Ok(section.meta.start_operation_id)
+
+        for tail_section in artifact.sections:
+            if tail_section.primary:
+                continue
+
+            return Ok(tail_section.id)
+
+        return Err([StartOperationMissing(artifact_id=artifact.id, section_id=section.id)])
 
     @unwrap_to_error
     def validate_section(  # noqa: CCR001, CFQ001
         self, artifact: Artifact, section_id: SectionId
     ) -> Result[None, ErrorsList]:
         section = artifact.get_section(section_id).unwrap()
-
-        if not isinstance(section.meta, WorkflowMeta):
-            return Err([WorkflowSectionNotWorkflow(artifact_id=artifact.id, section_id=section_id)])
-
-        start_operation_id = section.meta.start_operation_id
+        start_operation_id = self._resolve_start_operation_id(artifact, section).unwrap()
 
         errors: ErrorsList = []
 
