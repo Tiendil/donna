@@ -12,7 +12,7 @@ fsm_mode = "start"
 ```
 
 1. Read the `workflows/rfc/specs/request_for_change.md` file if you haven't done it yet.
-2. Read the artifact instructions by running `donna skill artifacts` if you haven't done it yet.
+2. Read the workflow instructions by running `donna skill workflows` if you haven't done it yet.
 3. `{{ donna.lib.goto("ensure_work_description_exists") }}`
 
 ## Ensure work description exists

@@ -18,7 +18,18 @@ from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
 
 @unwrap_to_error
 def load_state() -> Result[ConsistentState, ErrorsList]:
-    return Ok(context().state.load().unwrap())
+    loaded = context().state.load()
+
+    if loaded.is_ok():
+        return Ok(loaded.unwrap())
+
+    errors = loaded.unwrap_err()
+    if not any(isinstance(error, machine_errors.SessionStateNotInitialized) for error in errors):
+        return Err(errors)
+
+    state = MutableState.build().freeze()
+    context().state.save(state).unwrap()
+    return Ok(state)
 
 
 @unwrap_to_error
@@ -60,20 +71,12 @@ def _session_required(
 
 
 @unwrap_to_error
-def start() -> Result[list[Cell], ErrorsList]:
-    workspace_sessions.reset_dir()
-
+def new_session() -> Result[list[Cell], ErrorsList]:
     _save_state(MutableState.build().freeze()).unwrap()
 
-    machine_journal.add(message="Started new session.").unwrap()
+    machine_journal.add(message="Created new session state.").unwrap()
 
-    return Ok([operation_succeeded("Started new session.")])
-
-
-@unwrap_to_error
-def reset() -> Result[list[Cell], ErrorsList]:
-    _save_state(MutableState.build().freeze()).unwrap()
-    return Ok([operation_succeeded("Session state reset.")])
+    return Ok([operation_succeeded("Created new session state.")])
 
 
 @unwrap_to_error

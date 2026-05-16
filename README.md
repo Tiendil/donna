@@ -147,7 +147,7 @@ Donna will create `donna.toml` in your project root. The configured session dire
 ## Skills
 
 - `donna-do` — use Donna to perform a specific task in the current Donna session. Creates a new session if there is no one.
-- `donna-start` — start a new Donna session and tell the agent to use Donna to perform all further work. Removes all content from the previous session.
+- `donna-start` — create new Donna session state and tell the agent to use Donna to perform all further work.
 - `donna-stop` — stop using Donna to perform work — the agent should switch to its own flow control.
 
 ## Usage
@@ -157,7 +157,7 @@ Donna will create `donna.toml` in your project root. The configured session dire
 Commands you may need:
 
 - `donna init` — Initialize Donna in your project.
-- `donna start` — start a new working session, remove everything from the previous session.
+- `donna new-session` — create fresh session state.
 - `donna list` — list workflows with short descriptions.
 
 Donna can send internal journal records to a third-party tool. Configure it in `donna.toml`:
@@ -187,7 +187,7 @@ Use `donna --help` for a quick reference.
 You find detailed documentation in the built-in skill documents — they are readable and always accurate:
 
 - `donna skill usage` — full list of commands and how to use them.
-- `donna skill artifacts` — what Donna artifacts are and how to use them on the filesystem.
+- `donna skill workflows` — what Donna workflows are and how to use them on the filesystem.
 - `donna skill configuration` — how to configure `donna.toml`.
 - `donna skill initialization` — how to initialize or refresh a Donna workspace.
 
@@ -260,10 +260,11 @@ You can find all workflows with `donna -p llm list`.
 
 `<project-root>/.session/donna/` contains the current state of work performed by Donna: runtime state plus temporary documents and workflows created during the session.
 
-The developer is responsible for starting or resetting sessions with `donna -p human start` and `donna -p human reset`.
+Donna initializes empty session state automatically when a session-aware command needs it and no session state exists.
 
-- On session start, Donna removes everything from the previous session and creates a fresh session directory.
-- On session reset donna resets the state of the current session (tasks, action requests, etc.), but keeps artifacts.
+The developer can explicitly reset the current session state with `donna -p human new-session`.
+
+- `new-session` resets tasks, work units, and action requests.
 
 The agent is encouraged not to manage sessions directly, because it doesn't have enough context to decide when session artifacts may be safely removed.
 
@@ -288,7 +289,7 @@ To execute a workflow, Donna uses a simplified virtual machine (VM) that maintai
 
 ### Operations
 
-You can find detailed docs on built-in operations in `donna skill artifacts`.
+You can find detailed docs on built-in operations in `donna skill workflows`.
 
 Here is a short list of them:
 
@@ -363,7 +364,7 @@ Donna defines a set of built-in Jinja2 functions that provide artifacts with the
 
 Directives are used in the next way: `{{ python.import.path(<args>) }}`.
 
-You can find detailed documentation of all built-in directives in `donna skill artifacts`.
+You can find detailed documentation of all built-in directives in `donna skill workflows`.
 
 Here they are:
 

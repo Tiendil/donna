@@ -31,7 +31,7 @@ class EnvironmentError(core_errors.EnvironmentError):
 class SessionStateNotInitialized(EnvironmentError):
     code: str = "donna.machine.session_state_not_initialized"
     message: str = "Session state is not initialized."
-    ways_to_fix: list[str] = ["Run Donna session start to initialize session state."]
+    ways_to_fix: list[str] = ["Run `donna new-session` to create fresh session state."]
 
 
 class SessionStateChangedExternally(EnvironmentError):
@@ -55,7 +55,7 @@ class JournalMessageContainsNewlines(EnvironmentError):
 class ActionRequestNotFound(EnvironmentError):
     code: str = "donna.machine.action_request_not_found"
     message: str = "Action request `{error.request_id}` was not found in the current session state."
-    ways_to_fix: list[str] = ["Use an action request id from `sessions details` output."]
+    ways_to_fix: list[str] = ["Use an action request id from `donna details` output."]
     request_id: ActionRequestId
 
 

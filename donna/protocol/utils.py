@@ -6,7 +6,10 @@ from donna.protocol.modes import get_cell_formatter
 
 
 def instant_output(text: bytes) -> None:
-    sys.stdout.buffer.write(text + b"\n")
+    if text.endswith(b"\n"):
+        sys.stdout.buffer.write(text)
+    else:
+        sys.stdout.buffer.write(text + b"\n")
     sys.stdout.buffer.flush()
 
 
