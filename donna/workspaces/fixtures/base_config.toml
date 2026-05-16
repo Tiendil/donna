@@ -1,3 +1,4 @@
+version = 1
 
 # Directory where Donna will keep its state.
 session_dir = ".session/donna"

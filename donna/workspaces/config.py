@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import pydantic
 
@@ -82,6 +82,7 @@ def _validate_relative_project_path(path: RelativeProjectPath) -> RelativeProjec
 
 
 class Config(BaseEntity):
+    version: Literal[1] = 1
     session_dir: RelativeProjectPath = RelativeProjectPath(DONNA_DEFAULT_SESSION_DIR)
     default_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.text"))
     default_primary_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.workflow"))

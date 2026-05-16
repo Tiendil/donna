@@ -12,7 +12,7 @@ Use this document when a project has no `donna.toml`.
 <project-root>/donna.toml
 ```
 
-`donna.toml` stores configuration. The configured session directory stores Donna runtime state and session artifacts after runtime commands create it.
+`donna.toml` stores configuration. The generated file declares schema version `1`. The configured session directory stores Donna runtime state and session artifacts after runtime commands create it.
 
 ## Initialize The Current Directory
 
