@@ -14,7 +14,7 @@ from donna.domain.artifact_ids import (
 )
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 from donna.domain.internal_ids import ActionRequestId
-from donna.domain.paths import UntrustedPath
+from donna.domain.paths import PathInput, UntrustedPath
 from donna.protocol.modes import Mode
 from donna.workspaces import paths as workspace_paths
 from donna.workspaces.artifacts import has_donna_artifact_extension
@@ -52,7 +52,7 @@ def validate_supported_artifact_section_id(section_id: ArtifactSectionId) -> Non
     validate_supported_artifact_id(parts.artifact_id)
 
 
-def parse_artifact_id_argument(value: str, project_root: pathlib.Path) -> ArtifactId:
+def parse_artifact_id_argument(value: str, project_root: PathInput) -> ArtifactId:
     artifact_id = workspace_paths.normalize_artifact_id(
         value, UntrustedPath(project_root), cwd=UntrustedPath(pathlib.Path.cwd())
     )
@@ -63,7 +63,7 @@ def parse_artifact_id_argument(value: str, project_root: pathlib.Path) -> Artifa
     return artifact_id
 
 
-def parse_artifact_section_id_argument(value: str, project_root: pathlib.Path) -> ArtifactSectionId:
+def parse_artifact_section_id_argument(value: str, project_root: PathInput) -> ArtifactSectionId:
     section_id = workspace_paths.normalize_artifact_section_id(
         value, UntrustedPath(project_root), cwd=UntrustedPath(pathlib.Path.cwd())
     )
@@ -88,10 +88,10 @@ def _parse_protocol_mode(value: str) -> Mode:
         raise typer.BadParameter(f"Unsupported protocol mode '{value}'. Expected one of: {allowed}.") from exc
 
 
-def _parse_input_path(value: str) -> pathlib.Path:
+def _parse_input_path(value: str) -> UntrustedPath:
     normalized = value.strip()
     if normalized == "-":
-        return pathlib.Path("-")
+        return UntrustedPath(pathlib.Path("-"))
 
     path = pathlib.Path(normalized).expanduser()
     if not path.exists():
@@ -102,7 +102,7 @@ def _parse_input_path(value: str) -> pathlib.Path:
     if not path.is_absolute():
         path = path.resolve()
 
-    return path
+    return UntrustedPath(path)
 
 
 ActionRequestIdArgument = Annotated[
@@ -186,7 +186,7 @@ RootOption = Annotated[
 ]
 
 InputPathArgument = Annotated[
-    pathlib.Path,
+    UntrustedPath,
     typer.Argument(
         parser=_parse_input_path,
         help="Path to an existing local file used as input, or '-' to read from stdin.",

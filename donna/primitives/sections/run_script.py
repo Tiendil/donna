@@ -1,5 +1,4 @@
 import os
-import pathlib
 import subprocess  # noqa: S404
 import tempfile
 from typing import TYPE_CHECKING, ClassVar, cast
@@ -11,6 +10,7 @@ from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId, artifact_section_id, split_artifact_section_id
 from donna.domain.ids import SectionId
+from donna.domain.paths import ProjectRootPath
 from donna.machine import journal as machine_journal
 from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
@@ -221,7 +221,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         return Ok(None)
 
 
-def _run_script(script: str, timeout: int, project_dir: pathlib.Path) -> tuple[str, str, int]:  # noqa: CCR001
+def _run_script(script: str, timeout: int, project_dir: ProjectRootPath) -> tuple[str, str, int]:  # noqa: CCR001
     temp_path = None
 
     try:

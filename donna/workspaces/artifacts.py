@@ -6,7 +6,7 @@ from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId, artifact_path_parts, validate_artifact_id
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
-from donna.domain.paths import UntrustedPath
+from donna.domain.paths import ProjectPathId, RelativeProjectPath, ResolvedProjectPath, UntrustedPath
 from donna.domain.types import Milliseconds
 from donna.machine.tasks import Task, WorkUnit
 from donna.workspaces import errors as world_errors
@@ -27,17 +27,17 @@ RENDER_CONTEXT_VIEW = ArtifactRenderContext(primary_mode=RenderMode.view)
 
 
 class FilesystemRawArtifact(BaseEntity):
-    path: pathlib.Path
+    path: ResolvedProjectPath
 
     def get_bytes(self) -> bytes:
-        return self.path.read_bytes()
+        return pathlib.Path(self.path).read_bytes()
 
     @unwrap_to_error
     def render(self, artifact_id: ArtifactId, render_context: ArtifactRenderContext) -> Result["Artifact", ErrorsList]:
         return Ok(render_markdown_artifact(artifact_id, self.get_bytes(), render_context).unwrap())
 
 
-def has_donna_artifact_extension(path: pathlib.Path | str) -> bool:
+def has_donna_artifact_extension(path: ProjectPathId | RelativeProjectPath | ResolvedProjectPath | str) -> bool:
     return pathlib.PurePath(path).name.lower().endswith(DONNA_ARTIFACT_EXTENSION)
 
 
@@ -49,11 +49,11 @@ def _artifact_id_from_parts(parts: Sequence[str]) -> ArtifactId | None:
     return ArtifactId(artifact_name)
 
 
-def _workflow_dir_parts(path: pathlib.Path) -> tuple[str, ...]:
+def _workflow_dir_parts(path: RelativeProjectPath) -> tuple[str, ...]:
     return pathlib.PurePosixPath(path.as_posix()).parts
 
 
-def _artifact_is_in_workflow_dirs(artifact_id: ArtifactId, workflow_dirs: Sequence[pathlib.Path]) -> bool:
+def _artifact_is_in_workflow_dirs(artifact_id: ArtifactId, workflow_dirs: Sequence[RelativeProjectPath]) -> bool:
     artifact_parts = artifact_path_parts(artifact_id)
 
     for workflow_dir in workflow_dirs:
@@ -73,7 +73,7 @@ def _artifact_is_visible_in_workspace(artifact_id: ArtifactId) -> bool:
     return _artifact_is_in_workflow_dirs(artifact_id, workspace_config.config().workflow_dirs)
 
 
-def _artifact_path_from_filesystem_entry(entry: pathlib.Path, parts: list[str]) -> pathlib.Path | None:
+def _artifact_id_from_filesystem_entry(entry: ResolvedProjectPath, parts: list[str]) -> ArtifactId | None:
     if not entry.is_file():
         return None
 
@@ -81,24 +81,22 @@ def _artifact_path_from_filesystem_entry(entry: pathlib.Path, parts: list[str]) 
         return None
 
     artifact_parts = parts + [entry.name]
-    if _artifact_id_from_parts(artifact_parts) is None:
-        return None
-
-    return pathlib.Path(*artifact_parts)
+    return _artifact_id_from_parts(artifact_parts)
 
 
-def _walk_workflow_dir(node: pathlib.Path, parts: list[str]) -> Iterator[pathlib.Path]:
-    for entry in sorted(node.iterdir(), key=lambda item: item.name):
+def _walk_workflow_dir(node: ResolvedProjectPath, parts: list[str]) -> Iterator[ArtifactId]:
+    for raw_entry in sorted(pathlib.Path(node).iterdir(), key=lambda item: item.name):
+        entry = ResolvedProjectPath(raw_entry)
         if entry.is_dir():
             yield from _walk_workflow_dir(entry, parts + [entry.name])
             continue
 
-        artifact_path = _artifact_path_from_filesystem_entry(entry, parts)
-        if artifact_path is not None:
-            yield artifact_path
+        artifact_id = _artifact_id_from_filesystem_entry(entry, parts)
+        if artifact_id is not None:
+            yield artifact_id
 
 
-def walk_filesystem(workflow_dirs: Sequence[pathlib.Path]) -> Iterator[pathlib.Path]:
+def walk_filesystem(workflow_dirs: Sequence[RelativeProjectPath]) -> Iterator[ArtifactId]:
     from donna.workspaces.config import project_dir
 
     root = project_dir()
@@ -111,7 +109,7 @@ def walk_filesystem(workflow_dirs: Sequence[pathlib.Path]) -> Iterator[pathlib.P
         if not workflow_path.exists() or not workflow_path.is_dir():
             continue
 
-        yield from _walk_workflow_dir(workflow_path, list(workflow_parts))
+        yield from _walk_workflow_dir(ResolvedProjectPath(workflow_path), list(workflow_parts))
 
 
 def list_artifact_ids() -> list[ArtifactId]:
@@ -120,11 +118,7 @@ def list_artifact_ids() -> list[ArtifactId]:
     artifacts: list[ArtifactId] = []
     seen: set[ArtifactId] = set()
 
-    for relative_path in walk_filesystem(workspace_config.config().workflow_dirs):
-        artifact_id = _artifact_id_from_parts(relative_path.parts)
-        if artifact_id is None:
-            continue
-
+    for artifact_id in walk_filesystem(workspace_config.config().workflow_dirs):
         if artifact_id in seen:
             continue
 
@@ -134,7 +128,7 @@ def list_artifact_ids() -> list[ArtifactId]:
     return artifacts
 
 
-def resolve_artifact_path(artifact_id: ArtifactId) -> Result[pathlib.Path | None, ErrorsList]:
+def resolve_artifact_path(artifact_id: ArtifactId) -> Result[ResolvedProjectPath | None, ErrorsList]:
     from donna.workspaces.config import project_dir
 
     artifact_path = project_dir().joinpath(*artifact_path_parts(artifact_id))
@@ -147,7 +141,7 @@ def resolve_artifact_path(artifact_id: ArtifactId) -> Result[pathlib.Path | None
     if normalize_existing_path(UntrustedPath(artifact_path), UntrustedPath(project_dir())) is None:
         return Ok(None)
 
-    return Ok(artifact_path)
+    return Ok(ResolvedProjectPath(artifact_path))
 
 
 @unwrap_to_error

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 from jinja2.runtime import Context
 
@@ -30,7 +30,7 @@ class GoTo(Directive):
         if argv is None or len(argv) != 1:
             return Err([GoToInvalidArguments(provided_count=0 if argv is None else len(argv))])
 
-        artifact_id = ArtifactId(context["artifact_id"])
+        artifact_id = cast(ArtifactId, context["artifact_id"])
 
         next_operation_id = artifact_section_id(artifact_id, argv[0])
 

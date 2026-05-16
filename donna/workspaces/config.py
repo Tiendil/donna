@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import enum
-import pathlib
 from typing import TYPE_CHECKING
 
 import pydantic
@@ -10,6 +9,7 @@ from donna.core.entities import BaseEntity
 from donna.domain.constants import DONNA_DEFAULT_SESSION_DIR, DONNA_DEFAULT_WORKFLOW_DIR
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
+from donna.domain.paths import ProjectRootPath, RelativeProjectPath
 from donna.domain.python_path import PythonPath
 from donna.workspaces import errors as world_errors
 
@@ -60,44 +60,49 @@ class JournalConfig(BaseEntity):
         return value
 
 
-def _default_workflow_dirs() -> list[pathlib.Path]:
+def _default_workflow_dirs() -> list[RelativeProjectPath]:
     return [
-        DONNA_DEFAULT_WORKFLOW_DIR,
-        DONNA_DEFAULT_SESSION_DIR,
+        RelativeProjectPath(DONNA_DEFAULT_WORKFLOW_DIR),
+        RelativeProjectPath(DONNA_DEFAULT_SESSION_DIR),
     ]
 
 
-def _serialize_workflow_dir(path: pathlib.Path) -> str:
+def _serialize_workflow_dir(path: RelativeProjectPath) -> str:
     return f"./{path.as_posix()}"
 
 
-def _validate_workflow_dir(path: pathlib.Path) -> pathlib.Path:
+def _validate_relative_project_path(path: RelativeProjectPath) -> RelativeProjectPath:
     if path.is_absolute():
-        raise ValueError("Workflow directories must be relative to the Donna project root.")
+        raise ValueError("Project paths must be relative to the Donna project root.")
 
     if any(part == ".." for part in path.parts):
-        raise ValueError("Workflow directories must not contain parent-directory references.")
+        raise ValueError("Project paths must not contain parent-directory references.")
 
-    return path
+    return RelativeProjectPath(path)
 
 
 class Config(BaseEntity):
-    session_dir: pathlib.Path = DONNA_DEFAULT_SESSION_DIR
+    session_dir: RelativeProjectPath = RelativeProjectPath(DONNA_DEFAULT_SESSION_DIR)
     default_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.text"))
     default_primary_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.workflow"))
     default_primary_section_id: SectionId = SectionId("primary")
-    workflow_dirs: list[pathlib.Path] = pydantic.Field(default_factory=_default_workflow_dirs)
+    workflow_dirs: list[RelativeProjectPath] = pydantic.Field(default_factory=_default_workflow_dirs)
     journal: JournalConfig = pydantic.Field(default_factory=JournalConfig)
 
     cache_lifetime: float = 1.0
 
+    @pydantic.field_validator("session_dir", mode="after")
+    @classmethod
+    def validate_session_dir(cls, value: RelativeProjectPath) -> RelativeProjectPath:
+        return _validate_relative_project_path(value)
+
     @pydantic.field_validator("workflow_dirs", mode="after")
     @classmethod
-    def validate_workflow_dirs(cls, value: list[pathlib.Path]) -> list[pathlib.Path]:
-        workflow_dirs: list[pathlib.Path] = []
+    def validate_workflow_dirs(cls, value: list[RelativeProjectPath]) -> list[RelativeProjectPath]:
+        workflow_dirs: list[RelativeProjectPath] = []
 
         for path in value:
-            path = _validate_workflow_dir(path)
+            path = _validate_relative_project_path(path)
             if path in workflow_dirs:
                 continue
 
@@ -106,14 +111,14 @@ class Config(BaseEntity):
         return workflow_dirs
 
     @pydantic.field_serializer("workflow_dirs")
-    def serialize_workflow_dirs(self, value: list[pathlib.Path]) -> list[str]:
+    def serialize_workflow_dirs(self, value: list[RelativeProjectPath]) -> list[str]:
         return [_serialize_workflow_dir(path) for path in value]
 
 
 class Workspace(BaseEntity):
     model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 
-    root: pydantic.DirectoryPath
+    root: ProjectRootPath
     config: Config
 
 
@@ -142,14 +147,14 @@ class GlobalConfig[V]():
         return self.get()
 
 
-project_dir = GlobalConfig[pathlib.Path]()
+project_dir = GlobalConfig[ProjectRootPath]()
 config = GlobalConfig[Config]()
 protocol: GlobalConfig["Mode"] = GlobalConfig()
 
 
 def install_workspace(workspace: Workspace) -> None:
     if not project_dir.is_set():
-        project_dir.set(pathlib.Path(workspace.root))
+        project_dir.set(ProjectRootPath(workspace.root))
 
     if not config.is_set():
         config.set(workspace.config)

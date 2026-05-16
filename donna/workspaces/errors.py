@@ -1,8 +1,7 @@
-import pathlib
-
 from donna.core import errors as core_errors
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
+from donna.domain.paths import ProjectConfigPath
 
 
 class InternalError(core_errors.InternalError):
@@ -15,7 +14,7 @@ class WorkspaceError(core_errors.EnvironmentError):
 
 class WorkspaceConfigError(WorkspaceError):
     cell_kind: str = "workspace_config_error"
-    config_path: pathlib.Path
+    config_path: ProjectConfigPath
 
     def content_intro(self) -> str:
         return f"Error in Donna config file '{self.config_path}'"
@@ -41,7 +40,7 @@ class WorkspaceAlreadyInitialized(WorkspaceError):
         "Remove the existing `donna.toml` file if you want to reinitialize.",
         "Choose a different project directory.",
     ]
-    config_path: pathlib.Path
+    config_path: ProjectConfigPath
 
 
 class JournalCommandConfigInvalid(WorkspaceError):

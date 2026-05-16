@@ -1,15 +1,15 @@
-import pathlib
 import shutil
 
 from donna.domain.constants import STATE_FILE_NAME
+from donna.domain.paths import ResolvedProjectPath
 from donna.workspaces.config import config, project_dir
 
 
-def _path() -> pathlib.Path:
-    return project_dir() / config().session_dir
+def _path() -> ResolvedProjectPath:
+    return ResolvedProjectPath(project_dir() / config().session_dir)
 
 
-def dir() -> pathlib.Path:
+def dir() -> ResolvedProjectPath:
     session_dir = _path()
     session_dir.mkdir(parents=True, exist_ok=True)
     return session_dir
