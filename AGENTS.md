@@ -1,20 +1,90 @@
 # Instructions for the AI Agents
 
-This document provides instructions and guidelines for the AI agents working on this project.
+This document provides instructions and guidelines for the AI agents working on `donna`.
 
-Every agent MUST follow the rules and guidelines outlined in this document when performing their work.
+Every agent MUST follow these instructions.
 
-## Donna tool
+## Project Overview
 
-Since this is the repository that contains the Donna project itself, you have direct access to the Donna CLI tool via `./bin/donna.sh` script. I.e. you develop Donna using Donna.
+`donna` is a CLI tool that helps agents run predefined workflows in deterministic way.
 
-In all commands that use `donna`, you MUST replace `donna` with `./bin/donna.sh` when you run the command.
+Workflow is a state-machine / non-linear graph of operations that guides the agent's work. Each operation can run code, output text, provide instructions for the agent (to execute them and report back to Donna), or do other things. The agent's task is to follow the instructions of the operations and report back to Donna about the next operation to run.
 
-For example, instead of `donna artifacts list` you MUST run `./bin/donna.sh artifacts list`.
+Donna maintains the state of the workflow and the stack of operations.
+
+So, you may look at `donna` as a Virtual Machine for agents, where agent is just one of the possible execution contexts, and workflows are programs that run in this VM.
+
+## Source Of Truth
+
+Project behavior and architecture are specified in `./specs/`.
+
+Agents MUST read the relevant specifications before making changes.
+
+Start from `./specs/intro.md` to find the relevant specification documents.
+
+When adding, deleting, or significantly changing a specification, agents MUST update `./specs/intro.md`.
+
+Agents MUST NOT create new specifications without explicit instructions.
+
+Agents MUST NOT delete or significantly change existing specifications without explicit instructions.
+
+## Development Environment
+
+All development-related operations MUST be performed in Docker containers.
+
+Agents MUST NOT perform development-related operations directly on the host machine.
+
+Allowed development commands:
+
+- `./bin/dev.sh` — run development utilities inside the container, for example `./bin/dev.sh uv run -- pytest`.
+- `./bin/dev-build-containers.sh` — build base Docker images for development; use only after approved Docker or dependency changes.
+
+Searching, reading, and editing repository files MAY be done on the host machine.
+
+## Restricted Changes And Operations
+
+Agents MUST NOT perform these operations without explicit permission:
+
+- Change `docker-compose.yml` or Docker-related configuration.
+- Change Docker runtime parameters such as resources or volumes.
+- Change running Docker services unrelated to this project.
+- Install new dependencies.
+- Update lock files.
+- Install new tools, utilities, or software on the host machine or in development containers.
+- Change project structure by moving files or creating new top-level directories.
+
+If one of these operations seems necessary, agents MUST ask for explicit permission before doing it.
+
+## Implementation Guidance
+
+Follow existing specifications and local project patterns.
+
+Keep changes scoped to the requested task.
+
+Do not implement behavior that is only mentioned as future or possible functionality unless explicitly requested.
+
+When code is added, tests SHOULD follow `./specs/architecture/tests.md`.
+
+When entities, errors, warnings, or module layout are affected, agents MUST check the corresponding architecture specs.
 
 ## Top priority tools
 
 These tools MUST have the highest priority when an agent is deciding which tool to use for a given task:
+
+### `donna`
+
+We use Donna to develop Donna. We use the current development version of Donna. For convinience, use shortcut `./bin/donna.sh` to run current development version of Donna.
+
+Use Donna to run workflows.
+
+You may need to read the usage intructions for `donna`: `./bin/donna.sh -p llm skill usage` in these cases:
+
+- You need to run a workflow first time in the session.
+- You need to list available workflows first time in the session.
+
+You run workflows only when explicitly instructed to do so by a developer or Donna itself. You MUST run workflows in that cases.
+
+Donna is configured to log significant operation steps via `task` tool.
 
 ### `ast-grep`
 
@@ -81,3 +151,15 @@ You MUST NOT log:
 
 - CLI commands you execute.
 - Elementary or trivial steps.
+
+You can read the logged journal with:
+
+```bash
+./bin/journal-tail.py --lines 20
+```
+
+### `rg`
+
+Use `rg` for text and file searches unless a structural code query is needed.
+
+`ast-grep` has a higher priority than `rg` whenever a structural code query is needed.

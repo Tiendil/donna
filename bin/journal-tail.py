@@ -16,9 +16,10 @@ COLUMN_PADDING = 2
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Follow project journal records.")
+    parser = argparse.ArgumentParser(description="Output project journal records.")
     parser.add_argument("-n", "--lines", type=int, default=20, help="number of existing records to show")
-    parser.add_argument("-i", "--interval", type=float, default=1.0, help="poll interval in seconds")
+    parser.add_argument("-f", "--follow", action="store_true", help="follow new records after output")
+    parser.add_argument("-i", "--interval", type=float, default=1.0, help="poll interval in seconds when following")
     return parser.parse_args()
 
 
@@ -114,6 +115,9 @@ def main() -> int:
 
     if args.lines > 0:
         print_records(records[-args.lines :], formatter)
+
+    if not args.follow:
+        return 0
 
     while True:
         time.sleep(args.interval)
