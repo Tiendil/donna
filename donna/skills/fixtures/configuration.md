@@ -2,8 +2,6 @@
 
 `donna.toml` tells `donna` where a project's workflow virtual machine stores state, where it discovers workflow artifacts, which default section primitives to use, and how to forward workflow journal records.
 
-Donna is a CLI tool for agents. It keeps high-level control flow in explicit workflows so an agent can focus on the concrete work requested by each operation. A workflow is a state machine stored in a project-local `.donna.md` artifact. Donna maintains the active session state, the workflow stack, queued work units, and action requests.
-
 The configuration file has two main parts:
 
 - Top-level workspace settings configure session storage, artifact discovery, and default artifact section behavior.
