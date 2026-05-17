@@ -153,7 +153,9 @@ Shared domain primitive types and universal domain entities MUST belong to the d
 
 Module-specific entities MUST belong to the module that owns the corresponding responsibility.
 
-A module MAY expose entities from its public package interface when doing so simplifies imports for callers.
+Entity classes that are part of a top-level module's public cross-module API MUST be exported from the owning module's package initializer.
+
+Top-level modules MUST import public entities owned by another top-level module from the owning module's package root.
 
 Public re-exports MUST NOT hide ownership. The defining module MUST remain clear from the source tree.
 
@@ -231,7 +233,6 @@ Pydantic model validation MAY validate local invariants that are always true for
 filesystem access, configuration discovery, workspace loading, artifact discovery, primitive execution, subprocess
 execution, or command execution.
 
-Validation that requires those operations MUST live in domain behavior methods, domain services, runtime
-orchestration, or operation functions that return Donna-specific errors.
+Validation that requires those operations MUST live in behavior methods, runtime orchestration, or functions that return Donna-specific errors.
 
 Invalid external input MUST be reported through the error architecture instead of by returning partially valid entities.

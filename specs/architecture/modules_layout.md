@@ -83,15 +83,15 @@ When a module contains a small closed family of interchangeable components, and 
 
 Shared package-level code for such component families SHOULD be limited to common types, public unions, selection helpers, and iteration glue.
 
-Some submodules have specific names that reflect their responsibilities and SHOULD be similar across different modules.
+Submodules are optional implementation details unless another specification explicitly requires them.
+
+Some optional submodules have specific names that reflect their responsibilities and SHOULD be similar across different modules when those submodules exist.
 
 List of specific submodules:
 
 - `utils` — submodule responsible for utility functions that are not related to domain logic.
 - `errors` — submodule responsible for defining custom exception types.
-- `domain` — submodule responsible for internal business logic related to the module's responsibilities.
 - `entities` — submodule responsible for defining types and entities related to the module's responsibilities.
-- `operations` — submodule responsible for low-level communication with storage, local files, external tools, or other systems owned by the module.
 - `fixtures` — submodule containing reusable configuration, documentation, or data fixtures owned by the module.
 - `tests` — submodule containing module tests.
 - `tests.make` — test-only submodule containing constructors for test objects related to the parent module.
@@ -109,7 +109,11 @@ The `errors` submodule owns module-specific exception classes and error values.
 
 Errors SHOULD express project-level failure modes that callers can handle, not low-level library details.
 
-Top-level modules MAY import another top-level module's `errors` submodule when they need to catch or raise errors owned by that module.
+Error classes and error values that are part of a top-level module's public API MUST be exported from that module's package initializer.
+
+When a top-level module owns an `errors` submodule, its package initializer MUST export that submodule under the name `errors`.
+
+Top-level modules MAY import another top-level module's exported `errors` submodule from the owning module's package root.
 
 #### `entities`
 
@@ -117,39 +121,13 @@ The `entities` submodule owns module-specific types, semantic ids, enums, and en
 
 Entities SHOULD describe domain data and boundary data, not storage implementation details unless storage metadata is itself part of the project concept.
 
-Top-level modules MAY import another top-level module's `entities` submodule for shared boundary types.
-
-#### `domain`
-
-The `domain` submodule owns the parent module's internal business logic and is the public behavior boundary for other top-level modules.
-
-Domain functions SHOULD compose lower-level operation functions and other module boundaries into meaningful workflows, own business decisions, convert or raise module-owned errors, and shape results for callers.
-
-Domain functions SHOULD hide low-level communication details from callers.
-
-Top-level input layers such as `./donna/cli/` SHOULD call domain boundaries instead of low-level operation helpers when invoking business behavior.
-
-When a domain-level function only exposes an operation function without adding behavior, the `domain` submodule SHOULD prefer a direct assignment alias instead of a trivial wrapper.
-
-Domain wrappers SHOULD be used when they add real behavior, such as orchestration, validation, persistence boundary ownership, fallback logic, caching, error conversion, or result shaping.
-
-#### `operations`
-
-The `operations` submodule owns low-level communication with systems outside the module's internal logic.
-
-Operation functions MAY communicate with local files, subprocesses, external tools, or other infrastructure owned by the module's responsibility.
-
-Operation functions SHOULD contain communication protocol details, low-level error translation, raw response handling, storage idempotency, and technical maintenance helpers owned by the module.
-
-Operation functions SHOULD NOT own high-level business workflows. They SHOULD provide small communication primitives that the module's `domain` submodule can compose.
-
-Operation functions SHOULD NOT be imported by other top-level modules. Cross-module callers SHOULD use the owning module's `domain`, `entities`, or `errors` boundary instead.
+Entity classes and other shared boundary types that are part of a top-level module's public API MUST be exported from that module's package initializer.
 
 #### `utils`
 
-The `utils` submodule owns small helpers that are not domain workflows and do not naturally belong to entities, operations, settings, or integration boundaries.
+The `utils` submodule owns small helpers that do not naturally belong to entities, settings, integration boundaries, or a more specific submodule.
 
-Utility functions SHOULD be pure or locally technical when practical. If a helper starts to encode module behavior, it SHOULD move to `domain`, `operations`, or a more specific submodule.
+Utility functions SHOULD be pure or locally technical when practical. If a helper starts to encode module behavior, it SHOULD move to a more specific submodule.
 
 Top-level modules SHOULD avoid depending on another top-level module's `utils` submodule because utilities are not a stable cross-module boundary.
 
@@ -157,7 +135,7 @@ Top-level modules SHOULD avoid depending on another top-level module's `utils` s
 
 The `tests` submodule owns colocated tests for the parent module and its submodules.
 
-Tests SHOULD exercise behavior through public boundaries when practical, while operation tests MAY verify storage-specific behavior owned by the module.
+Tests SHOULD exercise behavior through public boundaries when practical, while storage-focused tests MAY verify storage-specific behavior owned by the module.
 
 Test files SHOULD mirror implementation module names with the `test_` prefix and organize test classes around the tested function or class.
 
@@ -175,7 +153,7 @@ Production modules MUST NOT import `tests.make`.
 
 The `helpers` submodule MAY appear inside tests packages, as `<module>.tests.helpers`.
 
-`tests.helpers` owns reusable test helpers that perform setup, mutate persisted test state, call module operations, or wrap common test workflows.
+`tests.helpers` owns reusable test helpers that perform setup, mutate persisted test state, call module behavior, or wrap common test workflows.
 
 Object constructors and pure fake data factories SHOULD live in `tests.make`; helpers that perform actions or coordinate multiple calls SHOULD live in `tests.helpers`.
 
@@ -183,15 +161,23 @@ Production modules MUST NOT import `tests.helpers`.
 
 ## Cross-module dependencies
 
-Top-level modules that need types or values from another top-level module SHOULD use only that module's `domain`, `entities`, and `errors` submodules when those submodules exist.
+Each top-level module MUST define its public cross-module API in its package initializer, `__init__.py`.
 
-Top-level modules MAY import another module's `errors` submodule when they need to catch or raise errors owned by that module.
+The package initializer MUST explicitly import or define every type, function, constant, and object that another top-level module may import from the module.
 
-Top-level modules MUST NOT import implementation submodules from another top-level module when a public boundary exists.
+When a top-level module owns an `errors` submodule, the package initializer MUST include the `errors` submodule in the public cross-module API.
 
-Top-level modules MUST NOT import another top-level module's `operations` submodule.
+The package initializer SHOULD define `__all__` to list the names that are intended as the module's public cross-module API.
 
-Top-level modules MAY import protocol-owned boundary values and generic projection helpers when they need to expose their owned concepts as Donna output units.
+If a top-level module has no public cross-module API, its package initializer SHOULD be empty or define an empty `__all__`.
+
+Top-level modules MUST import another top-level module's public API only from that module's package root.
+
+For example, `donna.cli` MAY import from `donna.workspaces`, including `from donna.workspaces import errors as workspace_errors` when `donna.workspaces` exports `errors`, but MUST NOT import from `donna.workspaces.config`, `donna.workspaces.entities`, `donna.workspaces.errors`, or any other `donna.workspaces` submodule.
+
+Top-level modules MUST NOT import implementation submodules from another top-level module.
+
+Top-level modules MAY import protocol-owned boundary values and generic projection helpers from `donna.protocol` when they need to expose their owned concepts as Donna output units.
 
 Constructing protocol-neutral output values is not protocol-specific rendering and MUST NOT be treated as a module-boundary violation.
 

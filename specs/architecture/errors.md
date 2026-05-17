@@ -68,6 +68,8 @@ The environment root MAY have a more specific name when that name communicates t
 
 Each unique error case SHOULD be represented by its own subclass.
 
+Each top-level module that owns an `errors` submodule MUST export it from the module package initializer.
+
 Production errors MUST NOT be defined in test modules.
 
 Test-only error classes MAY be defined in test modules when they are required to verify error handling behavior.
