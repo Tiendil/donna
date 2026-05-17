@@ -40,7 +40,7 @@ The following topics are out of scope:
   - state changes.
   - operation and primitive interfaces.
   - workflow execution orchestration that is independent of CLI argument parsing and protocol-specific formatting.
-  - protocol-facing views of machine-owned entities expressed through protocol-neutral boundary entities.
+  - protocol-facing views of machine-owned entities expressed through protocol-neutral boundary entities from `./donna/protocol/`.
 - `./donna/runtime/` — module responsible for command-independent runtime orchestration. Contains:
   - session lifecycle use cases.
   - workflow execution loop coordination.
@@ -57,11 +57,12 @@ The following topics are out of scope:
   - directive primitives.
   - primitive-specific validation, rendering, and execution logic.
 - `./donna/lib/` — module responsible for stable public names of built-in primitive instances used by Donna artifact configuration.
-- `./donna/protocol/` — module responsible for Donna output boundary entities and rendering. Contains:
-  - protocol-neutral output entities such as cells, nodes, and journal records.
+- `./donna/protocol/` — module responsible for Donna output boundary entities and protocol formatting. Contains:
+  - protocol-neutral output boundary entities such as cells, nodes, and journal records.
+  - helpers for projecting generic Donna errors into output cells.
   - protocol enums.
   - formatter selection.
-  - protocol-specific formatters.
+  - protocol-specific formatters that serialize protocol entities for human, llm, and automation output.
   - serialized record construction for external output protocols.
   - low-level output boundary infrastructure that MAY be used by any top-level module.
 - `./donna/skills/` — module responsible for built-in skill text loaded by the CLI and renderers.
@@ -190,9 +191,11 @@ Top-level modules MUST NOT import implementation submodules from another top-lev
 
 Top-level modules MUST NOT import another top-level module's `operations` submodule.
 
-Top-level modules MAY import boundary entities and rendering helpers from `./donna/protocol/` when they need to expose their owned concepts as Donna output units.
+Top-level modules MAY import boundary entities and generic projection helpers from `./donna/protocol/` when they need to expose their owned concepts as Donna output units.
 
-Top-level modules outside `./donna/protocol/` and `./donna/cli/` SHOULD NOT depend on protocol-specific formatter implementation submodules.
+Top-level modules outside `./donna/protocol/` and `./donna/cli/` MUST NOT depend on protocol-specific formatter implementation submodules.
+
+Top-level modules outside `./donna/protocol/` SHOULD NOT own protocol-specific serialization details.
 
 ## Data structures
 
