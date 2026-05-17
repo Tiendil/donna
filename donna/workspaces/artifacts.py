@@ -8,10 +8,10 @@ from donna.domain.artifact_ids import ArtifactId, artifact_path_parts, validate_
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 from donna.domain.paths import ProjectPathId, RelativeProjectPath, ResolvedProjectPath, UntrustedPath
 from donna.machine.tasks import Task, WorkUnit
+from donna.machine.templates import RenderMode
 from donna.workspaces import errors as world_errors
 from donna.workspaces.files import FileFingerprint
 from donna.workspaces.paths import normalize_existing_path
-from donna.workspaces.templates import RenderMode
 
 if TYPE_CHECKING:
     from donna.machine.artifacts import Artifact

@@ -6,6 +6,7 @@ from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
+from donna.machine.context import context
 from donna.machine.errors import ArtifactPrimarySectionMissing, ArtifactSectionNotFound, MultiplePrimarySectionsError
 from donna.protocol.cells import Cell
 from donna.protocol.errors import environment_error_node
@@ -63,8 +64,6 @@ class Artifact(BaseEntity):
         return Ok(primary_sections[0])
 
     def validate_artifact(self) -> Result[None, ErrorsList]:  # noqa: CCR001
-        from donna.context.context import context
-
         primary_sections = self._primary_sections()
 
         errors: ErrorsList = []

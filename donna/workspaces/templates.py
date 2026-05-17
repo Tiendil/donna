@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import enum
 import importlib
 import importlib.util
 from typing import TYPE_CHECKING
@@ -11,32 +10,11 @@ from donna.core import errors as core_errors
 from donna.core.errors import EnvironmentErrorsProxy, ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.artifact_ids import ArtifactId
-from donna.machine.templates import Directive
+from donna.machine.templates import Directive, RenderMode
 from donna.workspaces import errors as world_errors
 
 if TYPE_CHECKING:
     from donna.workspaces.artifacts import ArtifactRenderContext
-
-
-class RenderMode(enum.Enum):
-    """Modes for rendering artifacts.
-
-    Donna could render artifacts for different purposes, for example:
-
-    - to be displayed to the agent when Donna is used via CLI
-    - TODO: to be displayed to the agent when Donna is used as an agent tool
-    - TODO: to be displayed to the agent when Donna is used as an MCP server
-    - to be used for analysis by Donna itself
-
-    In each mode Donna can produce different outputs.
-
-    For example, it can output CLI commands in view/execute mode, tool specifications in tool mode,
-    special markup in analyze mode, etc.
-    """
-
-    view = "view"
-    execute = "execute"
-    analysis = "analysis"
 
 
 _ENVIRONMENT = None
@@ -164,7 +142,7 @@ def env() -> jinja2.Environment:
 
 
 def render(artifact_id: ArtifactId, template: str, render_context: "ArtifactRenderContext") -> Result[str, ErrorsList]:
-    context = {"render_mode": render_context.primary_mode, "artifact_id": artifact_id}
+    context: dict[str, object] = {"render_mode": render_context.primary_mode, "artifact_id": artifact_id}
 
     if render_context.current_task is not None:
         context["current_task"] = render_context.current_task

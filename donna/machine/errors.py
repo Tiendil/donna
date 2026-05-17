@@ -18,6 +18,10 @@ class SessionStateStatusInvalid(InternalError):
     message: str = "Session state status is invalid."
 
 
+class MachineContextNotSet(InternalError):
+    message: str = "Machine context is not initialized."
+
+
 class UnsupportedFormatterMode(InternalError):
     message: str = "Formatter for mode '{mode}' is not implemented."
 

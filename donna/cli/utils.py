@@ -2,10 +2,12 @@ import pathlib
 import sys
 from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
+from contextvars import Token
 
 import typer
 
 from donna.cli.entities import GLOBAL_OPTIONS_CONTEXT_KEY, GlobalOptions
+from donna.context.context import Context
 from donna.core.errors import EnvironmentError, ErrorsList
 from donna.core.result import UnwrapError
 from donna.domain.constants import DONNA_CONFIG_NAME
@@ -95,21 +97,32 @@ class CommandContext:
 
 @contextmanager
 def command_context(context: typer.Context, *, load_environment: bool = True) -> Iterator[CommandContext]:
-    from donna.context import Context, set_context
+    from donna.context import reset_context, set_context
+    from donna.machine import context as machine_context
 
     command = CommandContext(context)
+    context_token: Token[Context | None] | None = None
+    machine_context_token: Token[machine_context.MachineContext | None] | None = None
 
     try:
         command.install_protocol()
 
         if load_environment:
             command.load_workspace()
-            set_context(Context(output=command.emitter))
+            runtime_context = Context(output=command.emitter)
+            context_token = set_context(runtime_context)
+            machine_context_token = machine_context.set_context(runtime_context)
 
         yield command
     except UnwrapError as error:
         command.write_cells(_cells_from_unwrap(error))
         raise typer.Exit(code=0) from error
+    finally:
+        if machine_context_token is not None:
+            machine_context.reset_context(machine_context_token)
+
+        if context_token is not None:
+            reset_context(context_token)
 
 
 def _write_errors_to_journal(errors: ErrorsList) -> None:

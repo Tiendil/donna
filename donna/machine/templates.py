@@ -1,3 +1,4 @@
+import enum
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, TypeAlias
 
@@ -15,6 +16,26 @@ PreparedDirectiveArguments: TypeAlias = tuple[Any, ...]
 PreparedDirectiveResult: TypeAlias = Result[PreparedDirectiveArguments, ErrorsList]
 
 
+class RenderMode(enum.StrEnum):
+    """Modes for rendering artifacts.
+
+    Donna can render artifacts for different purposes, for example:
+
+    - to be displayed to the agent when Donna is used via CLI.
+    - to be used for execution by Donna itself.
+    - to be used for analysis by Donna itself.
+
+    In each mode Donna can produce different outputs.
+
+    For example, it can output CLI commands in view/execute mode,
+    tool specifications in tool mode, special markup in analyze mode, etc.
+    """
+
+    view = "view"
+    execute = "execute"
+    analysis = "analysis"
+
+
 class DirectiveUnsupportedRenderMode(machine_errors.InternalError):
     message: str = "Render mode {render_mode} not implemented in directive {directive_name}."
     render_mode: Any
@@ -30,8 +51,6 @@ class Directive(Primitive, ABC):
         *argv: Any,
         **kwargs: Any,
     ) -> Result[Any, ErrorsList]:
-        from donna.workspaces import templates as world_templates
-
         render_mode = context["render_mode"]
         arguments_result = self._prepare_arguments(context, *argv, **kwargs)
         if arguments_result.is_err():
@@ -40,11 +59,11 @@ class Directive(Primitive, ABC):
         argv = arguments_result.unwrap()
 
         match render_mode:
-            case world_templates.RenderMode.view:
+            case RenderMode.view:
                 return self.render_view(context, *argv)
-            case world_templates.RenderMode.execute:
+            case RenderMode.execute:
                 return self.render_execute(context, *argv)
-            case world_templates.RenderMode.analysis:
+            case RenderMode.analysis:
                 return self.render_analyze(context, *argv)
             case _:
                 raise DirectiveUnsupportedRenderMode(render_mode=render_mode, directive_name=self.__class__.__name__)

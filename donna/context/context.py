@@ -5,9 +5,9 @@ from donna.context.journal import Journal
 from donna.context.output import NoopEmitter, OutputEmitter
 from donna.context.primitives import PrimitivesCache
 from donna.context.state import StateCache
-from donna.context.value_scope import ValueScope
 from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import WorkUnitId
+from donna.machine.context import ValueScope
 
 
 class Context:

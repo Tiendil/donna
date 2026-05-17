@@ -4,7 +4,6 @@ from typing import Sequence, cast
 
 import pydantic
 
-from donna.context.context import context
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
@@ -20,10 +19,10 @@ from donna.machine.changes import (
     ChangeRemoveTask,
     ChangeRemoveWorkUnit,
 )
+from donna.machine.context import context
 from donna.machine.tasks import Task, WorkUnit
 from donna.protocol.cells import Cell
 from donna.protocol.nodes import Node
-from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
 
 
 class BaseState(BaseEntity):
@@ -176,7 +175,7 @@ class MutableState(BaseState):
     def start_workflow(self, full_operation_id: ArtifactSectionId) -> Result[None, ErrorsList]:
         operation_parts = split_artifact_section_id(full_operation_id)
         assert operation_parts is not None
-        artifact = context().artifacts.load(operation_parts.artifact_id, RENDER_CONTEXT_VIEW).unwrap()
+        artifact = context().artifacts.load_for_view(operation_parts.artifact_id).unwrap()
         workflow = artifact.get_section(operation_parts.section_id).unwrap()
 
         context().journal.add(
@@ -192,7 +191,7 @@ class MutableState(BaseState):
         assert task is not None
         workflow_parts = split_artifact_section_id(task.workflow_id)
         assert workflow_parts is not None
-        artifact = context().artifacts.load(workflow_parts.artifact_id, RENDER_CONTEXT_VIEW).unwrap()
+        artifact = context().artifacts.load_for_view(workflow_parts.artifact_id).unwrap()
         workflow = artifact.get_section(workflow_parts.section_id).unwrap()
 
         context().journal.add(

@@ -15,11 +15,11 @@ from donna.domain.artifact_ids import (
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 from donna.domain.internal_ids import ActionRequestId
 from donna.domain.paths import PathInput, UntrustedPath
+from donna.machine.templates import RenderMode
 from donna.protocol.errors import environment_error_node
 from donna.protocol.modes import Mode
 from donna.workspaces import paths as workspace_paths
 from donna.workspaces.artifacts import has_donna_artifact_extension
-from donna.workspaces.templates import RenderMode
 
 
 def _exit_with_errors(errors: ErrorsList) -> NoReturn:

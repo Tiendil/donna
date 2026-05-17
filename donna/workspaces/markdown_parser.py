@@ -8,10 +8,11 @@ from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.primitives import Primitive, resolve_primitive
+from donna.machine.templates import RenderMode
 from donna.workspaces import errors as world_errors
 from donna.workspaces import markdown
 from donna.workspaces.artifacts import ArtifactRenderContext
-from donna.workspaces.templates import RenderMode, render
+from donna.workspaces.templates import render
 
 
 class MarkdownSectionConstructor(Protocol):
