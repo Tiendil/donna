@@ -468,7 +468,7 @@ Split large request actions when they mix unrelated work. A good split is usuall
 - verify the changed behavior;
 - decide where to go next.
 
-Remember, you can add references to project-specific specifications in the action request text — no need to repeat all documentation there. Keep action requests short and consice.
+Remember, you can add references to project-specific specifications in the action request text — no need to repeat all documentation there. Keep action requests short and concise.
 
 ## Workflow Design Patterns
 
@@ -491,6 +491,31 @@ Review gate:
 implement -> review
 review -> implement
 review -> finish
+```
+
+Decision tree:
+
+```text
+classify_request -> simple_path
+classify_request -> complex_path
+classify_request -> ask_for_clarification
+simple_path -> finish
+complex_path -> plan_work
+ask_for_clarification -> classify_request
+```
+
+Classification tree:
+
+```text
+check_outlook -> class_play_tennis
+check_outlook -> check_humidity
+check_outlook -> check_wind
+check_humidity -> class_stay_home
+check_humidity -> class_play_tennis
+check_wind -> class_stay_home
+check_wind -> class_play_tennis
+class_play_tennis -> finish
+class_stay_home -> finish
 ```
 
 Script with manual repair:
