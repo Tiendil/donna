@@ -25,6 +25,7 @@ Detailed requirements for individual specifications are out of scope except for 
 - `./specs/architecture/errors.md` — specification of project error handling architecture.
 - `./specs/architecture/modules_layout.md` — specification of the intended project module structure and ownership boundaries.
 - `./specs/architecture/naming.md` — specification of project code naming conventions.
+- `./specs/architecture/tests.md` — specification of project test organization and testing expectations.
 - `./specs/behavior/cli.md` — specification of the `donna` command line interface.
 - `./specs/behavior/config.md` — specification of the `donna.toml` configuration file behavior.
 - `./specs/behavior/file_paths.md` — specification of Donna local project path, artifact id, and artifact section id syntax and resolution behavior.
