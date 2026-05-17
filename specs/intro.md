@@ -13,6 +13,7 @@ Detailed requirements for individual specifications are out of scope except for 
 ## Specification directories
 
 - `./specs/` — directory with all specifications.
+- `./specs/architecture/` — specifications related to the architecture of the system.
 - `./specs/behavior/` — specifications related to the behavior of the system.
 - `./specs/meta/` — specifications related to requirements for specification documents.
 
@@ -20,6 +21,7 @@ Detailed requirements for individual specifications are out of scope except for 
 
 - `./specs/intro.md` — this file, contains a list of all specifications and their brief descriptions.
 - `./specs/dictionary.md` — shared project-specific terminology used by multiple specifications.
+- `./specs/architecture/naming.md` — specification of project code naming conventions.
 - `./specs/behavior/cli.md` — specification of the `donna` command line interface.
 - `./specs/behavior/config.md` — specification of the `donna.toml` configuration file behavior.
 - `./specs/behavior/file_paths.md` — specification of Donna local project path, artifact id, and artifact section id syntax and resolution behavior.
