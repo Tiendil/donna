@@ -19,6 +19,7 @@ Detailed requirements for individual specifications are out of scope except for 
 ## Specification documents
 
 - `./specs/intro.md` — this file, contains a list of all specifications and their brief descriptions.
+- `./specs/dictionary.md` — shared project-specific terminology used by multiple specifications.
 - `./specs/behavior/cli.md` — specification of the `donna` command line interface.
 - `./specs/behavior/config.md` — specification of the `donna.toml` configuration file behavior.
 - `./specs/behavior/file_paths.md` — specification of Donna local project path, artifact id, and artifact section id syntax and resolution behavior.
