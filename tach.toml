@@ -23,8 +23,8 @@ layers = [
   "primitives",
   "context",
   "workspace",
-  "protocol",
   "machine",
+  "protocol",
   "domain",
   "support",
   "core",
@@ -82,6 +82,7 @@ depends_on = [
   "donna.core",
   "donna.domain",
   "donna.machine",
+  "donna.protocol",
   "donna.workspaces",
 ]
 layer = "context"
@@ -101,8 +102,6 @@ path = "donna.protocol"
 depends_on = [
   "donna.core",
   "donna.domain",
-  "donna.machine",
-  "donna.skills",
 ]
 layer = "protocol"
 
@@ -111,6 +110,7 @@ path = "donna.machine"
 depends_on = [
   "donna.core",
   "donna.domain",
+  "donna.protocol",
 ]
 layer = "machine"
 

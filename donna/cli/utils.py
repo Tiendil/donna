@@ -12,17 +12,39 @@ from donna.domain.constants import DONNA_CONFIG_NAME
 from donna.domain.paths import PathInput, ProjectConfigPath, UntrustedPath
 from donna.protocol.cells import Cell
 from donna.protocol.errors import environment_error_node
+from donna.protocol.formatters.base import Formatter
+from donna.protocol.journal import JournalRecord
 from donna.protocol.modes import Mode, get_cell_formatter
 from donna.workspaces import config as workspace_config
 from donna.workspaces.initialization import load_workspace
 
 
+def instant_output(text: bytes) -> None:
+    if text.endswith(b"\n"):
+        sys.stdout.buffer.write(text)
+    else:
+        sys.stdout.buffer.write(text + b"\n")
+    sys.stdout.buffer.flush()
+
+
+class CliEmitter:
+    __slots__ = ("_formatter",)
+
+    def __init__(self, formatter: Formatter) -> None:
+        self._formatter = formatter
+
+    def emit_cell(self, cell: Cell) -> None:
+        instant_output(self._formatter.format_cell(cell))
+
+    def emit_journal(self, record: JournalRecord) -> None:
+        instant_output(self._formatter.format_journal(record))
+
+
 def output_cells(cells: Iterable[Cell]) -> None:
-    formatter = get_cell_formatter()
+    emitter = CliEmitter(get_cell_formatter(workspace_config.protocol()))
 
     for cell in cells:
-        output = formatter.format_cell(cell)
-        sys.stdout.buffer.write(output)
+        emitter.emit_cell(cell)
 
 
 def global_options(context: typer.Context) -> GlobalOptions:
@@ -35,11 +57,12 @@ def global_options(context: typer.Context) -> GlobalOptions:
 
 
 class CommandContext:
-    __slots__ = ("global_options", "protocol")
+    __slots__ = ("emitter", "global_options", "protocol")
 
     def __init__(self, context: typer.Context) -> None:
         self.global_options = global_options(context)
         self.protocol = self.global_options.protocol
+        self.emitter = CliEmitter(get_cell_formatter(self.protocol))
 
     def install_protocol(self) -> None:
         if not workspace_config.protocol.is_set():
@@ -66,7 +89,8 @@ class CommandContext:
         return UntrustedPath(pathlib.Path.cwd())
 
     def write_cells(self, cells: Iterable[Cell]) -> None:
-        output_cells(cells)
+        for cell in cells:
+            self.emitter.emit_cell(cell)
 
 
 @contextmanager
@@ -80,7 +104,7 @@ def command_context(context: typer.Context, *, load_environment: bool = True) ->
 
         if load_environment:
             command.load_workspace()
-            set_context(Context())
+            set_context(Context(output=command.emitter))
 
         yield command
     except UnwrapError as error:

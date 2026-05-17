@@ -1,47 +1,12 @@
-import datetime
-import json
-
-import pydantic
-
-from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result, unwrap_to_error
+from donna.core.result import Ok, Result, unwrap_to_error
 from donna.core.utils import now
 from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import TaskId, WorkUnitId
 from donna.machine import errors as machine_errors
+from donna.protocol import journal as protocol_journal
 from donna.workspaces import journal as workspace_journal
 from donna.workspaces.config import protocol as protocol_mode
-
-
-def message_has_newlines(message: str) -> bool:
-    return "\n" in message or "\r" in message
-
-
-class JournalRecord(BaseEntity):
-    timestamp: datetime.datetime
-    actor_id: str | None
-    message: str
-    current_task_id: TaskId | None
-    current_work_unit_id: WorkUnitId | None
-    current_operation_id: ArtifactSectionId | None
-
-    @pydantic.field_validator("message", mode="after")
-    @classmethod
-    def validate_message_no_newlines(cls, value: str) -> str:
-        if message_has_newlines(value):
-            raise ValueError("Journal message must not contain newline characters.")
-
-        return value
-
-
-def serialize_record(record: JournalRecord) -> bytes:
-    return json.dumps(
-        record.model_dump(mode="json"),
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=True,
-    ).encode("utf-8")
 
 
 def smart_agent_id() -> str:
@@ -62,12 +27,8 @@ def smart_agent_id() -> str:
 def add(  # noqa: CCR001
     message: str,
     actor_id: str | None = None,
-) -> Result[JournalRecord, ErrorsList]:
+) -> Result[protocol_journal.JournalRecord, ErrorsList]:
     from donna.context.context import context
-    from donna.protocol.utils import instant_output_journal
-
-    if message_has_newlines(message):
-        return Err([machine_errors.JournalMessageContainsNewlines()])
 
     if actor_id is None:
         actor_id = smart_agent_id()
@@ -78,7 +39,7 @@ def add(  # noqa: CCR001
     parsed_work_unit_id: WorkUnitId | None = ctx.current_work_unit_id.get()
     parsed_operation_id: ArtifactSectionId | None = ctx.current_operation_id.get()
 
-    record = JournalRecord(
+    record = protocol_journal.JournalRecord(
         timestamp=now(),
         actor_id=actor_id,
         message=message,
@@ -88,6 +49,6 @@ def add(  # noqa: CCR001
     )
 
     workspace_journal.write_record(record).unwrap()
-    instant_output_journal(record)
+    ctx.output.emit_journal(record)
 
     return Ok(record)

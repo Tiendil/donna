@@ -1,6 +1,6 @@
-from donna.machine.journal import JournalRecord
 from donna.protocol.cells import Cell
 from donna.protocol.formatters.base import Formatter as BaseFormatter
+from donna.protocol.journal import JournalRecord
 
 
 class Formatter(BaseFormatter):

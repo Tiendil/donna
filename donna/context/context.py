@@ -1,6 +1,7 @@
 import contextvars
 
 from donna.context.artifacts import ArtifactsCache
+from donna.context.output import NoopEmitter, OutputEmitter
 from donna.context.primitives import PrimitivesCache
 from donna.context.state import StateCache
 from donna.context.value_scope import ValueScope
@@ -13,14 +14,16 @@ class Context:
         "_artifacts",
         "_state",
         "_primitives",
+        "output",
         "current_work_unit_id",
         "current_operation_id",
     )
 
-    def __init__(self) -> None:
+    def __init__(self, output: OutputEmitter | None = None) -> None:
         self._artifacts = ArtifactsCache()
         self._state = StateCache()
         self._primitives = PrimitivesCache()
+        self.output = output if output is not None else NoopEmitter()
         self.current_work_unit_id: ValueScope[WorkUnitId] = ValueScope()
         self.current_operation_id: ValueScope[ArtifactSectionId] = ValueScope()
 

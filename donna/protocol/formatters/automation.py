@@ -1,8 +1,8 @@
 import json
 
-from donna.machine.journal import JournalRecord, serialize_record
 from donna.protocol.cells import Cell
 from donna.protocol.formatters.base import Formatter as BaseFormatter
+from donna.protocol.journal import JournalRecord, serialize_record
 
 
 class Formatter(BaseFormatter):
