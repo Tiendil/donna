@@ -39,7 +39,8 @@ The following topics are out of scope:
   - task, work unit, and action request entities.
   - state changes.
   - operation and primitive interfaces.
-  - workflow execution orchestration that is independent of CLI argument parsing and output formatting.
+  - workflow execution orchestration that is independent of CLI argument parsing and protocol-specific formatting.
+  - protocol-facing views of machine-owned entities expressed through protocol-neutral boundary entities.
 - `./donna/runtime/` — module responsible for command-independent runtime orchestration. Contains:
   - session lifecycle use cases.
   - workflow execution loop coordination.
@@ -56,7 +57,8 @@ The following topics are out of scope:
   - directive primitives.
   - primitive-specific validation, rendering, and execution logic.
 - `./donna/lib/` — module responsible for stable public names of built-in primitive instances used by Donna artifact configuration.
-- `./donna/protocol/` — module responsible for output protocol types and rendering. Contains:
+- `./donna/protocol/` — module responsible for Donna output boundary entities and rendering. Contains:
+  - protocol-neutral output entities such as cells, nodes, and journal records.
   - protocol enums.
   - formatter selection.
   - protocol-specific formatters.
@@ -186,6 +188,10 @@ Top-level modules MAY import another module's `errors` submodule when they need 
 Top-level modules MUST NOT import implementation submodules from another top-level module when a public boundary exists.
 
 Top-level modules MUST NOT import another top-level module's `operations` submodule.
+
+Top-level modules MAY import protocol-neutral boundary entities from `./donna/protocol/` when they need to expose their owned concepts as Donna output units.
+
+Top-level modules outside `./donna/protocol/` and `./donna/cli/` SHOULD NOT depend on protocol-specific formatter implementation submodules.
 
 ## Data structures
 
