@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING, ClassVar, cast
 
 import pydantic
 
+from donna.context.context import context
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId, artifact_section_id, split_artifact_section_id
 from donna.domain.ids import SectionId
 from donna.domain.paths import ProjectRootPath
-from donna.machine import journal as machine_journal
 from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta
@@ -152,7 +152,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         script = meta.script
         assert script is not None
 
-        machine_journal.add(
+        context().journal.add(
             actor_id="donna",
             message=f"Run script `{operation.title}`",
         ).unwrap()
@@ -163,7 +163,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
             project_dir=workspace_config.project_dir(),
         )
 
-        machine_journal.add(
+        context().journal.add(
             actor_id="donna",
             message=(
                 f"Script finished `{operation.title}`, exit code: {exit_code}, "

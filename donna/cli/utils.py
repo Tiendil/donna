@@ -113,12 +113,12 @@ def command_context(context: typer.Context, *, load_environment: bool = True) ->
 
 
 def _write_errors_to_journal(errors: ErrorsList) -> None:
-    from donna.machine import journal as machine_journal
+    from donna.context.context import context
 
     for error in errors:
         message = f"Error: {environment_error_node(error).journal_message()} [{error.code}]"
 
-        machine_journal.add(
+        context().journal.add(
             message=message,
             actor_id="donna",
         )

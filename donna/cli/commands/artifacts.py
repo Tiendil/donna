@@ -8,7 +8,6 @@ from donna.cli.application import app
 from donna.cli.types import ArtifactIdArgument, ArtifactIdsArgument, RenderModeOption, parse_artifact_id_argument
 from donna.cli.utils import command_context
 from donna.context.context import context
-from donna.machine import journal as machine_journal
 from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.protocol.errors import environment_error_node
 from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW, ArtifactRenderContext, fetch_artifact_bytes
@@ -16,7 +15,7 @@ from donna.workspaces.templates import render as render_template
 
 
 def _log_artifact_operation(message: str) -> None:
-    machine_journal.add(message=message)
+    context().journal.add(message=message)
 
 
 @app.command(name="list", help="List available workflow artifacts and show their status summaries.")

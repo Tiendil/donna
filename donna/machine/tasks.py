@@ -55,7 +55,6 @@ class WorkUnit(BaseEntity):
     @unwrap_to_error
     def run(self, task: Task) -> Result[list["Change"], ErrorsList]:
         from donna.context.context import context
-        from donna.machine import journal as machine_journal
         from donna.workspaces.artifacts import ArtifactRenderContext
         from donna.workspaces.templates import RenderMode
 
@@ -72,7 +71,7 @@ class WorkUnit(BaseEntity):
             operation = artifact.get_section(operation_parts.section_id).unwrap()
             operation_kind = ctx.primitives.resolve(operation.kind).unwrap()
 
-            machine_journal.add(
+            ctx.journal.add(
                 actor_id="donna",
                 message=operation.title,
             ).unwrap()

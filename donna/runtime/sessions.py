@@ -7,7 +7,6 @@ from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId, artifact_section_id, split_artifact_section_id
 from donna.domain.internal_ids import ActionRequestId
 from donna.machine import errors as machine_errors
-from donna.machine import journal as machine_journal
 from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
 from donna.protocol.cell_shortcuts import operation_succeeded
@@ -74,7 +73,7 @@ def _session_required(
 def new_session() -> Result[list[Cell], ErrorsList]:
     _save_state(MutableState.build().freeze()).unwrap()
 
-    machine_journal.add(message="Created new session state.").unwrap()
+    context().journal.add(message="Created new session state.").unwrap()
 
     return Ok([operation_succeeded("Created new session state.")])
 

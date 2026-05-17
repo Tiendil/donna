@@ -11,7 +11,6 @@ from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactSectionId, split_artifact_section_id
 from donna.domain.internal_ids import ActionRequestId, InternalId, TaskId, WorkUnitId
 from donna.machine import errors as machine_errors
-from donna.machine import journal as machine_journal
 from donna.machine.action_requests import ActionRequest
 from donna.machine.changes import (
     Change,
@@ -124,7 +123,7 @@ class MutableState(BaseState):
     def add_action_request(self, action_request: ActionRequest) -> None:
         full_request = action_request.replace(id=self.next_action_request_id())
 
-        machine_journal.add(
+        context().journal.add(
             actor_id="donna",
             message=f"Request agent action `{full_request.title}`",
         ).unwrap()
@@ -162,7 +161,7 @@ class MutableState(BaseState):
         assert current_task is not None
 
         action_request = self.get_action_request(request_id).unwrap()
-        machine_journal.add(
+        context().journal.add(
             message=f"Complete agent action `{action_request.title}`",
         ).unwrap()
 
@@ -180,7 +179,7 @@ class MutableState(BaseState):
         artifact = context().artifacts.load(operation_parts.artifact_id, RENDER_CONTEXT_VIEW).unwrap()
         workflow = artifact.get_section(operation_parts.section_id).unwrap()
 
-        machine_journal.add(
+        context().journal.add(
             message=f"Start workflow `{workflow.title}`",
         ).unwrap()
 
@@ -196,7 +195,7 @@ class MutableState(BaseState):
         artifact = context().artifacts.load(workflow_parts.artifact_id, RENDER_CONTEXT_VIEW).unwrap()
         workflow = artifact.get_section(workflow_parts.section_id).unwrap()
 
-        machine_journal.add(
+        context().journal.add(
             message=f"Finish workflow `{workflow.title}`",
         ).unwrap()
 
