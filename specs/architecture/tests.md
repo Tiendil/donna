@@ -234,23 +234,41 @@ Entity tests MAY assert `pydantic.ValidationError` for invalid low-level model c
 
 Error tests SHOULD verify behavior customized by concrete error classes.
 
-Error tests SHOULD cover:
+### Testing `errors.py` modules
 
-- custom error codes.
-- custom message formatting.
-- custom structured details.
-- custom cell metadata.
+Error modules that contain only declarative error subclasses SHOULD NOT have unit tests solely for file-to-module layout symmetry.
+
+Error class unit tests SHOULD be added only when the error class owns behavior beyond inherited construction and static class attributes.
+
+Error class unit tests MAY cover:
+
+- custom constructor logic.
+- custom `content_intro()` behavior.
+- custom validation or normalization.
+- non-trivial structured metadata derivation.
 - behavior added by an intermediate error class.
+
+Leaf error tests MUST NOT assert only that class-level `code`, `message`, `ways_to_fix`, `cell_kind`, or constructor fields are present unchanged.
+
+Exact production error message text MUST NOT be asserted in ordinary unit tests unless a behavior specification declares the text as a stable external contract.
 
 Error tests SHOULD NOT test unchanged inheritance from project or module root error classes.
 
 Error tests SHOULD NOT test behavior inherited unchanged from the shared base error class.
+
+A module-level `tests/test_errors.py` file is optional.
+
+A module-level `tests/test_errors.py` file SHOULD be omitted when all meaningful error behavior is already covered by tests for the functions or entities that produce those errors.
+
+### Testing error-producing behavior
 
 Tests for exception boundaries SHOULD verify that expected low-level failures are converted into Donna environment errors.
 
 Tests for exception boundaries SHOULD verify that `pydantic.ValidationError` from external input is converted into Donna environment errors.
 
 Tests for `Result`-returning functions SHOULD verify error values through `Result` state rather than by expecting environment errors to be raised.
+
+Tests that verify produced environment errors SHOULD assert the expected error type, stable error code, and relevant structured fields through the behavior boundary that returns the error.
 
 Internal error tests MAY assert raised `InternalError` subclasses when the tested behavior is an internal invariant.
 
