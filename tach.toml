@@ -19,6 +19,7 @@ exclude = [
 layers = [
   "meta-tests",
   "cli",
+  "runtime",
   "lib",
   "primitives",
   "context",
@@ -52,10 +53,23 @@ depends_on = [
   "donna.machine",
   "donna.primitives",
   "donna.protocol",
+  "donna.runtime",
   "donna.skills",
   "donna.workspaces",
 ]
 layer = "cli"
+
+[[modules]]
+path = "donna.runtime"
+depends_on = [
+  "donna.context",
+  "donna.core",
+  "donna.domain",
+  "donna.machine",
+  "donna.protocol",
+  "donna.workspaces",
+]
+layer = "runtime"
 
 [[modules]]
 path = "donna.lib"

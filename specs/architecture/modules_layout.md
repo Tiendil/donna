@@ -40,6 +40,12 @@ The following topics are out of scope:
   - state changes.
   - operation and primitive interfaces.
   - workflow execution orchestration that is independent of CLI argument parsing and output formatting.
+- `./donna/runtime/` — module responsible for command-independent runtime orchestration. Contains:
+  - session lifecycle use cases.
+  - workflow execution loop coordination.
+  - invocation-local wiring between context, machine, workspaces, and protocol-facing results.
+  - journal event forwarding orchestration.
+  - no CLI argument parsing.
 - `./donna/context/` — module responsible for invocation-local runtime context. Contains:
   - context-local caches.
   - context-local execution scopes.

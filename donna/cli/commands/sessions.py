@@ -9,7 +9,7 @@ from donna.cli.types import (
     parse_artifact_section_id_argument,
 )
 from donna.cli.utils import command_context
-from donna.machine import sessions
+from donna.runtime import sessions
 
 
 @app.command(name="new-session", help="Create fresh session state.")
