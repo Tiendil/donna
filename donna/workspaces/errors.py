@@ -43,6 +43,28 @@ class WorkspaceAlreadyInitialized(WorkspaceError):
     config_path: ProjectConfigPath
 
 
+class WorkspaceConfigNotFound(WorkspaceError):
+    code: str = "donna.workspaces.config_not_found"
+    message: str = "Donna project config does not exist at `{error.config_path}`"
+    ways_to_fix: list[str] = [
+        "Check the config path for typos.",
+        "Create the Donna project config via CLI command if it does not exist yet.",
+        "Omit `--config` to discover `donna.toml` from the current working directory.",
+    ]
+    config_path: ProjectConfigPath
+
+
+class WorkspaceConfigDirNotFound(WorkspaceError):
+    code: str = "donna.workspaces.config_dir_not_found"
+    message: str = "Donna project config directory does not exist for `{error.config_path}`"
+    ways_to_fix: list[str] = [
+        "Check the config path for typos.",
+        "Create the directory that should contain the Donna project config.",
+        "Choose an existing project directory for the Donna project config.",
+    ]
+    config_path: ProjectConfigPath
+
+
 class JournalCommandConfigInvalid(WorkspaceError):
     code: str = "donna.workspaces.journal_command_config_invalid"
     message: str = "Journal command config is invalid: {error.details}"

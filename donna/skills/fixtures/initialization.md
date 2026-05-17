@@ -22,7 +22,7 @@ donna -p llm skill usage
 
 Run initialization from the directory that should contain `donna.toml`.
 
-Without `--root`, `donna init` creates `donna.toml` in the current working directory. With `--root PATH`, it creates `donna.toml` in that existing directory and treats it as the project root for later commands.
+Without `--config`, `donna init` creates `donna.toml` in the current working directory. With `--config PATH`, it creates the configuration file at that path and treats the containing directory as the project root for later commands.
 
 The project root matters because Donna discovers it by locating `donna.toml`. `session_dir` and `workflow_dirs` are relative to that directory, and Donna reports workflow artifacts as `@/<relative-path>` anchored at that directory. Relative artifact paths passed to commands are resolved from the command's current working directory and accepted only when they point inside the project root.
 
@@ -34,10 +34,10 @@ Create `donna.toml` in the current directory:
 donna -p llm init
 ```
 
-Create it in an explicit project root:
+Create it at an explicit config path:
 
 ```bash
-donna -p llm --root /path/to/project init
+donna -p llm --config /path/to/project/donna.toml init
 ```
 
 `init` does not overwrite an existing file.

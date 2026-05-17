@@ -38,9 +38,9 @@ class GoTo(Directive):
 
     def render_view(self, context: Context, next_operation_id: ArtifactSectionId) -> Result[Any, ErrorsList]:
         protocol = workspace_config.protocol().value
-        root_dir = workspace_config.project_dir()
+        config_path = workspace_config.config_path()
         return Ok(
-            f"donna -p {protocol} -r '{root_dir}' "
+            f"donna -p {protocol} --config '{config_path}' "
             f"complete-action-request <action-request-id> '{next_operation_id}'"
         )
 

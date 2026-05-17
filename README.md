@@ -114,7 +114,7 @@ What you may notice:
 
 Directives, like `{{ goto("operation_id") }}`, render itself depending on the context:
 
-- For the agent, they render an exact CLI command to run, such as `donna -p llm complete-action-request <action-request-id> '@/workflows/polish.donna.md:finish'`.
+- For the agent, they render an exact CLI command to run, such as `donna -p llm --config /path/to/project/donna.toml complete-action-request <action-request-id> '@/workflows/polish.donna.md:finish'`.
 - For Donna, they render a specific marker that can be extracted and used to analyze an artifact. For example, Donna uses `goto` directives to build an FSM of the workflow and validate it before running: does each operation exist, can the workflow be completed, are there unreachable operations, etc.
 
 Generally speaking, **all you need is `donna.lib.request_action` operation** — it is enough to achieve a great deal of automation by delegating some decisions to the agent. However, there are some more specific operations that simplify things and make workflows more agile or performant.

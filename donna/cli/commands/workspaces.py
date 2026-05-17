@@ -9,8 +9,8 @@ from donna.workspaces.initialization import initialize_workspace
 @app.command(help="Initialize Donna project config.")
 def init(context: typer.Context) -> None:
     with command_context(context, load_environment=False) as command:
-        target_dir = command.target_dir()
+        config_path = command.target_config_path()
 
-        initialize_workspace(target_dir).unwrap()
+        initialize_workspace(config_path).unwrap()
 
         command.write_cells([operation_succeeded("Donna project initialized successfully")])

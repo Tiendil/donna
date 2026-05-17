@@ -8,7 +8,9 @@ from donna.protocol.formatters.base import Formatter as BaseFormatter
 class Formatter(BaseFormatter):
 
     def _json_line(self, data: object) -> bytes:
-        return json.dumps(data, ensure_ascii=False, indent=None, separators=(",", ":"), sort_keys=True).encode() + b"\n"
+        return (
+            json.dumps(data, ensure_ascii=False, indent=None, separators=(",", ":"), sort_keys=True).encode() + b"\n"
+        )
 
     def format_cell(self, cell: Cell) -> bytes:
         data: dict[str, str | int | bool | None] = {"id": cell.short_id}

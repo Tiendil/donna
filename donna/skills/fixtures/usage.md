@@ -51,17 +51,17 @@ Example automation output:
 Global options go before the subcommand:
 
 ```bash
-donna -p llm --root /path/to/project status
+donna -p llm --config /path/to/project/donna.toml status
 ```
 
 ## Project Root
 
-Most commands need a Donna project. If `--root/-r` is omitted, Donna discovers the project root by searching upward from the current working directory for `donna.toml`.
+Most commands need a Donna project. If `--config` is omitted, Donna discovers the project root by searching upward from the current working directory for `donna.toml`.
 
-Use `--root PATH` when running from outside the intended project tree or when there is any ambiguity:
+Use `--config PATH` when running from outside the intended project tree or when there is any ambiguity. The path points to the active `donna.toml`; the project root is the directory that contains it:
 
 ```bash
-donna -p llm --root /path/to/project list
+donna -p llm --config /path/to/project/donna.toml list
 ```
 
 Donna uses project-root anchored ids for workflow artifacts. The `@/` prefix means "from the Donna project root":
@@ -303,7 +303,7 @@ donna -p llm init
 Initialize Donna in an explicit directory:
 
 ```bash
-donna -p llm --root /path/to/project init
+donna -p llm --config /path/to/project/donna.toml init
 ```
 
 `init` creates or refreshes Donna project configuration. Read `donna -p llm skill initialization` and project instructions before using it in an existing repository.

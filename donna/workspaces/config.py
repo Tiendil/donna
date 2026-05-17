@@ -9,7 +9,7 @@ from donna.core.entities import BaseEntity
 from donna.domain.constants import DONNA_DEFAULT_SESSION_DIR, DONNA_DEFAULT_WORKFLOW_DIR
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
-from donna.domain.paths import ProjectRootPath, RelativeProjectPath
+from donna.domain.paths import ProjectConfigPath, ProjectRootPath, RelativeProjectPath
 from donna.domain.python_path import PythonPath
 from donna.workspaces import errors as world_errors
 
@@ -122,6 +122,7 @@ class Workspace(BaseEntity):
     model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 
     root: ProjectRootPath
+    config_path: ProjectConfigPath
     config: Config
 
 
@@ -151,6 +152,7 @@ class GlobalConfig[V]():
 
 
 project_dir = GlobalConfig[ProjectRootPath]()
+config_path = GlobalConfig[ProjectConfigPath]()
 config = GlobalConfig[Config]()
 protocol: GlobalConfig["Mode"] = GlobalConfig()
 
@@ -158,6 +160,9 @@ protocol: GlobalConfig["Mode"] = GlobalConfig()
 def install_workspace(workspace: Workspace) -> None:
     if not project_dir.is_set():
         project_dir.set(ProjectRootPath(workspace.root))
+
+    if not config_path.is_set():
+        config_path.set(ProjectConfigPath(workspace.config_path))
 
     if not config.is_set():
         config.set(workspace.config)

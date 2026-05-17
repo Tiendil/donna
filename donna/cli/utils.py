@@ -8,7 +8,8 @@ import typer
 from donna.cli.entities import GLOBAL_OPTIONS_CONTEXT_KEY, GlobalOptions
 from donna.core.errors import EnvironmentError, ErrorsList
 from donna.core.result import UnwrapError
-from donna.domain.paths import PathInput, UntrustedPath
+from donna.domain.constants import DONNA_CONFIG_NAME
+from donna.domain.paths import PathInput, ProjectConfigPath, UntrustedPath
 from donna.protocol.cells import Cell
 from donna.protocol.modes import Mode, get_cell_formatter
 from donna.workspaces import config as workspace_config
@@ -44,13 +45,19 @@ class CommandContext:
             workspace_config.protocol.set(self.protocol)
 
     def load_workspace(self) -> workspace_config.Workspace:
-        workspace = load_workspace(root_dir=self.global_options.root_dir).unwrap()
+        workspace = load_workspace(config_path=self.global_options.config_path).unwrap()
         workspace_config.install_workspace(workspace)
         return workspace
 
+    def target_config_path(self) -> ProjectConfigPath:
+        if self.global_options.config_path is not None:
+            return ProjectConfigPath(self.global_options.config_path)
+
+        return ProjectConfigPath(pathlib.Path.cwd() / DONNA_CONFIG_NAME)
+
     def target_dir(self) -> PathInput:
-        if self.global_options.root_dir is not None:
-            return self.global_options.root_dir
+        if self.global_options.config_path is not None:
+            return UntrustedPath(pathlib.Path(self.global_options.config_path).parent)
 
         if workspace_config.project_dir.is_set():
             return workspace_config.project_dir()

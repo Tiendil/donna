@@ -573,7 +573,7 @@ If a workflow is not listed:
 1. Check that the file ends with `.donna.md`.
 2. Check that it is under one of `workflow_dirs`.
 3. Check that the workflow directory exists.
-4. Run `donna -p llm list` from the intended Donna project root or pass `--root`.
+4. Run `donna -p llm list` from the intended Donna project root or pass `--config /path/to/project/donna.toml`.
 
 If validation says a start operation is missing:
 

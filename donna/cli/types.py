@@ -169,19 +169,15 @@ RenderModeOption = Annotated[
 ]
 
 
-RootOption = Annotated[
+ConfigOption = Annotated[
     pathlib.Path | None,
     typer.Option(
-        "--root",
-        "-r",
+        "--config",
         resolve_path=True,
-        file_okay=False,
-        dir_okay=True,
-        exists=True,
-        help=(
-            "Optional project root directory. "
-            "If omitted, Donna discovers it by searching parent directories for donna.toml."
-        ),
+        file_okay=True,
+        dir_okay=False,
+        exists=False,
+        help="Optional project config file. If omitted, Donna discovers donna.toml by searching parent directories.",
     ),
 ]
 
