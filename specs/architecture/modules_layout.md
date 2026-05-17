@@ -63,6 +63,7 @@ The following topics are out of scope:
   - formatter selection.
   - protocol-specific formatters.
   - serialized record construction for external output protocols.
+  - low-level output boundary infrastructure that MAY be used by any top-level module.
 - `./donna/skills/` — module responsible for built-in skill text loaded by the CLI and renderers.
 - `./donna/workspaces/` — module responsible for workspace management, including:
   - finding and parsing config.
@@ -189,7 +190,7 @@ Top-level modules MUST NOT import implementation submodules from another top-lev
 
 Top-level modules MUST NOT import another top-level module's `operations` submodule.
 
-Top-level modules MAY import protocol-neutral boundary entities from `./donna/protocol/` when they need to expose their owned concepts as Donna output units.
+Top-level modules MAY import boundary entities and rendering helpers from `./donna/protocol/` when they need to expose their owned concepts as Donna output units.
 
 Top-level modules outside `./donna/protocol/` and `./donna/cli/` SHOULD NOT depend on protocol-specific formatter implementation submodules.
 
