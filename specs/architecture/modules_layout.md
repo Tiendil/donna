@@ -109,19 +109,11 @@ The `errors` submodule owns module-specific exception classes and error values.
 
 Errors SHOULD express project-level failure modes that callers can handle, not low-level library details.
 
-Error classes and error values that are part of a top-level module's public API MUST be exported from that module's package initializer.
-
-When a top-level module owns an `errors` submodule, its package initializer MUST export that submodule under the name `errors`.
-
-Top-level modules MAY import another top-level module's exported `errors` submodule from the owning module's package root.
-
 #### `entities`
 
 The `entities` submodule owns module-specific types, semantic ids, enums, and entities that represent the module's concepts.
 
 Entities SHOULD describe domain data and boundary data, not storage implementation details unless storage metadata is itself part of the project concept.
-
-Entity classes and other shared boundary types that are part of a top-level module's public API MUST be exported from that module's package initializer.
 
 #### `utils`
 
@@ -161,21 +153,40 @@ Production modules MUST NOT import `tests.helpers`.
 
 ## Cross-module dependencies
 
-Each top-level module MUST define its public cross-module API in its package initializer, `__init__.py`.
+### Import boundaries
 
-The package initializer MUST explicitly import or define every type, function, constant, and object that another top-level module may import from the module.
+Top-level modules MUST expose stable cross-module APIs through declared public import boundaries.
+
+A public import boundary MAY be:
+
+- the top-level module package root, such as `donna.domain`.
+- a declared public submodule, such as `donna.domain.artifact_ids`.
+
+Public import boundaries MUST be explicit enough for maintainers to distinguish stable cross-module API from implementation detail.
+
+A public submodule SHOULD expose cohesive concepts owned by its top-level module.
+
+A public submodule MUST NOT expose low-level helper functions, temporary implementation details, storage-only helpers, or compatibility shims unless those names are intentionally stable.
+
+Top-level module package initializers SHOULD export common public names when doing so improves ergonomics.
+
+Top-level module package initializers MUST NOT be required to re-export every public name from declared public submodules.
 
 When a top-level module owns an `errors` submodule, the package initializer MUST include the `errors` submodule in the public cross-module API.
 
-The package initializer SHOULD define `__all__` to list the names that are intended as the module's public cross-module API.
+The package initializer SHOULD define `__all__` to list the names that are intended as the module root public cross-module API.
 
-If a top-level module has no public cross-module API, its package initializer SHOULD be empty or define an empty `__all__`.
+If a top-level module has no useful module-root public cross-module API, its package initializer MAY be empty or define an empty `__all__`.
 
-Top-level modules MUST import another top-level module's public API only from that module's package root.
+Top-level modules MUST import another top-level module only through that module's declared public import boundaries.
 
-For example, `donna.cli` MAY import from `donna.workspaces`, including `from donna.workspaces import errors as workspace_errors` when `donna.workspaces` exports `errors`, but MUST NOT import from `donna.workspaces.config`, `donna.workspaces.entities`, `donna.workspaces.errors`, or any other `donna.workspaces` submodule.
+For example, `donna.cli` MAY import from `donna.workspaces` and from public submodules declared by `donna.workspaces`, but MUST NOT import from undeclared implementation submodules.
 
-Top-level modules MUST NOT import implementation submodules from another top-level module.
+Top-level modules MUST NOT import undeclared implementation submodules from another top-level module.
+
+Submodules inside the same top-level module MAY import each other directly.
+
+The `utils` submodule is not a public import boundary unless a top-level module explicitly declares it as one.
 
 Top-level modules MAY import protocol-owned boundary values and generic projection helpers from `donna.protocol` when they need to expose their owned concepts as Donna output units.
 

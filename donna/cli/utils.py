@@ -14,7 +14,7 @@ from donna.domain.constants import DONNA_CONFIG_NAME
 from donna.domain.paths import PathInput, ProjectConfigPath, UntrustedPath
 from donna.protocol.cells import Cell
 from donna.protocol.errors import environment_error_node
-from donna.protocol.formatters.base import Formatter
+from donna.protocol.formatters import Formatter
 from donna.protocol.journal import JournalRecord
 from donna.protocol.modes import Mode, get_cell_formatter
 from donna.workspaces import config as workspace_config
