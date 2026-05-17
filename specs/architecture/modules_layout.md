@@ -12,7 +12,7 @@ The following topics are out of scope:
 
 - detailed implementation design.
 - runtime behavior.
-- exact migration steps from the current code layout.
+- migration planning.
 - entity, error, and test conventions beyond module placement.
 
 ## Dictionary
