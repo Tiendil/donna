@@ -21,6 +21,8 @@ The following topics are out of scope:
 
 - `entity` — a typed Python object that represents one project concept and can be passed across module boundaries.
 - `value entity` — an entity whose equality is based on its data rather than object identity.
+- `data entity` — an entity that primarily carries validated data across boundaries or into serialization.
+- `domain entity` — an entity that owns behavior, invariants, or state transitions for a project concept.
 - `boundary entity` — an entity that is passed between modules with different responsibilities.
 - `serialized representation` — a plain data representation prepared for an external protocol such as JSON Lines, Markdown output, logs, or persistent storage.
 
@@ -32,15 +34,43 @@ Boundary entities MUST NOT be represented as untyped dictionaries unless the dat
 
 Project entities SHOULD use Pydantic v2 for structured data models.
 
-Project entities SHOULD keep behavior close to their data only when that behavior is pure and local to the entity.
+### Data entities
 
-Entities MUST NOT perform:
+Data entities SHOULD limit behavior to validating, normalizing, copying, serializing, and deriving values from their
+own fields.
+
+Data entities MUST NOT access invocation-local context, load artifacts, execute primitives, mutate session state, or
+perform low-level infrastructure work.
+
+### Domain entities
+
+Domain entities MAY be rich domain objects.
+
+Domain entities SHOULD keep behavior close to the state, invariants, transitions, and domain operations they own.
+They MAY:
+
+- change their own state or apply state changes.
+- derive facts from their own state.
+- validate related project objects.
+- coordinate behavior through typed collaborator or invocation-local context interfaces.
+
+Domain entity methods SHOULD keep direct infrastructure details behind collaborator interfaces or module boundaries.
+
+If an entity directly touches an external resource, the entity MUST be owned by the module responsible for that
+resource and SHOULD represent that resource explicitly.
+
+Entities MUST NOT directly perform low-level infrastructure work unrelated to their owned concept, such as:
 
 - filesystem access.
 - process execution.
 - terminal output.
 - configuration file discovery.
 - workspace loading.
+
+Entities MAY call typed collaborators or context objects that perform those operations when the behavior and
+dependency are part of the module's public contract.
+
+### Value entities
 
 Value entities SHOULD be immutable after construction when practical.
 
@@ -197,8 +227,11 @@ Collections that represent stacks, queues, or ordered workflow state MUST preser
 
 Parsing layers SHOULD validate external data before creating entities that are used by lower layers.
 
-Pydantic model validation MAY validate local invariants that are always true for the entity.
+Pydantic model validation MAY validate local invariants that are always true for the entity, but MUST NOT perform
+filesystem access, configuration discovery, workspace loading, artifact discovery, primitive execution, subprocess
+execution, or command execution.
 
-Validation that requires filesystem access, configuration discovery, workspace loading, artifact discovery, primitive execution, subprocess execution, or command execution MUST live outside pure entity definitions.
+Validation that requires those operations MUST live in domain behavior methods, domain services, runtime
+orchestration, or operation functions that return Donna-specific errors.
 
 Invalid external input MUST be reported through the error architecture instead of by returning partially valid entities.
