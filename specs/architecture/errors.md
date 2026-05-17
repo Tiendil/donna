@@ -121,7 +121,11 @@ Leaf environment errors SHOULD define their message and fix guidance in the clas
 
 Construction sites SHOULD pass only the structured fields that vary for that error instance.
 
-Environment errors MUST be rendered through `EnvironmentError.node()` when converted to cells.
+Environment errors MUST be rendered through the protocol module when converted to cells.
+
+The core error base classes MUST NOT depend on protocol cells, protocol nodes, protocol formatters, or CLI output.
+
+Protocol conversion code MUST preserve the error code as cell metadata.
 
 Rendered environment error cells MUST include the error code as metadata.
 

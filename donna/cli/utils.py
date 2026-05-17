@@ -11,6 +11,7 @@ from donna.core.result import UnwrapError
 from donna.domain.constants import DONNA_CONFIG_NAME
 from donna.domain.paths import PathInput, ProjectConfigPath, UntrustedPath
 from donna.protocol.cells import Cell
+from donna.protocol.errors import environment_error_node
 from donna.protocol.modes import Mode, get_cell_formatter
 from donna.workspaces import config as workspace_config
 from donna.workspaces.initialization import load_workspace
@@ -91,7 +92,7 @@ def _write_errors_to_journal(errors: ErrorsList) -> None:
     from donna.machine import journal as machine_journal
 
     for error in errors:
-        message = f"Error: {error.node().journal_message()} [{error.code}]"
+        message = f"Error: {environment_error_node(error).journal_message()} [{error.code}]"
 
         machine_journal.add(
             message=message,
@@ -117,4 +118,4 @@ def _cells_from_unwrap(error: UnwrapError) -> Iterable[Cell]:
     if workspace_config.config.is_set():
         _write_errors_to_journal(errors)
 
-    return [item.node().info() for item in errors]
+    return [environment_error_node(item).info() for item in errors]

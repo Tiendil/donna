@@ -8,6 +8,7 @@ from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
 from donna.machine.errors import ArtifactPrimarySectionMissing, ArtifactSectionNotFound, MultiplePrimarySectionsError
 from donna.protocol.cells import Cell
+from donna.protocol.errors import environment_error_node
 from donna.protocol.nodes import Node
 
 
@@ -137,7 +138,7 @@ class ArtifactNode(Node):
     def status(self) -> Cell:
         primary_section_result = self._artifact.primary_section()
         if primary_section_result.is_err():
-            return primary_section_result.unwrap_err()[0].node().status()
+            return environment_error_node(primary_section_result.unwrap_err()[0]).info()
 
         primary_section = primary_section_result.unwrap()
         return Cell.build_markdown(
@@ -151,12 +152,12 @@ class ArtifactNode(Node):
     def info(self) -> Cell:
         primary_section_result = self._artifact.primary_section()
         if primary_section_result.is_err():
-            return primary_section_result.unwrap_err()[0].node().info()
+            return environment_error_node(primary_section_result.unwrap_err()[0]).info()
 
         primary_section = primary_section_result.unwrap()
         blocks_result = self._artifact.markdown_blocks()
         if blocks_result.is_err():
-            return blocks_result.unwrap_err()[0].node().info()
+            return environment_error_node(blocks_result.unwrap_err()[0]).info()
 
         return Cell.build_markdown(
             kind="artifact_info",

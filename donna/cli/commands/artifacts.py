@@ -10,6 +10,7 @@ from donna.cli.utils import command_context
 from donna.context.context import context
 from donna.machine import journal as machine_journal
 from donna.protocol.cell_shortcuts import operation_succeeded
+from donna.protocol.errors import environment_error_node
 from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW, ArtifactRenderContext, fetch_artifact_bytes
 from donna.workspaces.templates import render as render_template
 
@@ -86,7 +87,7 @@ def validate(  # noqa: CCR001
                 errors.extend(result.unwrap_err())
 
         if errors:
-            command.write_cells(error.node().info() for error in errors)
+            command.write_cells(environment_error_node(error).info() for error in errors)
             return
 
         command.write_cells([operation_succeeded("All artifacts are valid")])
