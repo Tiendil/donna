@@ -40,7 +40,7 @@ The following topics are out of scope:
   - state changes.
   - operation and primitive interfaces.
   - workflow execution orchestration that is independent of CLI argument parsing and protocol-specific formatting.
-  - protocol-facing views of machine-owned entities expressed through protocol-neutral boundary entities from `./donna/protocol/`.
+  - protocol-facing views of machine-owned concepts expressed as protocol-neutral output values from `./donna/protocol/`.
 - `./donna/runtime/` — module responsible for command-independent runtime orchestration. Contains:
   - session lifecycle use cases.
   - workflow execution loop coordination.
@@ -57,12 +57,12 @@ The following topics are out of scope:
   - directive primitives.
   - primitive-specific validation, rendering, and execution logic.
 - `./donna/lib/` — module responsible for stable public names of built-in primitive instances used by Donna artifact configuration.
-- `./donna/protocol/` — module responsible for Donna output boundary entities and protocol formatting. Contains:
-  - protocol-neutral output boundary entities such as cells, nodes, and journal records.
-  - helpers for projecting generic Donna errors into output cells.
+- `./donna/protocol/` — module responsible for Donna output boundary values and protocol formatting. Contains:
+  - protocol-neutral output value definitions used to communicate Donna results between modules.
+  - generic helpers for projecting Donna-owned data and errors into output values.
   - protocol enums.
   - formatter selection.
-  - protocol-specific formatters that serialize protocol entities for human, llm, and automation output.
+  - protocol-specific formatters that serialize output values for human, llm, and automation output.
   - serialized record construction for external output protocols.
   - low-level output boundary infrastructure that MAY be used by any top-level module.
 - `./donna/skills/` — module responsible for built-in skill text loaded by the CLI and renderers.
@@ -191,11 +191,17 @@ Top-level modules MUST NOT import implementation submodules from another top-lev
 
 Top-level modules MUST NOT import another top-level module's `operations` submodule.
 
-Top-level modules MAY import boundary entities and generic projection helpers from `./donna/protocol/` when they need to expose their owned concepts as Donna output units.
+Top-level modules MAY import protocol-owned boundary values and generic projection helpers when they need to expose their owned concepts as Donna output units.
+
+Constructing protocol-neutral output values is not protocol-specific rendering and MUST NOT be treated as a module-boundary violation.
 
 Top-level modules outside `./donna/protocol/` and `./donna/cli/` MUST NOT depend on protocol-specific formatter implementation submodules.
 
 Top-level modules outside `./donna/protocol/` SHOULD NOT own protocol-specific serialization details.
+
+Protocol-specific rendering means selecting or implementing concrete external serialization for a protocol, such as terminal text framing, LLM-oriented boundary syntax, automation JSON Lines records, byte output, or formatter-specific ordering rules.
+
+Constructing protocol-neutral output values with kind, content, media type, and metadata is not protocol-specific rendering.
 
 ## Data structures
 
