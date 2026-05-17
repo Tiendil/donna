@@ -2,6 +2,10 @@
 
 set -e
 
+echo "run tach"
+
+./bin/dev.sh poetry run tach check
+
 echo "run autoflake"
 
 ./bin/dev.sh poetry run autoflake --check --quiet ./donna

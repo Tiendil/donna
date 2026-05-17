@@ -100,7 +100,7 @@ Examples:
 
 - `./donna/core/utils.py` -> `./donna/core/tests/test_utils.py`
 - `./donna/domain/ids.py` -> `./donna/domain/tests/test_ids.py`
-- `./donna/workspace/config.py` -> `./donna/workspace/tests/test_config.py`
+- `./donna/workspaces/config.py` -> `./donna/workspaces/tests/test_config.py`
 
 Cross-module integration tests MAY live under the module that owns the public boundary being exercised.
 

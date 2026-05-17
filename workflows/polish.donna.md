@@ -2,12 +2,44 @@
 
 Initiate operations to polish and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc. This workflow MUST NOT be used to introduce new logic into the project or refactor it — only to fix existing issues.
 
+## Run Tach
+
+```toml donna
+id = "run_tach_script"
+kind = "donna.lib.run_script"
+fsm_mode = "start"
+save_stdout_to = "tach_output"
+goto_on_success = "run_autoflake_script"
+goto_on_failure = "fix_tach"
+```
+
+```bash donna script
+#!/usr/bin/env bash
+
+tach check 2>&1
+```
+
+## Fix Tach Issues
+
+```toml donna
+id = "fix_tach"
+kind = "donna.lib.request_action"
+```
+
+```
+{{ donna.lib.task_variable("tach_output") }}
+```
+
+1. Fix the tach issues based on the output above that you are allowed to fix.
+2. Ask the developer to fix any remaining issues manually.
+3. Ensure your changes are saved.
+4. `{{ donna.lib.goto("run_tach_script") }}`
+
 ## Run Autoflake
 
 ```toml donna
 id = "run_autoflake_script"
 kind = "donna.lib.run_script"
-fsm_mode = "start"
 save_stdout_to = "autoflake_output"
 goto_on_success = "run_isort_script"
 goto_on_failure = "fix_autoflake"
@@ -32,7 +64,7 @@ kind = "donna.lib.request_action"
 
 1. Fix the autoflake issues based on the output above.
 2. Ensure your changes are saved.
-3. `{{ donna.lib.goto("run_autoflake_script") }}`
+3. `{{ donna.lib.goto("run_tach_script") }}`
 
 ## Run isort
 
@@ -63,7 +95,7 @@ kind = "donna.lib.request_action"
 
 1. Fix the isort issues based on the output above.
 2. Ensure your changes are saved.
-3. `{{ donna.lib.goto("run_autoflake_script") }}`
+3. `{{ donna.lib.goto("run_tach_script") }}`
 
 ## Run Black
 
@@ -94,7 +126,7 @@ kind = "donna.lib.request_action"
 
 1. Fix the Black issues based on the output above.
 2. Ensure your changes are saved.
-3. `{{ donna.lib.goto("run_autoflake_script") }}`
+3. `{{ donna.lib.goto("run_tach_script") }}`
 
 ## Run Codespell
 
@@ -125,7 +157,7 @@ kind = "donna.lib.request_action"
 
 1. Fix the codespell issues based on the output above.
 2. Ensure your changes are saved.
-3. `{{ donna.lib.goto("run_autoflake_script") }}`
+3. `{{ donna.lib.goto("run_tach_script") }}`
 
 ## Run Flake8
 
@@ -156,7 +188,7 @@ kind = "donna.lib.request_action"
 
 1. Fix the flake8 issues based on the output above.
 2. Ensure your changes are saved.
-3. `{{ donna.lib.goto("run_autoflake_script") }}`
+3. `{{ donna.lib.goto("run_tach_script") }}`
 
 Instructions on fixing special cases:
 
@@ -195,7 +227,7 @@ kind = "donna.lib.request_action"
 1. Fix the mypy issues based on the output above that you are allowed to fix.
 2. Ask the developer to fix any remaining issues manually.
 3. Ensure your changes are saved.
-4. `{{ donna.lib.goto("run_autoflake_script") }}`
+4. `{{ donna.lib.goto("run_tach_script") }}`
 
 Issues you are allowed to fix:
 

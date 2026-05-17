@@ -56,7 +56,7 @@ The following topics are out of scope:
   - protocol-specific formatters.
   - serialized record construction for external output protocols.
 - `./donna/skills/` — module responsible for built-in skill text loaded by the CLI and renderers.
-- `./donna/workspace/` — module responsible for workspace management, including:
+- `./donna/workspaces/` — module responsible for workspace management, including:
   - finding and parsing config.
   - detecting current project root.
   - operations with project files and directories.
