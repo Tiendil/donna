@@ -119,6 +119,18 @@ donna -p llm status
 
 When the workflow is finished, report the result to the developer before starting unrelated work.
 
+### Nested Workflows
+
+Donna can have multiple active workflows in one session. Treat them as a call stack: starting a workflow while another workflow is active makes the new workflow current; finishing it returns control to the parent workflow.
+
+A parent action request may instruct you to run a child workflow. In that case:
+
+1. Start the child workflow with `donna -p llm run ...`.
+2. Complete the child workflow before completing the parent action request.
+3. Do not report the parent action request as complete just because the child workflow started.
+4. After the child finishes, return to the parent action request and choose one of its declared transitions.
+5. Keep child workflow outputs explicit: write files, update notes, or summarize results before completing the parent request.
+
 ### Start Workflow
 
 A developer or project instruction explicitly asks you to run a Donna workflow, and Donna has no active work that must be continued first.
@@ -171,7 +183,7 @@ Strictly follow every instruction Donna gives you after that. If Donna finishes 
 
 A developer or an active Donna workflow asks you to create or modify a workflow.
 
-Read the workflow authoring instructions if you have not already:
+Read the workflow creation instructions if you have not already:
 
 ```bash
 donna -p llm skill workflows

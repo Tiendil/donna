@@ -376,6 +376,44 @@ Execution loop:
 7. Donna validates that the transition is allowed, queues the next operation, and continues.
 8. `finish` completes the task.
 
+## Workflow Stack And Child Workflows
+
+Donna can have multiple active workflows in one session. Treat them as a call stack:
+
+- The latest started workflow is the current workflow.
+- Starting a workflow while another workflow is active pushes a child workflow on top of the stack.
+- Finishing the child workflow pops it from the stack.
+- After the child workflow finishes, the parent workflow becomes current again.
+
+A child workflow may be started by the developer, by the agent while following a parent action request, or by future Donna operations. This is useful when a parent workflow delegates a substantial subtask to a specialized workflow.
+
+The primary way to start a child workflow from a parent workflow is to ask the agent in a `request_action` operation. There are two common ways to write that request:
+
+- Specify the workflow path explicitly when the parent workflow requires one exact child workflow.
+- Specify the task to complete and ask the agent to choose the best workflow for it.
+
+Prefer task-based delegation when possible. It allows dynamic behavior: the parent workflow depends on the child workflow's role, not on one concrete workflow artifact. This works like a simple form of polymorphism.
+
+Example with an explicit child workflow:
+
+```markdown
+1. Run the workflow `@/workflows/prepare-release-notes.donna.md`.
+2. Complete that child workflow.
+3. Return to this action request.
+4. If release notes are ready, `{{ donna.lib.goto("verify_release") }}`.
+5. If they are blocked, `{{ donna.lib.goto("handle_release_notes_blocker") }}`.
+```
+
+Example with task-based child workflow selection:
+
+```markdown
+1. Choose the best workflow for preparing release notes.
+2. Run that workflow and complete it.
+3. Return to this action request.
+4. If release notes are ready, `{{ donna.lib.goto("verify_release") }}`.
+5. If they are blocked, `{{ donna.lib.goto("handle_release_notes_blocker") }}`.
+```
+
 ## Directives And Rendering
 
 Donna renders workflow Markdown with Jinja directives.
@@ -562,7 +600,7 @@ If a script failure output is missing from a later request action:
 2. Check that `task_variable` uses the exact same key.
 3. Check that the operation reading the variable runs after the script operation.
 
-## Authoring Checklist
+## Workflow Checklist
 
 Before considering a workflow ready:
 
