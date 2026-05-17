@@ -3,13 +3,13 @@ import pathlib
 import tomllib
 
 from donna.core import errors as core_errors
-from donna.core import utils
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.constants import DONNA_CONFIG_NAME
 from donna.domain.paths import PathInput, ProjectConfigPath, ProjectRootPath, UntrustedPath
 from donna.protocol.modes import Mode
 from donna.workspaces import config
 from donna.workspaces import errors as world_errors
+from donna.workspaces import utils
 from donna.workspaces.paths import resolve_project_root
 
 BASE_CONFIG_FIXTURE = "base_config.toml"

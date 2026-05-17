@@ -32,6 +32,17 @@ class ConfigValidationFailed(WorkspaceConfigError):
     details: str
 
 
+class WorkspaceConfigNotDiscovered(WorkspaceError):
+    code: str = "donna.workspaces.config_not_discovered"
+    message: str = "Could not find a project directory containing `{error.config_name}`."
+    ways_to_fix: list[str] = [
+        "Run Donna from within a project directory that contains the Donna config file.",
+        "Create the Donna project config via CLI command if it does not exist yet.",
+        "Pass `--config PATH` to use a specific Donna config file.",
+    ]
+    config_name: str
+
+
 class WorkspaceAlreadyInitialized(WorkspaceError):
     code: str = "donna.workspaces.workspace_already_initialized"
     message: str = "Donna project config already exists at `{error.config_path}`"
