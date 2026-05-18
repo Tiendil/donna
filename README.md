@@ -12,6 +12,8 @@ You define a workflow in a single readable Markdown file, after that your agent 
 
 For example, you can have a workflow that guides the agent through the planing process, and at the final step, the agent can generate a new workflow with a detailed plan to execute and run it immediately.
 
+As a bonus, **Donna saves tokens** because agent doesn't need to reason about the control flow or how to execute particular CLI commands and other automation tools.
+
 ## Example
 
 I use Donna to develop Donna itself — you can find real examples of workflows in the [./workflows](./workflows) folder of this repository. You can start with [./workflows/polish.donna.md](./workflows/polish.donna.md) that goes in loop over fixing issues found by formatters, linters, type checkers and tests until the codebase is polished.
