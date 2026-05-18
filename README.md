@@ -9,7 +9,7 @@ Donna exists because agent work has a control-flow problem:
 3. Agents are ~~almost~~ good at reasoning, but not so good at keeping the whole process in mind, remembering what they did, etc.
 4. Therefore, we should separate the reasoning part from the control flow part — let agents focus on what they are good at, and keep the control flow to traditional automation tools.
 
-**Donna does exactly that: it runs predefined workflows as deterministic state machines while the agent focuses on reasoning, code generation, and other agentic work.**
+**Donna runs predefined workflows as deterministic state machines, so the agent can focus on reasoning, code generation, and other agentic work.**
 
 You define a workflow in a single readable Markdown file. The agent asks Donna to guide it through the workflow, and Donna keeps the session state, chooses the next operation, and tells the agent what to do or report next.
 
