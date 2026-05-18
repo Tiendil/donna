@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.ref }}
           # Use personal access token to trigger other workflows on tag push
@@ -45,14 +45,8 @@ jobs:
           git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
           git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
 
-      - name: Install poetry
-        run: pip install poetry
-
-      - name: Prepare Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
-          cache: 'poetry'
+      - name: Build containers
+        run: ./bin/dev-build-containers.sh
 
       - name: Prepare release
         run: ./bin/release-prepare.sh ${{ github.event.inputs.bump_version }}
