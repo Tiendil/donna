@@ -90,17 +90,26 @@ Tests SHOULD NOT use pytest `monkeypatch` for ordinary Python attribute replacem
 
 ## Test module layout
 
-Each implementation module or submodule SHOULD have corresponding tests under a `tests` submodule owned by the same parent module.
+Each implementation module or submodule SHOULD have corresponding tests under a `tests` submodule owned by the
+nearest package that owns the behavior under test.
 
 The name of a test file MUST be built from the name of the tested module by adding the `test_` prefix.
 
 The structure of tests SHOULD mirror the implementation structure when that makes ownership clear.
+
+When an implementation package contains nested component packages, tests for modules in those component packages
+SHOULD live in a `tests` subpackage of the component package instead of being flattened into the top-level module's
+test package.
+
+For example, tests for `./donna/primitives/artifacts/workflow.py` SHOULD live in
+`./donna/primitives/artifacts/tests/test_workflow.py`, not in `./donna/primitives/tests/test_artifacts_workflow.py`.
 
 Examples:
 
 - `./donna/core/utils.py` -> `./donna/core/tests/test_utils.py`
 - `./donna/domain/ids.py` -> `./donna/domain/tests/test_ids.py`
 - `./donna/workspaces/config.py` -> `./donna/workspaces/tests/test_config.py`
+- `./donna/primitives/sections/output.py` -> `./donna/primitives/sections/tests/test_output.py`
 
 Cross-module integration tests MAY live under the module that owns the public boundary being exercised.
 
