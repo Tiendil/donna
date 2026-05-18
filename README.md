@@ -166,7 +166,7 @@ uv install donna
 # git clone git@github.com:Tiendil/donna.git
 # cd donna
 
-donna run @/workflows/tea.donna.md
+donna run @/workflows/examples/time_to_drink_tea.donna.md
 ```
 
 ## Rationale
