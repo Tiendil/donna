@@ -5,4 +5,4 @@
 # exec .venv-donna/bin/donna "$@"
 
 ROOT_DIR="$(cd "$(dirname "$0")/.."; pwd)"
-poetry -P "$ROOT_DIR" run donna "$@"
+uv --project "$ROOT_DIR" run donna "$@"

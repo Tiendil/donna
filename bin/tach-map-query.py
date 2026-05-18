@@ -22,7 +22,7 @@ def main() -> int:
     completed = subprocess.run(
         [
             "./bin/dev.sh",
-            "poetry",
+            "uv",
             "run",
             "python",
             "-m",

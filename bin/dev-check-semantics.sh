@@ -4,16 +4,16 @@ set -e
 
 echo "run tach"
 
-./bin/dev.sh poetry run tach check
+./bin/dev.sh uv run tach check
 
 echo "run autoflake"
 
-./bin/dev.sh poetry run autoflake --check --quiet ./donna
+./bin/dev.sh uv run autoflake --check --quiet ./donna
 
 echo "run flake8"
 
-./bin/dev.sh poetry run flake8 ./donna
+./bin/dev.sh uv run flake8 ./donna
 
 echo "run mypy"
 
-./bin/dev.sh poetry run mypy --show-traceback ./donna
+./bin/dev.sh uv run mypy --show-traceback ./donna

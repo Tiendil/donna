@@ -6,29 +6,29 @@ export BUMP_VERSION=$1
 
 echo "Bumping version as $BUMP_VERSION"
 
-export NEXT_VERSION=$(poetry version $BUMP_VERSION --short)
+export NEXT_VERSION=$(uv version --bump $BUMP_VERSION --short)
 export NEXT_VERSION_TAG="release-$NEXT_VERSION"
 
 echo "Install dependencies"
 
-poetry install
+uv sync
 
 echo "Update change log"
 
-poetry run changy version create $NEXT_VERSION
+uv run changy version create $NEXT_VERSION
 
 echo "Generate changelog"
 
-poetry run changy changelog create
+uv run changy changelog create
 
-export COMMIT_BODY=$(poetry run changy version show $NEXT_VERSION)
+export COMMIT_BODY=$(uv run changy version show $NEXT_VERSION)
 
 echo "New version is $NEXT_VERSION"
 echo "New version tag $NEXT_VERSION_TAG"
 
 echo "Building Python package"
 
-poetry build
+uv build
 
 echo "Commit changes"
 

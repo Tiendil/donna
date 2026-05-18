@@ -342,13 +342,13 @@ Run the full test suite:
 Run a specific development command inside the project container:
 
 ```bash
-./bin/dev.sh poetry run pytest
+./bin/dev.sh uv run pytest
 ```
 
 Run Donna from the current development checkout:
 
 ```bash
-./bin/dev.sh poetry run donna --help
+./bin/dev.sh uv run donna --help
 ```
 
 The repository also uses Donna itself. Its local workflows live in [./workflows](./workflows/), and the current project configuration is [donna.toml](./donna.toml).

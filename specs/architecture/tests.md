@@ -33,13 +33,13 @@ Development-related test execution MUST happen through the project development c
 The preferred command form for running tests is:
 
 ```bash
-./bin/dev.sh poetry run pytest
+./bin/dev.sh uv run pytest
 ```
 
 The preferred command form for running targeted tests is:
 
 ```bash
-./bin/dev.sh poetry run pytest <path>
+./bin/dev.sh uv run pytest <path>
 ```
 
 Tests SHOULD be deterministic for the same repository state and filesystem state.

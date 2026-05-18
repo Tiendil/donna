@@ -4,8 +4,8 @@ set -e
 
 echo "run isort"
 
-./bin/dev.sh poetry run isort --check-only ./donna
+./bin/dev.sh uv run isort --check-only ./donna
 
 echo "run black"
 
-./bin/dev.sh poetry run black --check ./donna
+./bin/dev.sh uv run black --check ./donna

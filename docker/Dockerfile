@@ -1,6 +1,6 @@
 FROM python:3.12
 
-RUN pip install poetry
+COPY --from=ghcr.io/astral-sh/uv:0.11.14 /uv /uvx /bin/
 
 ARG UID=1000
 ARG GID=1000
@@ -12,11 +12,15 @@ USER $USER
 
 WORKDIR /repository
 
-COPY README.md pyproject.toml poetry.lock* ./
-COPY donna/__init__.py donna/
+ENV UV_PROJECT_ENVIRONMENT=/home/donna/.venv
+ENV UV_PYTHON_DOWNLOADS=never
+ENV UV_LINK_MODE=copy
+ENV PATH="/home/donna/.venv/bin:${PATH}"
 
-RUN poetry install --no-interaction --no-ansi
+COPY --chown=$USER:$USER . /repository
 
-USER $USER
+RUN uv sync --locked
+
+ENV UV_NO_SYNC=1
 
 CMD []

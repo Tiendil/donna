@@ -4,4 +4,4 @@ set -e
 
 echo "cli works"
 
-./bin/dev.sh poetry run donna --help
+./bin/dev.sh uv run donna --help
