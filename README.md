@@ -19,10 +19,7 @@ I use Donna to develop Donna itself — you can find real examples of workflows 
 Below you'll find a simplified workflow that checks the current time, asks the agent whether it is time to drink tea, and branches according to the agent's answer.
 
 ````markdown
-# Example Workflow
-
-The H1 section describes the whole workflow. Donna shows this summary in
-`donna list`.
+# Is it time to drink tea?
 
 This workflow checks the current time, asks the agent whether it is tea time,
 and branches on the answer.
