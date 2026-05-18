@@ -116,16 +116,39 @@ How this example works:
 For example, here what the agent will see on the `Get Current Time` step of the tea workflow:
 
 ````markdown
-  The current time is:
+--DONNA-CELL OuP2T9brQYmvESMHsbrDlw BEGIN--
+kind=session_state_status
+media_type=text/markdown
+pending_action_requests=1
+queued_work_units=0
+tasks=1
 
-  ```text
-  17:16
-  ```
+The session is AWAITING YOUR ACTION. You have pending action requests to address.
 
-  Is it time to drink tea?
+- If the developer asked you to start working on a new task, you MUST ask if you should start a new session
+  or continue working on the current action requests.
+- Otherwise, you MUST address the pending action requests before proceeding.
+--DONNA-CELL OuP2T9brQYmvESMHsbrDlw END--
+--DONNA-CELL fxh3PDZ1Qy-c3zvai_T5Qw BEGIN--
+kind=action_request
+media_type=text/markdown
+action_request_id=AR-11-l
 
-  1. If yes, `donna -p llm --config '<path-to-donna.toml>' complete-action-request <action-request-id> '@/workflows/tea.donna.md:turn_on_kettle'`.
-  2. If no, `donna -p llm --config '<path-to-donna.toml>' complete-action-request <action-request-id> '@/workflows/tea.donna.md:finish'`.
+**This is an action request for the agent. You MUST follow the instructions below.**
+
+The current time is:
+
+```text
+19:31
+
+```
+
+Is it time to drink tea?
+
+1. If yes, `donna -p llm --config '/home/tiendil/repos/mine/donna/.session/readme-example-test/donna.toml' complete-action-request <action-request-id> '@/workflows/tea.donna.md:turn_on_kettle'`.
+1. If no, `donna -p llm --config '/home/tiendil/repos/mine/donna/.session/readme-example-test/donna.toml' complete-action-request <action-request-id> '@/workflows/tea.donna.md:finish'`.
+--DONNA-CELL fxh3PDZ1Qy-c3zvai_T5Qw END--
+
 ````
 
 ## Rationale
