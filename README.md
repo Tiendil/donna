@@ -9,7 +9,7 @@ Donna exists because agent work has a control-flow problem:
 3. Agents are ~~almost~~ good at reasoning, but not so good at keeping the whole process in mind, remembering what they did, etc.
 4. Therefore, we should separate the reasoning part from the control flow part — let agents focus on what they are good at, and keep the control flow to traditional automation tools.
 
-Donna does exactly that: it runs predefined workflows as deterministic state machines while the agent focuses on reasoning, code generation, and other agentic work.
+**Donna does exactly that: it runs predefined workflows as deterministic state machines while the agent focuses on reasoning, code generation, and other agentic work.**
 
 You define a workflow in a single readable Markdown file. The agent asks Donna to guide it through the workflow, and Donna keeps the session state, chooses the next operation, and tells the agent what to do or report next.
 
@@ -20,12 +20,12 @@ As a bonus, **Donna saves tokens** because the agent does not need to reason abo
 ## Features
 
 - **Pure CLI tool** — No API keys, hosted services, or separate agent instances required.
-- **Built-in help for agents** — Your agent can run `donna skill` to get detailed docs written for agents.
-- **Readable workflow sources** — Each workflow is a single Markdown file with a clear structure.
 - **Deterministic control flow** — Donna follows explicit workflow transitions instead of relying on the agent's memory.
 - **Agent-aware automation** — Scripted steps run automatically; agent work is requested when needed.
-- **Local session state** — Workflow progress stays inspectable and resumable inside the project.
 - **Nested workflows** — Workflows can start child workflows, generate new ones, or delegate workflow selection to the agent.
+- **Readable workflow sources** — Each workflow is a single Markdown file with a clear structure.
+- **Built-in help for agents** — Your agent can run `donna skill` to get detailed docs written for agents.
+- **Local session state** — Workflow progress stays inspectable and resumable inside the project.
 - **Progress journaling** — Workflow progress can be logged through a configured external command.
 
 ## Example
