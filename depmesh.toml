@@ -246,6 +246,22 @@ output = { type = "union", items = [
   { type = "files", pattern = "@/changes/*.md" },
 ] }
 
+################################
+# Relation: README documentation
+################################
+
+# README.md is governed by its documentation spec.
+[[rules]]
+relation = "governed_by"
+input = { type = "one_of", artifacts = ["@/README.md"] }
+output = { type = "list", artifacts = ["@/specs/documentation/readme.md"] }
+
+# The README documentation spec governs README.md.
+[[rules]]
+relation = "governs"
+input = { type = "one_of", artifacts = ["@/specs/documentation/readme.md"] }
+output = { type = "list", artifacts = ["@/README.md"] }
+
 # Dependency mesh and Tach configuration are governed by the module layout architecture spec.
 [[rules]]
 relation = "governed_by"
