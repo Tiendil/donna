@@ -7,7 +7,7 @@ Donna exists because agent work has a control-flow problem:
 1. Most development work is repetitive on the meta level: "run this tool, do something with the output, run another tool" or "implement function A, implement tests for function A, implement function B, …".
 2. Some parts of that work require advanced reasoning, others do not.
 3. Agents are ~~almost~~ good at reasoning, but not so good at keeping the whole process in mind, remembering what they did, etc.
-4. Therefore, we should separate the reasoning part from the control flow part — let agents focus on what they are good at, and keep the control flow to the classic automation tools.
+4. Therefore, we should separate the reasoning part from the control flow part — let agents focus on what they are good at, and keep the control flow to traditional automation tools.
 
 Donna does exactly that: it runs predefined workflows as deterministic state machines while the agent focuses on reasoning, code generation, and other agentic work.
 
@@ -193,8 +193,7 @@ donna run @/workflows/examples/time_to_drink_tea.donna.md
 uv tool install donna
 
 # or
-# python -m pip install
-# poetry add donna
+# python -m pip install donna
 ```
 
 Ask your agent to initialize Donna in the project:
@@ -354,6 +353,6 @@ Run Donna from the current development checkout:
 
 The repository also uses Donna itself. Its local workflows live in [./workflows](./workflows/), and the current project configuration is [donna.toml](./donna.toml).
 
-### Agent's harness
+### Agent Harness
 
 Check [AGENTS.md](./AGENTS.md) for the list of additional tools that agents will expect to be installed.
