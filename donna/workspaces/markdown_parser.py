@@ -65,7 +65,7 @@ class MarkdownSectionMixin:
         config: dict[str, Any],
         primary: bool = False,
     ) -> Result[ArtifactSection, ErrorsList]:
-        section_config = self.config_class.parse_obj(config)
+        section_config = self.config_class.model_validate(config)
 
         title = self.markdown_build_title(
             artifact_id=artifact_id,
@@ -165,11 +165,7 @@ def construct_artifact_from_markdown_source(  # noqa: CCR001
     if "kind" not in head_config or head_config["kind"] is None:
         head_config["kind"] = default_primary_section_kind
 
-    head_kind_value = head_config["kind"]
-    if isinstance(head_kind_value, PythonPath):
-        head_kind = head_kind_value
-    else:
-        head_kind = PythonPath.parse(head_kind_value).unwrap()
+    head_kind = _parse_primitive_id(head_config["kind"]).unwrap()
 
     if "id" not in head_config or head_config["id"] is None:
         head_config["id"] = default_primary_section_id
@@ -216,11 +212,7 @@ def construct_sections_from_markdown(  # noqa: CCR001
         if "kind" not in data:
             data["kind"] = default_section_kind
 
-        kind_value = data["kind"]
-        if isinstance(kind_value, str):
-            primitive_id = PythonPath.parse(kind_value).unwrap()
-        else:
-            primitive_id = kind_value
+        primitive_id = _parse_primitive_id(data["kind"]).unwrap()
 
         primitive = _resolve_primitive(primitive_id, primitive_overrides).unwrap()
         _ensure_markdown_constructible(primitive, primitive_id).unwrap()
@@ -246,6 +238,13 @@ def _resolve_primitive(
         return Ok(primitive_overrides[primitive_id])
 
     return resolve_primitive(primitive_id)
+
+
+def _parse_primitive_id(value: PythonPath | str) -> Result[PythonPath, ErrorsList]:
+    if isinstance(value, PythonPath):
+        return Ok(value)
+
+    return PythonPath.parse(value)
 
 
 def _ensure_markdown_constructible(
