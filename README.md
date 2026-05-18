@@ -16,9 +16,89 @@ For example, you can have a workflow that guides the agent through the planing p
 
 I use Donna to develop Donna itself — that's the way ;-) So, you can find real examples of workflows in the [./workflows](./workflows) folder of this repository. You can start with [./workflows/polish.donna.md](./workflows/polish.donna.md) that goes in loop over fixing issues found by formatters, linters, type checkers and tests until the codebase is polished.
 
-Below you'll find a simplified example to show the core concepts of Donna workflows and how they work together.
+Below you'll find a simplified workflow based on the built-in workflow documentation example. It checks the current time, asks the agent whether it is time to drink tea, and branches according to the agent's answer.
 
-<insert workflow code here with extensive comments>
+````markdown
+# Example Workflow
+
+The H1 section describes the whole workflow. Donna shows this summary in
+`donna list`.
+
+This workflow checks the current time, asks the agent whether it is tea time,
+and branches on the answer.
+
+## Get Current Time
+
+```toml donna
+# Every operation should have a stable local id.
+id = "get_current_time"
+
+# `run_script` is deterministic: Donna can execute it without asking the agent.
+kind = "donna.lib.run_script"
+
+# Save stdout into task context so later operations can render it.
+save_stdout_to = "current_time"
+
+# `run_script` branches through config fields based on the command exit code.
+goto_on_success = "ask_about_tea"
+goto_on_failure = "finish"
+```
+
+```bash donna script
+#!/usr/bin/env bash
+date +%H:%M
+```
+
+## Ask About Tea
+
+```toml donna
+id = "ask_about_tea"
+
+# `request_action` pauses the workflow and asks the agent to act.
+kind = "donna.lib.request_action"
+```
+
+The current time is:
+
+```text
+{{ donna.lib.task_variable("current_time") }}
+```
+
+Is it time to drink tea?
+
+1. If yes, `{{ donna.lib.goto("turn_on_kettle") }}`.
+2. If no, `{{ donna.lib.goto("finish") }}`.
+
+## Turn On Kettle
+
+```toml donna
+id = "turn_on_kettle"
+kind = "donna.lib.request_action"
+```
+
+Turn on the kettle, then `{{ donna.lib.goto("finish") }}`.
+
+## Finish
+
+```toml donna
+id = "finish"
+
+# `finish` completes this workflow task and prints the final message.
+kind = "donna.lib.finish"
+```
+
+The workflow is complete. Report the result to the developer.
+````
+
+What this example shows:
+
+- H1 defines the workflow; H2 sections define operations.
+- `toml donna` blocks configure how Donna interprets sections.
+- `bash donna script` contains the script for a deterministic `run_script` operation.
+- `save_stdout_to` stores command output in workflow task context.
+- `donna.lib.task_variable(...)` renders a value from task context for the agent.
+- `donna.lib.goto(...)` declares valid next operations for an action request.
+- `complete-action-request` must use one of the next operations declared by the current action request.
 
 ## Rationale
 
