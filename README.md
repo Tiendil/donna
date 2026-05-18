@@ -175,16 +175,12 @@ donna run @/workflows/examples/time_to_drink_tea.donna.md
 
 ## Rationale
 
-Many project workflows are partly deterministic and partly judgment-based. Running formatters, validators, tests, or small scripts is deterministic. Deciding how to fix a failed check, adjust a design, or judge whether a result satisfies a requirement needs an agent.
+1. Most of development work is repetitive on the meta level: "run this tool, do something with the output, run another tool" or "implement function A, implement tests for function A, implement function B, ...".
+2. Some parts of that work require advanced reasoning, others — not really.
+3. Agents are ~~almost~~ good at reasoning, but not so good at keeping the whole process in mind, remembering what they did, etc.
+4. Therefore, it looks like a good idea to separate the reasoning part from the control flow part; let agents focus on what they are good at, and keep the control flow to the classic automation tools.
 
-Donna separates those concerns without requiring an API key, a hosted service, or a separate orchestrator:
-
-- workflow files define the allowed control flow.
-- Donna runs deterministic operations and preserves session state.
-- action requests pause execution and ask the agent to do the non-deterministic work.
-- the agent completes each request by choosing one of the workflow's declared next operations.
-
-This keeps long-running work explicit, resumable, and easier to validate, while leaving judgment and file edits with the agent.
+Donna does exactly that.
 
 ## Features
 
