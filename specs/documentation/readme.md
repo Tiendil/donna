@@ -48,17 +48,19 @@ The first paragraphs after the h1 heading SHOULD explain the core value proposit
 
 `README.md` MUST use the following h2 sections in this order:
 
-1. `Example`
-2. `Rationale`
-3. `Features`
-4. `Quick Usage`
-5. `Installation`
-6. `Configuration`
-7. `Workflow Files`
-8. `Specifications`
-9. `Development`
+1. `Features`
+2. `Example`
+3. `Installation`
+4. `Configuration`
+5. `Quick Usage`
+6. `Workflow Files`
+7. `Specifications`
+8. `Development`
 
-The `Example` section MUST be the first h2 section after the introductory paragraphs.
+The `Features` section MUST be the first h2 section after the introductory paragraphs.
+
+The `Features` section MUST use compact bullet items with bold feature names followed by short descriptions.
+
 
 Additional h2 sections MUST NOT be added without updating this specification first. Lower-level subsections MAY be added under the required h2 sections when they help human readers.
 
@@ -84,7 +86,7 @@ Additional h2 sections MUST NOT be added without updating this specification fir
 
 `README.md` MUST link to the skill fixture specification or mention built-in skill documentation when describing detailed user documentation.
 
-`README.md` MUST mention that this repository uses Donna and that its `donna.toml` and `workflows/` directory can be used as real project examples.
+`README.md` MUST mention that this repository uses Donna and that its `donna.toml` and `./workflows` directory can be used as real project examples.
 
 `README.md` MUST explain how to create a starter configuration with `donna init`.
 
@@ -100,9 +102,9 @@ Additional h2 sections MUST NOT be added without updating this specification fir
 
 - initializing a Donna project.
 - listing discovered workflow artifacts.
-- validating workflow artifacts.
-- rendering workflow artifacts.
+- starting a new session.
 - starting a workflow.
+- inspecting the current session.
 - continuing queued workflow execution.
 - completing an action request.
 - reading built-in skill-style documentation.
