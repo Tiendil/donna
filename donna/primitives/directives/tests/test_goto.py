@@ -3,6 +3,7 @@ from pathlib import Path
 from pytest_mock import MockerFixture
 
 from donna.domain.artifact_ids import ArtifactSectionId
+from donna.machine.tests import make as machine_make
 from donna.primitives.directives import goto
 from donna.primitives.directives.goto import GoTo, GoToInvalidArguments
 from donna.primitives.tests import make
@@ -11,7 +12,9 @@ from donna.protocol.modes import Mode
 
 class TestGoTo:
     def test_prepare_arguments__requires_one_argument(self) -> None:
-        result = GoTo(analyze_id="goto")._prepare_arguments(make.template_context(artifact_id=make.ARTIFACT_ID))
+        result = GoTo(analyze_id="goto")._prepare_arguments(
+            make.template_context(artifact_id=machine_make.ARTIFACT_ID)
+        )
 
         assert result.is_err()
         error = result.unwrap_err()[0]
@@ -20,7 +23,7 @@ class TestGoTo:
 
     def test_prepare_arguments__builds_artifact_section_id_in_current_artifact(self) -> None:
         result = GoTo(analyze_id="goto")._prepare_arguments(
-            make.template_context(artifact_id=make.ARTIFACT_ID), "next"
+            make.template_context(artifact_id=machine_make.ARTIFACT_ID), "next"
         )
 
         assert result.is_ok()

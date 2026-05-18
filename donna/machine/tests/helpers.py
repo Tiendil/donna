@@ -1,3 +1,4 @@
+from donna.context.tests.helpers import FakeJournal
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
@@ -48,15 +49,6 @@ class FakePrimitives:
             return Err(self.error)
         assert self.primitive is not None
         return Ok(self.primitive)
-
-
-class FakeJournal:
-    def __init__(self) -> None:
-        self.records: list[dict[str, object]] = []
-
-    def add(self, message: str, actor_id: str | None = None) -> Result[object, ErrorsList]:
-        self.records.append({"message": message, "actor_id": actor_id})
-        return Ok(None)
 
 
 class FakeMachineContext:

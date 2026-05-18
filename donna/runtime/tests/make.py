@@ -4,6 +4,7 @@ from typing import cast
 from donna.context.context import Context
 from donna.context.context import reset_context as reset_runtime_context
 from donna.context.context import set_context as set_runtime_context
+from donna.context.tests.helpers import FakeJournal, FakeOutputEmitter
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
@@ -16,7 +17,6 @@ from donna.machine.context import set_context as set_machine_context
 from donna.machine.primitives import Primitive
 from donna.machine.state import ConsistentState
 from donna.machine.tasks import Task, WorkUnit
-from donna.protocol.cells import Cell
 from donna.workspaces.artifacts import ArtifactRenderContext
 
 
@@ -76,26 +76,6 @@ class FakePrimitives:
     def resolve(self, primitive_id: PythonPath) -> Result[Primitive, ErrorsList]:
         self.resolved.append(primitive_id)
         return Ok(self.primitive)
-
-
-class FakeJournal:
-    def __init__(self) -> None:
-        self.records: list[dict[str, object]] = []
-
-    def add(self, message: str, actor_id: str | None = None) -> Result[object, ErrorsList]:
-        self.records.append({"message": message, "actor_id": actor_id})
-        return Ok(None)
-
-
-class FakeOutputEmitter:
-    def __init__(self) -> None:
-        self.cells: list[Cell] = []
-
-    def emit_cell(self, cell: Cell) -> None:
-        self.cells.append(cell)
-
-    def emit_journal(self, record: object) -> None:
-        pass
 
 
 class FakeRuntimeContext:

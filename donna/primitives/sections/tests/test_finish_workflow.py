@@ -2,15 +2,17 @@ from pytest_mock import MockerFixture
 
 from donna.machine.changes import ChangeFinishTask
 from donna.machine.operations import FsmMode, OperationMeta
+from donna.machine.tests import make as machine_make
 from donna.primitives.sections.finish_workflow import FinishWorkflow, FinishWorkflowConfig
 from donna.primitives.tests import make
+from donna.workspaces.tests import make as workspace_make
 
 
 class TestFinishWorkflow:
     def test_markdown_construct_meta__creates_final_operation_without_transitions(self) -> None:
         result = FinishWorkflow().markdown_construct_meta(
-            artifact_id=make.ARTIFACT_ID,
-            source=make.section_source(),
+            artifact_id=machine_make.ARTIFACT_ID,
+            source=workspace_make.section_source(),
             section_config=FinishWorkflowConfig(id=make.DONE_SECTION_ID, kind=make.FINISH_WORKFLOW_KIND),
             description="done",
         )
@@ -24,17 +26,20 @@ class TestFinishWorkflow:
     def test_execute_section__emits_message_and_finishes_task(self, mocker: MockerFixture) -> None:
         runtime_context = make.FakeRuntimeContext()
         mocker.patch("donna.primitives.sections.finish_workflow.context", return_value=runtime_context)
-        artifact = make.artifact(
+        artifact = machine_make.artifact(
             [
-                make.artifact_section(
+                machine_make.artifact_section(
                     id=make.DONE_SECTION_ID,
+                    kind=make.FINISH_WORKFLOW_KIND,
                     description="Finished",
                     meta=OperationMeta(fsm_mode=FsmMode.final, allowed_transtions=set()),
                 )
             ]
         )
 
-        result = FinishWorkflow().execute_section(make.task(), make.work_unit(), artifact, make.DONE_SECTION_ID)
+        result = FinishWorkflow().execute_section(
+            machine_make.task(), machine_make.work_unit(), artifact, make.DONE_SECTION_ID
+        )
 
         assert result.is_ok()
         cell = runtime_context.output.cells[0]
@@ -42,4 +47,4 @@ class TestFinishWorkflow:
         assert cell.content == "Finished"
         change = result.unwrap()[0]
         assert isinstance(change, ChangeFinishTask)
-        assert change.task_id == make.TASK_ID
+        assert change.task_id == machine_make.TASK_ID

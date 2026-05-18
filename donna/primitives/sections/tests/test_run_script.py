@@ -3,6 +3,7 @@ from pathlib import Path
 from pytest_mock import MockerFixture
 
 from donna.machine.changes import ChangeAddWorkUnit, ChangeSetTaskContext
+from donna.machine.tests import make as machine_make
 from donna.primitives.sections import run_script
 from donna.primitives.sections.run_script import (
     RunScript,
@@ -16,6 +17,7 @@ from donna.primitives.sections.run_script import (
     _coerce_output,
 )
 from donna.primitives.tests import make
+from donna.workspaces.tests import make as workspace_make
 
 
 class TestRunScriptMeta:
@@ -50,9 +52,9 @@ class TestRunScriptMeta:
 
 class TestRunScript:
     def test_markdown_construct_meta__builds_script_meta_and_allowed_transitions(self) -> None:
-        source = make.section_source(
+        source = workspace_make.section_source(
             configs=[
-                make.code_source(
+                workspace_make.code_source(
                     "bash",
                     "echo ok",
                     donna=True,
@@ -62,7 +64,7 @@ class TestRunScript:
         )
 
         result = RunScript().markdown_construct_meta(
-            artifact_id=make.ARTIFACT_ID,
+            artifact_id=machine_make.ARTIFACT_ID,
             source=source,
             section_config=RunScriptConfig(
                 id=make.START_SECTION_ID,
@@ -88,8 +90,8 @@ class TestRunScript:
 
     def test_markdown_construct_meta__requires_script_block(self) -> None:
         result = RunScript().markdown_construct_meta(
-            artifact_id=make.ARTIFACT_ID,
-            source=make.section_source(),
+            artifact_id=machine_make.ARTIFACT_ID,
+            source=workspace_make.section_source(),
             section_config=RunScriptConfig(id=make.START_SECTION_ID, kind=make.RUN_SCRIPT_KIND),
             description="run",
         )
@@ -98,10 +100,11 @@ class TestRunScript:
         assert isinstance(result.unwrap_err()[0], RunScriptMissingScriptBlock)
 
     def test_validate_section__collects_transition_config_errors(self) -> None:
-        artifact = make.artifact(
+        artifact = machine_make.artifact(
             [
-                make.artifact_section(
+                machine_make.artifact_section(
                     id=make.START_SECTION_ID,
+                    kind=make.RUN_SCRIPT_KIND,
                     meta=RunScriptMeta(
                         allowed_transtions={make.NEXT_SECTION_ID},
                         goto_on_code={"not-an-int": make.NEXT_SECTION_ID, "0": make.DONE_SECTION_ID},
@@ -125,10 +128,11 @@ class TestRunScript:
         mocker.patch("donna.primitives.sections.run_script.context", return_value=runtime_context)
         mocker.patch.object(run_script.workspace_config, "project_dir", return_value=Path("/project"))
         run = mocker.patch.object(run_script, "_run_script", return_value=("stdout", "stderr", 2))
-        artifact = make.artifact(
+        artifact = machine_make.artifact(
             [
-                make.artifact_section(
+                machine_make.artifact_section(
                     id=make.START_SECTION_ID,
+                    kind=make.RUN_SCRIPT_KIND,
                     title="Run checks",
                     meta=RunScriptMeta(
                         allowed_transtions={make.NEXT_SECTION_ID, make.DONE_SECTION_ID, make.OTHER_SECTION_ID},
@@ -143,7 +147,12 @@ class TestRunScript:
             ]
         )
 
-        result = RunScript().execute_section(make.task(), make.work_unit(), artifact, make.START_SECTION_ID)
+        result = RunScript().execute_section(
+            machine_make.task(),
+            machine_make.work_unit(operation_id=make.START_OPERATION_ID),
+            artifact,
+            make.START_SECTION_ID,
+        )
 
         assert result.is_ok()
         run.assert_called_once_with(script="echo ok", timeout=60, project_dir=Path("/project"))
@@ -159,7 +168,7 @@ class TestRunScript:
         assert changes[1].key == "stderr_key"
         assert changes[1].value == "stderr"
         assert isinstance(changes[2], ChangeAddWorkUnit)
-        assert changes[2].operation_id == make.ARTIFACT_ID + ":other"
+        assert changes[2].operation_id == machine_make.ARTIFACT_ID + ":other"
 
 
 class TestCoerceOutput:

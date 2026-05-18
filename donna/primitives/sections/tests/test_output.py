@@ -2,15 +2,17 @@ from pytest_mock import MockerFixture
 
 from donna.machine.changes import ChangeAddWorkUnit
 from donna.machine.operations import FsmMode
+from donna.machine.tests import make as machine_make
 from donna.primitives.sections.output import Output, OutputConfig, OutputMeta, OutputMissingNextOperation
 from donna.primitives.tests import make
+from donna.workspaces.tests import make as workspace_make
 
 
 class TestOutput:
     def test_markdown_construct_meta__records_next_operation_transition(self) -> None:
         result = Output().markdown_construct_meta(
-            artifact_id=make.ARTIFACT_ID,
-            source=make.section_source(),
+            artifact_id=machine_make.ARTIFACT_ID,
+            source=workspace_make.section_source(),
             section_config=OutputConfig(
                 id=make.START_SECTION_ID,
                 kind=make.OUTPUT_KIND,
@@ -29,8 +31,8 @@ class TestOutput:
 
     def test_markdown_construct_meta__allows_missing_next_operation_for_validation(self) -> None:
         result = Output().markdown_construct_meta(
-            artifact_id=make.ARTIFACT_ID,
-            source=make.section_source(),
+            artifact_id=machine_make.ARTIFACT_ID,
+            source=workspace_make.section_source(),
             section_config=OutputConfig(id=make.START_SECTION_ID, kind=make.OUTPUT_KIND),
             description="message",
         )
@@ -42,10 +44,11 @@ class TestOutput:
         assert meta.allowed_transtions == set()
 
     def test_validate_section__requires_next_operation(self) -> None:
-        artifact = make.artifact(
+        artifact = machine_make.artifact(
             [
-                make.artifact_section(
+                machine_make.artifact_section(
                     id=make.START_SECTION_ID,
+                    kind=make.TEXT_KIND,
                     meta=OutputMeta(allowed_transtions=set(), next_operation_id=None),
                 )
             ]
@@ -59,10 +62,11 @@ class TestOutput:
     def test_execute_section__emits_message_and_adds_next_work_unit(self, mocker: MockerFixture) -> None:
         runtime_context = make.FakeRuntimeContext()
         mocker.patch("donna.primitives.sections.output.context", return_value=runtime_context)
-        artifact = make.artifact(
+        artifact = machine_make.artifact(
             [
-                make.artifact_section(
+                machine_make.artifact_section(
                     id=make.START_SECTION_ID,
+                    kind=make.TEXT_KIND,
                     description="Agent message",
                     meta=OutputMeta(
                         allowed_transtions={make.NEXT_SECTION_ID},
@@ -72,7 +76,12 @@ class TestOutput:
             ]
         )
 
-        result = Output().execute_section(make.task(), make.work_unit(), artifact, make.START_SECTION_ID)
+        result = Output().execute_section(
+            machine_make.task(),
+            machine_make.work_unit(operation_id=make.START_OPERATION_ID),
+            artifact,
+            make.START_SECTION_ID,
+        )
 
         assert result.is_ok()
         cell = runtime_context.output.cells[0]
@@ -80,4 +89,4 @@ class TestOutput:
         assert cell.content == "Agent message"
         change = result.unwrap()[0]
         assert isinstance(change, ChangeAddWorkUnit)
-        assert change.operation_id == make.ARTIFACT_ID + ":next"
+        assert change.operation_id == machine_make.ARTIFACT_ID + ":next"

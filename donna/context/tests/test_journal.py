@@ -6,7 +6,7 @@ from pytest_mock import MockerFixture
 
 from donna.context.context import Context
 from donna.context.journal import Journal
-from donna.context.tests.make import FakeOutputEmitter
+from donna.context.tests.helpers import FakeOutputEmitter
 from donna.core.result import Ok
 from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import WorkUnitId

@@ -1,11 +1,28 @@
+import datetime
 import subprocess  # noqa: S404
 
 from pytest_mock import MockerFixture
 
+from donna.domain.artifact_ids import ArtifactSectionId
+from donna.domain.internal_ids import TaskId, WorkUnitId
+from donna.protocol.journal import JournalRecord
+from donna.protocol.tests import make as protocol_make
 from donna.workspaces import errors as workspace_errors
 from donna.workspaces import journal
 from donna.workspaces.config import Config, JournalConfig, JournalRecordAttribute
-from donna.workspaces.tests import make
+
+
+def _journal_record(**kwargs: object) -> JournalRecord:
+    values = {
+        "timestamp": datetime.datetime(2026, 5, 18, 10, 30, tzinfo=datetime.UTC),
+        "actor_id": "agent",
+        "message": "message",
+        "current_task_id": TaskId("T-1-b"),
+        "current_work_unit_id": WorkUnitId("WU-2-c"),
+        "current_operation_id": ArtifactSectionId("@/workflows/test.donna.md:primary"),
+    }
+    values.update(kwargs)
+    return protocol_make.journal_record(**values)
 
 
 class TestIsVariableArgument:
@@ -33,7 +50,7 @@ class TestParseRecordAttribute:
 
 class TestFormatRecordAttribute:
     def test_formats_record_attributes(self) -> None:
-        record = make.journal_record()
+        record = _journal_record()
 
         assert (
             journal._format_record_attribute(JournalRecordAttribute.timestamp, record) == "2026-05-18T10:30:00+00:00"
@@ -48,7 +65,7 @@ class TestFormatRecordAttribute:
         )
 
     def test_formats_missing_optional_attributes_as_empty_strings(self) -> None:
-        record = make.journal_record(
+        record = _journal_record(
             actor_id=None,
             current_task_id=None,
             current_work_unit_id=None,
@@ -63,13 +80,13 @@ class TestFormatRecordAttribute:
 
 class TestResolveCommandArgument:
     def test_returns_literal_argument(self) -> None:
-        result = journal._resolve_command_argument("literal:{message}", make.journal_record())
+        result = journal._resolve_command_argument("literal:{message}", _journal_record())
 
         assert result.is_ok()
         assert result.unwrap() == "literal:{message}"
 
     def test_resolves_placeholder_argument(self) -> None:
-        result = journal._resolve_command_argument("{message}", make.journal_record())
+        result = journal._resolve_command_argument("{message}", _journal_record())
 
         assert result.is_ok()
         assert result.unwrap() == "message"
@@ -77,7 +94,7 @@ class TestResolveCommandArgument:
 
 class TestBuildCommandArgs:
     def test_replaces_whole_argument_placeholders(self) -> None:
-        record = make.journal_record()
+        record = _journal_record()
 
         result = journal._build_command_args(
             [
@@ -106,7 +123,7 @@ class TestBuildCommandArgs:
         ]
 
     def test_replaces_missing_optional_record_values_with_empty_strings(self) -> None:
-        record = make.journal_record(
+        record = _journal_record(
             actor_id=None,
             current_task_id=None,
             current_work_unit_id=None,
@@ -122,7 +139,7 @@ class TestBuildCommandArgs:
         assert result.unwrap() == ["", "", "", ""]
 
     def test_unsupported_placeholder_returns_config_error(self) -> None:
-        result = journal._build_command_args(["{missing}"], make.journal_record())
+        result = journal._build_command_args(["{missing}"], _journal_record())
 
         assert result.is_err()
         error = result.unwrap_err()[0]
@@ -138,7 +155,7 @@ class TestWriteRecord:
         )
         run = mocker.patch("subprocess.run")
 
-        result = journal.write_record(make.journal_record())
+        result = journal.write_record(_journal_record())
 
         assert result.is_ok()
         run.assert_not_called()
@@ -153,7 +170,7 @@ class TestWriteRecord:
             return_value=subprocess.CompletedProcess(args=["tool", "message"], returncode=0, stdout="", stderr=""),
         )
 
-        result = journal.write_record(make.journal_record())
+        result = journal.write_record(_journal_record())
 
         assert result.is_ok()
         run.assert_called_once_with(["tool", "message"], check=False, capture_output=True, text=True)
@@ -165,7 +182,7 @@ class TestWriteRecord:
         )
         mocker.patch("subprocess.run", side_effect=OSError("missing"))
 
-        result = journal.write_record(make.journal_record())
+        result = journal.write_record(_journal_record())
 
         assert result.is_err()
         error = result.unwrap_err()[0]
@@ -183,7 +200,7 @@ class TestWriteRecord:
             return_value=subprocess.CompletedProcess(args=["tool"], returncode=2, stdout="", stderr="bad"),
         )
 
-        result = journal.write_record(make.journal_record())
+        result = journal.write_record(_journal_record())
 
         assert result.is_err()
         error = result.unwrap_err()[0]

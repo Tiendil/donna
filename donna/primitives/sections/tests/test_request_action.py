@@ -4,8 +4,10 @@ from pydantic import ValidationError
 from donna.domain.errors import InvalidIdentifier
 from donna.machine.changes import ChangeAddActionRequest
 from donna.machine.operations import FsmMode, OperationMeta
+from donna.machine.tests import make as machine_make
 from donna.primitives.sections.request_action import RequestAction, RequestActionConfig, extract_transitions
 from donna.primitives.tests import make
+from donna.workspaces.tests import make as workspace_make
 
 
 class TestExtractTransitions:
@@ -40,13 +42,13 @@ class TestRequestActionConfig:
 
 class TestRequestAction:
     def test_markdown_construct_meta__uses_analysis_markdown_for_allowed_transitions(self) -> None:
-        source = make.section_source_from_markdown(
+        source = workspace_make.section_source_from_markdown(
             "# Workflow\n\n## Ask\n\nChoose one.\n\n$$donna goto next donna$$\n",
             section_index=1,
         )
 
         result = RequestAction().markdown_construct_meta(
-            artifact_id=make.ARTIFACT_ID,
+            artifact_id=machine_make.ARTIFACT_ID,
             source=source,
             section_config=RequestActionConfig(id=make.START_SECTION_ID, kind=make.REQUEST_ACTION_KIND),
             description="Choose one.",
@@ -58,10 +60,11 @@ class TestRequestAction:
         assert meta.allowed_transtions == {make.NEXT_SECTION_ID}
 
     def test_execute_section__adds_action_request_for_current_operation(self) -> None:
-        artifact = make.artifact(
+        artifact = machine_make.artifact(
             [
-                make.artifact_section(
+                machine_make.artifact_section(
                     id=make.START_SECTION_ID,
+                    kind=make.REQUEST_ACTION_KIND,
                     title="Ask agent",
                     description="Do the work",
                     meta=OperationMeta(fsm_mode=FsmMode.normal, allowed_transtions={make.NEXT_SECTION_ID}),
@@ -69,7 +72,12 @@ class TestRequestAction:
             ]
         )
 
-        result = RequestAction().execute_section(make.task(), make.work_unit(), artifact, make.START_SECTION_ID)
+        result = RequestAction().execute_section(
+            machine_make.task(),
+            machine_make.work_unit(operation_id=make.START_OPERATION_ID),
+            artifact,
+            make.START_SECTION_ID,
+        )
 
         assert result.is_ok()
         change = result.unwrap()[0]

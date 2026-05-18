@@ -6,7 +6,7 @@ from donna.context.journal import Journal
 from donna.context.output import NoopEmitter
 from donna.context.primitives import PrimitivesCache
 from donna.context.state import StateCache
-from donna.context.tests.make import FakeOutputEmitter
+from donna.context.tests.helpers import FakeOutputEmitter
 
 
 class TestContext:
