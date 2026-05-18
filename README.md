@@ -2,30 +2,24 @@
 
 **A CLI tool that helps agents keep long-running work on a predefined path.**
 
-Donna allows agents to execute deterministic workflows regardless of the complexity of the algorithm.
+Donna exists because agent work has a control-flow problem:
 
-You can look at Donna as a co-processor for your agent that takes care of the control flow, so the agent can focus on the actual agentic work such as reasoning, code generation, etc.
-
-You define a workflow in a single readable Markdown file, after that your agent may ask Donna to guide it through the workflow, and Donna will take care of the rest by given instructions to the agent on what to do at each step.
-
-**Workflow is a state machine and Donna its interpreter.** That means agent can start child workflows from the parent workflow, write workflows on the fly, modify them while executing, etc.
-
-For example, you can have a workflow that guides the agent through the planing process, and at the final step, the agent can generate a new workflow with a detailed plan to execute and run it immediately.
-
-As a bonus, **Donna saves tokens** because agent doesn't need to reason about the control flow or how to execute particular CLI commands and other automation tools.
-
-## Rationale
-
-1. Most of development work is repetitive on the meta level: "run this tool, do something with the output, run another tool" or "implement function A, implement tests for function A, implement function B, ...".
+1. Most of development work is repetitive on the meta level: "run this tool, do something with the output, run another tool" or "implement function A, implement tests for function A, implement function B, …".
 2. Some parts of that work require advanced reasoning, others — not really.
 3. Agents are ~~almost~~ good at reasoning, but not so good at keeping the whole process in mind, remembering what they did, etc.
-4. Therefore, it looks like a good idea to separate the reasoning part from the control flow part; let agents focus on what they are good at, and keep the control flow to the classic automation tools.
+4. Therefore, we should separate the reasoning part from the control flow part — let agents focus on what they are good at, and keep the control flow to the classic automation tools.
 
-Donna does exactly that.
+Donna does exactly that: it runs predefined workflows as deterministic state-machines while the agent focuses on reasoning, code generation, and other agentic work.
+
+You define a workflow in a single readable Markdown file. The agent asks Donna to guide it through the workflow, and Donna keeps the session state, chooses the next operation, and tells the agent what to do or report next.
+
+Workflows can start child workflows, be generated on the fly, or be modified while executing. For example, you can have a workflow that guides the agent through the planning process, and at the final step, the agent can generate a new workflow with a detailed plan to execute and run it immediately.
+
+As a bonus, **Donna saves tokens** because the agent does not need to reason about control flow or how to execute particular CLI commands and other automation tools.
 
 ## Example
 
-I use Donna to develop Donna itself — you can find real examples of workflows in the [./workflows](./workflows) folder of this repository. You can start with [./workflows/polish.donna.md](./workflows/polish.donna.md) that goes in loop over fixing issues found by formatters, linters, type checkers and tests until the codebase is polished.
+I use Donna to develop Donna itself — you can find real examples of workflows in the [./workflows](./workflows) folder of this repository. You can start with [./workflows/polish.donna.md](./workflows/polish.donna.md) that loops over fixing issues found by formatters, linters, type checkers and tests until the codebase is polished.
 
 Below you'll find a simplified workflow that checks the current time, asks the agent whether it is time to drink tea, and branches according to the agent's answer.
 
@@ -123,7 +117,7 @@ How to read workflow's source:
 - `Get Current Time` is a `run_script` operation. Donna runs the shell script from the project root, saves stdout as `current_time`, and moves to `ask_about_tea` on success. No agent interaction required here, because it is pure deterministic work.
 - `Ask About Tea` is a `request_action` operation. The agent will see a request for action with the rendered current time, the question, and the two allowed transitions: `turn_on_kettle` or `finish`.
 - `donna.lib.task_variable("current_time")` is rendered as the value captured from the script output.
-- `donna.lib.goto(...)` is rendered as a concrete CLI command to exectute.
+- `donna.lib.goto(...)` is rendered as a concrete CLI command to execute.
 - `Turn On Kettle` is another `request_action` operation. The agent will see the instruction to turn on the kettle and then complete the action request with the `finish` transition.
 - `Finish` is a `finish` operation. The agent will see the final workflow message, and Donna will complete the workflow task.
 
@@ -187,7 +181,7 @@ donna run @/workflows/examples/time_to_drink_tea.donna.md
 - Pure CLI tool — no API keys required, no external dependencies, no network requests.
 - Built-in help for agents, just ask your agent to run `donna skill` and it will find all required information.
 - Workflows as a single human-friendly Markdown file with a clear structure.
-- Virtual Maching for your agents: run workflows that were generated by workflows that started from workflows your agent runs.
+- Virtual Machine for your agents: run workflows that were generated by workflows that started from workflows your agent runs.
 - Configurable journal command to log execution progress via third-party tools.
 
 ## Installation
