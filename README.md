@@ -9,7 +9,7 @@ Donna exists because agent work has a control-flow problem:
 3. Agents are ~~almost~~ good at reasoning, but not so good at keeping the whole process in mind, remembering what they did, etc.
 4. Therefore, we should separate the reasoning part from the control flow part — let agents focus on what they are good at, and keep the control flow to the classic automation tools.
 
-Donna does exactly that: it runs predefined workflows as deterministic state-machines while the agent focuses on reasoning, code generation, and other agentic work.
+Donna does exactly that: it runs predefined workflows as deterministic state machines while the agent focuses on reasoning, code generation, and other agentic work.
 
 You define a workflow in a single readable Markdown file. The agent asks Donna to guide it through the workflow, and Donna keeps the session state, chooses the next operation, and tells the agent what to do or report next.
 
@@ -213,7 +213,7 @@ donna init
 
 ## Configuration
 
-You can get a detailed documentation by running `donna skill configuration` or asking your agent to do that.
+You can get detailed documentation by running `donna skill configuration` or asking your agent to do that.
 
 A Donna project is configured by a TOML file named `donna.toml`. If `--config` is omitted, Donna searches upward from the current working directory until it finds `donna.toml`; the directory containing that file is the project root.
 
@@ -254,7 +254,7 @@ Use `donna -p llm ...` for agent-facing command output.
 
 **In most cases your agent should be capable of using Donna by itself without your intervention.**
 
-You can get a detailed documentation by running `donna skill usage` or asking your agent to do that.
+You can get detailed documentation by running `donna skill usage` or asking your agent to do that.
 
 Detailed CLI interface is described in [specs/behavior/cli.md](./specs/behavior/cli.md).
 
@@ -310,7 +310,7 @@ donna skill usage
 
 **In most cases your agent should be capable of creating and managing workflows by itself without your intervention.**
 
-You can get a detailed documentation by running `donna skill workflows` or asking your agent to do that.
+You can get detailed documentation by running `donna skill workflows` or asking your agent to do that.
 
 Donna workflow artifacts are Markdown files ending with `.donna.md`. Donna discovers them by recursively scanning the configured `workflow_dirs`.
 
