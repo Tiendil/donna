@@ -217,77 +217,6 @@ donna init
 
 `donna init` will create a configuration file `donna.toml`, review it and edit if needed.
 
-## Quick Usage
-
-Create a starter configuration:
-
-```bash
-donna init
-```
-
-List discovered workflow artifacts:
-
-```bash
-donna list
-```
-
-Validate every discovered workflow artifact:
-
-```bash
-donna validate --all
-```
-
-Render a workflow as Donna sees it:
-
-```bash
-donna render @/workflows/polish.donna.md --mode view
-```
-
-Start a workflow in the current session:
-
-```bash
-donna run @/workflows/polish.donna.md
-```
-
-Inspect the current session:
-
-```bash
-donna status
-```
-
-Continue queued workflow execution:
-
-```bash
-donna continue
-```
-
-Complete an action request with the id and next operation printed by Donna:
-
-```bash
-donna complete-action-request AR-12-x @/workflows/example.donna.md:next_operation
-```
-
-Read the built-in usage documentation:
-
-```bash
-donna skill usage
-```
-
-Useful related commands:
-
-```bash
-donna status
-donna details
-donna new-session
-donna version
-```
-
-For coding agents, put global options before the subcommand:
-
-```bash
-donna -p llm --config /path/to/project/donna.toml status
-```
-
 ## Configuration
 
 A Donna project is configured by a TOML file named `donna.toml`. If `--config` is omitted, Donna searches upward from the current working directory until it finds `donna.toml`; the directory containing that file is the project root.
@@ -311,7 +240,7 @@ workflow_dirs = [
 ]
 ```
 
-Review and edit the starter configuration for the project. A coding agent can help create or adapt workflow files after the project layout and desired workflows are clear.
+A coding agent can help create or adapt workflow files after the project layout and desired workflows are clear.
 
 The session directory stores Donna runtime state. Workflow directories are scanned recursively for `.donna.md` files; missing workflow directories are ignored.
 
@@ -323,6 +252,56 @@ Project agent instructions can include a short Donna rule like this:
 Use Donna only when explicitly instructed by a developer, by project instructions, or by Donna itself.
 Before using Donna in a session, read `donna -p llm skill usage`.
 Use `donna -p llm ...` for agent-facing command output.
+```
+
+## Quick Usage
+
+Create a starter configuration:
+
+```bash
+donna init
+```
+
+List discovered workflow artifacts:
+
+```bash
+donna list
+```
+
+Start new session:
+
+```bash
+donna new-session
+```
+
+Start a workflow in the current session:
+
+```bash
+donna run @/workflows/polish.donna.md
+```
+
+Inspect the current session:
+
+```bash
+donna status
+```
+
+Continue queued workflow execution:
+
+```bash
+donna continue
+```
+
+Complete an action request with the id and next operation printed by Donna:
+
+```bash
+donna complete-action-request <action-request-id> @/workflows/example.donna.md:next_operation
+```
+
+Read the built-in usage documentation:
+
+```bash
+donna skill usage
 ```
 
 ## Workflow Files
