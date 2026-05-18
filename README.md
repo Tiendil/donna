@@ -27,16 +27,9 @@ and branches on the answer.
 ## Get Current Time
 
 ```toml donna
-# Every operation should have a stable local id.
 id = "get_current_time"
-
-# `run_script` is deterministic: Donna can execute it without asking the agent.
 kind = "donna.lib.run_script"
-
-# Save stdout into task context so later operations can render it.
 save_stdout_to = "current_time"
-
-# `run_script` branches through config fields based on the command exit code.
 goto_on_success = "ask_about_tea"
 goto_on_failure = "finish"
 ```
@@ -50,8 +43,6 @@ date +%H:%M
 
 ```toml donna
 id = "ask_about_tea"
-
-# `request_action` pauses the workflow and asks the agent to act.
 kind = "donna.lib.request_action"
 ```
 
@@ -79,8 +70,6 @@ Turn on the kettle, then `{{ donna.lib.goto("finish") }}`.
 
 ```toml donna
 id = "finish"
-
-# `finish` completes this workflow task and prints the final message.
 kind = "donna.lib.finish"
 ```
 
