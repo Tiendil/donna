@@ -11,7 +11,10 @@ from donna.workspaces.config import Config, Workspace
 from donna.workspaces.markdown import CodeSource, SectionLevel, SectionSource
 
 ARTIFACT_ID = ArtifactId("@/workflows/test.donna.md")
-TEXT_KIND = PythonPath(NormalizedRawIdPath("donna.primitives.sections.text.Text"))
+
+
+def text_kind() -> PythonPath:
+    return PythonPath(NormalizedRawIdPath("donna.primitives.sections.text.Text"))
 
 
 def workspace(root: pathlib.Path, config: Config | None = None) -> Workspace:
@@ -50,6 +53,6 @@ def section_source_from_markdown(text: str, section_index: int = 0) -> SectionSo
 def section_config(
     *,
     id: SectionId = SectionId("section"),
-    kind: PythonPath = TEXT_KIND,
+    kind: PythonPath | None = None,
 ) -> ArtifactSectionConfig:
-    return ArtifactSectionConfig(id=id, kind=kind)
+    return ArtifactSectionConfig(id=id, kind=kind or text_kind())

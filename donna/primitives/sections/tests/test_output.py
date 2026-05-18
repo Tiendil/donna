@@ -14,10 +14,10 @@ class TestOutput:
             artifact_id=machine_make.ARTIFACT_ID,
             source=workspace_make.section_source(),
             section_config=OutputConfig(
-                id=make.START_SECTION_ID,
-                kind=make.OUTPUT_KIND,
+                id=make.section_id("start"),
+                kind=make.primitive_kind("donna.primitives.sections.output.Output"),
                 fsm_mode=FsmMode.start,
-                next_operation_id=make.NEXT_SECTION_ID,
+                next_operation_id=make.section_id("next"),
             ),
             description="message",
         )
@@ -26,14 +26,17 @@ class TestOutput:
         meta = result.unwrap()
         assert isinstance(meta, OutputMeta)
         assert meta.fsm_mode == FsmMode.start
-        assert meta.next_operation_id == make.NEXT_SECTION_ID
-        assert meta.allowed_transtions == {make.NEXT_SECTION_ID}
+        assert meta.next_operation_id == make.section_id("next")
+        assert meta.allowed_transtions == {make.section_id("next")}
 
     def test_markdown_construct_meta__allows_missing_next_operation_for_validation(self) -> None:
         result = Output().markdown_construct_meta(
             artifact_id=machine_make.ARTIFACT_ID,
             source=workspace_make.section_source(),
-            section_config=OutputConfig(id=make.START_SECTION_ID, kind=make.OUTPUT_KIND),
+            section_config=OutputConfig(
+                id=make.section_id("start"),
+                kind=make.primitive_kind("donna.primitives.sections.output.Output"),
+            ),
             description="message",
         )
 
@@ -47,14 +50,14 @@ class TestOutput:
         artifact = machine_make.artifact(
             [
                 machine_make.artifact_section(
-                    id=make.START_SECTION_ID,
-                    kind=make.TEXT_KIND,
+                    id=make.section_id("start"),
+                    kind=make.primitive_kind("donna.primitives.sections.text.Text"),
                     meta=OutputMeta(allowed_transtions=set(), next_operation_id=None),
                 )
             ]
         )
 
-        result = Output().validate_section(artifact, make.START_SECTION_ID)
+        result = Output().validate_section(artifact, make.section_id("start"))
 
         assert result.is_err()
         assert isinstance(result.unwrap_err()[0], OutputMissingNextOperation)
@@ -65,12 +68,12 @@ class TestOutput:
         artifact = machine_make.artifact(
             [
                 machine_make.artifact_section(
-                    id=make.START_SECTION_ID,
-                    kind=make.TEXT_KIND,
+                    id=make.section_id("start"),
+                    kind=make.primitive_kind("donna.primitives.sections.text.Text"),
                     description="Agent message",
                     meta=OutputMeta(
-                        allowed_transtions={make.NEXT_SECTION_ID},
-                        next_operation_id=make.NEXT_SECTION_ID,
+                        allowed_transtions={make.section_id("next")},
+                        next_operation_id=make.section_id("next"),
                     ),
                 )
             ]
@@ -78,9 +81,9 @@ class TestOutput:
 
         result = Output().execute_section(
             machine_make.task(),
-            machine_make.work_unit(operation_id=make.START_OPERATION_ID),
+            machine_make.work_unit(operation_id=make.operation_id("start")),
             artifact,
-            make.START_SECTION_ID,
+            make.section_id("start"),
         )
 
         assert result.is_ok()

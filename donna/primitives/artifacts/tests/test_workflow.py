@@ -20,11 +20,11 @@ from donna.primitives.tests import make
 
 def workflow_section(meta: WorkflowMeta | None = None) -> ArtifactSection:
     return machine_make.artifact_section(
-        id=make.WORKFLOW_SECTION_ID,
-        kind=make.WORKFLOW_KIND,
+        id=make.section_id("workflow"),
+        kind=make.primitive_kind("donna.primitives.artifacts.workflow.Workflow"),
         title="Workflow",
         primary=True,
-        meta=meta or WorkflowMeta(start_operation_id=make.START_SECTION_ID),
+        meta=meta or WorkflowMeta(start_operation_id=make.section_id("start")),
     )
 
 
@@ -36,7 +36,7 @@ def operation_section(
 ) -> ArtifactSection:
     return machine_make.artifact_section(
         id=id,
-        kind=make.TEXT_KIND,
+        kind=make.primitive_kind("donna.primitives.sections.text.Text"),
         meta=OperationMeta(
             fsm_mode=fsm_mode,
             allowed_transtions=transitions or set(),
@@ -48,31 +48,37 @@ class TestFindWorkflowSections:
     def test_follows_operation_transitions_once(self) -> None:
         artifact = machine_make.artifact(
             [
-                operation_section(id=make.START_SECTION_ID, transitions={make.NEXT_SECTION_ID}),
-                operation_section(id=make.NEXT_SECTION_ID, transitions={make.START_SECTION_ID}),
+                operation_section(id=make.section_id("start"), transitions={make.section_id("next")}),
+                operation_section(id=make.section_id("next"), transitions={make.section_id("start")}),
             ]
         )
 
-        sections = find_workflow_sections(make.START_SECTION_ID, artifact)
+        sections = find_workflow_sections(make.section_id("start"), artifact)
 
-        assert sections == {make.START_SECTION_ID, make.NEXT_SECTION_ID}
+        assert sections == {make.section_id("start"), make.section_id("next")}
 
     def test_stops_at_missing_or_non_operation_sections(self) -> None:
         artifact = machine_make.artifact(
             [
-                operation_section(id=make.START_SECTION_ID, transitions={make.NEXT_SECTION_ID, make.OTHER_SECTION_ID}),
-                machine_make.artifact_section(id=make.NEXT_SECTION_ID, kind=make.TEXT_KIND),
+                operation_section(
+                    id=make.section_id("start"),
+                    transitions={make.section_id("next"), make.section_id("other")},
+                ),
+                machine_make.artifact_section(
+                    id=make.section_id("next"),
+                    kind=make.primitive_kind("donna.primitives.sections.text.Text"),
+                ),
             ]
         )
 
-        sections = find_workflow_sections(make.START_SECTION_ID, artifact)
+        sections = find_workflow_sections(make.section_id("start"), artifact)
 
-        assert sections == {make.START_SECTION_ID, make.NEXT_SECTION_ID, make.OTHER_SECTION_ID}
+        assert sections == {make.section_id("start"), make.section_id("next"), make.section_id("other")}
 
 
 class TestWorkflowMeta:
     def test_cells_meta__serializes_explicit_start_operation(self) -> None:
-        meta = WorkflowMeta(start_operation_id=make.START_SECTION_ID)
+        meta = WorkflowMeta(start_operation_id=make.section_id("start"))
 
         assert meta.cells_meta() == {"start_operation_id": "start"}
 
@@ -86,31 +92,34 @@ class TestWorkflow:
     def test_execute_section__adds_work_unit_for_resolved_start_operation(self) -> None:
         artifact = machine_make.artifact(
             [
-                workflow_section(WorkflowMeta(start_operation_id=make.START_SECTION_ID)),
-                operation_section(id=make.START_SECTION_ID, fsm_mode=FsmMode.final),
+                workflow_section(WorkflowMeta(start_operation_id=make.section_id("start"))),
+                operation_section(id=make.section_id("start"), fsm_mode=FsmMode.final),
             ]
         )
 
         result = Workflow().execute_section(
-            machine_make.task(), machine_make.work_unit(), artifact, make.WORKFLOW_SECTION_ID
+            machine_make.task(),
+            machine_make.work_unit(),
+            artifact,
+            make.section_id("workflow"),
         )
 
         assert result.is_ok()
         change = result.unwrap()[0]
         assert isinstance(change, ChangeAddWorkUnit)
         assert change.task_id == machine_make.TASK_ID
-        assert change.operation_id == make.START_OPERATION_ID
+        assert change.operation_id == make.operation_id("start")
 
     def test_validate_section__accepts_connected_workflow_ending_in_final_operation(self) -> None:
         artifact = machine_make.artifact(
             [
-                workflow_section(WorkflowMeta(start_operation_id=make.START_SECTION_ID)),
-                operation_section(id=make.START_SECTION_ID, transitions={make.NEXT_SECTION_ID}),
-                operation_section(id=make.NEXT_SECTION_ID, fsm_mode=FsmMode.final),
+                workflow_section(WorkflowMeta(start_operation_id=make.section_id("start"))),
+                operation_section(id=make.section_id("start"), transitions={make.section_id("next")}),
+                operation_section(id=make.section_id("next"), fsm_mode=FsmMode.final),
             ]
         )
 
-        result = Workflow().validate_section(artifact, make.WORKFLOW_SECTION_ID)
+        result = Workflow().validate_section(artifact, make.section_id("workflow"))
 
         assert result.is_ok()
 
@@ -118,20 +127,26 @@ class TestWorkflow:
         artifact = machine_make.artifact(
             [
                 workflow_section(WorkflowMeta()),
-                operation_section(id=make.START_SECTION_ID, fsm_mode=FsmMode.final),
+                operation_section(id=make.section_id("start"), fsm_mode=FsmMode.final),
             ]
         )
 
-        result = Workflow().validate_section(artifact, make.WORKFLOW_SECTION_ID)
+        result = Workflow().validate_section(artifact, make.section_id("workflow"))
 
         assert result.is_ok()
 
     def test_validate_section__rejects_non_workflow_section_meta(self) -> None:
         artifact = machine_make.artifact(
-            [machine_make.artifact_section(id=make.WORKFLOW_SECTION_ID, kind=make.TEXT_KIND, primary=True)]
+            [
+                machine_make.artifact_section(
+                    id=make.section_id("workflow"),
+                    kind=make.primitive_kind("donna.primitives.sections.text.Text"),
+                    primary=True,
+                )
+            ]
         )
 
-        result = Workflow().validate_section(artifact, make.WORKFLOW_SECTION_ID)
+        result = Workflow().validate_section(artifact, make.section_id("workflow"))
 
         assert result.is_err()
         assert isinstance(result.unwrap_err()[0], WorkflowSectionNotWorkflow)
@@ -139,15 +154,15 @@ class TestWorkflow:
     def test_validate_section__requires_start_operation_when_workflow_has_no_tail_sections(self) -> None:
         artifact = machine_make.artifact([workflow_section(WorkflowMeta())])
 
-        result = Workflow().validate_section(artifact, make.WORKFLOW_SECTION_ID)
+        result = Workflow().validate_section(artifact, make.section_id("workflow"))
 
         assert result.is_err()
         assert isinstance(result.unwrap_err()[0], StartOperationMissing)
 
     def test_validate_section__reports_wrong_explicit_start_operation(self) -> None:
-        artifact = machine_make.artifact([workflow_section(WorkflowMeta(start_operation_id=make.START_SECTION_ID))])
+        artifact = machine_make.artifact([workflow_section(WorkflowMeta(start_operation_id=make.section_id("start")))])
 
-        result = Workflow().validate_section(artifact, make.WORKFLOW_SECTION_ID)
+        result = Workflow().validate_section(artifact, make.section_id("workflow"))
 
         assert result.is_err()
         errors = result.unwrap_err()
@@ -157,13 +172,16 @@ class TestWorkflow:
     def test_validate_section__reports_non_operation_workflow_section(self) -> None:
         artifact = machine_make.artifact(
             [
-                workflow_section(WorkflowMeta(start_operation_id=make.START_SECTION_ID)),
-                operation_section(id=make.START_SECTION_ID, transitions={make.NEXT_SECTION_ID}),
-                machine_make.artifact_section(id=make.NEXT_SECTION_ID, kind=make.TEXT_KIND),
+                workflow_section(WorkflowMeta(start_operation_id=make.section_id("start"))),
+                operation_section(id=make.section_id("start"), transitions={make.section_id("next")}),
+                machine_make.artifact_section(
+                    id=make.section_id("next"),
+                    kind=make.primitive_kind("donna.primitives.sections.text.Text"),
+                ),
             ]
         )
 
-        result = Workflow().validate_section(artifact, make.WORKFLOW_SECTION_ID)
+        result = Workflow().validate_section(artifact, make.section_id("workflow"))
 
         assert result.is_err()
         assert isinstance(result.unwrap_err()[0], SectionIsNotAnOperation)
@@ -171,18 +189,21 @@ class TestWorkflow:
     def test_validate_section__reports_invalid_transition_rules(self) -> None:
         artifact = machine_make.artifact(
             [
-                workflow_section(WorkflowMeta(start_operation_id=make.START_SECTION_ID)),
-                operation_section(id=make.START_SECTION_ID, transitions={make.NEXT_SECTION_ID, make.DONE_SECTION_ID}),
+                workflow_section(WorkflowMeta(start_operation_id=make.section_id("start"))),
                 operation_section(
-                    id=make.NEXT_SECTION_ID,
-                    transitions={make.DONE_SECTION_ID},
+                    id=make.section_id("start"),
+                    transitions={make.section_id("next"), make.section_id("done")},
+                ),
+                operation_section(
+                    id=make.section_id("next"),
+                    transitions={make.section_id("done")},
                     fsm_mode=FsmMode.final,
                 ),
-                operation_section(id=make.DONE_SECTION_ID),
+                operation_section(id=make.section_id("done")),
             ]
         )
 
-        result = Workflow().validate_section(artifact, make.WORKFLOW_SECTION_ID)
+        result = Workflow().validate_section(artifact, make.section_id("workflow"))
 
         assert result.is_err()
         errors = result.unwrap_err()

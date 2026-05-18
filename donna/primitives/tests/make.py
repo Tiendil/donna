@@ -7,19 +7,17 @@ from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
 from donna.machine.templates_context import DirectiveContext
 
-WORKFLOW_SECTION_ID = SectionId("workflow")
-START_SECTION_ID = SectionId("start")
-NEXT_SECTION_ID = SectionId("next")
-DONE_SECTION_ID = SectionId("done")
-OTHER_SECTION_ID = SectionId("other")
-START_OPERATION_ID = ArtifactSectionId("@/workflows/test.donna.md:start")
 
-WORKFLOW_KIND = PythonPath(NormalizedRawIdPath("donna.primitives.artifacts.workflow.Workflow"))
-TEXT_KIND = PythonPath(NormalizedRawIdPath("donna.primitives.sections.text.Text"))
-REQUEST_ACTION_KIND = PythonPath(NormalizedRawIdPath("donna.primitives.sections.request_action.RequestAction"))
-OUTPUT_KIND = PythonPath(NormalizedRawIdPath("donna.primitives.sections.output.Output"))
-RUN_SCRIPT_KIND = PythonPath(NormalizedRawIdPath("donna.primitives.sections.run_script.RunScript"))
-FINISH_WORKFLOW_KIND = PythonPath(NormalizedRawIdPath("donna.primitives.sections.finish_workflow.FinishWorkflow"))
+def primitive_kind(path: str) -> PythonPath:
+    return PythonPath(NormalizedRawIdPath(path))
+
+
+def section_id(value: str) -> SectionId:
+    return SectionId(value)
+
+
+def operation_id(section: str) -> ArtifactSectionId:
+    return ArtifactSectionId(f"@/workflows/test.donna.md:{section}")
 
 
 def template_context(**values: object) -> DirectiveContext:

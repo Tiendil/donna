@@ -23,7 +23,7 @@ class TestExtractTransitions:
 
         transitions = extract_transitions(text)
 
-        assert transitions == {make.NEXT_SECTION_ID, make.DONE_SECTION_ID}
+        assert transitions == {make.section_id("next"), make.section_id("done")}
 
     def test_rejects_goto_target_that_is_not_a_section_id(self) -> None:
         with pytest.raises(InvalidIdentifier):
@@ -34,8 +34,8 @@ class TestRequestActionConfig:
     def test_validate_fsm_mode__rejects_final_mode(self) -> None:
         with pytest.raises(ValidationError):
             RequestActionConfig(
-                id=make.START_SECTION_ID,
-                kind=make.REQUEST_ACTION_KIND,
+                id=make.section_id("start"),
+                kind=make.primitive_kind("donna.primitives.sections.request_action.RequestAction"),
                 fsm_mode=FsmMode.final,
             )
 
@@ -50,33 +50,36 @@ class TestRequestAction:
         result = RequestAction().markdown_construct_meta(
             artifact_id=machine_make.ARTIFACT_ID,
             source=source,
-            section_config=RequestActionConfig(id=make.START_SECTION_ID, kind=make.REQUEST_ACTION_KIND),
+            section_config=RequestActionConfig(
+                id=make.section_id("start"),
+                kind=make.primitive_kind("donna.primitives.sections.request_action.RequestAction"),
+            ),
             description="Choose one.",
         )
 
         assert result.is_ok()
         meta = result.unwrap()
         assert isinstance(meta, OperationMeta)
-        assert meta.allowed_transtions == {make.NEXT_SECTION_ID}
+        assert meta.allowed_transtions == {make.section_id("next")}
 
     def test_execute_section__adds_action_request_for_current_operation(self) -> None:
         artifact = machine_make.artifact(
             [
                 machine_make.artifact_section(
-                    id=make.START_SECTION_ID,
-                    kind=make.REQUEST_ACTION_KIND,
+                    id=make.section_id("start"),
+                    kind=make.primitive_kind("donna.primitives.sections.request_action.RequestAction"),
                     title="Ask agent",
                     description="Do the work",
-                    meta=OperationMeta(fsm_mode=FsmMode.normal, allowed_transtions={make.NEXT_SECTION_ID}),
+                    meta=OperationMeta(fsm_mode=FsmMode.normal, allowed_transtions={make.section_id("next")}),
                 )
             ]
         )
 
         result = RequestAction().execute_section(
             machine_make.task(),
-            machine_make.work_unit(operation_id=make.START_OPERATION_ID),
+            machine_make.work_unit(operation_id=make.operation_id("start")),
             artifact,
-            make.START_SECTION_ID,
+            make.section_id("start"),
         )
 
         assert result.is_ok()
@@ -85,4 +88,4 @@ class TestRequestAction:
         assert change.action_request.id is None
         assert change.action_request.title == "Ask agent"
         assert change.action_request.request == "Do the work"
-        assert change.action_request.operation_id == make.START_OPERATION_ID
+        assert change.action_request.operation_id == make.operation_id("start")

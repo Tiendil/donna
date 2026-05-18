@@ -13,7 +13,10 @@ class TestFinishWorkflow:
         result = FinishWorkflow().markdown_construct_meta(
             artifact_id=machine_make.ARTIFACT_ID,
             source=workspace_make.section_source(),
-            section_config=FinishWorkflowConfig(id=make.DONE_SECTION_ID, kind=make.FINISH_WORKFLOW_KIND),
+            section_config=FinishWorkflowConfig(
+                id=make.section_id("done"),
+                kind=make.primitive_kind("donna.primitives.sections.finish_workflow.FinishWorkflow"),
+            ),
             description="done",
         )
 
@@ -29,8 +32,8 @@ class TestFinishWorkflow:
         artifact = machine_make.artifact(
             [
                 machine_make.artifact_section(
-                    id=make.DONE_SECTION_ID,
-                    kind=make.FINISH_WORKFLOW_KIND,
+                    id=make.section_id("done"),
+                    kind=make.primitive_kind("donna.primitives.sections.finish_workflow.FinishWorkflow"),
                     description="Finished",
                     meta=OperationMeta(fsm_mode=FsmMode.final, allowed_transtions=set()),
                 )
@@ -38,7 +41,7 @@ class TestFinishWorkflow:
         )
 
         result = FinishWorkflow().execute_section(
-            machine_make.task(), machine_make.work_unit(), artifact, make.DONE_SECTION_ID
+            machine_make.task(), machine_make.work_unit(), artifact, make.section_id("done")
         )
 
         assert result.is_ok()

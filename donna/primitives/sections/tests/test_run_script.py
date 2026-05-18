@@ -23,31 +23,31 @@ from donna.workspaces.tests import make as workspace_make
 class TestRunScriptMeta:
     def test_select_next_operation__uses_success_transition_for_zero_exit_code(self) -> None:
         meta = RunScriptMeta(
-            allowed_transtions={make.NEXT_SECTION_ID, make.DONE_SECTION_ID},
-            goto_on_success=make.NEXT_SECTION_ID,
-            goto_on_failure=make.DONE_SECTION_ID,
+            allowed_transtions={make.section_id("next"), make.section_id("done")},
+            goto_on_success=make.section_id("next"),
+            goto_on_failure=make.section_id("done"),
         )
 
-        assert meta.select_next_operation(0) == make.NEXT_SECTION_ID
+        assert meta.select_next_operation(0) == make.section_id("next")
 
     def test_select_next_operation__uses_exit_code_specific_transition(self) -> None:
         meta = RunScriptMeta(
-            allowed_transtions={make.NEXT_SECTION_ID, make.DONE_SECTION_ID},
-            goto_on_success=make.NEXT_SECTION_ID,
-            goto_on_failure=make.DONE_SECTION_ID,
-            goto_on_code={"2": make.OTHER_SECTION_ID},
+            allowed_transtions={make.section_id("next"), make.section_id("done")},
+            goto_on_success=make.section_id("next"),
+            goto_on_failure=make.section_id("done"),
+            goto_on_code={"2": make.section_id("other")},
         )
 
-        assert meta.select_next_operation(2) == make.OTHER_SECTION_ID
+        assert meta.select_next_operation(2) == make.section_id("other")
 
     def test_select_next_operation__falls_back_to_failure_transition(self) -> None:
         meta = RunScriptMeta(
-            allowed_transtions={make.NEXT_SECTION_ID, make.DONE_SECTION_ID},
-            goto_on_success=make.NEXT_SECTION_ID,
-            goto_on_failure=make.DONE_SECTION_ID,
+            allowed_transtions={make.section_id("next"), make.section_id("done")},
+            goto_on_success=make.section_id("next"),
+            goto_on_failure=make.section_id("done"),
         )
 
-        assert meta.select_next_operation(1) == make.DONE_SECTION_ID
+        assert meta.select_next_operation(1) == make.section_id("done")
 
 
 class TestRunScript:
@@ -67,11 +67,11 @@ class TestRunScript:
             artifact_id=machine_make.ARTIFACT_ID,
             source=source,
             section_config=RunScriptConfig(
-                id=make.START_SECTION_ID,
-                kind=make.RUN_SCRIPT_KIND,
-                goto_on_success=make.NEXT_SECTION_ID,
-                goto_on_failure=make.DONE_SECTION_ID,
-                goto_on_code={"2": make.OTHER_SECTION_ID},
+                id=make.section_id("start"),
+                kind=make.primitive_kind("donna.primitives.sections.run_script.RunScript"),
+                goto_on_success=make.section_id("next"),
+                goto_on_failure=make.section_id("done"),
+                goto_on_code={"2": make.section_id("other")},
                 save_stdout_to="stdout",
                 save_stderr_to="stderr",
                 timeout=5,
@@ -86,13 +86,16 @@ class TestRunScript:
         assert meta.save_stdout_to == "stdout"
         assert meta.save_stderr_to == "stderr"
         assert meta.timeout == 5
-        assert meta.allowed_transtions == {make.NEXT_SECTION_ID, make.DONE_SECTION_ID, make.OTHER_SECTION_ID}
+        assert meta.allowed_transtions == {make.section_id("next"), make.section_id("done"), make.section_id("other")}
 
     def test_markdown_construct_meta__requires_script_block(self) -> None:
         result = RunScript().markdown_construct_meta(
             artifact_id=machine_make.ARTIFACT_ID,
             source=workspace_make.section_source(),
-            section_config=RunScriptConfig(id=make.START_SECTION_ID, kind=make.RUN_SCRIPT_KIND),
+            section_config=RunScriptConfig(
+                id=make.section_id("start"),
+                kind=make.primitive_kind("donna.primitives.sections.run_script.RunScript"),
+            ),
             description="run",
         )
 
@@ -103,17 +106,17 @@ class TestRunScript:
         artifact = machine_make.artifact(
             [
                 machine_make.artifact_section(
-                    id=make.START_SECTION_ID,
-                    kind=make.RUN_SCRIPT_KIND,
+                    id=make.section_id("start"),
+                    kind=make.primitive_kind("donna.primitives.sections.run_script.RunScript"),
                     meta=RunScriptMeta(
-                        allowed_transtions={make.NEXT_SECTION_ID},
-                        goto_on_code={"not-an-int": make.NEXT_SECTION_ID, "0": make.DONE_SECTION_ID},
+                        allowed_transtions={make.section_id("next")},
+                        goto_on_code={"not-an-int": make.section_id("next"), "0": make.section_id("done")},
                     ),
                 )
             ]
         )
 
-        result = RunScript().validate_section(artifact, make.START_SECTION_ID)
+        result = RunScript().validate_section(artifact, make.section_id("start"))
 
         assert result.is_err()
         assert {type(error) for error in result.unwrap_err()} == {
@@ -131,17 +134,21 @@ class TestRunScript:
         artifact = machine_make.artifact(
             [
                 machine_make.artifact_section(
-                    id=make.START_SECTION_ID,
-                    kind=make.RUN_SCRIPT_KIND,
+                    id=make.section_id("start"),
+                    kind=make.primitive_kind("donna.primitives.sections.run_script.RunScript"),
                     title="Run checks",
                     meta=RunScriptMeta(
-                        allowed_transtions={make.NEXT_SECTION_ID, make.DONE_SECTION_ID, make.OTHER_SECTION_ID},
+                        allowed_transtions={
+                            make.section_id("next"),
+                            make.section_id("done"),
+                            make.section_id("other"),
+                        },
                         script="echo ok",
                         save_stdout_to="stdout_key",
                         save_stderr_to="stderr_key",
-                        goto_on_success=make.NEXT_SECTION_ID,
-                        goto_on_failure=make.DONE_SECTION_ID,
-                        goto_on_code={"2": make.OTHER_SECTION_ID},
+                        goto_on_success=make.section_id("next"),
+                        goto_on_failure=make.section_id("done"),
+                        goto_on_code={"2": make.section_id("other")},
                     ),
                 )
             ]
@@ -149,9 +156,9 @@ class TestRunScript:
 
         result = RunScript().execute_section(
             machine_make.task(),
-            machine_make.work_unit(operation_id=make.START_OPERATION_ID),
+            machine_make.work_unit(operation_id=make.operation_id("start")),
             artifact,
-            make.START_SECTION_ID,
+            make.section_id("start"),
         )
 
         assert result.is_ok()
