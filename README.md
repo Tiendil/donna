@@ -18,6 +18,31 @@ I use Donna to develop Donna itself — you can find real examples of workflows 
 
 Below you'll find a simplified workflow that checks the current time, asks the agent whether it is time to drink tea, and branches according to the agent's answer.
 
+Here is its schema:
+
+```
+[Get Current Time]
+          |
+          v
+   [Ask About Tea]
+          |
+     +----+----+
+     |         |
+    yes        no
+     |         |
+     v         |
+  [Turn On     |
+   Kettle]     |
+     |         |
+     +----+----+
+          |
+          v
+       [Finish]
+
+```
+
+Actual workflow code:
+
 ````markdown
 # Is it time to drink tea?
 
@@ -76,36 +101,8 @@ kind = "donna.lib.finish"
 The workflow is complete. You are a good butler.
 ````
 
-The workflow is a simple decission tree:
 
-```
-[Get Current Time]
-          |
-          v
-   [Ask About Tea]
-          |
-     +----+----+
-     |         |
-    yes        no
-     |         |
-     v         |
-  [Turn On     |
-   Kettle]     |
-     |         |
-     +----+----+
-          |
-          v
-       [Finish]
 
-```
-
-```mermaid
-  flowchart TD
-      get_current_time[Get Current Time] --> ask_about_tea[Ask About Tea]
-      ask_about_tea -->|yes| turn_on_kettle[Turn On Kettle]
-      ask_about_tea -->|no| finish[Finish]
-      turn_on_kettle --> finish
-  ```
 
 
 with an operation in each node. There are different kinds of operations, let's go
