@@ -1,10 +1,10 @@
 
-**This release is dedicated to a full rethinking of what Donna is and how it works.**
+**This release is a full rethinking of what Donna is and how it works.**
 
-The scope of tool functionality was reduced to interpreting state machines for agents (no artifact management, no session management, etc.).
+Donna's scope has been reduced to interpreting state machines for agents. Artifact management, session management, and related functionality have been removed.
 
-That's why it is difficult to provide migration instructions or a proper list of changes.
+Because of that, there is no reliable migration path and no useful item-by-item list of changes.
 
-**Treat this version of Donna as a totally new tool** => read the documentation from scratch and adjust your usage accordingly.
+**Treat this version of Donna as a new tool:** read the documentation from scratch and adjust your usage accordingly.
 
-Sorry for the inconvenience. There should be no such breaking changes in the future.
+Sorry for the disruption. Future releases should avoid breaking changes of this scale.
