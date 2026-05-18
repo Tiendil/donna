@@ -256,6 +256,8 @@ Use `donna -p llm ...` for agent-facing command output.
 
 ## Quick Usage
 
+Detailed CLI interface is described in [specs/behavior/cli.md](./specs/behavior/cli.md).
+
 Create a starter configuration:
 
 ```bash
