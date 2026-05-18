@@ -30,7 +30,7 @@ class EnvironmentErrorNode(Node):
             "error_code": self._error.code,
         }
 
-        for field_name, _field in self._error.model_fields.items():
+        for field_name, _field in type(self._error).model_fields.items():
             if field_name in ("code", "message", "cell_kind", "cell_media_type", "ways_to_fix"):
                 continue
 
