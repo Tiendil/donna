@@ -219,6 +219,8 @@ donna init
 
 ## Configuration
 
+You can get a detailed documentation by running `donna skill configuration` or asking your agent to do that.
+
 A Donna project is configured by a TOML file named `donna.toml`. If `--config` is omitted, Donna searches upward from the current working directory until it finds `donna.toml`; the directory containing that file is the project root.
 
 Minimal configuration:
@@ -255,6 +257,10 @@ Use `donna -p llm ...` for agent-facing command output.
 ```
 
 ## Quick Usage
+
+**In most cases your agent should be capable of using Donna by itself without your intervention.**
+
+You can get a detailed documentation by running `donna skill usage` or asking your agent to do that.
 
 Detailed CLI interface is described in [specs/behavior/cli.md](./specs/behavior/cli.md).
 
@@ -308,6 +314,10 @@ donna skill usage
 
 ## Workflow Files
 
+**In most cases your agent should be capable of creating and managing workflows by itself without your intervention.**
+
+You can get a detailed documentation by running `donna skill workflows` or asking your agent to do that.
+
 Donna workflow artifacts are Markdown files ending with `.donna.md`. Donna discovers them by recursively scanning the configured `workflow_dirs`.
 
 A workflow file has one H1 section for the workflow and H2 sections for operations. Section config is written in fenced `toml donna` code blocks. Transitions are declared in operation config or request text, depending on the operation kind, and validated before execution.
@@ -319,39 +329,9 @@ Common built-in operation kinds:
 - `donna.lib.output` prints information and continues.
 - `donna.lib.finish` finishes the workflow task.
 
-Artifact ids are project-root anchored paths such as:
-
-```text
-@/workflows/polish.donna.md
-```
-
-Artifact section ids append a section id:
-
-```text
-@/workflows/polish.donna.md:finish
-```
-
-Read the detailed workflow documentation with:
-
-```bash
-donna skill workflows
-```
-
-The built-in skill documentation set is specified in [specs/behavior/skill_fixtures.md](./specs/behavior/skill_fixtures.md).
-
 ## Specifications
 
 Project behavior and architecture are specified in [specs/](./specs/). Start with [specs/intro.md](./specs/intro.md) for the index.
-
-Important references:
-
-- [specs/behavior/cli.md](./specs/behavior/cli.md) describes CLI commands, output protocols, and command behavior.
-- [specs/behavior/config.md](./specs/behavior/config.md) describes `donna.toml`.
-- [specs/behavior/file_paths.md](./specs/behavior/file_paths.md) describes project paths, artifact ids, and artifact section ids.
-- [specs/behavior/skill_fixtures.md](./specs/behavior/skill_fixtures.md) describes built-in documentation fixtures.
-- [specs/documentation/readme.md](./specs/documentation/readme.md) describes this README's required structure and content.
-
-The root README is an introduction, not the source of truth for detailed behavior.
 
 ## Development
 
@@ -376,3 +356,7 @@ Run Donna from the current development checkout:
 ```
 
 The repository also uses Donna itself. Its local workflows live in [workflows/](./workflows/), and the current project configuration is [donna.toml](./donna.toml).
+
+### Agent's harness
+
+Check [AGENTS.md](./AGENTS.md) for the list of additional tools that agents will expect to be installed.
