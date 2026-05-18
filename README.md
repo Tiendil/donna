@@ -4,8 +4,8 @@
 
 Donna exists because agent work has a control-flow problem:
 
-1. Most of development work is repetitive on the meta level: "run this tool, do something with the output, run another tool" or "implement function A, implement tests for function A, implement function B, …".
-2. Some parts of that work require advanced reasoning, others — not really.
+1. Most development work is repetitive on the meta level: "run this tool, do something with the output, run another tool" or "implement function A, implement tests for function A, implement function B, …".
+2. Some parts of that work require advanced reasoning, others do not.
 3. Agents are ~~almost~~ good at reasoning, but not so good at keeping the whole process in mind, remembering what they did, etc.
 4. Therefore, we should separate the reasoning part from the control flow part — let agents focus on what they are good at, and keep the control flow to the classic automation tools.
 
@@ -20,7 +20,7 @@ As a bonus, **Donna saves tokens** because the agent does not need to reason abo
 ## Features
 
 - **Pure CLI tool** — No API keys, hosted services, or separate agent instances required.
-- **Built-in help for agents** — Your agent can run `donna skill` to get detailed agent-focused docs.
+- **Built-in help for agents** — Your agent can run `donna skill` to get detailed docs written for agents.
 - **Readable workflow sources** — Each workflow is a single Markdown file with a clear structure.
 - **Deterministic control flow** — Donna follows explicit workflow transitions instead of relying on the agent's memory.
 - **Agent-aware automation** — Scripted steps run automatically; agent work is requested when needed.
@@ -176,7 +176,7 @@ Is it time to drink tea?
 Since Donna is a CLI tool, you can run the workflow manually in the terminal.
 
 ```bash
-uv install donna
+uv tool install donna
 
 # Example workflow is a part of Donna repository
 # git clone git@github.com:Tiendil/donna.git
@@ -197,12 +197,12 @@ uv tool install donna
 # poetry add donna
 ```
 
-Ask your agent to initialize donna in the project:
+Ask your agent to initialize Donna in the project:
 
 ```
 1. Run `donna skill`
 2. Initialize Donna in this project.
-3. Add instructions on when and how to use Donna to the AGENTS.md.
+3. Add instructions on when and how to use Donna to the AGENTS.md file.
 ```
 
 Or install Donna manually:
@@ -243,7 +243,7 @@ A coding agent can help create or adapt workflow files after the project layout 
 
 The session directory stores Donna runtime state. Workflow directories are scanned recursively for `.donna.md` files; missing workflow directories are ignored.
 
-Detailed configuration behavior is specified in [specs/behavior/config.md](./specs/behavior/config.md). Command behavior is specified in [specs/behavior/cli.md](./specs/behavior/cli.md).
+Detailed configuration behavior is specified in [./specs/behavior/config.md](./specs/behavior/config.md). Command behavior is specified in [./specs/behavior/cli.md](./specs/behavior/cli.md).
 
 Project agent instructions can include a short Donna rule like this:
 
@@ -259,7 +259,7 @@ Use `donna -p llm ...` for agent-facing command output.
 
 You can get detailed documentation by running `donna skill usage` or asking your agent to do that.
 
-Detailed CLI interface is described in [specs/behavior/cli.md](./specs/behavior/cli.md).
+Detailed CLI interface is described in [./specs/behavior/cli.md](./specs/behavior/cli.md).
 
 Create a starter configuration:
 
@@ -273,7 +273,7 @@ List discovered workflow artifacts:
 donna list
 ```
 
-Start new session:
+Start a new session:
 
 ```bash
 donna new-session
@@ -328,7 +328,7 @@ Common built-in operation kinds:
 
 ## Specifications
 
-Project behavior and architecture are specified in [specs/](./specs/). Start with [specs/intro.md](./specs/intro.md) for the index.
+Project behavior and architecture are specified in [./specs/](./specs/). Start with [./specs/intro.md](./specs/intro.md) for the index.
 
 ## Development
 
@@ -352,8 +352,8 @@ Run Donna from the current development checkout:
 ./bin/dev.sh poetry run donna --help
 ```
 
-The repository also uses Donna itself. Its local workflows live in [workflows/](./workflows/), and the current project configuration is [donna.toml](./donna.toml).
+The repository also uses Donna itself. Its local workflows live in [./workflows/](./workflows/), and the current project configuration is [./donna.toml](./donna.toml).
 
 ### Agent's harness
 
-Check [AGENTS.md](./AGENTS.md) for the list of additional tools that agents will expect to be installed.
+Check [./AGENTS.md](./AGENTS.md) for the list of additional tools that agents will expect to be installed.
