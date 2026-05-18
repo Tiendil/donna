@@ -17,6 +17,17 @@ Workflows can start child workflows, be generated on the fly, or be modified whi
 
 As a bonus, **Donna saves tokens** because the agent does not need to reason about control flow or how to execute particular CLI commands and other automation tools.
 
+## Features
+
+- **Pure CLI tool** — No API keys, hosted services, or separate agent instances required.
+- **Built-in help for agents** — Your agent can run `donna skill` to get detailed agent-focused docs.
+- **Readable workflow sources** — Each workflow is a single Markdown file with a clear structure.
+- **Deterministic control flow** — Donna follows explicit workflow transitions instead of relying on the agent's memory.
+- **Agent-aware automation** — Scripted steps run automatically; agent work is requested when needed.
+- **Local session state** — Workflow progress stays inspectable and resumable inside the project.
+- **Nested workflows** — Workflows can start child workflows, generate new ones, or delegate workflow selection to the agent.
+- **Progress journaling** — Workflow progress can be logged through a configured external command.
+
 ## Example
 
 I use Donna to develop Donna itself — you can find real examples of workflows in the [./workflows](./workflows) folder of this repository. You can start with [./workflows/polish.donna.md](./workflows/polish.donna.md) that loops over fixing issues found by formatters, linters, type checkers and tests until the codebase is polished.
@@ -175,17 +186,6 @@ donna run @/workflows/examples/time_to_drink_tea.donna.md
 
 # Follow Donna commands to finish the workflow.
 ```
-
-## Features
-
-- **Pure CLI tool** — No API keys, hosted services, or separate agent instances required.
-- **Built-in help for agents** — Your agent can run `donna skill` to get detailed agent-focused docs.
-- **Readable workflow sources** — Each workflow is a single Markdown file with a clear structure.
-- **Deterministic control flow** — Donna follows explicit workflow transitions instead of relying on the agent's memory.
-- **Agent-aware automation** — Scripted steps run automatically; agent work is requested when needed.
-- **Local session state** — Workflow progress stays inspectable and resumable inside the project.
-- **Nested workflows** — Workflows can start child workflows, generate new ones, or delegate workflow selection to the agent.
-- **Progress journaling** — Workflow progress can be logged through a configured external command.
 
 ## Installation
 
