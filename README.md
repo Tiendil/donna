@@ -14,7 +14,7 @@ For example, you can have a workflow that guides the agent through the planing p
 
 ## Example
 
-I use Donna to develop Donna itself — that's the way ;-) So, you can find real examples of workflows in the [./workflows](./workflows) folder of this repository. You can start with [./workflows/polish.donna.md](./workflows/polish.donna.md) that goes in loop over fixing issues found by formatters, linters, type checkers and tests until the codebase is polished.
+I use Donna to develop Donna itself — you can find real examples of workflows in the [./workflows](./workflows) folder of this repository. You can start with [./workflows/polish.donna.md](./workflows/polish.donna.md) that goes in loop over fixing issues found by formatters, linters, type checkers and tests until the codebase is polished.
 
 Below you'll find a simplified workflow based on the built-in workflow documentation example. It checks the current time, asks the agent whether it is time to drink tea, and branches according to the agent's answer.
 
