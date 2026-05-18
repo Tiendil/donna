@@ -328,7 +328,7 @@ Common built-in operation kinds:
 
 ## Specifications
 
-Project behavior and architecture are specified in [./specs/](./specs/). Start with [./specs/intro.md](./specs/intro.md) for the index.
+Project behavior and architecture are specified in [./specs](./specs/). Start with [./specs/intro.md](./specs/intro.md) for the index.
 
 ## Development
 
@@ -352,8 +352,8 @@ Run Donna from the current development checkout:
 ./bin/dev.sh poetry run donna --help
 ```
 
-The repository also uses Donna itself. Its local workflows live in [./workflows/](./workflows/), and the current project configuration is [./donna.toml](./donna.toml).
+The repository also uses Donna itself. Its local workflows live in [./workflows](./workflows/), and the current project configuration is [donna.toml](./donna.toml).
 
 ### Agent's harness
 
-Check [./AGENTS.md](./AGENTS.md) for the list of additional tools that agents will expect to be installed.
+Check [AGENTS.md](./AGENTS.md) for the list of additional tools that agents will expect to be installed.
