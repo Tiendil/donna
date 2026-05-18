@@ -99,6 +99,14 @@ The workflow is a simple decission tree:
 
 ```
 
+```mermaid
+  flowchart TD
+      get_current_time[Get Current Time] --> ask_about_tea[Ask About Tea]
+      ask_about_tea -->|yes| turn_on_kettle[Turn On Kettle]
+      ask_about_tea -->|no| finish[Finish]
+      turn_on_kettle --> finish
+  ```
+
 
 with an operation in each node. There are different kinds of operations, let's go
 
