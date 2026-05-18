@@ -101,6 +101,10 @@ kind = "donna.lib.finish"
 The workflow is complete. You are a good butler.
 ````
 
+<details>
+  <summary>How it works</summary>
+
+
 How this example works:
 
 - The H1 section is the workflow section. It gives Donna the workflow title and summary that appear in `donna list`.
@@ -150,6 +154,8 @@ Is it time to drink tea?
 --DONNA-CELL fxh3PDZ1Qy-c3zvai_T5Qw END--
 
 ````
+
+</details>
 
 ## Rationale
 
