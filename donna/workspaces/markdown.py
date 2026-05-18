@@ -262,7 +262,8 @@ def parse(  # noqa: CCR001, CFQ001
     tokens = md.parse(text)
 
     # we do not need root node
-    node: SyntaxTreeNode | None = SyntaxTreeNode(tokens).children[0]
+    root = SyntaxTreeNode(tokens)
+    node: SyntaxTreeNode | None = root.children[0] if root.children else None
 
     sections: list[SectionSource] = []
 
