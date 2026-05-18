@@ -1,6 +1,6 @@
 # Donna
 
-Help agents keep long-running work on a predefined path.
+**A CLI tool that helps agents keep long-running work on a predefined path.**
 
 Donna allows agents to execute deterministic workflows regardless of the complexity of the algorithm.
 
@@ -8,7 +8,7 @@ You can look at Donna as a co-processor for your agent that takes care of the co
 
 You define a workflow in a single readable Markdown file, after that your agent may ask Donna to guide it through the workflow, and Donna will take care of the rest by given instructions to the agent on what to do at each step.
 
-Technically, workflow is a state machine and Donna its interpreter. That means agent can start child workflows from the parent workflow, write workflows on the fly, modify them while executing, etc.
+**Workflow is a state machine and Donna its interpreter.** That means agent can start child workflows from the parent workflow, write workflows on the fly, modify them while executing, etc.
 
 For example, you can have a workflow that guides the agent through the planing process, and at the final step, the agent can generate a new workflow with a detailed plan to execute and run it immediately.
 
