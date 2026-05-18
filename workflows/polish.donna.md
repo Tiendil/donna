@@ -16,7 +16,7 @@ goto_on_failure = "fix_tach"
 ```bash donna script
 #!/usr/bin/env bash
 
-tach check 2>&1
+./bin/dev.sh poetry run tach check 2>&1
 ```
 
 ## Fix Tach Issues
@@ -48,7 +48,7 @@ goto_on_failure = "fix_autoflake"
 ```bash donna script
 #!/usr/bin/env bash
 
-autoflake ./donna
+./bin/dev.sh poetry run autoflake ./donna
 ```
 
 ## Fix Autoflake Issues
@@ -79,7 +79,7 @@ goto_on_failure = "fix_isort"
 ```bash donna script
 #!/usr/bin/env bash
 
-isort ./donna
+./bin/dev.sh poetry run isort ./donna
 ```
 
 ## Fix isort Issues
@@ -110,7 +110,7 @@ goto_on_failure = "fix_black"
 ```bash donna script
 #!/usr/bin/env bash
 
-black ./donna
+./bin/dev.sh poetry run black ./donna
 ```
 
 ## Fix Black Issues
@@ -141,7 +141,7 @@ goto_on_failure = "fix_codespell"
 ```bash donna script
 #!/usr/bin/env bash
 
-codespell ./donna 2>&1
+./bin/dev.sh poetry run codespell ./donna 2>&1
 ```
 
 ## Fix Codespell Issues
@@ -172,7 +172,7 @@ goto_on_failure = "fix_flake8"
 ```bash donna script
 #!/usr/bin/env bash
 
-flake8 ./donna 2>&1
+./bin/dev.sh poetry run flake8 ./donna 2>&1
 ```
 
 ## Fix Flake8 Issues
@@ -210,7 +210,7 @@ goto_on_failure = "fix_mypy"
 ```bash donna script
 #!/usr/bin/env bash
 
-mypy ./donna
+./bin/dev.sh poetry run mypy ./donna
 ```
 
 ## Fix Mypy Issues
@@ -260,7 +260,7 @@ goto_on_failure = "fix_tests"
 ```bash donna script
 #!/usr/bin/env bash
 
-pytest donna -o cache_dir=/tmp/donna-pytest-cache 2>&1
+./bin/dev.sh poetry run pytest donna -o cache_dir=/tmp/donna-pytest-cache 2>&1
 ```
 
 ## Fix Test Issues
