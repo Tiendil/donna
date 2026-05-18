@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 import pydantic
 import pytest
 
@@ -29,24 +31,24 @@ class TestInternalId:
         ],
     )
     def test_validate__rejects_invalid_identifier(self, value: object) -> None:
-        assert not InternalId.validate(value)
+        assert not InternalId.validate(cast(Any, value))
 
     def test_init__raises_internal_error_for_invalid_value(self) -> None:
         with pytest.raises(errors.InvalidInternalId):
             InternalId("WU-0-b")
 
     def test_pydantic_validation__accepts_internal_id_value(self) -> None:
-        entity = _InternalIdEntity(internal_id="WU-0-a")
+        entity = _InternalIdEntity.model_validate({"internal_id": "WU-0-a"})
 
         assert entity.internal_id == InternalId("WU-0-a")
         assert entity.model_dump_json() == '{"internal_id":"WU-0-a"}'
 
     def test_pydantic_validation__rejects_invalid_internal_id_value(self) -> None:
         with pytest.raises(pydantic.ValidationError):
-            _InternalIdEntity(internal_id="WU-0-b")
+            _InternalIdEntity.model_validate({"internal_id": "WU-0-b"})
 
         with pytest.raises(pydantic.ValidationError):
-            _InternalIdEntity(internal_id=123)
+            _InternalIdEntity.model_validate({"internal_id": cast(Any, 123)})
 
 
 class TestWorkUnitId:

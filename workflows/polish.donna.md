@@ -203,7 +203,7 @@ Instructions on fixing special cases:
 id = "run_mypy_script"
 kind = "donna.lib.run_script"
 save_stdout_to = "mypy_output"
-goto_on_success = "finish"
+goto_on_success = "run_tests_script"
 goto_on_failure = "fix_mypy"
 ```
 
@@ -246,6 +246,38 @@ Changes you are not allowed to make:
 - Introducing new protocols.
 - Adding `type: ignore[import-untyped]`. If you need to use it, ask the developer to install the missing types first or to fix the issue manually.
 - Adding or removing attributes to classes. If you need to do it, ask the developer to fix the problem manually.
+
+## Run Tests
+
+```toml donna
+id = "run_tests_script"
+kind = "donna.lib.run_script"
+save_stdout_to = "tests_output"
+goto_on_success = "finish"
+goto_on_failure = "fix_tests"
+```
+
+```bash donna script
+#!/usr/bin/env bash
+
+pytest donna -o cache_dir=/tmp/donna-pytest-cache 2>&1
+```
+
+## Fix Test Issues
+
+```toml donna
+id = "fix_tests"
+kind = "donna.lib.request_action"
+```
+
+```
+{{ donna.lib.task_variable("tests_output") }}
+```
+
+1. Fix the test failures based on the output above that you are allowed to fix.
+2. Ask the developer to fix any remaining failures manually.
+3. Ensure your changes are saved.
+4. `{{ donna.lib.goto("run_tach_script") }}`
 
 ## Finish
 

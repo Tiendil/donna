@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 import pytest
 
 from donna.domain import errors
@@ -40,7 +42,7 @@ class TestValidateArtifactId:
         ],
     )
     def test_invalid_canonical_artifact_id(self, value: object) -> None:
-        assert not validate_artifact_id(value)
+        assert not validate_artifact_id(cast(Any, value))
 
 
 class TestValidateArtifactSectionId:
@@ -58,7 +60,7 @@ class TestValidateArtifactSectionId:
         ],
     )
     def test_invalid_section_id(self, value: object) -> None:
-        assert not validate_artifact_section_id(value)
+        assert not validate_artifact_section_id(cast(Any, value))
 
 
 class TestArtifactPathParts:
@@ -111,4 +113,4 @@ class TestSplitArtifactSectionId:
         ],
     )
     def test_invalid_section_id(self, value: object) -> None:
-        assert split_artifact_section_id(value) is None
+        assert split_artifact_section_id(cast(Any, value)) is None

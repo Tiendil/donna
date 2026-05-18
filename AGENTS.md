@@ -36,7 +36,8 @@ Agents MUST NOT perform development-related operations directly on the host mach
 
 Allowed development commands:
 
-- `./bin/dev.sh` — run development utilities inside the container, for example `./bin/dev.sh uv run -- pytest`.
+- `./bin/dev-tests.sh` — run all Python tests inside the container.
+- `./bin/dev.sh` — run development utilities inside the container, for example `./bin/dev.sh poetry run pytest`.
 - `./bin/dev-build-containers.sh` — build base Docker images for development; use only after approved Docker or dependency changes.
 
 Searching, reading, and editing repository files MAY be done on the host machine.

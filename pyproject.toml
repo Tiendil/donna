@@ -67,6 +67,8 @@ flake8-eradicate = "1.5.*"
 mypy = "1.19.*"
 
 types-PyYAML = "6.0.*"
+pytest = "9.0.*"
+pytest-mock = "3.15.*"
 
 [tool.isort]
 profile = "black"

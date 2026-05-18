@@ -20,13 +20,13 @@ class TestBaseEntity:
         assert entity.name == "value"
 
         with pytest.raises(pydantic.ValidationError):
-            _SampleEntity(name="value", nested=_NestedEntity(values=[]), extra=True)
+            _SampleEntity.model_validate({"name": "value", "nested": {"values": []}, "extra": True})
 
     def test_model_config__is_frozen(self) -> None:
         entity = _SampleEntity(name="value", nested=_NestedEntity(values=[]))
 
         with pytest.raises(pydantic.ValidationError):
-            entity.name = "changed"
+            setattr(entity, "name", "changed")
 
     def test_replace__returns_deep_copy_with_changes(self) -> None:
         entity = _SampleEntity(name="before", nested=_NestedEntity(values=[1]))

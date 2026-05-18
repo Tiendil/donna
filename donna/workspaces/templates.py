@@ -10,7 +10,7 @@ from donna.core import errors as core_errors
 from donna.core.errors import EnvironmentErrorsProxy, ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.artifact_ids import ArtifactId
-from donna.machine.templates import Directive, RenderMode
+from donna.machine.templates import Directive
 from donna.workspaces import errors as world_errors
 
 if TYPE_CHECKING:

@@ -1,4 +1,5 @@
 import copy
+from typing import Any, cast
 
 import pydantic
 import pytest
@@ -60,7 +61,7 @@ class TestIdPath:
         second = _SlashPath(NormalizedRawIdPath("alpha/gamma"))
 
         assert first == _SlashPath(NormalizedRawIdPath("alpha/beta"))
-        assert first != PythonPath("alpha.beta")
+        assert first != PythonPath(NormalizedRawIdPath("alpha.beta"))
         assert sorted([second, first]) == [first, second]
         assert {first, _SlashPath(NormalizedRawIdPath("alpha/beta"))} == {first}
 
@@ -90,15 +91,15 @@ class TestPythonPath:
         assert PythonPath.parse("donna.domain.1ids").is_err()
 
     def test_pydantic_validation__accepts_and_serializes_python_path(self) -> None:
-        entity = _PathEntity(path="donna.domain.ids")
+        entity = _PathEntity.model_validate({"path": "donna.domain.ids"})
 
-        assert entity.path == PythonPath("donna.domain.ids")
-        assert entity.model_dump() == {"path": PythonPath("donna.domain.ids")}
+        assert entity.path == PythonPath(NormalizedRawIdPath("donna.domain.ids"))
+        assert entity.model_dump() == {"path": PythonPath(NormalizedRawIdPath("donna.domain.ids"))}
         assert entity.model_dump_json() == '{"path":"donna.domain.ids"}'
 
     def test_pydantic_validation__rejects_invalid_python_value(self) -> None:
         with pytest.raises(pydantic.ValidationError):
-            _PathEntity(path="donna..ids")
+            _PathEntity.model_validate({"path": "donna..ids"})
 
         with pytest.raises(pydantic.ValidationError):
-            _PathEntity(path=123)
+            _PathEntity.model_validate({"path": cast(Any, 123)})
