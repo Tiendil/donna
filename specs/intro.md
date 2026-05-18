@@ -15,6 +15,7 @@ Detailed requirements for individual specifications are out of scope except for 
 - `./specs/` — directory with all specifications.
 - `./specs/architecture/` — specifications related to the architecture of the system.
 - `./specs/behavior/` — specifications related to the behavior of the system.
+- `./specs/documentation/` — specifications related to project documentation artifacts.
 - `./specs/meta/` — specifications related to requirements for specification documents.
 
 ## Specification documents
@@ -30,4 +31,5 @@ Detailed requirements for individual specifications are out of scope except for 
 - `./specs/behavior/config.md` — specification of the `donna.toml` configuration file behavior.
 - `./specs/behavior/file_paths.md` — specification of Donna local project path, artifact id, and artifact section id syntax and resolution behavior.
 - `./specs/behavior/skill_fixtures.md` — specification of built-in skill documentation fixture behavior.
+- `./specs/documentation/changelog.md` — specification of changelog tooling, source files, version record structure, and entry format.
 - `./specs/meta/general.md` — general requirements for specification documents.
