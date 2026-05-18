@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, ClassVar, Protocol, cast
+from typing import ClassVar, Protocol, cast
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
@@ -8,10 +8,11 @@ from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.primitives import Primitive, resolve_primitive
+from donna.machine.templates import RenderMode
 from donna.workspaces import errors as world_errors
 from donna.workspaces import markdown
 from donna.workspaces.artifacts import ArtifactRenderContext
-from donna.workspaces.templates import RenderMode, render
+from donna.workspaces.templates import render
 
 
 class MarkdownSectionConstructor(Protocol):
@@ -19,7 +20,7 @@ class MarkdownSectionConstructor(Protocol):
         self,
         artifact_id: ArtifactId,
         source: markdown.SectionSource,
-        config: dict[str, Any],
+        config: dict[str, object],
         primary: bool = False,
     ) -> Result[ArtifactSection, ErrorsList]:
         pass
@@ -61,10 +62,10 @@ class MarkdownSectionMixin:
         self,
         artifact_id: ArtifactId,
         source: markdown.SectionSource,
-        config: dict[str, Any],
+        config: dict[str, object],
         primary: bool = False,
     ) -> Result[ArtifactSection, ErrorsList]:
-        section_config = self.config_class.parse_obj(config)
+        section_config = self.config_class.model_validate(config)
 
         title = self.markdown_build_title(
             artifact_id=artifact_id,
@@ -164,11 +165,7 @@ def construct_artifact_from_markdown_source(  # noqa: CCR001
     if "kind" not in head_config or head_config["kind"] is None:
         head_config["kind"] = default_primary_section_kind
 
-    head_kind_value = head_config["kind"]
-    if isinstance(head_kind_value, PythonPath):
-        head_kind = head_kind_value
-    else:
-        head_kind = PythonPath.parse(head_kind_value).unwrap()
+    head_kind = _parse_primitive_id(head_config["kind"]).unwrap()
 
     if "id" not in head_config or head_config["id"] is None:
         head_config["id"] = default_primary_section_id
@@ -215,11 +212,7 @@ def construct_sections_from_markdown(  # noqa: CCR001
         if "kind" not in data:
             data["kind"] = default_section_kind
 
-        kind_value = data["kind"]
-        if isinstance(kind_value, str):
-            primitive_id = PythonPath.parse(kind_value).unwrap()
-        else:
-            primitive_id = kind_value
+        primitive_id = _parse_primitive_id(data["kind"]).unwrap()
 
         primitive = _resolve_primitive(primitive_id, primitive_overrides).unwrap()
         _ensure_markdown_constructible(primitive, primitive_id).unwrap()
@@ -245,6 +238,13 @@ def _resolve_primitive(
         return Ok(primitive_overrides[primitive_id])
 
     return resolve_primitive(primitive_id)
+
+
+def _parse_primitive_id(value: object) -> Result[PythonPath, ErrorsList]:
+    if isinstance(value, PythonPath):
+        return Ok(value)
+
+    return PythonPath.parse(value)
 
 
 def _ensure_markdown_constructible(

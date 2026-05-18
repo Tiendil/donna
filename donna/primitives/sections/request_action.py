@@ -68,7 +68,7 @@ class RequestAction(MarkdownSectionMixin, OperationKind):
         return Ok(
             OperationMeta(
                 fsm_mode=request_config.fsm_mode,
-                allowed_transtions=extract_transitions(analysis),
+                allowed_transitions=extract_transitions(analysis),
             )
         )
 

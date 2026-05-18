@@ -1,23 +1,43 @@
+import enum
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, TypeAlias
-
-from jinja2.runtime import Context
+from typing import TYPE_CHECKING, TypeAlias
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result
 from donna.machine import errors as machine_errors
 from donna.machine.primitives import Primitive
+from donna.machine.templates_context import DirectiveContext
 
 if TYPE_CHECKING:
     pass
 
-PreparedDirectiveArguments: TypeAlias = tuple[Any, ...]
+PreparedDirectiveArguments: TypeAlias = tuple[object, ...]
 PreparedDirectiveResult: TypeAlias = Result[PreparedDirectiveArguments, ErrorsList]
+
+
+class RenderMode(enum.StrEnum):
+    """Modes for rendering artifacts.
+
+    Donna can render artifacts for different purposes, for example:
+
+    - to be displayed to the agent when Donna is used via CLI.
+    - to be used for execution by Donna itself.
+    - to be used for analysis by Donna itself.
+
+    In each mode Donna can produce different outputs.
+
+    For example, it can output CLI commands in view/execute mode,
+    tool specifications in tool mode, special markup in analyze mode, etc.
+    """
+
+    view = "view"
+    execute = "execute"
+    analysis = "analysis"
 
 
 class DirectiveUnsupportedRenderMode(machine_errors.InternalError):
     message: str = "Render mode {render_mode} not implemented in directive {directive_name}."
-    render_mode: Any
+    render_mode: object
     directive_name: str
 
 
@@ -26,12 +46,10 @@ class Directive(Primitive, ABC):
 
     def apply_directive(  # noqa: E704
         self,
-        context: Context,
-        *argv: Any,
-        **kwargs: Any,
-    ) -> Result[Any, ErrorsList]:
-        from donna.workspaces import templates as world_templates
-
+        context: DirectiveContext,
+        *argv: object,
+        **kwargs: object,
+    ) -> Result[object, ErrorsList]:
         render_mode = context["render_mode"]
         arguments_result = self._prepare_arguments(context, *argv, **kwargs)
         if arguments_result.is_err():
@@ -40,42 +58,42 @@ class Directive(Primitive, ABC):
         argv = arguments_result.unwrap()
 
         match render_mode:
-            case world_templates.RenderMode.view:
+            case RenderMode.view:
                 return self.render_view(context, *argv)
-            case world_templates.RenderMode.execute:
+            case RenderMode.execute:
                 return self.render_execute(context, *argv)
-            case world_templates.RenderMode.analysis:
+            case RenderMode.analysis:
                 return self.render_analyze(context, *argv)
             case _:
                 raise DirectiveUnsupportedRenderMode(render_mode=render_mode, directive_name=self.__class__.__name__)
 
     def _prepare_arguments(
         self,
-        context: Context,
-        *argv: Any,
-        **kwargs: Any,
+        context: DirectiveContext,
+        *argv: object,
+        **kwargs: object,
     ) -> PreparedDirectiveResult:
         return Ok(argv)
 
     @abstractmethod
     def render_view(  # noqa: E704
         self,
-        context: Context,
-        *argv: Any,
-    ) -> Result[Any, ErrorsList]: ...
+        context: DirectiveContext,
+        *argv: object,
+    ) -> Result[object, ErrorsList]: ...
 
     def render_execute(
         self,
-        context: Context,
-        *argv: Any,
-    ) -> Result[Any, ErrorsList]:
+        context: DirectiveContext,
+        *argv: object,
+    ) -> Result[object, ErrorsList]:
         return self.render_view(context, *argv)
 
     def render_analyze(
         self,
-        context: Context,
-        *argv: Any,
-    ) -> Result[str, ErrorsList]:
+        context: DirectiveContext,
+        *argv: object,
+    ) -> Result[object, ErrorsList]:
         parts = [str(arg) for arg in argv]
         arguments = " ".join(parts)
 

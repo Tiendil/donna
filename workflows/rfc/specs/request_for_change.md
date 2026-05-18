@@ -30,7 +30,7 @@ The RFC document is a Markdown file with the next structure:
 ## General language and format
 
 - You MUST follow [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119.txt) for keywords like MUST, SHOULD, MAY, etc.
-- You MUST follow `donna skill artifacts`.
+- You MUST follow `donna skill workflows`.
 - You MUST follow the structure specified in this document.
 
 ### List format

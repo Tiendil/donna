@@ -9,19 +9,13 @@ from donna.cli.types import (
     parse_artifact_section_id_argument,
 )
 from donna.cli.utils import command_context
-from donna.machine import sessions
+from donna.runtime import sessions
 
 
-@app.command(help="Start a new session, reset session state, remove all session artifacts.")
-def start(context: typer.Context) -> None:
+@app.command(name="new-session", help="Create fresh session state.")
+def new_session(context: typer.Context) -> None:
     with command_context(context) as command:
-        command.write_cells(sessions.start().unwrap())
-
-
-@app.command(help="Reset the current session state, keeps session artifacts.")
-def reset(context: typer.Context) -> None:
-    with command_context(context) as command:
-        command.write_cells(sessions.reset().unwrap())
+        command.write_cells(sessions.new_session().unwrap())
 
 
 @app.command(

@@ -1,4 +1,4 @@
-from typing import Any
+from collections.abc import Mapping
 
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
@@ -6,8 +6,10 @@ from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
+from donna.machine.context import context
 from donna.machine.errors import ArtifactPrimarySectionMissing, ArtifactSectionNotFound, MultiplePrimarySectionsError
-from donna.protocol.cells import Cell
+from donna.protocol.cells import Cell, MetaValue
+from donna.protocol.errors import environment_error_node
 from donna.protocol.nodes import Node
 
 
@@ -17,7 +19,7 @@ class ArtifactSectionConfig(BaseEntity):
 
 
 class ArtifactSectionMeta(BaseEntity):
-    def cells_meta(self) -> dict[str, Any]:
+    def cells_meta(self) -> Mapping[str, MetaValue]:
         return {}
 
 
@@ -62,8 +64,6 @@ class Artifact(BaseEntity):
         return Ok(primary_sections[0])
 
     def validate_artifact(self) -> Result[None, ErrorsList]:  # noqa: CCR001
-        from donna.context.context import context
-
         primary_sections = self._primary_sections()
 
         errors: ErrorsList = []
@@ -137,7 +137,7 @@ class ArtifactNode(Node):
     def status(self) -> Cell:
         primary_section_result = self._artifact.primary_section()
         if primary_section_result.is_err():
-            return primary_section_result.unwrap_err()[0].node().status()
+            return environment_error_node(primary_section_result.unwrap_err()[0]).info()
 
         primary_section = primary_section_result.unwrap()
         return Cell.build_markdown(
@@ -151,12 +151,12 @@ class ArtifactNode(Node):
     def info(self) -> Cell:
         primary_section_result = self._artifact.primary_section()
         if primary_section_result.is_err():
-            return primary_section_result.unwrap_err()[0].node().info()
+            return environment_error_node(primary_section_result.unwrap_err()[0]).info()
 
         primary_section = primary_section_result.unwrap()
         blocks_result = self._artifact.markdown_blocks()
         if blocks_result.is_err():
-            return blocks_result.unwrap_err()[0].node().info()
+            return environment_error_node(blocks_result.unwrap_err()[0]).info()
 
         return Cell.build_markdown(
             kind="artifact_info",

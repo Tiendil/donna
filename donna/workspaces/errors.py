@@ -32,6 +32,17 @@ class ConfigValidationFailed(WorkspaceConfigError):
     details: str
 
 
+class WorkspaceConfigNotDiscovered(WorkspaceError):
+    code: str = "donna.workspaces.config_not_discovered"
+    message: str = "Could not find a project directory containing `{error.config_name}`."
+    ways_to_fix: list[str] = [
+        "Run Donna from within a project directory that contains the Donna config file.",
+        "Create the Donna project config via CLI command if it does not exist yet.",
+        "Pass `--config PATH` to use a specific Donna config file.",
+    ]
+    config_name: str
+
+
 class WorkspaceAlreadyInitialized(WorkspaceError):
     code: str = "donna.workspaces.workspace_already_initialized"
     message: str = "Donna project config already exists at `{error.config_path}`"
@@ -39,6 +50,28 @@ class WorkspaceAlreadyInitialized(WorkspaceError):
         "Continue using the existing project config.",
         "Remove the existing `donna.toml` file if you want to reinitialize.",
         "Choose a different project directory.",
+    ]
+    config_path: ProjectConfigPath
+
+
+class WorkspaceConfigNotFound(WorkspaceError):
+    code: str = "donna.workspaces.config_not_found"
+    message: str = "Donna project config does not exist at `{error.config_path}`"
+    ways_to_fix: list[str] = [
+        "Check the config path for typos.",
+        "Create the Donna project config via CLI command if it does not exist yet.",
+        "Omit `--config` to discover `donna.toml` from the current working directory.",
+    ]
+    config_path: ProjectConfigPath
+
+
+class WorkspaceConfigDirNotFound(WorkspaceError):
+    code: str = "donna.workspaces.config_dir_not_found"
+    message: str = "Donna project config directory does not exist for `{error.config_path}`"
+    ways_to_fix: list[str] = [
+        "Check the config path for typos.",
+        "Create the directory that should contain the Donna project config.",
+        "Choose an existing project directory for the Donna project config.",
     ]
     config_path: ProjectConfigPath
 

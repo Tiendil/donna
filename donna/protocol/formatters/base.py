@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from donna.machine.journal import JournalRecord
 from donna.protocol.cells import Cell
+from donna.protocol.journal import JournalRecord
 
 
 class Formatter(ABC):

@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import enum
 import importlib
 import importlib.util
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import jinja2
 
@@ -12,31 +11,11 @@ from donna.core.errors import EnvironmentErrorsProxy, ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.artifact_ids import ArtifactId
 from donna.machine.templates import Directive
+from donna.machine.templates_context import DirectiveContext
 from donna.workspaces import errors as world_errors
 
 if TYPE_CHECKING:
     from donna.workspaces.artifacts import ArtifactRenderContext
-
-
-class RenderMode(enum.Enum):
-    """Modes for rendering artifacts.
-
-    Donna could render artifacts for different purposes, for example:
-
-    - to be displayed to the agent when Donna is used via CLI
-    - TODO: to be displayed to the agent when Donna is used as an agent tool
-    - TODO: to be displayed to the agent when Donna is used as an MCP server
-    - to be used for analysis by Donna itself
-
-    In each mode Donna can produce different outputs.
-
-    For example, it can output CLI commands in view/execute mode, tool specifications in tool mode,
-    special markup in analyze mode, etc.
-    """
-
-    view = "view"
-    execute = "execute"
-    analysis = "analysis"
 
 
 _ENVIRONMENT = None
@@ -57,8 +36,9 @@ class DirectivePathBuilder:
         return DirectivePathBuilder(self._parts + (name,))
 
     @jinja2.pass_context
-    def __call__(self, context: jinja2.runtime.Context, *argv: object, **kwargs: object) -> object:  # noqa: CCR001
-        artifact_id = context.get("artifact_id")
+    def __call__(self, context: DirectiveContext, *argv: object, **kwargs: object) -> object:  # noqa: CCR001
+        raw_artifact_id = context.get("artifact_id")
+        artifact_id = cast(ArtifactId | None, raw_artifact_id if isinstance(raw_artifact_id, str) else None)
         directive_path = ".".join(self._parts)
         if len(self._parts) < 2:
             raise EnvironmentErrorsProxy(
@@ -164,7 +144,7 @@ def env() -> jinja2.Environment:
 
 
 def render(artifact_id: ArtifactId, template: str, render_context: "ArtifactRenderContext") -> Result[str, ErrorsList]:
-    context = {"render_mode": render_context.primary_mode, "artifact_id": artifact_id}
+    context: dict[str, object] = {"render_mode": render_context.primary_mode, "artifact_id": artifact_id}
 
     if render_context.current_task is not None:
         context["current_task"] = render_context.current_task
@@ -176,4 +156,4 @@ def render(artifact_id: ArtifactId, template: str, render_context: "ArtifactRend
         template_obj = env().from_string(template)
         return Ok(template_obj.render(**context))
     except EnvironmentErrorsProxy as exc:
-        return Err(exc.arguments["errors"])
+        return Err(cast(ErrorsList, exc.arguments["errors"]))

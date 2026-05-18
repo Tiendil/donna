@@ -6,7 +6,7 @@ _FIXTURES: dict[SkillDocument, str] = {
     SkillDocument.usage: "usage.md",
     SkillDocument.configuration: "configuration.md",
     SkillDocument.initialization: "initialization.md",
-    SkillDocument.artifacts: "artifacts.md",
+    SkillDocument.workflows: "workflows.md",
 }
 
 

@@ -1,3 +1,3 @@
 #!/usr/bin/bash
 
-docker compose run --rm donna $@
+docker compose run --rm donna "$@"

@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.branch_ref }}
+          ref: ${{ inputs.branch_ref || github.ref }}
 
       - name: Build containers
         run: ./bin/dev-build-containers.sh
@@ -34,6 +34,9 @@ jobs:
 
       - name: Check types
         run: ./bin/dev-check-semantics.sh
+
+      - name: Run tests
+        run: ./bin/dev-tests.sh
 
       - name: Check runtime
         run: ./bin/dev-check-runtime.sh

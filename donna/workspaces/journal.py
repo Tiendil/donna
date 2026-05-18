@@ -9,7 +9,7 @@ from donna.workspaces import errors as workspace_errors
 from donna.workspaces.config import JournalRecordAttribute
 
 if TYPE_CHECKING:
-    from donna.machine.journal import JournalRecord
+    from donna.protocol.journal import JournalRecord
 
 
 def _is_variable_argument(argument: str) -> bool:

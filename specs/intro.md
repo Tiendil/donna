@@ -1,58 +1,36 @@
+# List of specifications
 
-# Introduction to the Donna development
-This document provides an introduction to the Donna project for agents and developers who want to understand how to work with the Donna codebase.
+## Goal of the document
 
-## Project overview
+This document lists all specification documents and specification directories in the project and briefly describes their purpose.
 
-`Donna` is a CLI tool that helps manage the work of AI agents like Codex.
+## Scope
 
-It is designed to invert control flow: instead of agents deciding what to do next, the `donna` tells agents what to do next by following predefined workflows.
+The scope of this specification is limited to the specification index.
 
-The core idea is that most high-level workflows are more algorithmic than it may seem at first glance. For example, it may be difficult to fix a particular type issue in the codebase, but the overall process of polishing the codebase is quite linear:
+Detailed requirements for individual specifications are out of scope except for brief descriptions needed to keep the index useful.
 
-1. Ensure all tests pass.
-2. Ensure the code is formatted correctly.
-3. Ensure there are no linting errors.
-4. Go to the step 1 if you changed something in the process.
-5. Finish.
+## Specification directories
 
-We may need coding agents on each step of the process, but there is no reason for agents to manage the whole grooming loop by themselves — it takes longer time, spends tokens and may lead to confusion of agents.
+- `./specs/` — directory with all specifications.
+- `./specs/architecture/` — specifications related to the architecture of the system.
+- `./specs/behavior/` — specifications related to the behavior of the system.
+- `./specs/documentation/` — specifications related to project documentation artifacts.
+- `./specs/meta/` — specifications related to requirements for specification documents.
 
-## Dictionary
+## Specification documents
 
-- **Action request** — an instruction to the agent (who runs Donna) to perform the specified operations. Action requests are created by operations, like `donna.lib.request_action`. After finishing following the instructions of an action request, the agent MUST report back to Donna specifying the next operation to continue with. The list of next operations is specified in the action request itself.
-- **Artifact** — any text or binary document managed by Donna in the project filesystem; text artifacts are typically Markdown templates with metadata and are the primary units of knowledge and instructions.
-- **Artifact Section** — a part of a text artifact separated by markdown headers, has its own configuration block and semantics depending on section kind.
-- **Configuration block** — a fenced code block with the `donna` keyword (preferably TOML) that configures an artifact or its section.
-- **Directive** — a Jinja2 helper like `donna.lib.goto(...)` that adds meta information or special behavior to an artifact.
-- **Environment error** — a structured, user-facing error describing problem in the environment Donna operates in (e.g., missing artifact, invalid config). These errors are expected to be handled by agents or users.
-- **Head section** — the H1 section of a markdown artifact (before the first H2) that contains the primary description and mandatory config block.
-- **Internal error** — an error caused by a bug or unexpected state in Donna itself. These errors are not expected to be handled by agents or users.
-- **Protocol** — the output/interaction mode for Donna (e.g., `llm`) that governs CLI behavior and rendering.
-- **Session** — the active unit of work tracked by Donna; its state and artifacts live under `<project-root>/.session/donna`.
-- **Specification** — a normal Markdown document that describes behavior, rules, or project guidance.
-- **Story** — a semantically consistent scope of work within a session; a conceptual unit not directly represented in the tool.
-- **Tail section** — each H2 section of an artifact.
-- **Workspace** — the Donna project rooted at the directory containing `donna.toml`; runtime state lives under the configured session directory.
-- **Workflow** — a `donna.lib.workflow` artifact that encodes a finite-state machine of operations guiding the agent's work.
-- **Workflow operation** — a single step in a workflow, defined by a tail section with an `id`, `kind`, and instructions.
-
-## Points of interest
-
-- `./donna/` — a directory containing source code of project — `donna` CLI tool.
-- `./specs/` — a directory containing project-specific documentation.
-- `./workflows/` — a directory containing project-specific Donna workflows used to manage the work of AI agents on this project.
-- `./.session/donna/` — the configured temporary session directory used by Donna for runtime state and session artifacts.
-
-## Documentation of interest
-
-Since this is the repository that contains the Donna project itself, you MUST pay additional attention to which project-scoped artifact ids you are viewing.
-
-- `@/.agents/donna/**` contains local Donna documentation for this repository.
-- `@/specs/**` contains project-specific documentation for developing the Donna codebase. You access it when you need to understand how to introduce changes to this repository.
-- `@/workflows/**` contains project-specific workflows for developing the Donna codebase. You change them when you change the development processes of the Donna project as a software project.
-
-Check the next documents:
-
-- Read the `@/specs/core/top_level_architecture.md` file when you need to introduce any changes in Donna or to research its code.
-- Read the `@/specs/core/error_handling.md` file when you need to implement any new feature in Donna that may produce, process or propagate errors.
+- `./specs/intro.md` — this file, contains a list of all specifications and their brief descriptions.
+- `./specs/dictionary.md` — shared project-specific terminology used by multiple specifications.
+- `./specs/architecture/entities.md` — specification of project entity and data structure architecture.
+- `./specs/architecture/errors.md` — specification of project error handling architecture.
+- `./specs/architecture/modules_layout.md` — specification of the intended project module structure and ownership boundaries.
+- `./specs/architecture/naming.md` — specification of project code naming conventions.
+- `./specs/architecture/tests.md` — specification of project test organization and testing expectations.
+- `./specs/behavior/cli.md` — specification of the `donna` command line interface.
+- `./specs/behavior/config.md` — specification of the `donna.toml` configuration file behavior.
+- `./specs/behavior/file_paths.md` — specification of Donna local project path, artifact id, and artifact section id syntax and resolution behavior.
+- `./specs/behavior/skill_fixtures.md` — specification of built-in skill documentation fixture behavior.
+- `./specs/documentation/changelog.md` — specification of changelog tooling, source files, version record structure, and entry format.
+- `./specs/documentation/readme.md` — specification of the root `README.md` content, structure, source material, and tone.
+- `./specs/meta/general.md` — general requirements for specification documents.

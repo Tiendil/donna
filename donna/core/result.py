@@ -5,10 +5,12 @@ from typing import Callable, Generic, ParamSpec, TypeVar, cast
 
 from donna.core.errors import InternalError
 
-T = TypeVar("T")
+T = TypeVar("T", covariant=True)
 U = TypeVar("U")
-E = TypeVar("E")
+E = TypeVar("E", covariant=True)
 F = TypeVar("F")
+TValue = TypeVar("TValue")
+EValue = TypeVar("EValue")
 P = ParamSpec("P")
 
 
@@ -27,7 +29,7 @@ class UnwrapErrError(ResultError):
 class Result(Generic[T, E]):
     __slots__ = ("_is_ok", "_value")
 
-    def __init__(self, is_ok: bool, value: T | E) -> None:
+    def __init__(self, is_ok: bool, value: object) -> None:
         self._is_ok = is_ok
         self._value = value
 
@@ -75,11 +77,11 @@ class Result(Generic[T, E]):
         return Result(True, cast(T, self._value))
 
 
-def Ok(value: T) -> Result[T, E]:
+def Ok(value: TValue) -> Result[TValue, EValue]:
     return Result(True, value)
 
 
-def Err(error: E) -> Result[T, E]:
+def Err(error: EValue) -> Result[TValue, EValue]:
     return Result(False, error)
 
 

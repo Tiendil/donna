@@ -1,11 +1,10 @@
-from typing import Any, cast
-
-from jinja2.runtime import Context
+from typing import cast
 
 from donna.core import errors as core_errors
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.machine.templates import Directive, PreparedDirectiveResult
+from donna.machine.templates_context import DirectiveContext
 
 
 class EnvironmentError(core_errors.EnvironmentError):
@@ -28,8 +27,9 @@ class TaskVariableTaskContextMissing(EnvironmentError):
 class TaskVariable(Directive):
     def _prepare_arguments(
         self,
-        context: Context,
-        *argv: Any,
+        context: DirectiveContext,
+        *argv: object,
+        **kwargs: object,
     ) -> PreparedDirectiveResult:
         if argv is None or len(argv) != 1:
             return Err([TaskVariableInvalidArguments(provided_count=0 if argv is None else len(argv))])
@@ -38,13 +38,15 @@ class TaskVariable(Directive):
 
         return Ok((variable_name,))
 
-    def render_view(self, context: Context, variable_name: str) -> Result[Any, ErrorsList]:
+    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object, ErrorsList]:
+        variable_name = str(argv[0])
         return Ok(
-            "$$donna at the time of execution of this section here will placed a value "
+            "$$donna at the time of execution of this section will place a value "
             f"of the task variable '{variable_name}' donna$$"
         )
 
-    def render_execute(self, context: Context, variable_name: str) -> Result[Any, ErrorsList]:
+    def render_execute(self, context: DirectiveContext, *argv: object) -> Result[object, ErrorsList]:
+        variable_name = str(argv[0])
         task_context = self._resolve_task_context(context)
         if task_context is None:
             return Err([TaskVariableTaskContextMissing()])
@@ -61,13 +63,13 @@ class TaskVariable(Directive):
 
         return Ok(task_context[variable_name])
 
-    def _resolve_task_context(self, context: Context) -> dict[str, Any] | None:
+    def _resolve_task_context(self, context: DirectiveContext) -> dict[str, object] | None:
         task = context.get("current_task")
         if task is not None and hasattr(task, "context"):
-            return cast(dict[str, Any], task.context)
+            return cast(dict[str, object], task.context)
 
         task_context = context.get("task_context")
         if isinstance(task_context, dict):
-            return cast(dict[str, Any], task_context)
+            return cast(dict[str, object], task_context)
 
         return None

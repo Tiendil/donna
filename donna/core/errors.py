@@ -1,16 +1,12 @@
-from typing import Any
-
 import pydantic
 
 from donna.core.entities import BaseEntity
-from donna.protocol.cells import Cell, MetaValue, to_meta_value
-from donna.protocol.nodes import Node
 
 
 class InternalError(Exception):
     message = "An internal error occurred"
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, **kwargs: object) -> None:
         self.arguments = kwargs
 
     def error_message(self) -> str:
@@ -31,9 +27,6 @@ class EnvironmentError(BaseEntity):
     def content_intro(self) -> str:
         return "Error"
 
-    def node(self) -> "EnvironmentErrorNode":
-        return EnvironmentErrorNode(self)
-
 
 class EnvironmentErrorsProxy(InternalError):
     message = "This is a technical exception to pass an environment error up the call stack."
@@ -46,74 +39,6 @@ class CoreEnvironmentError(EnvironmentError):
     """Base class for environment errors in donna.core."""
 
     cell_kind: str = "core_environment_error"
-
-
-class ProjectDirNotFound(CoreEnvironmentError):
-    code: str = "donna.core.project_dir_not_found"
-    message: str = "Could not find a project directory containing `{error.config_name}`."
-    ways_to_fix: list[str] = [
-        "Run Donna from within a project directory that contains the Donna config file.",
-        "Create the Donna project config via CLI command if it does not exist yet.",
-    ]
-    config_name: str
-
-
-class EnvironmentErrorNode(Node):
-    __slots__ = ("_error",)
-
-    def __init__(self, environment_error: EnvironmentError) -> None:
-        self._error = environment_error
-
-    def meta(self) -> dict[str, MetaValue]:
-        meta: dict[str, MetaValue] = {
-            "error_code": self._error.code,
-        }
-
-        for field_name, _field in self._error.model_fields.items():
-            if field_name in ("code", "message", "cell_kind", "cell_media_type", "ways_to_fix"):
-                continue
-
-            value = getattr(self._error, field_name)
-
-            if value is None:
-                continue
-
-            meta[field_name] = to_meta_value(value)
-
-        return meta
-
-    def content(self) -> str:
-        intro = self._error.content_intro()
-
-        message = self._error.message.format(error=self._error).strip()
-
-        ways_to_fix = [fix.format(error=self._error).strip() for fix in self._error.ways_to_fix]
-
-        if "\n" in self._error.message:
-            content = f"{intro}:\n\n{message}"
-        else:
-            content = f"{intro}: {message}"
-
-        if not ways_to_fix:
-            return content
-
-        if len(ways_to_fix) == 1:
-            return f"{content}\nWay to fix: {ways_to_fix[0]}"
-
-        fixes = "\n".join(f"- {fix}" for fix in ways_to_fix)
-
-        return f"{content}\n\nWays to fix:\n\n{fixes}"
-
-    def status(self) -> Cell:
-        return Cell.build(
-            kind=self._error.cell_kind,
-            media_type=self._error.cell_media_type,
-            content=self.content(),
-            **self.meta(),
-        )
-
-    def journal_message(self) -> str:
-        return self._error.message.format(error=self._error).replace("\n", " ").strip()
 
 
 ErrorsList = list[EnvironmentError]

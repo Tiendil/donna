@@ -2,12 +2,44 @@
 
 Initiate operations to polish and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc. This workflow MUST NOT be used to introduce new logic into the project or refactor it — only to fix existing issues.
 
+## Run Tach
+
+```toml donna
+id = "run_tach_script"
+kind = "donna.lib.run_script"
+fsm_mode = "start"
+save_stdout_to = "tach_output"
+goto_on_success = "run_autoflake_script"
+goto_on_failure = "fix_tach"
+```
+
+```bash donna script
+#!/usr/bin/env bash
+
+./bin/dev.sh uv run tach check 2>&1
+```
+
+## Fix Tach Issues
+
+```toml donna
+id = "fix_tach"
+kind = "donna.lib.request_action"
+```
+
+```
+{{ donna.lib.task_variable("tach_output") }}
+```
+
+1. Fix the tach issues based on the output above that you are allowed to fix.
+2. Ask the developer to fix any remaining issues manually.
+3. Ensure your changes are saved.
+4. `{{ donna.lib.goto("run_tach_script") }}`
+
 ## Run Autoflake
 
 ```toml donna
 id = "run_autoflake_script"
 kind = "donna.lib.run_script"
-fsm_mode = "start"
 save_stdout_to = "autoflake_output"
 goto_on_success = "run_isort_script"
 goto_on_failure = "fix_autoflake"
@@ -16,7 +48,7 @@ goto_on_failure = "fix_autoflake"
 ```bash donna script
 #!/usr/bin/env bash
 
-autoflake ./donna
+./bin/dev.sh uv run autoflake ./donna
 ```
 
 ## Fix Autoflake Issues
@@ -32,7 +64,7 @@ kind = "donna.lib.request_action"
 
 1. Fix the autoflake issues based on the output above.
 2. Ensure your changes are saved.
-3. `{{ donna.lib.goto("run_autoflake_script") }}`
+3. `{{ donna.lib.goto("run_tach_script") }}`
 
 ## Run isort
 
@@ -47,7 +79,7 @@ goto_on_failure = "fix_isort"
 ```bash donna script
 #!/usr/bin/env bash
 
-isort ./donna
+./bin/dev.sh uv run isort ./donna
 ```
 
 ## Fix isort Issues
@@ -63,7 +95,7 @@ kind = "donna.lib.request_action"
 
 1. Fix the isort issues based on the output above.
 2. Ensure your changes are saved.
-3. `{{ donna.lib.goto("run_autoflake_script") }}`
+3. `{{ donna.lib.goto("run_tach_script") }}`
 
 ## Run Black
 
@@ -78,7 +110,7 @@ goto_on_failure = "fix_black"
 ```bash donna script
 #!/usr/bin/env bash
 
-black ./donna
+./bin/dev.sh uv run black ./donna
 ```
 
 ## Fix Black Issues
@@ -94,7 +126,7 @@ kind = "donna.lib.request_action"
 
 1. Fix the Black issues based on the output above.
 2. Ensure your changes are saved.
-3. `{{ donna.lib.goto("run_autoflake_script") }}`
+3. `{{ donna.lib.goto("run_tach_script") }}`
 
 ## Run Codespell
 
@@ -109,7 +141,7 @@ goto_on_failure = "fix_codespell"
 ```bash donna script
 #!/usr/bin/env bash
 
-codespell ./donna 2>&1
+./bin/dev.sh uv run codespell ./donna 2>&1
 ```
 
 ## Fix Codespell Issues
@@ -125,7 +157,7 @@ kind = "donna.lib.request_action"
 
 1. Fix the codespell issues based on the output above.
 2. Ensure your changes are saved.
-3. `{{ donna.lib.goto("run_autoflake_script") }}`
+3. `{{ donna.lib.goto("run_tach_script") }}`
 
 ## Run Flake8
 
@@ -140,7 +172,7 @@ goto_on_failure = "fix_flake8"
 ```bash donna script
 #!/usr/bin/env bash
 
-flake8 ./donna 2>&1
+./bin/dev.sh uv run flake8 ./donna 2>&1
 ```
 
 ## Fix Flake8 Issues
@@ -156,7 +188,7 @@ kind = "donna.lib.request_action"
 
 1. Fix the flake8 issues based on the output above.
 2. Ensure your changes are saved.
-3. `{{ donna.lib.goto("run_autoflake_script") }}`
+3. `{{ donna.lib.goto("run_tach_script") }}`
 
 Instructions on fixing special cases:
 
@@ -171,14 +203,14 @@ Instructions on fixing special cases:
 id = "run_mypy_script"
 kind = "donna.lib.run_script"
 save_stdout_to = "mypy_output"
-goto_on_success = "finish"
+goto_on_success = "run_tests_script"
 goto_on_failure = "fix_mypy"
 ```
 
 ```bash donna script
 #!/usr/bin/env bash
 
-mypy ./donna
+./bin/dev.sh uv run mypy ./donna
 ```
 
 ## Fix Mypy Issues
@@ -195,7 +227,7 @@ kind = "donna.lib.request_action"
 1. Fix the mypy issues based on the output above that you are allowed to fix.
 2. Ask the developer to fix any remaining issues manually.
 3. Ensure your changes are saved.
-4. `{{ donna.lib.goto("run_autoflake_script") }}`
+4. `{{ donna.lib.goto("run_tach_script") }}`
 
 Issues you are allowed to fix:
 
@@ -214,6 +246,38 @@ Changes you are not allowed to make:
 - Introducing new protocols.
 - Adding `type: ignore[import-untyped]`. If you need to use it, ask the developer to install the missing types first or to fix the issue manually.
 - Adding or removing attributes to classes. If you need to do it, ask the developer to fix the problem manually.
+
+## Run Tests
+
+```toml donna
+id = "run_tests_script"
+kind = "donna.lib.run_script"
+save_stdout_to = "tests_output"
+goto_on_success = "finish"
+goto_on_failure = "fix_tests"
+```
+
+```bash donna script
+#!/usr/bin/env bash
+
+./bin/dev.sh uv run pytest donna -o cache_dir=/tmp/donna-pytest-cache 2>&1
+```
+
+## Fix Test Issues
+
+```toml donna
+id = "fix_tests"
+kind = "donna.lib.request_action"
+```
+
+```
+{{ donna.lib.task_variable("tests_output") }}
+```
+
+1. Fix the test failures based on the output above that you are allowed to fix.
+2. Ask the developer to fix any remaining failures manually.
+3. Ensure your changes are saved.
+4. `{{ donna.lib.goto("run_tach_script") }}`
 
 ## Finish
 

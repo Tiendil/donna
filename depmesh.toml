@@ -1,0 +1,375 @@
+version = 1
+
+#############################
+# Relation: tested_by / tests
+#############################
+
+[[relations]]
+id = "tested_by"
+description = "Tests that verify the artifact."
+
+[[relations]]
+id = "tests"
+description = "Artifacts verified by the test."
+
+# Package initializers are verified by matching tests/test_init.py files.
+[[rules]]
+relation = "tested_by"
+input = { type = "all", items = [
+  { type = "glob", pattern = "@/donna/{**package_path}/__init__.py" },
+  { type = "not", item = { type = "glob", pattern = "@/donna/**/tests/**/*.py" } },
+] }
+output = { type = "files", pattern = "@/donna/{package_path}/tests/test_init.py" }
+
+# Regular Python modules are verified by sibling tests/test_<module>.py files.
+[[rules]]
+relation = "tested_by"
+input = { type = "all", items = [
+  { type = "glob", pattern = "@/donna/{**package_path}/{*module}.py" },
+  { type = "not", item = { type = "glob", pattern = "@/donna/**/__init__.py" } },
+  { type = "not", item = { type = "glob", pattern = "@/donna/**/tests/**/*.py" } },
+] }
+output = { type = "files", pattern = "@/donna/{package_path}/tests/test_{module}.py" }
+
+# tests/test_init.py maps back to the package initializer it verifies.
+[[rules]]
+relation = "tests"
+input = { type = "glob", pattern = "@/donna/{**package_path}/tests/test_init.py" }
+output = { type = "list", artifacts = ["@/donna/{package_path}/__init__.py"] }
+
+# tests/test_<module>.py maps back to the module it verifies.
+[[rules]]
+relation = "tests"
+input = { type = "all", items = [
+  { type = "glob", pattern = "@/donna/{**package_path}/tests/test_{*module}.py" },
+  { type = "not", item = { type = "glob", pattern = "@/donna/**/tests/test_init.py" } },
+] }
+output = { type = "list", artifacts = ["@/donna/{package_path}/{module}.py"] }
+
+#################################
+# Relation: imports / imported_by
+#################################
+
+[[relations]]
+id = "imports"
+description = "Python files imported by the artifact."
+
+[[relations]]
+id = "imported_by"
+description = "Python files that import the artifact."
+
+# Tach provides direct Python imports for project modules.
+[[rules]]
+relation = "imports"
+input = { type = "glob", pattern = "@/donna/{**module_path}.py" }
+output = {
+  type = "command",
+  command = "python ./bin/tach-map-query.py --direction dependencies --artifact ./donna/{module_path}.py",
+}
+
+# Tach provides reverse Python import lookups for project modules.
+[[rules]]
+relation = "imported_by"
+input = { type = "glob", pattern = "@/donna/{**module_path}.py" }
+output = {
+  type = "command",
+  command = "python ./bin/tach-map-query.py --direction dependents --artifact ./donna/{module_path}.py",
+}
+
+################################
+# Relation: governed_by / governs
+################################
+
+[[relations]]
+id = "governed_by"
+description = "Specifications that apply to the artifact."
+
+[[relations]]
+id = "governs"
+description = "Artifacts governed by the specification."
+
+# Every specification document is governed by the general specification rules.
+# Note: general.md governs itself too.
+[[rules]]
+relation = "governed_by"
+input = { type = "any", items = [
+  { type = "glob", pattern = "@/specs/*.md" },
+  { type = "glob", pattern = "@/specs/**/*.md" },
+] }
+output = { type = "list", artifacts = ["@/specs/meta/general.md"] }
+
+# The general specification rules govern every specification document.
+# Note: general.md governs itself too.
+[[rules]]
+relation = "governs"
+input = { type = "one_of", artifacts = ["@/specs/meta/general.md"] }
+output = { type = "union", items = [
+  { type = "files", pattern = "@/specs/*.md" },
+  { type = "files", pattern = "@/specs/**/*.md" },
+] }
+
+# Python files are governed by every architecture spec.
+[[rules]]
+relation = "governed_by"
+input = { type = "glob", pattern = "@/donna/**/*.py" }
+output = { type = "files", pattern = "@/specs/architecture/*.md" }
+
+# Architecture specs govern every Python file.
+[[rules]]
+relation = "governs"
+input = { type = "glob", pattern = "@/specs/architecture/*.md" }
+output = { type = "files", pattern = "@/donna/**/*.py" }
+
+# CLI, protocol, and skill-facing code is governed by the CLI behavior spec.
+[[rules]]
+relation = "governed_by"
+input = { type = "any", items = [
+  { type = "glob", pattern = "@/donna/cli/**/*.py" },
+  { type = "glob", pattern = "@/donna/protocol/**/*.py" },
+  { type = "glob", pattern = "@/donna/skills/**/*.py" },
+  { type = "glob", pattern = "@/donna/skills/**/*.md" },
+  { type = "one_of", artifacts = [
+    "@/donna/__init__.py",
+    "@/donna/cli/__main__.py",
+  ] },
+] }
+output = { type = "list", artifacts = ["@/specs/behavior/cli.md"] }
+
+# The CLI behavior spec governs CLI, protocol, skill, and entrypoint code.
+[[rules]]
+relation = "governs"
+input = { type = "one_of", artifacts = ["@/specs/behavior/cli.md"] }
+output = { type = "union", items = [
+  { type = "files", pattern = "@/donna/cli/**/*.py" },
+  { type = "files", pattern = "@/donna/protocol/**/*.py" },
+  { type = "files", pattern = "@/donna/skills/**/*.py" },
+  { type = "files", pattern = "@/donna/skills/**/*.md" },
+  { type = "list", artifacts = [
+    "@/donna/__init__.py",
+    "@/donna/cli/__main__.py",
+  ] },
+] }
+
+# Configuration behavior governs configuration loading, initialization, fixtures, and project config artifacts.
+[[rules]]
+relation = "governed_by"
+input = { type = "any", items = [
+  { type = "one_of", artifacts = [
+    "@/donna.toml",
+    "@/donna/workspaces/fixtures/base_config.toml",
+  ] },
+  { type = "glob", pattern = "@/donna/workspaces/config.py" },
+  { type = "glob", pattern = "@/donna/workspaces/initialization.py" },
+  { type = "glob", pattern = "@/donna/workspaces/journal.py" },
+] }
+output = { type = "list", artifacts = ["@/specs/behavior/config.md"] }
+
+# The configuration spec governs configuration loading, initialization, fixtures, and project config artifacts.
+[[rules]]
+relation = "governs"
+input = { type = "one_of", artifacts = ["@/specs/behavior/config.md"] }
+output = { type = "union", items = [
+  { type = "list", artifacts = [
+    "@/donna.toml",
+    "@/donna/workspaces/fixtures/base_config.toml",
+  ] },
+  { type = "files", pattern = "@/donna/workspaces/config.py" },
+  { type = "files", pattern = "@/donna/workspaces/initialization.py" },
+  { type = "files", pattern = "@/donna/workspaces/journal.py" },
+] }
+
+# File path behavior governs project path and artifact id normalization code.
+[[rules]]
+relation = "governed_by"
+input = { type = "any", items = [
+  { type = "glob", pattern = "@/donna/domain/*paths.py" },
+  { type = "glob", pattern = "@/donna/domain/artifact_ids.py" },
+  { type = "glob", pattern = "@/donna/domain/id_paths.py" },
+  { type = "glob", pattern = "@/donna/workspaces/paths.py" },
+  { type = "glob", pattern = "@/donna/workspaces/files.py" },
+  { type = "glob", pattern = "@/donna/workspaces/artifacts.py" },
+  { type = "glob", pattern = "@/donna/cli/**/*.py" },
+] }
+output = { type = "list", artifacts = ["@/specs/behavior/file_paths.md"] }
+
+# The file path behavior spec governs project path and artifact id normalization code.
+[[rules]]
+relation = "governs"
+input = { type = "one_of", artifacts = ["@/specs/behavior/file_paths.md"] }
+output = { type = "union", items = [
+  { type = "files", pattern = "@/donna/domain/*paths.py" },
+  { type = "files", pattern = "@/donna/domain/artifact_ids.py" },
+  { type = "files", pattern = "@/donna/domain/id_paths.py" },
+  { type = "files", pattern = "@/donna/workspaces/paths.py" },
+  { type = "files", pattern = "@/donna/workspaces/files.py" },
+  { type = "files", pattern = "@/donna/workspaces/artifacts.py" },
+  { type = "files", pattern = "@/donna/cli/**/*.py" },
+] }
+
+# Built-in skill fixtures are governed by the skill fixture behavior spec.
+[[rules]]
+relation = "governed_by"
+input = { type = "any", items = [
+  { type = "glob", pattern = "@/donna/skills/fixtures.py" },
+  { type = "glob", pattern = "@/donna/skills/fixtures/*.md" },
+] }
+output = { type = "list", artifacts = ["@/specs/behavior/skill_fixtures.md"] }
+
+# The skill fixture behavior spec governs built-in skill fixtures.
+[[rules]]
+relation = "governs"
+input = { type = "one_of", artifacts = ["@/specs/behavior/skill_fixtures.md"] }
+output = { type = "union", items = [
+  { type = "files", pattern = "@/donna/skills/fixtures.py" },
+  { type = "files", pattern = "@/donna/skills/fixtures/*.md" },
+] }
+
+################################
+# Relation: changelog documentation
+################################
+
+# Changelog artifacts are governed by the changelog documentation spec.
+[[rules]]
+relation = "governed_by"
+input = { type = "any", items = [
+  { type = "one_of", artifacts = ["@/CHANGELOG.md"] },
+  { type = "glob", pattern = "@/changes/*.md" },
+] }
+output = { type = "list", artifacts = ["@/specs/documentation/changelog.md"] }
+
+# The changelog documentation spec governs changelog artifacts.
+[[rules]]
+relation = "governs"
+input = { type = "one_of", artifacts = ["@/specs/documentation/changelog.md"] }
+output = { type = "union", items = [
+  { type = "list", artifacts = ["@/CHANGELOG.md"] },
+  { type = "files", pattern = "@/changes/*.md" },
+] }
+
+################################
+# Relation: README documentation
+################################
+
+# README.md is governed by its documentation spec.
+[[rules]]
+relation = "governed_by"
+input = { type = "one_of", artifacts = ["@/README.md"] }
+output = { type = "list", artifacts = ["@/specs/documentation/readme.md"] }
+
+# The README documentation spec governs README.md.
+[[rules]]
+relation = "governs"
+input = { type = "one_of", artifacts = ["@/specs/documentation/readme.md"] }
+output = { type = "list", artifacts = ["@/README.md"] }
+
+# Dependency mesh and Tach configuration are governed by the module layout architecture spec.
+[[rules]]
+relation = "governed_by"
+input = { type = "one_of", artifacts = [
+  "@/AGENTS.md",
+  "@/bin/tach-map-query.py",
+  "@/depmesh.toml",
+  "@/tach.toml",
+] }
+output = { type = "list", artifacts = ["@/specs/architecture/modules_layout.md"] }
+
+# The module layout spec governs dependency mesh and Tach configuration.
+[[rules]]
+relation = "governs"
+input = { type = "one_of", artifacts = ["@/specs/architecture/modules_layout.md"] }
+output = { type = "list", artifacts = [
+  "@/AGENTS.md",
+  "@/bin/tach-map-query.py",
+  "@/depmesh.toml",
+  "@/tach.toml",
+] }
+
+############################################
+# Relation: terms_defined_by / defines_terms_for
+############################################
+
+[[relations]]
+id = "terms_defined_by"
+description = "Dictionaries that define terms used by the artifact."
+
+[[relations]]
+id = "defines_terms_for"
+description = "Artifacts that use terms from the dictionary."
+
+# Specs, code, workflows, documentation, and dependency metadata use terms defined in the project dictionary.
+# Note: dictionary.md can define terms for itself too.
+[[rules]]
+relation = "terms_defined_by"
+input = { type = "any", items = [
+  { type = "glob", pattern = "@/specs/*.md" },
+  { type = "glob", pattern = "@/specs/**/*.md" },
+  { type = "glob", pattern = "@/donna/**/*.py" },
+  { type = "glob", pattern = "@/donna/**/*.md" },
+  { type = "glob", pattern = "@/workflows/**/*.donna.md" },
+  { type = "glob", pattern = "@/changes/*.md" },
+  { type = "one_of", artifacts = [
+    "@/AGENTS.md",
+    "@/bin/tach-map-query.py",
+    "@/CHANGELOG.md",
+    "@/README.md",
+    "@/depmesh.toml",
+    "@/donna.toml",
+    "@/tach.toml",
+  ] },
+] }
+output = { type = "list", artifacts = ["@/specs/dictionary.md"] }
+
+# The dictionary defines terms used by specs, code, workflows, documentation, and dependency metadata.
+# Note: dictionary.md can define terms for itself too.
+[[rules]]
+relation = "defines_terms_for"
+input = { type = "one_of", artifacts = ["@/specs/dictionary.md"] }
+output = { type = "union", items = [
+  { type = "files", pattern = "@/specs/*.md" },
+  { type = "files", pattern = "@/specs/**/*.md" },
+  { type = "files", pattern = "@/donna/**/*.py" },
+  { type = "files", pattern = "@/donna/**/*.md" },
+  { type = "files", pattern = "@/workflows/**/*.donna.md" },
+  { type = "files", pattern = "@/changes/*.md" },
+  { type = "list", artifacts = [
+    "@/AGENTS.md",
+    "@/bin/tach-map-query.py",
+    "@/CHANGELOG.md",
+    "@/README.md",
+    "@/depmesh.toml",
+    "@/donna.toml",
+    "@/tach.toml",
+  ] },
+] }
+
+#############################
+# Relation: indexed_by / indexes
+#############################
+
+[[relations]]
+id = "indexed_by"
+description = "Indexes that list the specification."
+
+[[relations]]
+id = "indexes"
+description = "Specifications listed by the index."
+
+# Every specification document is listed by the spec index.
+# Note: intro.md indexes itself too.
+[[rules]]
+relation = "indexed_by"
+input = { type = "any", items = [
+  { type = "glob", pattern = "@/specs/*.md" },
+  { type = "glob", pattern = "@/specs/**/*.md" },
+] }
+output = { type = "list", artifacts = ["@/specs/intro.md"] }
+
+# intro.md indexes every specification document.
+# Note: intro.md indexes itself too.
+[[rules]]
+relation = "indexes"
+input = { type = "one_of", artifacts = ["@/specs/intro.md"] }
+output = { type = "union", items = [
+  { type = "files", pattern = "@/specs/*.md" },
+  { type = "files", pattern = "@/specs/**/*.md" },
+] }

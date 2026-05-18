@@ -7,4 +7,4 @@ GLOBAL_OPTIONS_CONTEXT_KEY = "donna_global_options"
 
 class GlobalOptions(BaseEntity):
     protocol: Mode
-    root_dir: UntrustedPath | None = None
+    config_path: UntrustedPath | None = None

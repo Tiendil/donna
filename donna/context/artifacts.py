@@ -4,8 +4,9 @@ from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId
 from donna.machine.artifacts import Artifact
+from donna.machine.tasks import Task, WorkUnit
+from donna.machine.templates import RenderMode
 from donna.workspaces import errors as workspace_errors
-from donna.workspaces.templates import RenderMode
 
 if TYPE_CHECKING:
     from donna.workspaces.artifacts import ArtifactRenderContext, FilesystemRawArtifact
@@ -77,6 +78,28 @@ class ArtifactsCache:
 
     def invalidate(self, artifact_id: ArtifactId) -> None:
         self._cache.pop(artifact_id, None)
+
+    def load_for_view(self, artifact_id: ArtifactId) -> Result[Artifact, ErrorsList]:
+        from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
+
+        return self.load(artifact_id, RENDER_CONTEXT_VIEW)
+
+    def load_for_execution(
+        self,
+        artifact_id: ArtifactId,
+        task: Task,
+        work_unit: WorkUnit,
+    ) -> Result[Artifact, ErrorsList]:
+        from donna.workspaces.artifacts import ArtifactRenderContext
+
+        return self.load(
+            artifact_id,
+            ArtifactRenderContext(
+                primary_mode=RenderMode.execute,
+                current_task=task,
+                current_work_unit=work_unit,
+            ),
+        )
 
     @unwrap_to_error
     def load(  # noqa: CCR001

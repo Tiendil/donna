@@ -1,13 +1,8 @@
 """Shared instances for standard library kind definitions."""
 
-from donna.primitives.artifacts.workflow import Workflow
-from donna.primitives.directives.goto import GoTo
-from donna.primitives.directives.task_variable import TaskVariable
-from donna.primitives.sections.finish_workflow import FinishWorkflow
-from donna.primitives.sections.output import Output
-from donna.primitives.sections.request_action import RequestAction
-from donna.primitives.sections.run_script import RunScript
-from donna.primitives.sections.text import Text
+from donna.primitives.artifacts import Workflow
+from donna.primitives.directives import GoTo, TaskVariable
+from donna.primitives.sections import FinishWorkflow, Output, RequestAction, RunScript, Text
 
 workflow = Workflow()
 text = Text()

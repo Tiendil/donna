@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import pydantic
 
@@ -9,7 +9,7 @@ from donna.core.entities import BaseEntity
 from donna.domain.constants import DONNA_DEFAULT_SESSION_DIR, DONNA_DEFAULT_WORKFLOW_DIR
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
-from donna.domain.paths import ProjectRootPath, RelativeProjectPath
+from donna.domain.paths import ProjectConfigPath, ProjectRootPath, RelativeProjectPath
 from donna.domain.python_path import PythonPath
 from donna.workspaces import errors as world_errors
 
@@ -60,6 +60,12 @@ class JournalConfig(BaseEntity):
         return value
 
 
+class DefaultsConfig(BaseEntity):
+    tail_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.text"))
+    primary_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.workflow"))
+    primary_section_id: SectionId = SectionId("primary")
+
+
 def _default_workflow_dirs() -> list[RelativeProjectPath]:
     return [
         RelativeProjectPath(DONNA_DEFAULT_WORKFLOW_DIR),
@@ -82,10 +88,9 @@ def _validate_relative_project_path(path: RelativeProjectPath) -> RelativeProjec
 
 
 class Config(BaseEntity):
+    version: Literal[1] = 1
     session_dir: RelativeProjectPath = RelativeProjectPath(DONNA_DEFAULT_SESSION_DIR)
-    default_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.text"))
-    default_primary_section_kind: PythonPath = PythonPath(NormalizedRawIdPath("donna.lib.workflow"))
-    default_primary_section_id: SectionId = SectionId("primary")
+    defaults: DefaultsConfig = pydantic.Field(default_factory=DefaultsConfig)
     workflow_dirs: list[RelativeProjectPath] = pydantic.Field(default_factory=_default_workflow_dirs)
     journal: JournalConfig = pydantic.Field(default_factory=JournalConfig)
 
@@ -117,6 +122,7 @@ class Workspace(BaseEntity):
     model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
 
     root: ProjectRootPath
+    config_path: ProjectConfigPath
     config: Config
 
 
@@ -146,6 +152,7 @@ class GlobalConfig[V]():
 
 
 project_dir = GlobalConfig[ProjectRootPath]()
+config_path = GlobalConfig[ProjectConfigPath]()
 config = GlobalConfig[Config]()
 protocol: GlobalConfig["Mode"] = GlobalConfig()
 
@@ -153,6 +160,9 @@ protocol: GlobalConfig["Mode"] = GlobalConfig()
 def install_workspace(workspace: Workspace) -> None:
     if not project_dir.is_set():
         project_dir.set(ProjectRootPath(workspace.root))
+
+    if not config_path.is_set():
+        config_path.set(ProjectConfigPath(workspace.config_path))
 
     if not config.is_set():
         config.set(workspace.config)

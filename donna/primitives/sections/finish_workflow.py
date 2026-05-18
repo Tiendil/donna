@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, ClassVar, Literal, cast
 
+from donna.context.context import context
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId
@@ -7,7 +8,6 @@ from donna.domain.ids import SectionId
 from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
 from donna.protocol import cell_shortcuts
-from donna.protocol.utils import instant_output_cell
 from donna.workspaces import markdown
 from donna.workspaces.markdown_parser import MarkdownSectionMixin
 
@@ -29,7 +29,7 @@ class FinishWorkflow(MarkdownSectionMixin, OperationKind):
 
         operation = artifact.get_section(section_id).unwrap()
         info = cell_shortcuts.info(operation.description)
-        instant_output_cell(info)
+        context().output.emit_cell(info)
 
         return Ok([ChangeFinishTask(task_id=task.id)])
 
@@ -44,4 +44,4 @@ class FinishWorkflow(MarkdownSectionMixin, OperationKind):
         primary: bool = False,
     ) -> Result[ArtifactSectionMeta, ErrorsList]:
         finish_config = cast(FinishWorkflowConfig, section_config)
-        return Ok(OperationMeta(fsm_mode=finish_config.fsm_mode, allowed_transtions=set()))
+        return Ok(OperationMeta(fsm_mode=finish_config.fsm_mode, allowed_transitions=set()))

@@ -1,0 +1,159 @@
+source_roots = ["."]
+root_module = "ignore"
+ignore_type_checking_imports = true
+forbid_circular_dependencies = true
+layers_explicit_depends_on = true
+
+exclude = [
+  ".git/",
+  ".mypy_cache/",
+  ".pytest_cache/",
+  ".session/",
+  ".venv/",
+  ".venv-donna/",
+  "build/",
+  "dist/",
+  "**/__pycache__/",
+]
+
+layers = [
+  "meta-tests",
+  "cli",
+  "runtime",
+  "lib",
+  "primitives",
+  "context",
+  "workspace",
+  "machine",
+  "protocol",
+  "domain",
+  "support",
+  "core",
+]
+
+[[modules]]
+path = "donna"
+depends_on = []
+visibility = []
+
+[[modules]]
+path = "donna.**.tests"
+depends_on = [
+  "donna.**",
+  "donna.**.tests",
+]
+layer = "meta-tests"
+
+[[modules]]
+path = "donna.cli"
+depends_on = [
+  "donna.context",
+  "donna.core",
+  "donna.domain",
+  "donna.lib",
+  "donna.machine",
+  "donna.primitives",
+  "donna.protocol",
+  "donna.runtime",
+  "donna.skills",
+  "donna.workspaces",
+]
+layer = "cli"
+
+[[modules]]
+path = "donna.runtime"
+depends_on = [
+  "donna.context",
+  "donna.core",
+  "donna.domain",
+  "donna.machine",
+  "donna.protocol",
+  "donna.workspaces",
+]
+layer = "runtime"
+
+[[modules]]
+path = "donna.lib"
+depends_on = [
+  "donna.primitives",
+]
+layer = "lib"
+
+[[modules]]
+path = "donna.primitives"
+depends_on = [
+  "donna.context",
+  "donna.core",
+  "donna.domain",
+  "donna.machine",
+  "donna.protocol",
+  "donna.workspaces",
+]
+layer = "primitives"
+
+[[modules]]
+path = "donna.context"
+depends_on = [
+  "donna.core",
+  "donna.domain",
+  "donna.machine",
+  "donna.protocol",
+  "donna.workspaces",
+]
+layer = "context"
+
+[[modules]]
+path = "donna.workspaces"
+depends_on = [
+  "donna.core",
+  "donna.domain",
+  "donna.machine",
+  "donna.protocol",
+]
+layer = "workspace"
+
+[[modules]]
+path = "donna.protocol"
+depends_on = [
+  "donna.core",
+  "donna.domain",
+]
+layer = "protocol"
+
+[[modules]]
+path = "donna.machine"
+depends_on = [
+  "donna.core",
+  "donna.domain",
+  "donna.protocol",
+]
+layer = "machine"
+
+[[modules]]
+path = "donna.domain"
+depends_on = [
+  "donna.core",
+]
+layer = "domain"
+
+[[modules]]
+path = "donna.skills"
+depends_on = []
+layer = "support"
+
+[[modules]]
+path = "donna.core"
+depends_on = []
+layer = "core"
+
+[external]
+exclude = [
+  "pytest",
+  "pytest_mock",
+  "tach",
+  "typer",
+]
+
+[rules]
+unused_ignore_directives = "warn"
+require_ignore_directive_reasons = "off"

@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, ClassVar, cast
 
+from donna.context.context import context
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId, artifact_section_id, split_artifact_section_id
@@ -8,7 +9,6 @@ from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSec
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta
 from donna.protocol import cell_shortcuts
-from donna.protocol.utils import instant_output_cell
 from donna.workspaces import markdown
 from donna.workspaces.markdown_parser import MarkdownSectionMixin
 
@@ -53,7 +53,7 @@ class Output(MarkdownSectionMixin, OperationKind):
         return Ok(
             OutputMeta(
                 fsm_mode=output_config.fsm_mode,
-                allowed_transtions=allowed_transitions,
+                allowed_transitions=allowed_transitions,
                 next_operation_id=output_config.next_operation_id,
             )
         )
@@ -68,7 +68,7 @@ class Output(MarkdownSectionMixin, OperationKind):
         meta = cast(OutputMeta, operation.meta)
 
         info = cell_shortcuts.info(operation.description)
-        instant_output_cell(info)
+        context().output.emit_cell(info)
 
         next_operation_id = meta.next_operation_id
         assert next_operation_id is not None
