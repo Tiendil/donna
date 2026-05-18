@@ -14,6 +14,15 @@ For example, you can have a workflow that guides the agent through the planing p
 
 As a bonus, **Donna saves tokens** because agent doesn't need to reason about the control flow or how to execute particular CLI commands and other automation tools.
 
+## Rationale
+
+1. Most of development work is repetitive on the meta level: "run this tool, do something with the output, run another tool" or "implement function A, implement tests for function A, implement function B, ...".
+2. Some parts of that work require advanced reasoning, others — not really.
+3. Agents are ~~almost~~ good at reasoning, but not so good at keeping the whole process in mind, remembering what they did, etc.
+4. Therefore, it looks like a good idea to separate the reasoning part from the control flow part; let agents focus on what they are good at, and keep the control flow to the classic automation tools.
+
+Donna does exactly that.
+
 ## Example
 
 I use Donna to develop Donna itself — you can find real examples of workflows in the [./workflows](./workflows) folder of this repository. You can start with [./workflows/polish.donna.md](./workflows/polish.donna.md) that goes in loop over fixing issues found by formatters, linters, type checkers and tests until the codebase is polished.
@@ -172,15 +181,6 @@ donna run @/workflows/examples/time_to_drink_tea.donna.md
 
 # Follow Donna commands to finish the workflow.
 ```
-
-## Rationale
-
-1. Most of development work is repetitive on the meta level: "run this tool, do something with the output, run another tool" or "implement function A, implement tests for function A, implement function B, ...".
-2. Some parts of that work require advanced reasoning, others — not really.
-3. Agents are ~~almost~~ good at reasoning, but not so good at keeping the whole process in mind, remembering what they did, etc.
-4. Therefore, it looks like a good idea to separate the reasoning part from the control flow part; let agents focus on what they are good at, and keep the control flow to the classic automation tools.
-
-Donna does exactly that.
 
 ## Features
 
