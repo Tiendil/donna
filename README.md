@@ -101,24 +101,32 @@ kind = "donna.lib.finish"
 The workflow is complete. You are a good butler.
 ````
 
-
-
-
-
-with an operation in each node. There are different kinds of operations, let's go
-
 How this example works:
 
 - The H1 section is the workflow section. It gives Donna the workflow title and summary that appear in `donna list`.
-- Each H2 section is an operation section. Donna runs operation sections in the order selected by the workflow state machine.
+- Each H2 section is an operation section. Donna runs operations in the order selected by the workflow state machine.
 - `toml donna` blocks configure section type and behavior. Here, the operation types are `donna.lib.run_script`, `donna.lib.request_action`, and `donna.lib.finish`.
-- `Get Current Time` is a deterministic `run_script` operation. Donna runs the shell script from the project root, saves stdout as `current_time`, and moves to `ask_about_tea` on success.
+- `Get Current Time` is a `run_script` operation. Donna runs the shell script from the project root, saves stdout as `current_time`, and moves to `ask_about_tea` on success. No agent interaction required here, because it is pure deterministic work.
 - `Ask About Tea` is a `request_action` operation. The agent will see the rendered current time, the question, and the two allowed transitions: `turn_on_kettle` or `finish`.
 - `donna.lib.task_variable("current_time")` is rendered for the agent as the value captured from the script output.
-- `donna.lib.goto(...)` is rendered for the agent as a concrete completion option and also declares the valid next operation for Donna's validation.
+- `donna.lib.goto(...)` is rendered for the agent as a concrete CLI command to exectute.
 - `Turn On Kettle` is another `request_action` operation. The agent will see the instruction to turn on the kettle and then complete the action request with the `finish` transition.
 - `Finish` is a `finish` operation. The agent will see the final workflow message, and Donna will complete the workflow task.
-- `complete-action-request` must use one of the next operations declared by the current action request.
+
+For example, here what the agent will see on the `Get Current Time` step of the tea workflow:
+
+````markdown
+  The current time is:
+
+  ```text
+  17:16
+  ```
+
+  Is it time to drink tea?
+
+  1. If yes, `donna -p llm --config '<path-to-donna.toml>' complete-action-request <action-request-id> '@/workflows/tea.donna.md:turn_on_kettle'`.
+  2. If no, `donna -p llm --config '<path-to-donna.toml>' complete-action-request <action-request-id> '@/workflows/tea.donna.md:finish'`.
+````
 
 ## Rationale
 
