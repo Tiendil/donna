@@ -25,7 +25,9 @@ class TestTaskVariable:
         result = TaskVariable(analyze_id="task_variable").render_view(make.template_context(), "answer")
 
         assert result.is_ok()
-        assert "answer" in result.unwrap()
+        content = result.unwrap()
+        assert isinstance(content, str)
+        assert "answer" in content
 
     def test_render_execute__returns_value_from_task_context_mapping(self) -> None:
         result = TaskVariable(analyze_id="task_variable").render_execute(
@@ -60,4 +62,6 @@ class TestTaskVariable:
         )
 
         assert result.is_ok()
-        assert "variable 'answer' does not found" in result.unwrap()
+        content = result.unwrap()
+        assert isinstance(content, str)
+        assert "variable 'answer' does not found" in content

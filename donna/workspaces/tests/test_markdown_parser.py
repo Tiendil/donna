@@ -1,23 +1,25 @@
-from typing import Any, ClassVar
+from typing import ClassVar
+
+from pytest_mock import MockerFixture
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.artifact_ids import ArtifactId
+from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig
 from donna.machine.primitives import Primitive
 from donna.primitives.sections.text import Text
 from donna.workspaces import errors as workspace_errors
-from donna.workspaces.markdown import CodeSource, SectionLevel, SectionSource
 from donna.workspaces import markdown_parser
 from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
+from donna.workspaces.markdown import CodeSource, SectionLevel, SectionSource
 from donna.workspaces.markdown_parser import MarkdownSectionMixin, construct_sections_from_markdown
 from donna.workspaces.tests import make
 
-
-TEXT_KIND = PythonPath("donna.primitives.sections.text.Text")
-LIB_TEXT_KIND = PythonPath("donna.lib.text")
+TEXT_KIND = PythonPath(NormalizedRawIdPath("donna.primitives.sections.text.Text"))
+LIB_TEXT_KIND = PythonPath(NormalizedRawIdPath("donna.lib.text"))
 
 
 class _MarkdownPrimitive(MarkdownSectionMixin, Primitive):
@@ -29,7 +31,7 @@ class _FailingMarkdownPrimitive(_MarkdownPrimitive):
         self,
         artifact_id: ArtifactId,
         source: SectionSource,
-        config: dict[str, Any],
+        config: dict[str, object],
         primary: bool = False,
     ) -> Result[ArtifactSection, ErrorsList]:
         return Err([workspace_errors.MarkdownArtifactWithoutSections(artifact_id=artifact_id)])
@@ -99,7 +101,7 @@ class TestParseArtifactContent:
         assert result.is_err()
         assert isinstance(result.unwrap_err()[0], workspace_errors.MarkdownArtifactWithoutSections)
 
-    def test_raises_internal_error_for_analysis_section_count_mismatch(self, mocker: object) -> None:
+    def test_raises_internal_error_for_analysis_section_count_mismatch(self, mocker: MockerFixture) -> None:
         mocker.patch.object(
             markdown_parser,
             "render",
@@ -116,7 +118,7 @@ class TestParseArtifactContent:
 
 
 class TestConstructArtifactFromBytes:
-    def test_decodes_bytes_and_constructs_artifact_from_markdown(self, mocker: object) -> None:
+    def test_decodes_bytes_and_constructs_artifact_from_markdown(self, mocker: MockerFixture) -> None:
         expected = Artifact(id=make.ARTIFACT_ID, sections=[])
         construct = mocker.patch.object(
             markdown_parser,
@@ -185,7 +187,7 @@ class TestConstructSectionsFromMarkdown:
         assert constructed_section.kind == TEXT_KIND
         assert constructed_section.title == "Section"
 
-    def test_generates_missing_section_id(self, mocker: object) -> None:
+    def test_generates_missing_section_id(self, mocker: MockerFixture) -> None:
         mocker.patch("uuid.uuid4", return_value=type("FakeUuid", (), {"hex": "abc"})())
         section = make.section_source(configs=[CodeSource(format="toml", properties={"config": True}, content="")])
 
@@ -222,7 +224,7 @@ class TestResolvePrimitive:
         assert result.is_ok()
         assert result.unwrap() == primitive
 
-    def test_uses_machine_resolver_without_override(self, mocker: object) -> None:
+    def test_uses_machine_resolver_without_override(self, mocker: MockerFixture) -> None:
         primitive = Text()
         resolve_primitive = mocker.patch.object(markdown_parser, "resolve_primitive", return_value=Ok(primitive))
 

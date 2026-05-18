@@ -1,5 +1,6 @@
 import copy
-from typing import TYPE_CHECKING, Any
+from collections.abc import Mapping
+from typing import TYPE_CHECKING
 
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
 class Task(BaseEntity):
     id: TaskId
     workflow_id: ArtifactSectionId
-    context: dict[str, Any]
+    context: dict[str, object]
 
     @classmethod
     def build(cls, id: TaskId, workflow_id: ArtifactSectionId) -> "Task":
@@ -30,7 +31,7 @@ class WorkUnit(BaseEntity):
     id: WorkUnitId
     task_id: TaskId
     operation_id: ArtifactSectionId
-    context: dict[str, Any]
+    context: dict[str, object]
 
     @classmethod
     def build(
@@ -38,7 +39,7 @@ class WorkUnit(BaseEntity):
         id: WorkUnitId,
         task_id: TaskId,
         operation_id: ArtifactSectionId,
-        context: dict[str, Any] | None = None,
+        context: Mapping[str, object] | None = None,
     ) -> "WorkUnit":
 
         if context is None:
@@ -48,7 +49,7 @@ class WorkUnit(BaseEntity):
             task_id=task_id,
             id=id,
             operation_id=operation_id,
-            context=copy.deepcopy(context),
+            context=copy.deepcopy(dict(context)),
         )
 
         return unit

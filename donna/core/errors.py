@@ -1,5 +1,3 @@
-from typing import Any
-
 import pydantic
 
 from donna.core.entities import BaseEntity
@@ -8,7 +6,7 @@ from donna.core.entities import BaseEntity
 class InternalError(Exception):
     message = "An internal error occurred"
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, **kwargs: object) -> None:
         self.arguments = kwargs
 
     def error_message(self) -> str:

@@ -1,6 +1,6 @@
 import json
 
-from donna.protocol.cells import Cell
+from donna.protocol.cells import Cell, MetaValue
 from donna.protocol.formatters.base import Formatter as BaseFormatter
 from donna.protocol.journal import JournalRecord, serialize_record
 
@@ -13,7 +13,7 @@ class Formatter(BaseFormatter):
         )
 
     def format_cell(self, cell: Cell) -> bytes:
-        data: dict[str, str | int | bool | None] = {"id": cell.short_id}
+        data: dict[str, MetaValue] = {"id": cell.short_id}
 
         for meta_key, meta_value in sorted(cell.meta.items()):
             data[meta_key] = meta_value

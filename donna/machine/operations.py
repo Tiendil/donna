@@ -1,9 +1,11 @@
 import enum
-from typing import TYPE_CHECKING, Any
+from collections.abc import Mapping
+from typing import TYPE_CHECKING
 
 from donna.domain.ids import SectionId
 from donna.machine.artifacts import ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.primitives import Primitive
+from donna.protocol.cells import MetaValue
 
 if TYPE_CHECKING:
     pass
@@ -27,5 +29,5 @@ class OperationMeta(ArtifactSectionMeta):
     fsm_mode: FsmMode = FsmMode.normal
     allowed_transtions: set[SectionId]
 
-    def cells_meta(self) -> dict[str, Any]:
+    def cells_meta(self) -> Mapping[str, MetaValue]:
         return {"fsm_mode": self.fsm_mode.value, "allowed_transtions": [str(t) for t in self.allowed_transtions]}

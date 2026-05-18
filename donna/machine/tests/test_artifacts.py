@@ -1,11 +1,8 @@
-from typing import Any
-
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Result
 from donna.domain.ids import SectionId
-from donna.domain.python_path import PythonPath
 from donna.machine import errors as machine_errors
-from donna.machine.artifacts import Artifact, ArtifactNode, ArtifactSection, ArtifactSectionMeta, ArtifactSectionNode
+from donna.machine.artifacts import Artifact, ArtifactNode, ArtifactSectionMeta, ArtifactSectionNode
 from donna.machine.context import reset_context, set_context
 from donna.machine.primitives import Primitive
 from donna.machine.tests import make
@@ -13,7 +10,7 @@ from donna.machine.tests.helpers import FakeMachineContext
 
 
 class _Meta(ArtifactSectionMeta):
-    def cells_meta(self) -> dict[str, Any]:
+    def cells_meta(self) -> dict[str, str]:
         return {"custom": "value"}
 
 

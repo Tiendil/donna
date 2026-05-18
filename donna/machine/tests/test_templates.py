@@ -1,31 +1,30 @@
-from typing import Any
-
 import pytest
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.machine import errors as machine_errors
 from donna.machine.templates import Directive, DirectiveUnsupportedRenderMode, RenderMode
+from donna.machine.templates_context import DirectiveContext
 
 
 class _Directive(Directive):
     analyze_id: str = "sample"
 
-    def render_view(self, context: dict[str, Any], *argv: Any) -> Result[Any, ErrorsList]:
+    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object, ErrorsList]:
         return Ok({"mode": context["render_mode"], "argv": argv})
 
 
 class _PreparingDirective(_Directive):
     def _prepare_arguments(
-        self, context: dict[str, Any], *argv: Any, **kwargs: Any
-    ) -> Result[tuple[Any, ...], ErrorsList]:
+        self, context: DirectiveContext, *argv: object, **kwargs: object
+    ) -> Result[tuple[object, ...], ErrorsList]:
         return Ok(("prepared", *argv, kwargs["extra"]))
 
 
 class _FailingDirective(_Directive):
     def _prepare_arguments(
-        self, context: dict[str, Any], *argv: Any, **kwargs: Any
-    ) -> Result[tuple[Any, ...], ErrorsList]:
+        self, context: DirectiveContext, *argv: object, **kwargs: object
+    ) -> Result[tuple[object, ...], ErrorsList]:
         return Err([machine_errors.PrimitiveInvalidImportPath(import_path="bad")])
 
 

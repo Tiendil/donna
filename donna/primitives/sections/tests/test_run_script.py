@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Any
+
+from pytest_mock import MockerFixture
 
 from donna.machine.changes import ChangeAddWorkUnit, ChangeSetTaskContext
 from donna.primitives.sections import run_script
@@ -119,7 +120,7 @@ class TestRunScript:
             RunScriptGotoOnCodeIncludesZero,
         }
 
-    def test_execute_section__stores_outputs_and_adds_selected_next_work_unit(self, mocker: Any) -> None:
+    def test_execute_section__stores_outputs_and_adds_selected_next_work_unit(self, mocker: MockerFixture) -> None:
         runtime_context = make.FakeRuntimeContext()
         mocker.patch("donna.primitives.sections.run_script.context", return_value=runtime_context)
         mocker.patch.object(run_script.workspace_config, "project_dir", return_value=Path("/project"))

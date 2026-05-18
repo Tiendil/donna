@@ -1,5 +1,6 @@
 import pathlib
-from typing import Any
+
+from pytest_mock import MockerFixture
 
 from donna.context.state import StateCache
 from donna.domain.constants import STATE_FILE_NAME
@@ -10,7 +11,7 @@ from donna.workspaces import sessions as workspace_sessions
 from donna.workspaces.config import Config
 
 
-def _patch_session_globals(mocker: Any, tmp_path: pathlib.Path) -> None:
+def _patch_session_globals(mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
     mocker.patch("donna.workspaces.sessions.project_dir", return_value=tmp_path)
     mocker.patch(
         "donna.workspaces.sessions.config",
@@ -19,7 +20,9 @@ def _patch_session_globals(mocker: Any, tmp_path: pathlib.Path) -> None:
 
 
 class TestStateCache:
-    def test_load__reports_not_initialized_without_state_file(self, mocker: Any, tmp_path: pathlib.Path) -> None:
+    def test_load__reports_not_initialized_without_state_file(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
         _patch_session_globals(mocker, tmp_path)
 
         result = StateCache().load()
@@ -27,7 +30,7 @@ class TestStateCache:
         assert result.is_err()
         assert isinstance(result.unwrap_err()[0], machine_errors.SessionStateNotInitialized)
 
-    def test_load__reads_consistent_state_from_workspace(self, mocker: Any, tmp_path: pathlib.Path) -> None:
+    def test_load__reads_consistent_state_from_workspace(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         _patch_session_globals(mocker, tmp_path)
         state = machine_make.mutable_state(tasks=[machine_make.task()]).freeze()
         workspace_sessions.write_state(state.to_json().encode("utf-8"))
@@ -37,7 +40,9 @@ class TestStateCache:
         assert result.is_ok()
         assert result.unwrap() == state
 
-    def test_load__returns_cached_state_while_fingerprint_matches(self, mocker: Any, tmp_path: pathlib.Path) -> None:
+    def test_load__returns_cached_state_while_fingerprint_matches(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
         _patch_session_globals(mocker, tmp_path)
         state = machine_make.mutable_state(tasks=[machine_make.task()]).freeze()
         workspace_sessions.write_state(state.to_json().encode("utf-8"))
@@ -51,7 +56,9 @@ class TestStateCache:
         assert result.unwrap() == state
         read_state.assert_not_called()
 
-    def test_load__reports_cached_state_changed_externally(self, mocker: Any, tmp_path: pathlib.Path) -> None:
+    def test_load__reports_cached_state_changed_externally(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
         _patch_session_globals(mocker, tmp_path)
         state = machine_make.mutable_state(tasks=[machine_make.task()]).freeze()
         workspace_sessions.write_state(state.to_json().encode("utf-8"))
@@ -64,7 +71,7 @@ class TestStateCache:
         assert result.is_err()
         assert isinstance(result.unwrap_err()[0], machine_errors.SessionStateChangedExternally)
 
-    def test_save__writes_state_and_updates_cache(self, mocker: Any, tmp_path: pathlib.Path) -> None:
+    def test_save__writes_state_and_updates_cache(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         _patch_session_globals(mocker, tmp_path)
         state = machine_make.mutable_state(tasks=[machine_make.task()]).freeze()
 
@@ -73,7 +80,9 @@ class TestStateCache:
         assert result.is_ok()
         assert workspace_sessions.read_state() == state.to_json().encode("utf-8")
 
-    def test_save__reports_cached_state_changed_externally(self, mocker: Any, tmp_path: pathlib.Path) -> None:
+    def test_save__reports_cached_state_changed_externally(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
         _patch_session_globals(mocker, tmp_path)
         state = machine_make.mutable_state(tasks=[machine_make.task()]).freeze()
         cache = StateCache()

@@ -1,5 +1,3 @@
-from typing import Any, cast
-
 import pydantic
 import pytest
 
@@ -22,7 +20,7 @@ class TestIdentifier:
 
     @pytest.mark.parametrize("value", ["", "1invalid", "not-valid", None])
     def test_validate__rejects_non_identifier(self, value: object) -> None:
-        assert not Identifier.validate(cast(Any, value))
+        assert not Identifier.validate(value)
 
     def test_init__raises_internal_error_for_invalid_value(self) -> None:
         with pytest.raises(errors.InvalidIdentifier):
@@ -55,7 +53,7 @@ class TestIdentifier:
             _IdentifierEntity.model_validate({"identifier": "not-valid"})
 
         with pytest.raises(pydantic.ValidationError):
-            _IdentifierEntity.model_validate({"identifier": cast(Any, 123)})
+            _IdentifierEntity.model_validate({"identifier": 123})
 
 
 class TestSectionId:
@@ -65,7 +63,7 @@ class TestSectionId:
 
     @pytest.mark.parametrize("value", ["", "---", "...", "section/id", "section id", None])
     def test_validate__rejects_invalid_artifact_slug_part(self, value: object) -> None:
-        assert not SectionId.validate(cast(Any, value))
+        assert not SectionId.validate(value)
 
     def test_parse__returns_section_id(self) -> None:
         result = SectionId.parse("section-1")
@@ -94,4 +92,4 @@ class TestSectionId:
             _SectionEntity.model_validate({"section_id": "---"})
 
         with pytest.raises(pydantic.ValidationError):
-            _SectionEntity.model_validate({"section_id": cast(Any, 123)})
+            _SectionEntity.model_validate({"section_id": 123})

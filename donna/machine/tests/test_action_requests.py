@@ -31,5 +31,6 @@ class TestActionRequestNode:
 
         assert cell.kind == "action_request"
         assert cell.media_type == "text/markdown"
+        assert cell.content is not None
         assert "Do the thing" in cell.content
         assert cell.meta == {"action_request_id": str(make.ACTION_REQUEST_ID)}

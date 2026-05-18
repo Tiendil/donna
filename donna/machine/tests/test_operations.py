@@ -9,4 +9,6 @@ class TestOperationMeta:
         cell_meta = meta.cells_meta()
 
         assert cell_meta["fsm_mode"] == "final"
-        assert set(cell_meta["allowed_transtions"]) == {"next", "done"}
+        transitions = cell_meta["allowed_transtions"]
+        assert isinstance(transitions, list)
+        assert set(transitions) == {"next", "done"}

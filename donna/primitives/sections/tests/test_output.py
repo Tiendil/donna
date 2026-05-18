@@ -1,4 +1,4 @@
-from typing import Any
+from pytest_mock import MockerFixture
 
 from donna.machine.changes import ChangeAddWorkUnit
 from donna.machine.operations import FsmMode
@@ -56,7 +56,7 @@ class TestOutput:
         assert result.is_err()
         assert isinstance(result.unwrap_err()[0], OutputMissingNextOperation)
 
-    def test_execute_section__emits_message_and_adds_next_work_unit(self, mocker: Any) -> None:
+    def test_execute_section__emits_message_and_adds_next_work_unit(self, mocker: MockerFixture) -> None:
         runtime_context = make.FakeRuntimeContext()
         mocker.patch("donna.primitives.sections.output.context", return_value=runtime_context)
         artifact = make.artifact(

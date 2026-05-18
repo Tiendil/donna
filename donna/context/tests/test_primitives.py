@@ -1,4 +1,4 @@
-from typing import Any
+from pytest_mock import MockerFixture
 
 from donna.context.primitives import PrimitivesCache
 from donna.domain.python_path import PythonPath
@@ -22,7 +22,7 @@ class TestPrimitivesCache:
         assert result.is_ok()
         assert result.unwrap() == sample_primitive
 
-    def test_resolve__uses_cached_primitive_on_repeated_calls(self, mocker: Any) -> None:
+    def test_resolve__uses_cached_primitive_on_repeated_calls(self, mocker: MockerFixture) -> None:
         cache = PrimitivesCache()
         assert cache.resolve(machine_make.PRIMITIVE_PATH).is_ok()
         import_module = mocker.patch("donna.context.primitives.importlib.import_module")

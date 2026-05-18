@@ -1,4 +1,4 @@
-from typing import Any
+from pytest_mock import MockerFixture
 
 from donna.machine.changes import ChangeFinishTask
 from donna.machine.operations import FsmMode, OperationMeta
@@ -21,7 +21,7 @@ class TestFinishWorkflow:
         assert meta.fsm_mode == FsmMode.final
         assert meta.allowed_transtions == set()
 
-    def test_execute_section__emits_message_and_finishes_task(self, mocker: Any) -> None:
+    def test_execute_section__emits_message_and_finishes_task(self, mocker: MockerFixture) -> None:
         runtime_context = make.FakeRuntimeContext()
         mocker.patch("donna.primitives.sections.finish_workflow.context", return_value=runtime_context)
         artifact = make.artifact(

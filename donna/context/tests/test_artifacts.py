@@ -1,5 +1,6 @@
 import pathlib
-from typing import Any
+
+from pytest_mock import MockerFixture
 
 from donna.context.artifacts import ArtifactsCache
 from donna.context.tests import make
@@ -19,7 +20,9 @@ def _write_artifact_file(tmp_path: pathlib.Path, name: str, content: str) -> pat
 
 
 class TestArtifactsCache:
-    def test_load__caches_view_rendered_artifact_by_render_mode(self, mocker: Any, tmp_path: pathlib.Path) -> None:
+    def test_load__caches_view_rendered_artifact_by_render_mode(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
         path = _write_artifact_file(tmp_path, "workflow.donna.md", "# Workflow")
         raw_artifact = make.FakeRawArtifact(path, machine_make.artifact())
         mocker.patch("donna.workspaces.artifacts.fetch_raw_artifact", return_value=Ok(raw_artifact))
@@ -36,7 +39,7 @@ class TestArtifactsCache:
         assert first_result.unwrap() == second_result.unwrap()
         assert raw_artifact.render_modes == [RenderMode.view]
 
-    def test_load__renders_execute_mode_every_time(self, mocker: Any, tmp_path: pathlib.Path) -> None:
+    def test_load__renders_execute_mode_every_time(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         path = _write_artifact_file(tmp_path, "workflow.donna.md", "# Workflow")
         raw_artifact = make.FakeRawArtifact(path, machine_make.artifact())
         mocker.patch("donna.workspaces.artifacts.fetch_raw_artifact", return_value=Ok(raw_artifact))
@@ -51,7 +54,7 @@ class TestArtifactsCache:
 
         assert raw_artifact.render_modes == [RenderMode.execute, RenderMode.execute]
 
-    def test_load__refreshes_stale_raw_artifact(self, mocker: Any, tmp_path: pathlib.Path) -> None:
+    def test_load__refreshes_stale_raw_artifact(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         first_path = _write_artifact_file(tmp_path, "first.donna.md", "# First")
         second_path = _write_artifact_file(tmp_path, "second.donna.md", "# Second with changed size")
         first_raw_artifact = make.FakeRawArtifact(first_path, machine_make.artifact())
@@ -73,7 +76,7 @@ class TestArtifactsCache:
         assert first_raw_artifact.render_modes == [RenderMode.view]
         assert second_raw_artifact.render_modes == [RenderMode.view]
 
-    def test_load__reports_missing_artifact_after_fetch(self, mocker: Any, tmp_path: pathlib.Path) -> None:
+    def test_load__reports_missing_artifact_after_fetch(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         missing_path = tmp_path / "missing.donna.md"
         raw_artifact = make.FakeRawArtifact(missing_path, machine_make.artifact())
         mocker.patch("donna.workspaces.artifacts.fetch_raw_artifact", return_value=Ok(raw_artifact))
@@ -85,7 +88,7 @@ class TestArtifactsCache:
         assert isinstance(error, workspace_errors.ArtifactNotFound)
         assert error.artifact_id == machine_make.ARTIFACT_ID
 
-    def test_invalidate__removes_cached_rendered_artifact(self, mocker: Any, tmp_path: pathlib.Path) -> None:
+    def test_invalidate__removes_cached_rendered_artifact(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         path = _write_artifact_file(tmp_path, "workflow.donna.md", "# Workflow")
         raw_artifact = make.FakeRawArtifact(path, machine_make.artifact())
         mocker.patch("donna.workspaces.artifacts.fetch_raw_artifact", return_value=Ok(raw_artifact))
@@ -100,7 +103,9 @@ class TestArtifactsCache:
 
         assert raw_artifact.render_modes == [RenderMode.view, RenderMode.view]
 
-    def test_list__returns_loaded_artifacts_in_workspace_order(self, mocker: Any, tmp_path: pathlib.Path) -> None:
+    def test_list__returns_loaded_artifacts_in_workspace_order(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
         first_id = machine_make.ARTIFACT_ID
         second_id = ArtifactId("@/workflows/other.donna.md")
         first_path = _write_artifact_file(tmp_path, "first.donna.md", "# First")
@@ -121,7 +126,7 @@ class TestArtifactsCache:
         assert result.is_ok()
         assert result.unwrap() == [first_artifact, second_artifact]
 
-    def test_list__collects_artifact_loading_errors(self, mocker: Any, tmp_path: pathlib.Path) -> None:
+    def test_list__collects_artifact_loading_errors(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         missing_id = ArtifactId("@/workflows/missing.donna.md")
         path = _write_artifact_file(tmp_path, "workflow.donna.md", "# Workflow")
         mocker.patch(

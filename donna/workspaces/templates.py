@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import importlib
 import importlib.util
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import jinja2
 
@@ -11,6 +11,7 @@ from donna.core.errors import EnvironmentErrorsProxy, ErrorsList
 from donna.core.result import Err, Ok, Result
 from donna.domain.artifact_ids import ArtifactId
 from donna.machine.templates import Directive
+from donna.machine.templates_context import DirectiveContext
 from donna.workspaces import errors as world_errors
 
 if TYPE_CHECKING:
@@ -35,8 +36,9 @@ class DirectivePathBuilder:
         return DirectivePathBuilder(self._parts + (name,))
 
     @jinja2.pass_context
-    def __call__(self, context: jinja2.runtime.Context, *argv: object, **kwargs: object) -> object:  # noqa: CCR001
-        artifact_id = context.get("artifact_id")
+    def __call__(self, context: DirectiveContext, *argv: object, **kwargs: object) -> object:  # noqa: CCR001
+        raw_artifact_id = context.get("artifact_id")
+        artifact_id = cast(ArtifactId | None, raw_artifact_id if isinstance(raw_artifact_id, str) else None)
         directive_path = ".".join(self._parts)
         if len(self._parts) < 2:
             raise EnvironmentErrorsProxy(
@@ -154,4 +156,4 @@ def render(artifact_id: ArtifactId, template: str, render_context: "ArtifactRend
         template_obj = env().from_string(template)
         return Ok(template_obj.render(**context))
     except EnvironmentErrorsProxy as exc:
-        return Err(exc.arguments["errors"])
+        return Err(cast(ErrorsList, exc.arguments["errors"]))

@@ -9,4 +9,4 @@ ProjectConfigPath = NewType("ProjectConfigPath", Path)
 RelativeProjectPath = NewType("RelativeProjectPath", Path)
 ResolvedProjectPath = NewType("ResolvedProjectPath", Path)
 UntrustedPath = NewType("UntrustedPath", Path)
-PathInput = UntrustedPath | ProjectRootPath | ProjectConfigPath
+PathInput = Path | UntrustedPath | ProjectRootPath | ProjectConfigPath

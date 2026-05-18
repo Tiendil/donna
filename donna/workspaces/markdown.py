@@ -1,5 +1,5 @@
 import enum
-from typing import Any
+from typing import cast
 
 from markdown_it import MarkdownIt
 from markdown_it.token import Token
@@ -23,7 +23,7 @@ class CodeSource(BaseEntity):
     properties: dict[str, str | bool]
     content: str
 
-    def structured_data(self) -> Result[Any, ErrorsList]:
+    def structured_data(self) -> Result[object, ErrorsList]:
         if "script" in self.properties:
             return Ok({})
 
@@ -75,7 +75,7 @@ class SectionSource(BaseEntity):
     def as_analysis_markdown(self, with_title: bool) -> str:
         return self._as_markdown(self.analysis_tokens, with_title)
 
-    def config(self) -> Result[dict[str, Any], ErrorsList]:
+    def config(self) -> Result[dict[str, object], ErrorsList]:
         config_blocks = [config for config in self.configs if "config" in config.properties]
         if len(config_blocks) > 1:
             return Err(
@@ -89,7 +89,8 @@ class SectionSource(BaseEntity):
         if not config_blocks:
             return Ok({})
 
-        return config_blocks[0].structured_data()
+        data = config_blocks[0].structured_data().unwrap()
+        return Ok(cast(dict[str, object], data))
 
     def script(self) -> Result[str | None, ErrorsList]:
         script_blocks = [config.content for config in self.configs if "script" in config.properties]

@@ -1,18 +1,17 @@
 import enum
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, TypeAlias
-
-from jinja2.runtime import Context
+from typing import TYPE_CHECKING, TypeAlias
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result
 from donna.machine import errors as machine_errors
 from donna.machine.primitives import Primitive
+from donna.machine.templates_context import DirectiveContext
 
 if TYPE_CHECKING:
     pass
 
-PreparedDirectiveArguments: TypeAlias = tuple[Any, ...]
+PreparedDirectiveArguments: TypeAlias = tuple[object, ...]
 PreparedDirectiveResult: TypeAlias = Result[PreparedDirectiveArguments, ErrorsList]
 
 
@@ -38,7 +37,7 @@ class RenderMode(enum.StrEnum):
 
 class DirectiveUnsupportedRenderMode(machine_errors.InternalError):
     message: str = "Render mode {render_mode} not implemented in directive {directive_name}."
-    render_mode: Any
+    render_mode: object
     directive_name: str
 
 
@@ -47,10 +46,10 @@ class Directive(Primitive, ABC):
 
     def apply_directive(  # noqa: E704
         self,
-        context: Context,
-        *argv: Any,
-        **kwargs: Any,
-    ) -> Result[Any, ErrorsList]:
+        context: DirectiveContext,
+        *argv: object,
+        **kwargs: object,
+    ) -> Result[object, ErrorsList]:
         render_mode = context["render_mode"]
         arguments_result = self._prepare_arguments(context, *argv, **kwargs)
         if arguments_result.is_err():
@@ -70,31 +69,31 @@ class Directive(Primitive, ABC):
 
     def _prepare_arguments(
         self,
-        context: Context,
-        *argv: Any,
-        **kwargs: Any,
+        context: DirectiveContext,
+        *argv: object,
+        **kwargs: object,
     ) -> PreparedDirectiveResult:
         return Ok(argv)
 
     @abstractmethod
     def render_view(  # noqa: E704
         self,
-        context: Context,
-        *argv: Any,
-    ) -> Result[Any, ErrorsList]: ...
+        context: DirectiveContext,
+        *argv: object,
+    ) -> Result[object, ErrorsList]: ...
 
     def render_execute(
         self,
-        context: Context,
-        *argv: Any,
-    ) -> Result[Any, ErrorsList]:
+        context: DirectiveContext,
+        *argv: object,
+    ) -> Result[object, ErrorsList]:
         return self.render_view(context, *argv)
 
     def render_analyze(
         self,
-        context: Context,
-        *argv: Any,
-    ) -> Result[str, ErrorsList]:
+        context: DirectiveContext,
+        *argv: object,
+    ) -> Result[object, ErrorsList]:
         parts = [str(arg) for arg in argv]
         arguments = " ".join(parts)
 

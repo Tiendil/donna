@@ -5,11 +5,13 @@ import pydantic
 
 from donna.core.entities import BaseEntity
 
-MetaValue = str | int | bool | None
+MetaValue = str | int | bool | None | list[str]
 
 
 def to_meta_value(value: object) -> MetaValue:
     if isinstance(value, (str, int, bool)) or value is None:
+        return value
+    if isinstance(value, list) and all(isinstance(item, str) for item in value):
         return value
 
     return str(value)

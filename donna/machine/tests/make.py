@@ -1,6 +1,5 @@
-from typing import Any
-
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
+from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
 from donna.domain.internal_ids import ActionRequestId, TaskId, WorkUnitId
 from donna.domain.python_path import PythonPath
@@ -12,7 +11,7 @@ from donna.machine.tasks import Task, WorkUnit
 ARTIFACT_ID = ArtifactId("@/workflows/test.donna.md")
 PRIMARY_SECTION_ID = SectionId("workflow")
 SECONDARY_SECTION_ID = SectionId("next")
-PRIMITIVE_PATH = PythonPath("donna.machine.tests.test_primitives.sample_primitive")
+PRIMITIVE_PATH = PythonPath(NormalizedRawIdPath("donna.machine.tests.test_primitives.sample_primitive"))
 PRIMARY_OPERATION_ID = ArtifactSectionId("@/workflows/test.donna.md:workflow")
 SECONDARY_OPERATION_ID = ArtifactSectionId("@/workflows/test.donna.md:next")
 TASK_ID = TaskId("T-1-b")
@@ -20,7 +19,7 @@ WORK_UNIT_ID = WorkUnitId("WU-2-c")
 ACTION_REQUEST_ID = ActionRequestId("AR-3-d")
 
 
-def artifact_section(
+def artifact_section(  # noqa: CFQ002
     *,
     id: SectionId = PRIMARY_SECTION_ID,
     artifact_id: ArtifactId = ARTIFACT_ID,
@@ -57,7 +56,7 @@ def work_unit(
     id: WorkUnitId = WORK_UNIT_ID,
     task_id: TaskId = TASK_ID,
     operation_id: ArtifactSectionId = PRIMARY_OPERATION_ID,
-    context: dict[str, Any] | None = None,
+    context: dict[str, object] | None = None,
 ) -> WorkUnit:
     return WorkUnit.build(id=id, task_id=task_id, operation_id=operation_id, context=context)
 

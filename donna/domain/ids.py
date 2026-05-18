@@ -1,4 +1,4 @@
-from typing import Any, TypeVar
+from typing import TypeVar
 
 from pydantic_core import core_schema
 
@@ -32,7 +32,7 @@ class Identifier(str):
         return super().__new__(cls, value)
 
     @classmethod
-    def validate(cls, value: str) -> bool:
+    def validate(cls, value: object) -> bool:
         if not isinstance(value, str):
             return False
         return value.isidentifier()
@@ -48,9 +48,11 @@ class Identifier(str):
         return Ok(cls(text))
 
     @classmethod
-    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:  # noqa: CCR001
+    def __get_pydantic_core_schema__(
+        cls, source_type: object, handler: object
+    ) -> core_schema.CoreSchema:  # noqa: CCR001
 
-        def validate(v: Any) -> "Identifier":
+        def validate(v: object) -> "Identifier":
             if isinstance(v, cls):
                 return v
 
@@ -73,7 +75,7 @@ class SectionId(Identifier):
     __slots__ = ()
 
     @classmethod
-    def validate(cls, value: str) -> bool:
+    def validate(cls, value: object) -> bool:
         if not isinstance(value, str):
             return False
 

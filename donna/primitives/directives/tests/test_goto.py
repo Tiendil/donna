@@ -1,5 +1,6 @@
 from pathlib import Path
-from typing import Any
+
+from pytest_mock import MockerFixture
 
 from donna.domain.artifact_ids import ArtifactSectionId
 from donna.primitives.directives import goto
@@ -25,7 +26,7 @@ class TestGoTo:
         assert result.is_ok()
         assert result.unwrap() == (ArtifactSectionId("@/workflows/test.donna.md:next"),)
 
-    def test_render_view__renders_complete_action_request_command(self, mocker: Any) -> None:
+    def test_render_view__renders_complete_action_request_command(self, mocker: MockerFixture) -> None:
         mocker.patch.object(goto.workspace_config, "protocol", return_value=Mode.llm)
         mocker.patch.object(goto.workspace_config, "config_path", return_value=Path("/project/donna.toml"))
 

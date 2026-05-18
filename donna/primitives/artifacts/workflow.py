@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from typing import TYPE_CHECKING, ClassVar, cast
 
 from donna.core import errors as core_errors
@@ -9,6 +10,7 @@ from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionCo
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import FsmMode, OperationMeta
 from donna.machine.primitives import Primitive
+from donna.protocol.cells import MetaValue
 from donna.workspaces import markdown
 from donna.workspaces.markdown_parser import MarkdownSectionMixin
 
@@ -107,7 +109,7 @@ class WorkflowConfig(ArtifactSectionConfig):
 class WorkflowMeta(ArtifactSectionMeta):
     start_operation_id: SectionId | None = None
 
-    def cells_meta(self) -> dict[str, object]:
+    def cells_meta(self) -> Mapping[str, MetaValue]:
         if self.start_operation_id is None:
             return {}
         return {"start_operation_id": str(self.start_operation_id)}

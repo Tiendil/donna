@@ -2,6 +2,7 @@ import pathlib
 
 import pydantic
 import pytest
+from pytest_mock import MockerFixture
 
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.paths import ProjectConfigPath, ProjectRootPath, RelativeProjectPath
@@ -37,7 +38,7 @@ class TestJournalConfig:
     @pytest.mark.parametrize("cmd", [[], ["tool", "{missing}"], ["tool", 1]])
     def test_validate_cmd__rejects_invalid_command(self, cmd: list[object]) -> None:
         with pytest.raises(pydantic.ValidationError):
-            JournalConfig(cmd=cmd)
+            JournalConfig.model_validate({"cmd": cmd})
 
 
 class TestDefaultsConfig:
@@ -98,7 +99,7 @@ class TestConfig:
         assert config.journal == JournalConfig()
 
     def test_validate_workflow_dirs__deduplicates_preserving_order(self) -> None:
-        config = Config(workflow_dirs=["workflows", "./workflows", ".session/donna"])
+        config = Config.model_validate({"workflow_dirs": ["workflows", "./workflows", ".session/donna"]})
 
         assert config.workflow_dirs == [pathlib.Path("workflows"), pathlib.Path(".session/donna")]
 
@@ -131,7 +132,12 @@ class TestConfig:
             Config.model_validate(data)
 
     def test_model_dump__serializes_workflow_dirs_as_project_relative_strings(self) -> None:
-        config = Config(workflow_dirs=["workflows", ".session/donna"])
+        config = Config(
+            workflow_dirs=[
+                RelativeProjectPath(pathlib.Path("workflows")),
+                RelativeProjectPath(pathlib.Path(".session/donna")),
+            ]
+        )
 
         assert config.model_dump(mode="json")["workflow_dirs"] == ["./workflows", "./.session/donna"]
 
@@ -166,7 +172,7 @@ class TestWorkspace:
 
 
 class TestInstallWorkspace:
-    def test_install_workspace__sets_unset_globals(self, mocker: object, tmp_path: pathlib.Path) -> None:
+    def test_install_workspace__sets_unset_globals(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         project_dir = GlobalConfig[ProjectRootPath]()
         config_path = GlobalConfig[ProjectConfigPath]()
         config = GlobalConfig[Config]()
@@ -182,14 +188,14 @@ class TestInstallWorkspace:
         assert config.get() == workspace.config
 
     def test_install_workspace__does_not_replace_existing_globals(
-        self, mocker: object, tmp_path: pathlib.Path
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
         project_dir = GlobalConfig[ProjectRootPath]()
         config_path = GlobalConfig[ProjectConfigPath]()
         config = GlobalConfig[Config]()
         project_dir.set(ProjectRootPath(tmp_path / "existing"))
         config_path.set(ProjectConfigPath(tmp_path / "existing.toml"))
-        config.set(Config(session_dir="custom"))
+        config.set(Config(session_dir=RelativeProjectPath(pathlib.Path("custom"))))
         mocker.patch.object(workspace_config, "project_dir", project_dir)
         mocker.patch.object(workspace_config, "config_path", config_path)
         mocker.patch.object(workspace_config, "config", config)

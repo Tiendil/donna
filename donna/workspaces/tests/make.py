@@ -2,8 +2,9 @@ import datetime
 import pathlib
 
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
-from donna.domain.internal_ids import TaskId, WorkUnitId
+from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
+from donna.domain.internal_ids import TaskId, WorkUnitId
 from donna.domain.paths import ProjectConfigPath, ProjectRootPath
 from donna.domain.python_path import PythonPath
 from donna.machine.artifacts import ArtifactSectionConfig
@@ -13,7 +14,7 @@ from donna.workspaces.markdown import CodeSource, SectionLevel, SectionSource
 
 ARTIFACT_ID = ArtifactId("@/workflows/test.donna.md")
 OPERATION_ID = ArtifactSectionId("@/workflows/test.donna.md:primary")
-TEXT_KIND = PythonPath("donna.primitives.sections.text.Text")
+TEXT_KIND = PythonPath(NormalizedRawIdPath("donna.primitives.sections.text.Text"))
 
 
 def workspace(root: pathlib.Path, config: Config | None = None) -> Workspace:

@@ -1,5 +1,3 @@
-from typing import Any
-
 from pydantic_core import core_schema
 
 from donna.domain import errors as domain_errors
@@ -37,7 +35,7 @@ class InternalId(str):
         return cls(f"{prefix}-{value}-{_id_crc(value)}")
 
     @classmethod
-    def validate(cls, id: str) -> bool:
+    def validate(cls, id: object) -> bool:
         if not isinstance(id, str):
             return False
 
@@ -58,9 +56,11 @@ class InternalId(str):
         return self.split("-")[1]
 
     @classmethod
-    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:  # noqa: CCR001
+    def __get_pydantic_core_schema__(
+        cls, source_type: object, handler: object
+    ) -> core_schema.CoreSchema:  # noqa: CCR001
 
-        def validate(v: Any) -> "InternalId":
+        def validate(v: object) -> "InternalId":
             if isinstance(v, cls):
                 return v
 

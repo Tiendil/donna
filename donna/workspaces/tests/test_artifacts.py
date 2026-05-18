@@ -1,5 +1,7 @@
 import pathlib
 
+from pytest_mock import MockerFixture
+
 from donna.core.result import Err, Ok
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.paths import RelativeProjectPath, ResolvedProjectPath
@@ -61,8 +63,11 @@ class TestArtifactIsInWorkflowDirs:
 
 
 class TestArtifactIsVisibleInWorkspace:
-    def test_uses_configured_workflow_dirs(self, mocker: object) -> None:
-        mocker.patch("donna.workspaces.config.config", return_value=Config(workflow_dirs=["workflows"]))
+    def test_uses_configured_workflow_dirs(self, mocker: MockerFixture) -> None:
+        mocker.patch(
+            "donna.workspaces.config.config",
+            return_value=Config(workflow_dirs=[RelativeProjectPath(pathlib.Path("workflows"))]),
+        )
 
         assert artifacts._artifact_is_visible_in_workspace(make.ARTIFACT_ID)
 
@@ -105,7 +110,9 @@ class TestWalkWorkflowDir:
 
 
 class TestWalkFilesystem:
-    def test_walk_filesystem__lists_artifacts_in_workflow_dirs(self, mocker: object, tmp_path: pathlib.Path) -> None:
+    def test_walk_filesystem__lists_artifacts_in_workflow_dirs(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
         workflows = tmp_path / "workflows"
         nested = workflows / "nested"
         nested.mkdir(parents=True)
@@ -120,7 +127,9 @@ class TestWalkFilesystem:
             ArtifactId("@/workflows/nested/a.donna.md"),
         ]
 
-    def test_walk_filesystem__preserves_workflow_dir_order(self, mocker: object, tmp_path: pathlib.Path) -> None:
+    def test_walk_filesystem__preserves_workflow_dir_order(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
         first = tmp_path / "first"
         second = tmp_path / "second"
         first.mkdir()
@@ -141,15 +150,17 @@ class TestWalkFilesystem:
             ArtifactId("@/first/b.donna.md"),
         ]
 
-    def test_walk_filesystem__ignores_missing_workflow_dirs(self, mocker: object, tmp_path: pathlib.Path) -> None:
+    def test_walk_filesystem__ignores_missing_workflow_dirs(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
         mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
 
         assert list(artifacts.walk_filesystem([RelativeProjectPath(pathlib.Path("missing"))])) == []
 
 
 class TestListArtifactIds:
-    def test_list_artifact_ids__deduplicates_discovered_artifacts(self, mocker: object) -> None:
-        config = Config(workflow_dirs=["workflows"])
+    def test_list_artifact_ids__deduplicates_discovered_artifacts(self, mocker: MockerFixture) -> None:
+        config = Config(workflow_dirs=[RelativeProjectPath(pathlib.Path("workflows"))])
         mocker.patch("donna.workspaces.config.config", return_value=config)
         mocker.patch.object(
             artifacts,
@@ -162,7 +173,7 @@ class TestListArtifactIds:
 
 class TestResolveArtifactPath:
     def test_resolve_artifact_path__returns_existing_visible_file(
-        self, mocker: object, tmp_path: pathlib.Path
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
         path = tmp_path / "workflows" / "test.donna.md"
         path.parent.mkdir()
@@ -175,7 +186,7 @@ class TestResolveArtifactPath:
         assert result.unwrap() == path
 
     def test_resolve_artifact_path__returns_none_for_missing_file(
-        self, mocker: object, tmp_path: pathlib.Path
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
         mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
 
@@ -193,7 +204,7 @@ class TestFilesystemRawArtifact:
 
         assert raw_artifact.get_bytes() == b"content"
 
-    def test_render__renders_markdown_from_file_bytes(self, mocker: object, tmp_path: pathlib.Path) -> None:
+    def test_render__renders_markdown_from_file_bytes(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         path = tmp_path / "workflow.donna.md"
         path.write_bytes(b"# Workflow")
         expected_artifact = Artifact(id=make.ARTIFACT_ID, sections=[])
@@ -214,7 +225,7 @@ class TestFilesystemRawArtifact:
             artifacts.RENDER_CONTEXT_VIEW,
         )
 
-    def test_render__returns_markdown_render_errors(self, mocker: object, tmp_path: pathlib.Path) -> None:
+    def test_render__returns_markdown_render_errors(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         path = tmp_path / "workflow.donna.md"
         path.write_bytes(b"# Workflow")
         error = workspace_errors.MarkdownArtifactWithoutSections(artifact_id=make.ARTIFACT_ID)
@@ -228,12 +239,17 @@ class TestFilesystemRawArtifact:
 
 
 class TestFetchRawArtifact:
-    def test_fetch_raw_artifact__returns_filesystem_artifact(self, mocker: object, tmp_path: pathlib.Path) -> None:
+    def test_fetch_raw_artifact__returns_filesystem_artifact(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
         path = tmp_path / "workflows" / "test.donna.md"
         path.parent.mkdir()
         path.write_text("content", encoding="utf-8")
         mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
-        mocker.patch("donna.workspaces.config.config", return_value=Config(workflow_dirs=["workflows"]))
+        mocker.patch(
+            "donna.workspaces.config.config",
+            return_value=Config(workflow_dirs=[RelativeProjectPath(pathlib.Path("workflows"))]),
+        )
 
         result = artifacts.fetch_raw_artifact(make.ARTIFACT_ID)
 
@@ -241,9 +257,12 @@ class TestFetchRawArtifact:
         assert result.unwrap().get_bytes() == b"content"
 
     def test_fetch_raw_artifact__rejects_artifacts_outside_workflow_dirs(
-        self, mocker: object, tmp_path: pathlib.Path
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
-        mocker.patch("donna.workspaces.config.config", return_value=Config(workflow_dirs=["other"]))
+        mocker.patch(
+            "donna.workspaces.config.config",
+            return_value=Config(workflow_dirs=[RelativeProjectPath(pathlib.Path("other"))]),
+        )
 
         result = artifacts.fetch_raw_artifact(make.ARTIFACT_ID)
 
@@ -251,14 +270,17 @@ class TestFetchRawArtifact:
         assert isinstance(result.unwrap_err()[0], workspace_errors.ArtifactNotFound)
 
     def test_fetch_raw_artifact__rejects_unsupported_artifact_extension(
-        self, mocker: object, tmp_path: pathlib.Path
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
         artifact_id = ArtifactId("@/workflows/test.md")
         path = tmp_path / "workflows" / "test.md"
         path.parent.mkdir()
         path.write_text("content", encoding="utf-8")
         mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
-        mocker.patch("donna.workspaces.config.config", return_value=Config(workflow_dirs=["workflows"]))
+        mocker.patch(
+            "donna.workspaces.config.config",
+            return_value=Config(workflow_dirs=[RelativeProjectPath(pathlib.Path("workflows"))]),
+        )
 
         result = artifacts.fetch_raw_artifact(artifact_id)
 
@@ -269,7 +291,7 @@ class TestFetchRawArtifact:
 
 
 class TestFetchArtifactBytes:
-    def test_fetch_artifact_bytes__returns_raw_bytes(self, mocker: object) -> None:
+    def test_fetch_artifact_bytes__returns_raw_bytes(self, mocker: MockerFixture) -> None:
         raw_artifact = mocker.Mock()
         raw_artifact.get_bytes.return_value = b"content"
         mocker.patch.object(artifacts, "fetch_raw_artifact", return_value=Ok(raw_artifact))
@@ -281,7 +303,7 @@ class TestFetchArtifactBytes:
 
 
 class TestRenderMarkdownArtifact:
-    def test_render_markdown_artifact__uses_workspace_defaults(self, mocker: object) -> None:
+    def test_render_markdown_artifact__uses_workspace_defaults(self, mocker: MockerFixture) -> None:
         expected_artifact = Artifact(id=make.ARTIFACT_ID, sections=[])
         mocker.patch("donna.workspaces.config.config", return_value=Config())
         construct = mocker.patch(
@@ -304,7 +326,9 @@ class TestRenderMarkdownArtifact:
 
 
 class TestArtifactFingerprint:
-    def test_artifact_fingerprint__returns_file_fingerprint(self, mocker: object, tmp_path: pathlib.Path) -> None:
+    def test_artifact_fingerprint__returns_file_fingerprint(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
         path = tmp_path / "workflow.donna.md"
         path.write_text("data", encoding="utf-8")
         mocker.patch.object(artifacts, "resolve_artifact_path", return_value=Ok(path))
@@ -314,7 +338,7 @@ class TestArtifactFingerprint:
         assert result.is_ok()
         assert result.unwrap() == FileFingerprint.from_path(path)
 
-    def test_artifact_fingerprint__returns_none_for_missing_artifact(self, mocker: object) -> None:
+    def test_artifact_fingerprint__returns_none_for_missing_artifact(self, mocker: MockerFixture) -> None:
         mocker.patch.object(artifacts, "resolve_artifact_path", return_value=Ok(None))
 
         result = artifacts.artifact_fingerprint(make.ARTIFACT_ID)

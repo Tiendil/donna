@@ -197,30 +197,35 @@ class TestStateNode:
         cell = MutableState.build().node().status()
 
         assert cell.kind == "session_state_status"
+        assert cell.content is not None
         assert "new session" in cell.content
         assert cell.meta == {"tasks": 0, "queued_work_units": 0, "pending_action_requests": 0}
 
     def test_status__reports_idle_session(self) -> None:
         cell = make.mutable_state(tasks=[], work_units=[], action_requests=[], started=True).node().status()
 
+        assert cell.content is not None
         assert "IDLE" in cell.content
         assert cell.meta["tasks"] == 0
 
     def test_status__reports_pending_work_units(self) -> None:
         cell = make.mutable_state(tasks=[make.task()], work_units=[make.work_unit()]).node().status()
 
+        assert cell.content is not None
         assert "PENDING WORK UNITS" in cell.content
         assert cell.meta["queued_work_units"] == 1
 
     def test_status__reports_pending_action_requests(self) -> None:
         cell = make.mutable_state(tasks=[make.task()], action_requests=[make.action_request()]).node().status()
 
+        assert cell.content is not None
         assert "AWAITING YOUR ACTION" in cell.content
         assert cell.meta["pending_action_requests"] == 1
 
     def test_status__reports_unfinished_tasks(self) -> None:
         cell = make.mutable_state(tasks=[make.task()]).node().status()
 
+        assert cell.content is not None
         assert "unfinished TASKS" in cell.content
         assert cell.meta["tasks"] == 1
 

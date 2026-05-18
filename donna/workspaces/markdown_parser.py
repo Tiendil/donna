@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, ClassVar, Protocol, cast
+from typing import ClassVar, Protocol, cast
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result, unwrap_to_error
@@ -20,7 +20,7 @@ class MarkdownSectionConstructor(Protocol):
         self,
         artifact_id: ArtifactId,
         source: markdown.SectionSource,
-        config: dict[str, Any],
+        config: dict[str, object],
         primary: bool = False,
     ) -> Result[ArtifactSection, ErrorsList]:
         pass
@@ -62,7 +62,7 @@ class MarkdownSectionMixin:
         self,
         artifact_id: ArtifactId,
         source: markdown.SectionSource,
-        config: dict[str, Any],
+        config: dict[str, object],
         primary: bool = False,
     ) -> Result[ArtifactSection, ErrorsList]:
         section_config = self.config_class.model_validate(config)
@@ -240,7 +240,7 @@ def _resolve_primitive(
     return resolve_primitive(primitive_id)
 
 
-def _parse_primitive_id(value: PythonPath | str) -> Result[PythonPath, ErrorsList]:
+def _parse_primitive_id(value: object) -> Result[PythonPath, ErrorsList]:
     if isinstance(value, PythonPath):
         return Ok(value)
 

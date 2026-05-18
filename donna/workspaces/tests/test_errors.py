@@ -1,12 +1,15 @@
 import pathlib
 
+from donna.domain.paths import ProjectConfigPath
 from donna.workspaces import errors as workspace_errors
 from donna.workspaces.tests import make
 
 
 class TestWorkspaceConfigError:
     def test_content_intro__includes_config_path(self, tmp_path: pathlib.Path) -> None:
-        error = workspace_errors.ConfigParseFailed(config_path=tmp_path / "donna.toml", details="bad")
+        error = workspace_errors.ConfigParseFailed(
+            config_path=ProjectConfigPath(tmp_path / "donna.toml"), details="bad"
+        )
 
         assert error.content_intro() == f"Error in Donna config file '{tmp_path / 'donna.toml'}'"
 
@@ -41,12 +44,16 @@ class _InternalErrorCase:
 
 class TestConfigParseFailed(_EnvironmentErrorCase):
     def error(self) -> workspace_errors.WorkspaceError:
-        return workspace_errors.ConfigParseFailed(config_path=pathlib.Path("donna.toml"), details="bad")
+        return workspace_errors.ConfigParseFailed(
+            config_path=ProjectConfigPath(pathlib.Path("donna.toml")), details="bad"
+        )
 
 
 class TestConfigValidationFailed(_EnvironmentErrorCase):
     def error(self) -> workspace_errors.WorkspaceError:
-        return workspace_errors.ConfigValidationFailed(config_path=pathlib.Path("donna.toml"), details="bad")
+        return workspace_errors.ConfigValidationFailed(
+            config_path=ProjectConfigPath(pathlib.Path("donna.toml")), details="bad"
+        )
 
 
 class TestWorkspaceConfigNotDiscovered(_EnvironmentErrorCase):
@@ -56,17 +63,17 @@ class TestWorkspaceConfigNotDiscovered(_EnvironmentErrorCase):
 
 class TestWorkspaceAlreadyInitialized(_EnvironmentErrorCase):
     def error(self) -> workspace_errors.WorkspaceError:
-        return workspace_errors.WorkspaceAlreadyInitialized(config_path=pathlib.Path("donna.toml"))
+        return workspace_errors.WorkspaceAlreadyInitialized(config_path=ProjectConfigPath(pathlib.Path("donna.toml")))
 
 
 class TestWorkspaceConfigNotFound(_EnvironmentErrorCase):
     def error(self) -> workspace_errors.WorkspaceError:
-        return workspace_errors.WorkspaceConfigNotFound(config_path=pathlib.Path("donna.toml"))
+        return workspace_errors.WorkspaceConfigNotFound(config_path=ProjectConfigPath(pathlib.Path("donna.toml")))
 
 
 class TestWorkspaceConfigDirNotFound(_EnvironmentErrorCase):
     def error(self) -> workspace_errors.WorkspaceError:
-        return workspace_errors.WorkspaceConfigDirNotFound(config_path=pathlib.Path("donna.toml"))
+        return workspace_errors.WorkspaceConfigDirNotFound(config_path=ProjectConfigPath(pathlib.Path("donna.toml")))
 
 
 class TestJournalCommandConfigInvalid(_EnvironmentErrorCase):

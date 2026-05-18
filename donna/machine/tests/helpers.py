@@ -1,8 +1,7 @@
-from typing import Any
-
 from donna.core.errors import ErrorsList
 from donna.core.result import Err, Ok, Result
-from donna.domain.artifact_ids import ArtifactId
+from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
+from donna.domain.internal_ids import WorkUnitId
 from donna.domain.python_path import PythonPath
 from donna.machine.artifacts import Artifact
 from donna.machine.context import ValueScope
@@ -53,9 +52,9 @@ class FakePrimitives:
 
 class FakeJournal:
     def __init__(self) -> None:
-        self.records: list[dict[str, Any]] = []
+        self.records: list[dict[str, object]] = []
 
-    def add(self, message: str, actor_id: str | None = None) -> Result[Any, ErrorsList]:
+    def add(self, message: str, actor_id: str | None = None) -> Result[object, ErrorsList]:
         self.records.append({"message": message, "actor_id": actor_id})
         return Ok(None)
 
@@ -72,8 +71,8 @@ class FakeMachineContext:
         self._artifacts = FakeArtifacts(artifact=artifact, error=artifact_error)
         self._primitives = FakePrimitives(primitive=primitive, error=primitive_error)
         self._journal = FakeJournal()
-        self._current_work_unit_id: ValueScope[Any] = ValueScope()
-        self._current_operation_id: ValueScope[Any] = ValueScope()
+        self._current_work_unit_id: ValueScope[WorkUnitId] = ValueScope()
+        self._current_operation_id: ValueScope[ArtifactSectionId] = ValueScope()
 
     @property
     def artifacts(self) -> FakeArtifacts:
@@ -88,9 +87,9 @@ class FakeMachineContext:
         return self._journal
 
     @property
-    def current_work_unit_id(self) -> ValueScope[Any]:
+    def current_work_unit_id(self) -> ValueScope[WorkUnitId]:
         return self._current_work_unit_id
 
     @property
-    def current_operation_id(self) -> ValueScope[Any]:
+    def current_operation_id(self) -> ValueScope[ArtifactSectionId]:
         return self._current_operation_id

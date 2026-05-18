@@ -1,5 +1,3 @@
-from typing import Any, cast
-
 import pydantic
 import pytest
 
@@ -31,7 +29,7 @@ class TestInternalId:
         ],
     )
     def test_validate__rejects_invalid_identifier(self, value: object) -> None:
-        assert not InternalId.validate(cast(Any, value))
+        assert not InternalId.validate(value)
 
     def test_init__raises_internal_error_for_invalid_value(self) -> None:
         with pytest.raises(errors.InvalidInternalId):
@@ -48,7 +46,7 @@ class TestInternalId:
             _InternalIdEntity.model_validate({"internal_id": "WU-0-b"})
 
         with pytest.raises(pydantic.ValidationError):
-            _InternalIdEntity.model_validate({"internal_id": cast(Any, 123)})
+            _InternalIdEntity.model_validate({"internal_id": 123})
 
 
 class TestWorkUnitId:

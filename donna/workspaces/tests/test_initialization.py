@@ -1,10 +1,12 @@
 import pathlib
 
+from pytest_mock import MockerFixture
+
 from donna.core.result import Ok
 from donna.domain.constants import DONNA_CONFIG_NAME
-from donna.workspaces import errors as workspace_errors
 from donna.protocol.modes import Mode
 from donna.workspaces import config as workspace_config
+from donna.workspaces import errors as workspace_errors
 from donna.workspaces.config import GlobalConfig
 from donna.workspaces.initialization import initialize_runtime, initialize_workspace, load_workspace
 
@@ -26,7 +28,7 @@ class TestLoadWorkspace:
         assert workspace.config.session_dir == pathlib.Path(".session/custom")
         assert workspace.config.workflow_dirs == [pathlib.Path("workflows")]
 
-    def test_discovery__uses_nearest_project_config(self, mocker: object, tmp_path: pathlib.Path) -> None:
+    def test_discovery__uses_nearest_project_config(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text("version = 1", encoding="utf-8")
         mocker.patch("donna.workspaces.utils.discover_project_dir", return_value=Ok(tmp_path))
@@ -71,7 +73,9 @@ class TestLoadWorkspace:
 
 
 class TestInitializeRuntime:
-    def test_loads_workspace_installs_protocol_and_workspace(self, mocker: object, tmp_path: pathlib.Path) -> None:
+    def test_loads_workspace_installs_protocol_and_workspace(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
         protocol = GlobalConfig[Mode]()
         mocker.patch.object(workspace_config, "protocol", protocol)
         install_workspace = mocker.patch("donna.workspaces.config.install_workspace")
@@ -85,7 +89,7 @@ class TestInitializeRuntime:
         assert protocol.get() == Mode.llm
         install_workspace.assert_called_once_with(workspace)
 
-    def test_loads_workspace_without_protocol_override(self, mocker: object, tmp_path: pathlib.Path) -> None:
+    def test_loads_workspace_without_protocol_override(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         protocol = GlobalConfig[Mode]()
         mocker.patch.object(workspace_config, "protocol", protocol)
         config_path = tmp_path / DONNA_CONFIG_NAME
@@ -98,7 +102,7 @@ class TestInitializeRuntime:
 
 
 class TestInitializeWorkspace:
-    def test_creates_starter_config_and_loads_workspace(self, mocker: object, tmp_path: pathlib.Path) -> None:
+    def test_creates_starter_config_and_loads_workspace(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         install_workspace = mocker.patch("donna.workspaces.config.install_workspace")
         config_path = tmp_path / DONNA_CONFIG_NAME
 

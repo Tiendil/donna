@@ -1,7 +1,5 @@
 import importlib
-from typing import TYPE_CHECKING, Any, ClassVar
-
-from jinja2.runtime import Context
+from typing import TYPE_CHECKING, ClassVar
 
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
@@ -10,6 +8,7 @@ from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
 from donna.machine import errors as machine_errors
 from donna.machine.artifacts import ArtifactSectionConfig
+from donna.machine.templates_context import DirectiveContext
 
 if TYPE_CHECKING:
     from donna.machine.artifacts import Artifact
@@ -32,7 +31,9 @@ class Primitive(BaseEntity):
             primitive_name=self.__class__.__name__, method_name="execute_section()"
         )
 
-    def apply_directive(self, context: Context, *argv: Any, **kwargs: Any) -> Result[Any, ErrorsList]:
+    def apply_directive(
+        self, context: DirectiveContext, *argv: object, **kwargs: object
+    ) -> Result[object, ErrorsList]:
         raise machine_errors.PrimitiveMethodUnsupported(
             primitive_name=self.__class__.__name__, method_name="apply_directive()"
         )

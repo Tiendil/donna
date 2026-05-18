@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from functools import total_ordering
-from typing import Any, Self, Sequence, TypeVar
+from typing import Self, Sequence, TypeVar
 
 from pydantic_core import PydanticCustomError, core_schema
 
@@ -8,13 +9,13 @@ from donna.core.result import Err, Ok, Result
 from donna.domain import errors as domain_errors
 
 
-def _stringify_value(value: Any) -> str:
+def _stringify_value(value: object) -> str:
     if isinstance(value, str):
         return value
     return repr(value)
 
 
-def _pydantic_type_error(type_name: str, value: Any) -> PydanticCustomError:
+def _pydantic_type_error(type_name: str, value: object) -> PydanticCustomError:
     return PydanticCustomError(
         "type_error",
         "{type_name} must be a str, got {actual_type}",
@@ -22,7 +23,7 @@ def _pydantic_type_error(type_name: str, value: Any) -> PydanticCustomError:
     )
 
 
-def _pydantic_value_error(type_name: str, value: Any) -> PydanticCustomError:
+def _pydantic_value_error(type_name: str, value: object) -> PydanticCustomError:
     return PydanticCustomError(
         "value_error",
         "Invalid {type_name}: {value}",
@@ -33,7 +34,7 @@ def _pydantic_value_error(type_name: str, value: Any) -> PydanticCustomError:
 TParsed = TypeVar("TParsed")
 
 
-def _invalid_format(id_type: str, value: Any) -> Result[TParsed, ErrorsList]:
+def _invalid_format(id_type: str, value: object) -> Result[TParsed, ErrorsList]:
     return Err([domain_errors.InvalidIdFormat(id_type=id_type, value=_stringify_value(value))])
 
 
@@ -67,7 +68,7 @@ class IdPath:
         return all(part.isidentifier() for part in parts)
 
     @classmethod
-    def validate(cls, value: str) -> bool:
+    def validate(cls, value: object) -> bool:
         if not isinstance(value, str) or not value:
             return False
 
@@ -89,7 +90,7 @@ class IdPath:
         return self.delimiter.join(self.parts)
 
     @classmethod
-    def normalize_raw_value(cls, value: str) -> NormalizedRawIdPath | None:
+    def normalize_raw_value(cls, value: object) -> NormalizedRawIdPath | None:
         if not isinstance(value, str) or not value:
             return None
 
@@ -126,15 +127,15 @@ class IdPath:
     def __copy__(self) -> Self:
         return self
 
-    def __deepcopy__(self, memo: dict[int, Any]) -> Self:
+    def __deepcopy__(self, memo: dict[int, object]) -> Self:
         memo[id(self)] = self
         return self
 
-    def __setattr__(self, name: str, value: Any) -> None:
+    def __setattr__(self, name: str, value: object) -> None:
         raise AttributeError(f"{type(self).__name__} is immutable")
 
     @classmethod
-    def parse(cls, text: str) -> Result[Self, ErrorsList]:
+    def parse(cls, text: object) -> Result[Self, ErrorsList]:
         normalized = cls.normalize_raw_value(text)
         if normalized is None:
             return _invalid_format(cls.__name__, text)
@@ -142,7 +143,7 @@ class IdPath:
         return Ok(cls(normalized))
 
     @classmethod
-    def _build_pydantic_schema(cls, validate_func: Any) -> core_schema.CoreSchema:
+    def _build_pydantic_schema(cls, validate_func: Callable[[object], "IdPath"]) -> core_schema.CoreSchema:
         str_then_validate = core_schema.no_info_after_validator_function(
             validate_func,
             core_schema.str_schema(),
@@ -157,9 +158,9 @@ class IdPath:
         )
 
     @classmethod
-    def __get_pydantic_core_schema__(cls, source_type: Any, handler: Any) -> core_schema.CoreSchema:
+    def __get_pydantic_core_schema__(cls, source_type: object, handler: object) -> core_schema.CoreSchema:
 
-        def validate(v: Any) -> "IdPath":
+        def validate(v: object) -> "IdPath":
             if isinstance(v, cls):
                 return v
 

@@ -1,4 +1,4 @@
-from typing import Any
+from pytest_mock import MockerFixture
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Ok, Result
@@ -168,7 +168,7 @@ class TestNewSession:
 
 
 class TestClear:
-    def test_resets_workspace_session_dir_and_reports_success(self, mocker: Any) -> None:
+    def test_resets_workspace_session_dir_and_reports_success(self, mocker: MockerFixture) -> None:
         reset_dir = mocker.patch("donna.runtime.sessions.workspace_sessions.reset_dir")
 
         result = sessions.clear()

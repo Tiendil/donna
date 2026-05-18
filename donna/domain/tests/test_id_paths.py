@@ -1,5 +1,4 @@
 import copy
-from typing import Any, cast
 
 import pydantic
 import pytest
@@ -102,4 +101,4 @@ class TestPythonPath:
             _PathEntity.model_validate({"path": "donna..ids"})
 
         with pytest.raises(pydantic.ValidationError):
-            _PathEntity.model_validate({"path": cast(Any, 123)})
+            _PathEntity.model_validate({"path": 123})

@@ -1,4 +1,4 @@
-from typing import Any
+from collections.abc import Mapping
 
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
@@ -8,7 +8,7 @@ from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
 from donna.machine.context import context
 from donna.machine.errors import ArtifactPrimarySectionMissing, ArtifactSectionNotFound, MultiplePrimarySectionsError
-from donna.protocol.cells import Cell
+from donna.protocol.cells import Cell, MetaValue
 from donna.protocol.errors import environment_error_node
 from donna.protocol.nodes import Node
 
@@ -19,7 +19,7 @@ class ArtifactSectionConfig(BaseEntity):
 
 
 class ArtifactSectionMeta(BaseEntity):
-    def cells_meta(self) -> dict[str, Any]:
+    def cells_meta(self) -> Mapping[str, MetaValue]:
         return {}
 
 

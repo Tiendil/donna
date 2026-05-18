@@ -1,4 +1,5 @@
-from typing import Any, cast
+import contextvars
+from typing import cast
 
 from donna.context.context import Context
 from donna.context.context import reset_context as reset_runtime_context
@@ -9,7 +10,7 @@ from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
 from donna.domain.internal_ids import WorkUnitId
 from donna.domain.python_path import PythonPath
 from donna.machine.artifacts import Artifact
-from donna.machine.context import ValueScope
+from donna.machine.context import MachineContext, ValueScope
 from donna.machine.context import reset_context as reset_machine_context
 from donna.machine.context import set_context as set_machine_context
 from donna.machine.primitives import Primitive
@@ -79,9 +80,9 @@ class FakePrimitives:
 
 class FakeJournal:
     def __init__(self) -> None:
-        self.records: list[dict[str, Any]] = []
+        self.records: list[dict[str, object]] = []
 
-    def add(self, message: str, actor_id: str | None = None) -> Result[Any, ErrorsList]:
+    def add(self, message: str, actor_id: str | None = None) -> Result[object, ErrorsList]:
         self.records.append({"message": message, "actor_id": actor_id})
         return Ok(None)
 
@@ -111,8 +112,8 @@ class FakeRuntimeContext:
 class InstalledContext:
     def __init__(self, context: FakeRuntimeContext) -> None:
         self.context = context
-        self._runtime_token: Any = None
-        self._machine_token: Any = None
+        self._runtime_token: contextvars.Token[Context | None] | None = None
+        self._machine_token: contextvars.Token[MachineContext | None] | None = None
 
     def __enter__(self) -> FakeRuntimeContext:
         self._runtime_token = set_runtime_context(cast(Context, self.context))
@@ -120,6 +121,8 @@ class InstalledContext:
         return self.context
 
     def __exit__(self, exc_type: object, exc: object, traceback: object) -> None:
+        assert self._machine_token is not None
+        assert self._runtime_token is not None
         reset_machine_context(self._machine_token)
         reset_runtime_context(self._runtime_token)
 

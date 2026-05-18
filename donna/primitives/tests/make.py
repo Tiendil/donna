@@ -1,6 +1,4 @@
-from typing import Any, cast
-
-from jinja2.runtime import Context
+from typing import cast
 
 from donna.core.entities import BaseEntity
 from donna.core.errors import ErrorsList
@@ -12,6 +10,7 @@ from donna.domain.internal_ids import TaskId, WorkUnitId
 from donna.domain.python_path import PythonPath
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionMeta
 from donna.machine.tasks import Task, WorkUnit
+from donna.machine.templates_context import DirectiveContext
 from donna.protocol.cells import Cell
 from donna.protocol.journal import JournalRecord
 from donna.workspaces import markdown
@@ -69,7 +68,7 @@ def work_unit(
     id: WorkUnitId = WORK_UNIT_ID,
     task_id: TaskId = TASK_ID,
     operation_id: ArtifactSectionId = START_OPERATION_ID,
-    context: dict[str, Any] | None = None,
+    context: dict[str, object] | None = None,
 ) -> WorkUnit:
     return WorkUnit.build(id=id, task_id=task_id, operation_id=operation_id, context=context)
 
@@ -99,8 +98,8 @@ def section_source_from_markdown(text: str, section_index: int = 0) -> SectionSo
     return source
 
 
-def template_context(**values: Any) -> Context:
-    return cast(Context, values)
+def template_context(**values: object) -> DirectiveContext:
+    return cast(DirectiveContext, values)
 
 
 class FakeOutputEmitter:

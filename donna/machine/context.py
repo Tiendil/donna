@@ -3,7 +3,7 @@ from __future__ import annotations
 import contextvars
 from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeVar
+from typing import TYPE_CHECKING, Generic, Protocol, TypeVar
 
 from donna.core.errors import ErrorsList
 from donna.core.result import Result
@@ -58,7 +58,7 @@ class MachinePrimitives(Protocol):
 
 
 class MachineJournal(Protocol):
-    def add(self, message: str, actor_id: str | None = None) -> Result[Any, ErrorsList]:
+    def add(self, message: str, actor_id: str | None = None) -> Result[object, ErrorsList]:
         pass
 
 

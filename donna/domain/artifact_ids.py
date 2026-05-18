@@ -25,7 +25,7 @@ class ArtifactSectionParts:
         self.section_id = section_id
 
 
-def _raw_artifact_path(value: str) -> str | None:
+def _raw_artifact_path(value: object) -> str | None:
     if not isinstance(value, str) or not value.startswith(ARTIFACT_ID_PREFIX):
         return None
 
@@ -36,7 +36,7 @@ def _raw_artifact_path(value: str) -> str | None:
     return raw
 
 
-def validate_artifact_id(value: str) -> bool:
+def validate_artifact_id(value: object) -> bool:
     raw = _raw_artifact_path(value)
     if raw is None:
         return False
@@ -51,7 +51,7 @@ def validate_artifact_id(value: str) -> bool:
     return bool(pathlib.PurePosixPath(parts[-1]).suffix)
 
 
-def validate_artifact_section_id(value: str) -> bool:
+def validate_artifact_section_id(value: object) -> bool:
     parts = split_artifact_section_id(value)
     return parts is not None
 
@@ -74,7 +74,7 @@ def artifact_section_id(artifact_id: ArtifactId, local_id: SectionId | str) -> A
     return ArtifactSectionId(section_id)
 
 
-def split_artifact_section_id(value: str | ArtifactSectionId) -> ArtifactSectionParts | None:
+def split_artifact_section_id(value: object) -> ArtifactSectionParts | None:
     if not isinstance(value, str) or not value:
         return None
 

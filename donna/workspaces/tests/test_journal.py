@@ -1,5 +1,7 @@
 import subprocess  # noqa: S404
 
+from pytest_mock import MockerFixture
+
 from donna.workspaces import errors as workspace_errors
 from donna.workspaces import journal
 from donna.workspaces.config import Config, JournalConfig, JournalRecordAttribute
@@ -129,7 +131,7 @@ class TestBuildCommandArgs:
 
 
 class TestWriteRecord:
-    def test_no_configured_command_is_noop(self, mocker: object) -> None:
+    def test_no_configured_command_is_noop(self, mocker: MockerFixture) -> None:
         mocker.patch(
             "donna.workspaces.config.config",
             return_value=Config(journal=JournalConfig(cmd=None)),
@@ -141,7 +143,7 @@ class TestWriteRecord:
         assert result.is_ok()
         run.assert_not_called()
 
-    def test_runs_configured_command(self, mocker: object) -> None:
+    def test_runs_configured_command(self, mocker: MockerFixture) -> None:
         mocker.patch(
             "donna.workspaces.config.config",
             return_value=Config(journal=JournalConfig(cmd=["tool", "{message}"])),
@@ -156,7 +158,7 @@ class TestWriteRecord:
         assert result.is_ok()
         run.assert_called_once_with(["tool", "message"], check=False, capture_output=True, text=True)
 
-    def test_reports_command_os_error(self, mocker: object) -> None:
+    def test_reports_command_os_error(self, mocker: MockerFixture) -> None:
         mocker.patch(
             "donna.workspaces.config.config",
             return_value=Config(journal=JournalConfig(cmd=["tool"])),
@@ -171,7 +173,7 @@ class TestWriteRecord:
         assert error.command == ["tool"]
         assert error.returncode is None
 
-    def test_reports_nonzero_command_exit(self, mocker: object) -> None:
+    def test_reports_nonzero_command_exit(self, mocker: MockerFixture) -> None:
         mocker.patch(
             "donna.workspaces.config.config",
             return_value=Config(journal=JournalConfig(cmd=["tool"])),

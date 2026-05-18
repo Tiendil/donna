@@ -1,7 +1,8 @@
 import datetime
-from typing import Any, cast
+from typing import cast
 
 import pytest
+from pytest_mock import MockerFixture
 
 from donna.context.context import Context
 from donna.context.journal import Journal
@@ -41,19 +42,19 @@ class TestJournal:
         ],
     )
     def test_smart_actor_id__depends_on_selected_protocol(
-        self, mocker: Any, mode: protocol_modes.Mode, actor_id: str
+        self, mocker: MockerFixture, mode: protocol_modes.Mode, actor_id: str
     ) -> None:
         mocker.patch("donna.context.journal.protocol_mode", return_value=mode)
 
         assert Journal(cast(Context, _FakeContext())).smart_actor_id() == actor_id
 
-    def test_smart_actor_id__raises_for_unsupported_mode(self, mocker: Any) -> None:
+    def test_smart_actor_id__raises_for_unsupported_mode(self, mocker: MockerFixture) -> None:
         mocker.patch("donna.context.journal.protocol_mode", return_value="unsupported")
 
         with pytest.raises(protocol_errors.UnsupportedFormatterMode):
             Journal(cast(Context, _FakeContext())).smart_actor_id()
 
-    def test_add__builds_writes_and_emits_journal_record(self, mocker: Any) -> None:
+    def test_add__builds_writes_and_emits_journal_record(self, mocker: MockerFixture) -> None:
         now = datetime.datetime(2026, 5, 18, 8, 30, tzinfo=datetime.UTC)
         fake_context = _FakeContext()
         mocker.patch("donna.context.journal.protocol_mode", return_value=protocol_modes.Mode.llm)
@@ -75,7 +76,7 @@ class TestJournal:
         write_record.assert_called_once_with(record)
         assert fake_context.output.journal_records == [record]
 
-    def test_add__uses_explicit_actor_id(self, mocker: Any) -> None:
+    def test_add__uses_explicit_actor_id(self, mocker: MockerFixture) -> None:
         fake_context = _FakeContext()
         mocker.patch("donna.context.journal.now", return_value=datetime.datetime(2026, 5, 18, tzinfo=datetime.UTC))
         mocker.patch("donna.context.journal.workspace_journal.write_record", return_value=Ok(None))
