@@ -167,6 +167,8 @@ uv install donna
 # cd donna
 
 donna run @/workflows/examples/time_to_drink_tea.donna.md
+
+# Follow Donna commands to finish the workflow.
 ```
 
 ## Rationale
