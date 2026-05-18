@@ -104,20 +104,19 @@ The workflow is complete. You are a good butler.
 <details>
   <summary>How it works</summary>
 
-
-How this example works:
+How to read workflow's source:
 
 - The H1 section is the workflow section. It gives Donna the workflow title and summary that appear in `donna list`.
 - Each H2 section is an operation section. Donna runs operations in the order selected by the workflow state machine.
-- `toml donna` blocks configure section type and behavior. Here, the operation types are `donna.lib.run_script`, `donna.lib.request_action`, and `donna.lib.finish`.
+- `toml donna` blocks configure section id, type and behavior. Here, the operation types are `donna.lib.run_script`, `donna.lib.request_action`, and `donna.lib.finish`.
 - `Get Current Time` is a `run_script` operation. Donna runs the shell script from the project root, saves stdout as `current_time`, and moves to `ask_about_tea` on success. No agent interaction required here, because it is pure deterministic work.
-- `Ask About Tea` is a `request_action` operation. The agent will see the rendered current time, the question, and the two allowed transitions: `turn_on_kettle` or `finish`.
-- `donna.lib.task_variable("current_time")` is rendered for the agent as the value captured from the script output.
-- `donna.lib.goto(...)` is rendered for the agent as a concrete CLI command to exectute.
+- `Ask About Tea` is a `request_action` operation. The agent will see a request for action with the rendered current time, the question, and the two allowed transitions: `turn_on_kettle` or `finish`.
+- `donna.lib.task_variable("current_time")` is rendered as the value captured from the script output.
+- `donna.lib.goto(...)` is rendered as a concrete CLI command to exectute.
 - `Turn On Kettle` is another `request_action` operation. The agent will see the instruction to turn on the kettle and then complete the action request with the `finish` transition.
 - `Finish` is a `finish` operation. The agent will see the final workflow message, and Donna will complete the workflow task.
 
-For example, here what the agent will see on the `Get Current Time` step of the tea workflow:
+Here is an example of action request for the `Get Current Time` operation:
 
 ````markdown
 --DONNA-CELL OuP2T9brQYmvESMHsbrDlw BEGIN--
@@ -133,6 +132,7 @@ The session is AWAITING YOUR ACTION. You have pending action requests to address
   or continue working on the current action requests.
 - Otherwise, you MUST address the pending action requests before proceeding.
 --DONNA-CELL OuP2T9brQYmvESMHsbrDlw END--
+
 --DONNA-CELL fxh3PDZ1Qy-c3zvai_T5Qw BEGIN--
 kind=action_request
 media_type=text/markdown
@@ -156,6 +156,18 @@ Is it time to drink tea?
 ````
 
 </details>
+
+Since Donna is a CLI tool, you can run the workflow manually in the terminal.
+
+```bash
+uv install donna
+
+# Example workflow is a part of Donna repository
+# git clone git@github.com:Tiendil/donna.git
+# cd donna
+
+donna run @/workflows/tea.donna.md
+```
 
 ## Rationale
 
