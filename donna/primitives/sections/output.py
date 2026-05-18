@@ -53,7 +53,7 @@ class Output(MarkdownSectionMixin, OperationKind):
         return Ok(
             OutputMeta(
                 fsm_mode=output_config.fsm_mode,
-                allowed_transtions=allowed_transitions,
+                allowed_transitions=allowed_transitions,
                 next_operation_id=output_config.next_operation_id,
             )
         )

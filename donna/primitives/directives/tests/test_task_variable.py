@@ -27,6 +27,7 @@ class TestTaskVariable:
         assert result.is_ok()
         content = result.unwrap()
         assert isinstance(content, str)
+        assert "will place a value" in content
         assert "answer" in content
 
     def test_render_execute__returns_value_from_task_context_mapping(self) -> None:

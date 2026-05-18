@@ -70,7 +70,7 @@ def _operation_section(
         title=f"Operation {id}",
         description=f"Description for {id}",
         primary=primary,
-        meta=OperationMeta(allowed_transtions=allowed_transitions or set()),
+        meta=OperationMeta(allowed_transitions=allowed_transitions or set()),
     )
 
 

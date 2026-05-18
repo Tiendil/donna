@@ -27,7 +27,7 @@ class TestOutput:
         assert isinstance(meta, OutputMeta)
         assert meta.fsm_mode == FsmMode.start
         assert meta.next_operation_id == make.section_id("next")
-        assert meta.allowed_transtions == {make.section_id("next")}
+        assert meta.allowed_transitions == {make.section_id("next")}
 
     def test_markdown_construct_meta__allows_missing_next_operation_for_validation(self) -> None:
         result = Output().markdown_construct_meta(
@@ -44,7 +44,7 @@ class TestOutput:
         meta = result.unwrap()
         assert isinstance(meta, OutputMeta)
         assert meta.next_operation_id is None
-        assert meta.allowed_transtions == set()
+        assert meta.allowed_transitions == set()
 
     def test_validate_section__requires_next_operation(self) -> None:
         artifact = machine_make.artifact(
@@ -52,7 +52,7 @@ class TestOutput:
                 machine_make.artifact_section(
                     id=make.section_id("start"),
                     kind=make.primitive_kind("donna.primitives.sections.text.Text"),
-                    meta=OutputMeta(allowed_transtions=set(), next_operation_id=None),
+                    meta=OutputMeta(allowed_transitions=set(), next_operation_id=None),
                 )
             ]
         )
@@ -72,7 +72,7 @@ class TestOutput:
                     kind=make.primitive_kind("donna.primitives.sections.text.Text"),
                     description="Agent message",
                     meta=OutputMeta(
-                        allowed_transtions={make.section_id("next")},
+                        allowed_transitions={make.section_id("next")},
                         next_operation_id=make.section_id("next"),
                     ),
                 )

@@ -44,4 +44,4 @@ class FinishWorkflow(MarkdownSectionMixin, OperationKind):
         primary: bool = False,
     ) -> Result[ArtifactSectionMeta, ErrorsList]:
         finish_config = cast(FinishWorkflowConfig, section_config)
-        return Ok(OperationMeta(fsm_mode=finish_config.fsm_mode, allowed_transtions=set()))
+        return Ok(OperationMeta(fsm_mode=finish_config.fsm_mode, allowed_transitions=set()))

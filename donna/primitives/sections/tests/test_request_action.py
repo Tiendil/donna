@@ -60,7 +60,7 @@ class TestRequestAction:
         assert result.is_ok()
         meta = result.unwrap()
         assert isinstance(meta, OperationMeta)
-        assert meta.allowed_transtions == {make.section_id("next")}
+        assert meta.allowed_transitions == {make.section_id("next")}
 
     def test_execute_section__adds_action_request_for_current_operation(self) -> None:
         artifact = machine_make.artifact(
@@ -70,7 +70,7 @@ class TestRequestAction:
                     kind=make.primitive_kind("donna.primitives.sections.request_action.RequestAction"),
                     title="Ask agent",
                     description="Do the work",
-                    meta=OperationMeta(fsm_mode=FsmMode.normal, allowed_transtions={make.section_id("next")}),
+                    meta=OperationMeta(fsm_mode=FsmMode.normal, allowed_transitions={make.section_id("next")}),
                 )
             ]
         )

@@ -97,7 +97,7 @@ def find_workflow_sections(start_operation_id: SectionId, artifact: Artifact) ->
         if not isinstance(section.meta, OperationMeta):
             continue
 
-        to_visit.extend(section.meta.allowed_transtions)
+        to_visit.extend(section.meta.allowed_transitions)
 
     return workflow_sections
 
@@ -198,7 +198,7 @@ class Workflow(MarkdownSectionMixin, Primitive):
                 )
                 continue
 
-            if workflow_section.meta.fsm_mode == FsmMode.final and workflow_section.meta.allowed_transtions:
+            if workflow_section.meta.fsm_mode == FsmMode.final and workflow_section.meta.allowed_transitions:
                 errors.append(
                     FinalOperationHasTransitions(
                         artifact_id=artifact.id, section_id=section_id, workflow_section_id=workflow_section.id
@@ -209,7 +209,7 @@ class Workflow(MarkdownSectionMixin, Primitive):
             if workflow_section.meta.fsm_mode == FsmMode.final:
                 continue
 
-            if not workflow_section.meta.allowed_transtions:
+            if not workflow_section.meta.allowed_transitions:
                 errors.append(
                     NoOutgoingTransitions(
                         artifact_id=artifact.id, section_id=section_id, workflow_section_id=workflow_section.id

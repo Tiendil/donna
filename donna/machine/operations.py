@@ -27,7 +27,7 @@ class OperationConfig(ArtifactSectionConfig):
 
 class OperationMeta(ArtifactSectionMeta):
     fsm_mode: FsmMode = FsmMode.normal
-    allowed_transtions: set[SectionId]
+    allowed_transitions: set[SectionId]
 
     def cells_meta(self) -> Mapping[str, MetaValue]:
-        return {"fsm_mode": self.fsm_mode.value, "allowed_transtions": [str(t) for t in self.allowed_transtions]}
+        return {"fsm_mode": self.fsm_mode.value, "allowed_transitions": [str(t) for t in self.allowed_transitions]}

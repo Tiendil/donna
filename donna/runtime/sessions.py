@@ -132,7 +132,7 @@ def _validate_operation_transition(
 
     assert isinstance(operation.meta, OperationMeta)
 
-    if next_operation_parts.section_id not in operation.meta.allowed_transtions:
+    if next_operation_parts.section_id not in operation.meta.allowed_transitions:
         return Err(
             [machine_errors.InvalidOperationTransition(operation_id=operation_id, next_operation_id=next_operation_id)]
         )

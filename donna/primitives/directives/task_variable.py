@@ -41,7 +41,7 @@ class TaskVariable(Directive):
     def render_view(self, context: DirectiveContext, *argv: object) -> Result[object, ErrorsList]:
         variable_name = str(argv[0])
         return Ok(
-            "$$donna at the time of execution of this section here will placed a value "
+            "$$donna at the time of execution of this section will place a value "
             f"of the task variable '{variable_name}' donna$$"
         )
 

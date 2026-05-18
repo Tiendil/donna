@@ -39,7 +39,7 @@ def operation_section(
         kind=make.primitive_kind("donna.primitives.sections.text.Text"),
         meta=OperationMeta(
             fsm_mode=fsm_mode,
-            allowed_transtions=transitions or set(),
+            allowed_transitions=transitions or set(),
         ),
     )
 

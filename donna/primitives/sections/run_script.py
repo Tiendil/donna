@@ -129,7 +129,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         return Ok(
             RunScriptMeta(
                 fsm_mode=run_config.fsm_mode,
-                allowed_transtions=allowed_transitions,
+                allowed_transitions=allowed_transitions,
                 script=script,
                 save_stdout_to=run_config.save_stdout_to,
                 save_stderr_to=run_config.save_stderr_to,

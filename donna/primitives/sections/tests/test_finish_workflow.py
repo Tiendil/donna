@@ -24,7 +24,7 @@ class TestFinishWorkflow:
         meta = result.unwrap()
         assert isinstance(meta, OperationMeta)
         assert meta.fsm_mode == FsmMode.final
-        assert meta.allowed_transtions == set()
+        assert meta.allowed_transitions == set()
 
     def test_execute_section__emits_message_and_finishes_task(self, mocker: MockerFixture) -> None:
         runtime_context = make.FakeRuntimeContext()
@@ -35,7 +35,7 @@ class TestFinishWorkflow:
                     id=make.section_id("done"),
                     kind=make.primitive_kind("donna.primitives.sections.finish_workflow.FinishWorkflow"),
                     description="Finished",
-                    meta=OperationMeta(fsm_mode=FsmMode.final, allowed_transtions=set()),
+                    meta=OperationMeta(fsm_mode=FsmMode.final, allowed_transitions=set()),
                 )
             ]
         )

@@ -23,7 +23,7 @@ from donna.workspaces.tests import make as workspace_make
 class TestRunScriptMeta:
     def test_select_next_operation__uses_success_transition_for_zero_exit_code(self) -> None:
         meta = RunScriptMeta(
-            allowed_transtions={make.section_id("next"), make.section_id("done")},
+            allowed_transitions={make.section_id("next"), make.section_id("done")},
             goto_on_success=make.section_id("next"),
             goto_on_failure=make.section_id("done"),
         )
@@ -32,7 +32,7 @@ class TestRunScriptMeta:
 
     def test_select_next_operation__uses_exit_code_specific_transition(self) -> None:
         meta = RunScriptMeta(
-            allowed_transtions={make.section_id("next"), make.section_id("done")},
+            allowed_transitions={make.section_id("next"), make.section_id("done")},
             goto_on_success=make.section_id("next"),
             goto_on_failure=make.section_id("done"),
             goto_on_code={"2": make.section_id("other")},
@@ -42,7 +42,7 @@ class TestRunScriptMeta:
 
     def test_select_next_operation__falls_back_to_failure_transition(self) -> None:
         meta = RunScriptMeta(
-            allowed_transtions={make.section_id("next"), make.section_id("done")},
+            allowed_transitions={make.section_id("next"), make.section_id("done")},
             goto_on_success=make.section_id("next"),
             goto_on_failure=make.section_id("done"),
         )
@@ -86,7 +86,7 @@ class TestRunScript:
         assert meta.save_stdout_to == "stdout"
         assert meta.save_stderr_to == "stderr"
         assert meta.timeout == 5
-        assert meta.allowed_transtions == {make.section_id("next"), make.section_id("done"), make.section_id("other")}
+        assert meta.allowed_transitions == {make.section_id("next"), make.section_id("done"), make.section_id("other")}
 
     def test_markdown_construct_meta__requires_script_block(self) -> None:
         result = RunScript().markdown_construct_meta(
@@ -109,7 +109,7 @@ class TestRunScript:
                     id=make.section_id("start"),
                     kind=make.primitive_kind("donna.primitives.sections.run_script.RunScript"),
                     meta=RunScriptMeta(
-                        allowed_transtions={make.section_id("next")},
+                        allowed_transitions={make.section_id("next")},
                         goto_on_code={"not-an-int": make.section_id("next"), "0": make.section_id("done")},
                     ),
                 )
@@ -138,7 +138,7 @@ class TestRunScript:
                     kind=make.primitive_kind("donna.primitives.sections.run_script.RunScript"),
                     title="Run checks",
                     meta=RunScriptMeta(
-                        allowed_transtions={
+                        allowed_transitions={
                             make.section_id("next"),
                             make.section_id("done"),
                             make.section_id("other"),
