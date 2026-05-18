@@ -14,41 +14,11 @@ For example, you can have a workflow that guides the agent through the planing p
 
 ## Example
 
-This repository uses Donna to develop Donna. The root [donna.toml](./donna.toml) and [workflows/](./workflows/) directory are real examples of a configured Donna project.
+I use Donna to develop Donna itself — that's the way ;-) So, you can find real examples of workflows in the [./workflows](./workflows) folder of this repository. You can start with [./workflows/polish.donna.md](./workflows/polish.donna.md) that goes in loop over fixing issues found by formatters, linters, type checkers and tests until the codebase is polished.
 
-Check the current session before starting work:
+Below you'll find a simplified example to show the core concepts of Donna workflows and how they work together.
 
-```bash
-donna status
-```
 
-List the workflows configured for this repository:
-
-```bash
-donna list
-```
-
-Run the polishing workflow:
-
-```bash
-donna run @/workflows/polish.donna.md
-```
-
-When Donna reaches an action request, it prints the requested work, an action request id, and valid next operations. After the agent performs the work, it completes the request with one of those next operations.
-
-The ids below are placeholders; use the exact id and next operation that Donna prints:
-
-```bash
-donna complete-action-request AR-12-x @/workflows/example.donna.md:next_operation
-```
-
-Agents should normally use the LLM protocol:
-
-```bash
-donna -p llm status
-```
-
-The default `human` protocol is intended for terminal users.
 
 ## Rationale
 
