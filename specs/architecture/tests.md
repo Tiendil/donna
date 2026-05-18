@@ -112,6 +112,11 @@ Test data constructors reused by multiple test modules in the same package SHOUL
 
 `tests.make` MUST NOT contain assertions or behavior-verification helpers.
 
+Tests MAY reuse constructors, fixtures, and helpers from another module's `tests` package when that avoids duplicating
+non-owned setup data or supports cross-module integration coverage.
+
+Cross-module test helper reuse MUST remain test-only and MUST NOT make production modules depend on `tests` packages.
+
 Test helper functions reused by multiple test modules in the same package SHOULD live in `tests/helpers`.
 
 `tests.helpers` SHOULD contain assertion helpers, setup helpers, cleanup helpers, and test workflow utilities.
