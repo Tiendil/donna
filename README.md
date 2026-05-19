@@ -325,6 +325,8 @@ Common built-in operation kinds:
 - `donna.lib.output` prints information and continues.
 - `donna.lib.finish` finishes the workflow task.
 
+Workflow text can use directives such as `donna.lib.goto(...)` for transitions, `donna.lib.task_variable(...)` for captured script output, and `donna.lib.path(...)` for normalized project paths.
+
 ## Specifications
 
 Project behavior and architecture are specified in [./specs](./specs/). Start with [./specs/intro.md](./specs/intro.md) for the index.

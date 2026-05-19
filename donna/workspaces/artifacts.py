@@ -159,16 +159,6 @@ def fetch_raw_artifact(artifact_id: ArtifactId) -> Result[FilesystemRawArtifact,
     if artifact_path is None:
         return Err([world_errors.ArtifactNotFound(artifact_id=artifact_id)])
 
-    if not has_donna_artifact_extension(artifact_path):
-        return Err(
-            [
-                world_errors.UnsupportedArtifactExtension(
-                    artifact_id=artifact_id,
-                    extension="".join(artifact_path.suffixes).lower() or artifact_path.suffix.lower(),
-                )
-            ]
-        )
-
     return Ok(
         FilesystemRawArtifact(
             path=artifact_path,

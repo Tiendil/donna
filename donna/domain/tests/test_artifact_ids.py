@@ -17,9 +17,12 @@ class TestValidateArtifactId:
     @pytest.mark.parametrize(
         "value",
         [
-            "@/README.md",
             "@/workflows/polish.donna.md",
+            "@/workflows/POLISH.DONNA.MD",
             "@/.session/donna/plans/feature.donna.md",
+            "@/---/polish.donna.md",
+            "@/workflows/Проектный план.donna.md",
+            "@/workflows/project plan.donna.md",
         ],
     )
     def test_valid_canonical_artifact_id(self, value: str) -> None:
@@ -33,8 +36,9 @@ class TestValidateArtifactId:
             "@/workflows/../README.md",
             "@/workflows//polish.donna.md",
             "@/workflows/",
-            "@/---/polish.donna.md",
             "@/README",
+            "@/README.md",
+            "@/workflow.md",
             "/home/user/project/workflows/polish.donna.md",
             None,
         ],

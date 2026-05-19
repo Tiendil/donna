@@ -470,6 +470,22 @@ Use the same key that the earlier operation saved:
 save_stdout_to = "test_stdout"
 ```
 
+### `path`
+
+`{{ donna.lib.path("<path>") }}` renders a normalized project-root-anchored path.
+
+Use it when workflow instructions reference project files. The path argument may be root-anchored, absolute, or relative to the workflow file that contains the directive.
+
+Assume the project root is `/project` and the current workflow file is `@/workflows/rfc/design.donna.md`.
+
+- `{{ donna.lib.path("specs/design.md") }}` renders `@/workflows/rfc/specs/design.md`.
+- `{{ donna.lib.path("../shared.md") }}` renders `@/workflows/shared.md`.
+- `{{ donna.lib.path("@/README.md") }}` renders `@/README.md`.
+- `{{ donna.lib.path("/project/specs/behavior/file_paths.md") }}` renders `@/specs/behavior/file_paths.md`.
+- `{{ donna.lib.path("specs/design.md", mode="absolute") }}` renders `/project/workflows/rfc/specs/design.md`.
+
+The default mode is `project`, which renders root-anchored paths. Use `mode="absolute"` only when the receiving tool needs a filesystem path.
+
 ## Creating Workflows
 
 Start with the workflow's control-flow shape, then fill operation instructions.

@@ -145,6 +145,18 @@ Shared semantic primitive types SHOULD belong to the domain module.
 
 Module-specific semantic primitive types SHOULD belong to the owning module.
 
+## Static typing suppressions
+
+When a static type checker cannot prove a semantic primitive type relationship that is already guaranteed by validation or construction at the same boundary, code SHOULD use a local `# type: ignore[...]` suppression instead of `typing.cast(...)` or a pure runtime no-op conversion such as `str(...)`.
+
+Type suppressions MUST be as narrow as practical.
+
+Type suppressions SHOULD include the static checker error code when the checker provides one.
+
+Type suppressions MUST NOT be used to bypass missing validation, unsafe external input conversion, or a real mismatch between runtime behavior and declared types.
+
+Runtime constructors and validation functions SHOULD remain the preferred way to convert untrusted primitive input into semantic primitive types.
+
 ## Entity ownership
 
 Shared entity infrastructure MUST belong to the core module.

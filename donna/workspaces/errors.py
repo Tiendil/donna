@@ -1,6 +1,5 @@
 from donna.core import errors as core_errors
 from donna.domain.artifact_ids import ArtifactId
-from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 from donna.domain.paths import ProjectConfigPath
 
 
@@ -124,15 +123,6 @@ class ArtifactMultipleFiles(ArtifactError):
     ways_to_fix: list[str] = [
         "Keep a single source file per artifact.",
     ]
-
-
-class UnsupportedArtifactExtension(ArtifactError):
-    code: str = "donna.workspaces.unsupported_artifact_extension"
-    message: str = "Unsupported artifact extension `{error.extension}` for `{error.artifact_id}`"
-    ways_to_fix: list[str] = [
-        f"Use the Donna artifact extension: `*{DONNA_ARTIFACT_EXTENSION}`.",
-    ]
-    extension: str
 
 
 class MarkdownError(WorkspaceError):

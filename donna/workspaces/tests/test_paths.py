@@ -1,7 +1,7 @@
 import pathlib
 
 from donna.domain.artifact_ids import ArtifactId
-from donna.domain.paths import ProjectRootPath, ResolvedProjectPath, UntrustedPath
+from donna.domain.paths import ProjectPathRaw, ProjectRootPath, ResolvedProjectPath, UntrustedPath
 from donna.workspaces import paths
 from donna.workspaces.paths import (
     normalize_artifact_id,
@@ -9,6 +9,7 @@ from donna.workspaces.paths import (
     normalize_artifact_section_id,
     normalize_existing_path,
     normalize_path,
+    normalize_project_path,
     resolve_project_path,
     resolve_project_root,
 )
@@ -35,18 +36,30 @@ class TestAppendNormalizedPart:
 
 class TestNormalizeParts:
     def test_returns_canonical_project_path(self) -> None:
-        assert paths._normalize_parts("workflows/./nested/../test.donna.md") == "@/workflows/test.donna.md"
+        assert paths._normalize_parts(ProjectPathRaw("workflows/./nested/../test.donna.md")) == (
+            "@/workflows/test.donna.md"
+        )
+        assert paths._normalize_parts(ProjectPathRaw("README")) == "@/README"
+        assert paths._normalize_parts(ProjectPathRaw("workflows")) == "@/workflows"
+        assert paths._normalize_parts(ProjectPathRaw("src/package/module.py")) == "@/src/package/module.py"
+        assert paths._normalize_parts(ProjectPathRaw("workflows/project plan.donna.md")) == (
+            "@/workflows/project plan.donna.md"
+        )
+        assert paths._normalize_parts(ProjectPathRaw("workflows/Проектный план.donna.md")) == (
+            "@/workflows/Проектный план.donna.md"
+        )
 
     def test_uses_initial_parts_for_relative_artifact_paths(self) -> None:
         assert (
-            paths._normalize_parts("../plan.donna.md", initial_parts=("workflows", "rfc"))
+            paths._normalize_parts(ProjectPathRaw("../plan.donna.md"), initial_parts=("workflows", "rfc"))
             == "@/workflows/plan.donna.md"
         )
 
-    def test_rejects_empty_root_and_invalid_artifact_paths(self) -> None:
-        assert paths._normalize_parts("") is None
-        assert paths._normalize_parts(".") is None
-        assert paths._normalize_parts("invalid name.donna.md") is None
+    def test_rejects_empty_root_and_malformed_project_paths(self) -> None:
+        assert paths._normalize_parts(ProjectPathRaw("")) is None
+        assert paths._normalize_parts(ProjectPathRaw(".")) is None
+        assert paths._normalize_parts(ProjectPathRaw("..")) is None
+        assert paths._normalize_parts(ProjectPathRaw("workflows//test.donna.md")) is None
 
 
 class TestResolveProjectRoot:
@@ -90,10 +103,28 @@ class TestCanonicalFromResolved:
             == "@/workflow.donna.md"
         )
 
-    def test_rejects_invalid_artifact_path(self, tmp_path: pathlib.Path) -> None:
-        project_file = tmp_path / "invalid name.donna.md"
+    def test_returns_canonical_path_for_filesystem_like_path(self, tmp_path: pathlib.Path) -> None:
+        project_file = tmp_path / "project plan.donna.md"
 
-        assert paths._canonical_from_resolved(ResolvedProjectPath(project_file), ProjectRootPath(tmp_path)) is None
+        assert (
+            paths._canonical_from_resolved(ResolvedProjectPath(project_file), ProjectRootPath(tmp_path))
+            == "@/project plan.donna.md"
+        )
+
+    def test_returns_canonical_path_for_suffixless_path(self, tmp_path: pathlib.Path) -> None:
+        project_file = tmp_path / "README"
+
+        assert (
+            paths._canonical_from_resolved(ResolvedProjectPath(project_file), ProjectRootPath(tmp_path)) == "@/README"
+        )
+
+    def test_returns_canonical_path_for_directory_path(self, tmp_path: pathlib.Path) -> None:
+        project_dir = tmp_path / "workflows"
+
+        assert (
+            paths._canonical_from_resolved(ResolvedProjectPath(project_dir), ProjectRootPath(tmp_path))
+            == "@/workflows"
+        )
 
 
 class TestResolveRootAnchoredPath:
@@ -103,8 +134,14 @@ class TestResolveRootAnchoredPath:
 
         assert paths._resolve_root_anchored_path("@/workflow.donna.md", ProjectRootPath(tmp_path)) == project_file
 
+    def test_resolves_filesystem_like_root_anchored_path(self, tmp_path: pathlib.Path) -> None:
+        assert (
+            paths._resolve_root_anchored_path("@/project plan.donna.md", ProjectRootPath(tmp_path))
+            == tmp_path / "project plan.donna.md"
+        )
+
     def test_rejects_invalid_root_anchored_path(self, tmp_path: pathlib.Path) -> None:
-        assert paths._resolve_root_anchored_path("@/invalid name.donna.md", ProjectRootPath(tmp_path)) is None
+        assert paths._resolve_root_anchored_path("@/../outside.donna.md", ProjectRootPath(tmp_path)) is None
 
 
 class TestResolveProjectPath:
@@ -136,6 +173,8 @@ class TestResolveProjectPath:
 class TestNormalizePath:
     def test_normalizes_root_anchored_path(self, tmp_path: pathlib.Path) -> None:
         assert normalize_path("@/workflows/./nested/../test.donna.md", tmp_path) == "@/workflows/test.donna.md"
+        assert normalize_path("@/workflows", tmp_path) == "@/workflows"
+        assert normalize_path("@/README", tmp_path) == "@/README"
 
     def test_normalizes_absolute_path_inside_project(self, tmp_path: pathlib.Path) -> None:
         project_file = tmp_path / "workflows" / "test.donna.md"
@@ -190,6 +229,30 @@ class TestNormalizeArtifactPath:
         assert normalize_artifact_path(None, tmp_path) is None  # type: ignore[arg-type]
 
 
+class TestNormalizeProjectPath:
+    def test_normalizes_relative_to_artifact_file(self, tmp_path: pathlib.Path) -> None:
+        relative_to = ArtifactId("@/workflows/rfc/do.donna.md")
+
+        assert normalize_project_path("specs/design.md", tmp_path, relative_to=relative_to) == (
+            "@/workflows/rfc/specs/design.md"
+        )
+
+    def test_normalizes_absolute_path_when_artifact_base_is_present(self, tmp_path: pathlib.Path) -> None:
+        project_file = tmp_path / "specs" / "design.md"
+        project_file.parent.mkdir()
+        project_file.write_text("", encoding="utf-8")
+        relative_to = ArtifactId("@/workflows/rfc/do.donna.md")
+
+        assert normalize_project_path(str(project_file), tmp_path, relative_to=relative_to) == "@/specs/design.md"
+
+    def test_accepts_project_paths_with_non_workflow_extensions(self, tmp_path: pathlib.Path) -> None:
+        assert normalize_project_path("@/specs/design.md", tmp_path) == "@/specs/design.md"
+
+    def test_accepts_project_paths_without_suffixes(self, tmp_path: pathlib.Path) -> None:
+        assert normalize_project_path("@/workflows", tmp_path) == "@/workflows"
+        assert normalize_project_path("@/README", tmp_path) == "@/README"
+
+
 class TestNormalizeFromArtifact:
     def test_normalizes_root_anchored_and_artifact_relative_paths(self) -> None:
         relative_to = ArtifactId("@/workflows/rfc/do.donna.md")
@@ -210,6 +273,7 @@ class TestNormalizeArtifactId:
 
     def test_rejects_invalid_artifact_id_path(self, tmp_path: pathlib.Path) -> None:
         assert normalize_artifact_id("@/workflow", tmp_path) is None
+        assert normalize_artifact_id("@/workflow.md", tmp_path) is None
 
 
 class TestNormalizeArtifactSectionId:

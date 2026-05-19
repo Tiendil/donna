@@ -18,7 +18,7 @@ The following topics are out of scope:
 ## Dictionary
 
 - `project root` — the root directory of the active Donna project.
-- `project path` — a file-like path identifier that addresses a non-root location inside the project root and can be represented as a canonical root-anchored id.
+- `project path` — a path identifier that addresses a non-root filesystem location inside the project root and can be represented as a canonical root-anchored id.
 - `artifact id` — a canonical project-root-anchored identifier for a Donna artifact file.
 - `artifact section id` — an artifact id plus a section id separated by `:`.
 - `root-anchored path` — a project path that starts with `@/` and is resolved from the project root.
@@ -40,14 +40,14 @@ A project path MUST NOT identify a location outside the project root after path 
 
 A project path MUST NOT use an absolute host filesystem path as its canonical representation.
 
-A canonical project path MUST satisfy Donna artifact id path syntax, including a suffixed final path segment.
+A canonical project path MUST satisfy Donna root-anchored path syntax.
 
 ## Root-anchored syntax
 
 The canonical syntax for a project path MUST be:
 
 ```text
-@/path/inside/project.ext
+@/path/inside/project
 ```
 
 The `@/` marker MUST represent the project root.
@@ -63,12 +63,24 @@ The canonical representation MUST NOT contain:
 - `..` path segments.
 - a trailing `/`.
 
+Project path segments are normalized filesystem path components and MAY contain any characters accepted by the local filesystem except path separators and other characters that cannot appear in a single path component.
+
 Examples of valid canonical paths:
 
 ```text
 @/README.md
+@/README
+@/LICENSE
+@/Makefile
+@/workflows
 @/workflows/polish.donna.md
+@/workflows/archive
+@/src/donna
 @/.session/donna/plans/implement-feature.donna.md
+@/workflows/Заметки проекта.donna.md
+@/workflows/Проектный план
+@/workflows/project plan.donna.md
+@/данные/отчёт.txt
 ```
 
 Examples of invalid canonical paths:
@@ -96,6 +108,8 @@ A field that declares existing-file semantics MUST reject or skip canonical path
 
 A field that declares reference semantics MAY accept canonical paths that do not exist yet.
 
+A project path MAY refer to a file, a directory, or a not-yet-existing location. File existence, directory existence, file suffix requirements, and concrete file extension requirements MUST be enforced only by contexts that need those constraints.
+
 ## Path normalization
 
 Path normalization MUST produce a canonical root-anchored path.
@@ -115,23 +129,14 @@ Implementations MUST reject inputs that cannot be normalized to a project path i
 
 ## Artifact ids
 
-An artifact id MUST be a canonical root-anchored project path.
-
-Artifact ids accepted by workflow commands MUST identify files with the Donna artifact extension:
+An artifact id MUST be a canonical root-anchored project path that identifies a file with the Donna artifact extension:
 
 ```text
 .donna.md
 ```
 
 Artifact id path segments MUST contain only:
-
-- ASCII letters.
-- ASCII digits.
-- `.`.
-- `_`.
-- `-`.
-
-Each artifact id path segment MUST contain at least one character that is not `.` or `-`.
+- normalized filesystem path components accepted by project path syntax.
 
 The last path segment MUST have a file suffix.
 
@@ -143,6 +148,7 @@ Examples:
 @/workflows/polish.donna.md
 @/workflows/rfc/do.donna.md
 @/.session/donna/plans/feature.donna.md
+@/workflows/Проектный план.donna.md
 ```
 
 ## Artifact section ids
@@ -158,6 +164,8 @@ The canonical syntax MUST be:
 The artifact part MUST be a valid artifact id.
 
 The section id part MUST be a valid Donna section id.
+
+Section id syntax MUST remain independent from artifact id path segment syntax.
 
 Section ids MUST contain only:
 
@@ -217,6 +225,8 @@ CLI artifact path arguments MUST resolve relative paths from the command's curre
 
 Artifact-local relative paths MAY be resolved relative to the directory that contains the source artifact.
 
+Template path directives MUST resolve relative paths from the directory that contains the workflow artifact being rendered.
+
 When the base path is a file, the relative path MUST be resolved against the directory that contains the base file.
 
 When the base path is a directory, the relative path MUST be resolved against that directory.
@@ -250,6 +260,26 @@ With the same base file, the relative input:
 MUST fail if it escapes the project root.
 
 New CLI examples and workflow instructions SHOULD prefer root-anchored paths unless relative addressing is central to the example.
+
+## Template path directive
+
+The `donna.lib.path("<path>", mode="project"|"absolute")` directive MUST normalize local project paths in workflow text.
+
+The directive MUST accept:
+
+- root-anchored paths.
+- relative paths resolved from the workflow file that contains the directive.
+- absolute filesystem paths that resolve inside the Donna project root.
+
+The default mode MUST be `project`.
+
+When `mode = "project"`, the directive MUST render the normalized canonical root-anchored project path.
+
+When `mode = "absolute"`, the directive MUST render the corresponding absolute filesystem path.
+
+The directive MUST reject paths that cannot be normalized to a non-root location inside the Donna project root.
+
+Workflow instructions SHOULD use this directive when they need to reference project files from rendered agent-facing text.
 
 ## CLI path inputs
 

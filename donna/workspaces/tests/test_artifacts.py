@@ -34,7 +34,7 @@ class TestArtifactIdFromParts:
         assert artifacts._artifact_id_from_parts(["workflows", "test.donna.md"]) == make.ARTIFACT_ID
 
     def test_returns_none_for_invalid_parts(self) -> None:
-        assert artifacts._artifact_id_from_parts(["invalid name.donna.md"]) is None
+        assert artifacts._artifact_id_from_parts(["..", "test.donna.md"]) is None
 
 
 class TestWorkflowDirParts:
@@ -81,19 +81,16 @@ class TestArtifactIdFromFilesystemEntry:
             artifacts._artifact_id_from_filesystem_entry(ResolvedProjectPath(path), ["workflows"]) == make.ARTIFACT_ID
         )
 
-    def test_returns_none_for_dirs_non_artifacts_and_invalid_names(self, tmp_path: pathlib.Path) -> None:
+    def test_returns_none_for_dirs_and_non_artifacts(self, tmp_path: pathlib.Path) -> None:
         directory = tmp_path / "directory"
         directory.mkdir()
         ordinary_markdown = tmp_path / "ordinary.md"
         ordinary_markdown.write_text("", encoding="utf-8")
-        invalid_name = tmp_path / "invalid name.donna.md"
-        invalid_name.write_text("", encoding="utf-8")
 
         assert artifacts._artifact_id_from_filesystem_entry(ResolvedProjectPath(directory), ["workflows"]) is None
         assert (
             artifacts._artifact_id_from_filesystem_entry(ResolvedProjectPath(ordinary_markdown), ["workflows"]) is None
         )
-        assert artifacts._artifact_id_from_filesystem_entry(ResolvedProjectPath(invalid_name), ["workflows"]) is None
 
 
 class TestWalkWorkflowDir:
@@ -118,13 +115,14 @@ class TestWalkFilesystem:
         nested.mkdir(parents=True)
         (workflows / "b.donna.md").write_text("", encoding="utf-8")
         (workflows / "ignored.md").write_text("", encoding="utf-8")
-        (workflows / "invalid name.donna.md").write_text("", encoding="utf-8")
+        (workflows / "spaced name.donna.md").write_text("", encoding="utf-8")
         (nested / "a.donna.md").write_text("", encoding="utf-8")
         mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
 
         assert list(artifacts.walk_filesystem([RelativeProjectPath(pathlib.Path("workflows"))])) == [
             ArtifactId("@/workflows/b.donna.md"),
             ArtifactId("@/workflows/nested/a.donna.md"),
+            ArtifactId("@/workflows/spaced name.donna.md"),
         ]
 
     def test_walk_filesystem__preserves_workflow_dir_order(
@@ -268,26 +266,6 @@ class TestFetchRawArtifact:
 
         assert result.is_err()
         assert isinstance(result.unwrap_err()[0], workspace_errors.ArtifactNotFound)
-
-    def test_fetch_raw_artifact__rejects_unsupported_artifact_extension(
-        self, mocker: MockerFixture, tmp_path: pathlib.Path
-    ) -> None:
-        artifact_id = ArtifactId("@/workflows/test.md")
-        path = tmp_path / "workflows" / "test.md"
-        path.parent.mkdir()
-        path.write_text("content", encoding="utf-8")
-        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
-        mocker.patch(
-            "donna.workspaces.config.config",
-            return_value=Config(workflow_dirs=[RelativeProjectPath(pathlib.Path("workflows"))]),
-        )
-
-        result = artifacts.fetch_raw_artifact(artifact_id)
-
-        assert result.is_err()
-        error = result.unwrap_err()[0]
-        assert isinstance(error, workspace_errors.UnsupportedArtifactExtension)
-        assert error.extension == ".md"
 
 
 class TestFetchArtifactBytes:

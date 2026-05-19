@@ -10,7 +10,6 @@ from donna.domain.artifact_ids import (
     ARTIFACT_SECTION_DELIMITER,
     ArtifactId,
     ArtifactSectionId,
-    split_artifact_section_id,
 )
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 from donna.domain.internal_ids import ActionRequestId
@@ -38,29 +37,24 @@ def _artifact_filename(value: str) -> str:
     return pathlib.PurePosixPath(value.split(ARTIFACT_SECTION_DELIMITER, maxsplit=1)[0]).name
 
 
-def validate_supported_artifact_id(artifact_id: ArtifactId) -> None:
-    if not has_donna_artifact_extension(_artifact_filename(str(artifact_id))):
+def parse_artifact_id_argument(value: str, project_root: PathInput) -> ArtifactId:
+    artifact_path = workspace_paths.normalize_artifact_path(
+        value, UntrustedPath(project_root), cwd=UntrustedPath(pathlib.Path.cwd())
+    )
+    if artifact_path is None:
+        _exit_with_errors([domain_errors.InvalidIdFormat(id_type=ArtifactId.__name__, value=value)])
+
+    if not has_donna_artifact_extension(_artifact_filename(artifact_path)):
         raise typer.BadParameter(
-            f"Unsupported artifact extension for '{artifact_id}'. Use '*{DONNA_ARTIFACT_EXTENSION}'."
+            f"Unsupported artifact extension for '{artifact_path}'. Use '*{DONNA_ARTIFACT_EXTENSION}'."
         )
 
-
-def validate_supported_artifact_section_id(section_id: ArtifactSectionId) -> None:
-    parts = split_artifact_section_id(section_id)
-    if parts is None:
-        raise typer.BadParameter(f"Invalid artifact section id '{section_id}'.")
-
-    validate_supported_artifact_id(parts.artifact_id)
-
-
-def parse_artifact_id_argument(value: str, project_root: PathInput) -> ArtifactId:
     artifact_id = workspace_paths.normalize_artifact_id(
         value, UntrustedPath(project_root), cwd=UntrustedPath(pathlib.Path.cwd())
     )
     if artifact_id is None:
         _exit_with_errors([domain_errors.InvalidIdFormat(id_type=ArtifactId.__name__, value=value)])
 
-    validate_supported_artifact_id(artifact_id)
     return artifact_id
 
 
@@ -71,7 +65,6 @@ def parse_artifact_section_id_argument(value: str, project_root: PathInput) -> A
     if section_id is None:
         _exit_with_errors([domain_errors.InvalidIdFormat(id_type=f"{ArtifactSectionId.__name__} format", value=value)])
 
-    validate_supported_artifact_section_id(section_id)
     return section_id
 
 
