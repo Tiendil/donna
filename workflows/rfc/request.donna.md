@@ -11,7 +11,7 @@ kind = "donna.lib.request_action"
 fsm_mode = "start"
 ```
 
-1. Read the `workflows/rfc/specs/request_for_change.md` file if you haven't done it yet.
+1. Read the `{{ donna.lib.path("specs/request_for_change.md") }}` file if you haven't done it yet.
 2. Read the workflow instructions by running `donna skill workflows` if you haven't done it yet.
 3. `{{ donna.lib.goto("ensure_work_description_exists") }}`
 
@@ -77,7 +77,7 @@ id = "initial_fill"
 kind = "donna.lib.request_action"
 ```
 
-1. Read the `workflows/rfc/specs/request_for_change.md` file if you haven't done it yet.
+1. Read the `{{ donna.lib.path("specs/request_for_change.md") }}` file if you haven't done it yet.
 2. Analyze the project if needed to understand the context of the requested change.
 3. Based on the problem description you have, fill in all sections of the RFC draft document.
 4. `{{ donna.lib.goto("review_rfc_format") }}`
@@ -89,7 +89,7 @@ id = "review_rfc_format"
 kind = "donna.lib.request_action"
 ```
 
-1. List mismatches between the RFC artifact and the specification in the `workflows/rfc/specs/request_for_change.md` file.
+1. List mismatches between the RFC artifact and the specification in the `{{ donna.lib.path("specs/request_for_change.md") }}` file.
 2. For each mismatch, make necessary edits to the RFC draft document to ensure compliance with the RFC specification.
 3. `{{ donna.lib.goto("review_rfc_content") }}`
 

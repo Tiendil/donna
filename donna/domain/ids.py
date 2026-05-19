@@ -10,16 +10,16 @@ from donna.domain.id_paths import _invalid_format, _pydantic_type_error, _pydant
 TIdentifier = TypeVar("TIdentifier", bound="Identifier")
 
 
-def _is_artifact_slug_part(part: str) -> bool:
-    if not part:
+def _has_section_id_syntax(value: str) -> bool:
+    if not value:
         return False
 
     allowed_characters = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-")
 
-    if any(character not in allowed_characters for character in part):
+    if any(character not in allowed_characters for character in value):
         return False
 
-    return any(character not in ".-" for character in part)
+    return any(character not in ".-" for character in value)
 
 
 class Identifier(str):
@@ -79,4 +79,4 @@ class SectionId(Identifier):
         if not isinstance(value, str):
             return False
 
-        return _is_artifact_slug_part(value)
+        return _has_section_id_syntax(value)

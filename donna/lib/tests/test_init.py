@@ -1,6 +1,6 @@
 import donna.lib as lib
 from donna.primitives.artifacts import Workflow
-from donna.primitives.directives import GoTo, TaskVariable
+from donna.primitives.directives import GoTo, Path, TaskVariable
 from donna.primitives.sections import FinishWorkflow, Output, RequestAction, RunScript, Text
 
 
@@ -16,5 +16,7 @@ class TestPrimitiveInitialization:
     def test_directive_primitives_are_initialized_with_analyze_ids(self) -> None:
         assert isinstance(lib.goto, GoTo)
         assert lib.goto.analyze_id == "goto"
+        assert isinstance(lib.path, Path)
+        assert lib.path.analyze_id == "path"
         assert isinstance(lib.task_variable, TaskVariable)
         assert lib.task_variable.analyze_id == "task_variable"

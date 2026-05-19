@@ -12,7 +12,15 @@ from donna.domain.artifact_ids import (
 )
 from donna.domain.constants import ARTIFACT_ID_PREFIX
 from donna.domain.ids import SectionId
-from donna.domain.paths import PathInput, ProjectPathId, ProjectRootPath, ResolvedProjectPath, UntrustedPath
+from donna.domain.paths import (
+    PathInput,
+    ProjectPathId,
+    ProjectPathRaw,
+    ProjectRootPath,
+    ResolvedProjectPath,
+    UntrustedPath,
+    validate_project_path_id,
+)
 
 PROJECT_ROOT_PREFIX = ARTIFACT_ID_PREFIX
 
@@ -34,7 +42,7 @@ def _append_normalized_part(parts: list[str], part: str) -> bool:
     return True
 
 
-def _normalize_parts(raw: str, *, initial_parts: tuple[str, ...] = ()) -> ProjectPathId | None:
+def _normalize_parts(raw: ProjectPathRaw, *, initial_parts: tuple[str, ...] = ()) -> ProjectPathId | None:
     if not raw:
         return None
 
@@ -48,7 +56,7 @@ def _normalize_parts(raw: str, *, initial_parts: tuple[str, ...] = ()) -> Projec
         return None
 
     normalized = ProjectPathId(PROJECT_ROOT_PREFIX + "/".join(parts))
-    if not validate_artifact_id(normalized):
+    if not validate_project_path_id(normalized):
         return None
 
     return normalized
@@ -62,7 +70,7 @@ def _normalize_root_anchored(value: str) -> ProjectPathId | None:
     if not value.startswith(PROJECT_ROOT_PREFIX):
         return None
 
-    return _normalize_parts(value.removeprefix(PROJECT_ROOT_PREFIX))
+    return _normalize_parts(ProjectPathRaw(value.removeprefix(PROJECT_ROOT_PREFIX)))
 
 
 def _resolve_inside_project(path: UntrustedPath, root: ProjectRootPath) -> ResolvedProjectPath | None:
@@ -77,7 +85,7 @@ def _resolve_inside_project(path: UntrustedPath, root: ProjectRootPath) -> Resol
 
 def _canonical_from_resolved(resolved: ResolvedProjectPath, root: ProjectRootPath) -> ProjectPathId | None:
     normalized = ProjectPathId(PROJECT_ROOT_PREFIX + pathlib.Path(resolved).relative_to(pathlib.Path(root)).as_posix())
-    if not validate_artifact_id(normalized):
+    if not validate_project_path_id(normalized):
         return None
 
     return normalized
@@ -139,10 +147,10 @@ def _normalize_from_artifact(value: str, relative_to: ArtifactId) -> ProjectPath
     if value.startswith(PROJECT_ROOT_PREFIX):
         return _normalize_root_anchored(value)
 
-    return _normalize_parts(value, initial_parts=artifact_path_parts(relative_to)[:-1])
+    return _normalize_parts(ProjectPathRaw(value), initial_parts=artifact_path_parts(relative_to)[:-1])
 
 
-def normalize_artifact_path(
+def normalize_project_path(
     value: str,
     root: PathInput,
     *,
@@ -152,10 +160,24 @@ def normalize_artifact_path(
     if not isinstance(value, str) or not value:
         return None
 
-    if relative_to is not None:
-        return _normalize_from_artifact(value, relative_to)
+    if relative_to is None:
+        return normalize_path(value, root, cwd=cwd)
 
-    return normalize_path(value, root, cwd=cwd)
+    path = pathlib.Path(value).expanduser()
+    if value.startswith(PROJECT_ROOT_PREFIX) or path.is_absolute():
+        return normalize_path(value, root, cwd=cwd)
+
+    return _normalize_from_artifact(value, relative_to)
+
+
+def normalize_artifact_path(
+    value: str,
+    root: PathInput,
+    *,
+    cwd: PathInput | None = None,
+    relative_to: ArtifactId | None = None,
+) -> ProjectPathId | None:
+    return normalize_project_path(value, root, cwd=cwd, relative_to=relative_to)
 
 
 def normalize_artifact_id(
@@ -167,6 +189,9 @@ def normalize_artifact_id(
 ) -> ArtifactId | None:
     normalized = normalize_artifact_path(value, root, cwd=cwd, relative_to=relative_to)
     if normalized is None:
+        return None
+
+    if not validate_artifact_id(normalized):
         return None
 
     return ArtifactId(normalized)

@@ -58,11 +58,11 @@ class TestIdentifier:
 
 class TestSectionId:
     @pytest.mark.parametrize("value", ["section", "section-1", "section.name", "section_name"])
-    def test_validate__accepts_artifact_slug_part(self, value: str) -> None:
+    def test_validate__accepts_section_id_syntax(self, value: str) -> None:
         assert SectionId.validate(value)
 
-    @pytest.mark.parametrize("value", ["", "---", "...", "section/id", "section id", None])
-    def test_validate__rejects_invalid_artifact_slug_part(self, value: object) -> None:
+    @pytest.mark.parametrize("value", ["", "---", "...", "section/id", "section id", "секция", None])
+    def test_validate__rejects_invalid_section_id_syntax(self, value: object) -> None:
         assert not SectionId.validate(value)
 
     def test_parse__returns_section_id(self) -> None:

@@ -103,11 +103,6 @@ class TestArtifactMultipleFiles(_EnvironmentErrorCase):
         return workspace_errors.ArtifactMultipleFiles(artifact_id=make.ARTIFACT_ID)
 
 
-class TestUnsupportedArtifactExtension(_EnvironmentErrorCase):
-    def error(self) -> workspace_errors.WorkspaceError:
-        return workspace_errors.UnsupportedArtifactExtension(artifact_id=make.ARTIFACT_ID, extension=".md")
-
-
 class TestMarkdownError:
     def test_content_intro__describes_source_without_artifact_id(self) -> None:
         error = workspace_errors.MarkdownArtifactWithoutSections()

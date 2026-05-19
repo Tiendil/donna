@@ -155,6 +155,8 @@ It MUST describe `donna.lib.goto` for action request transitions.
 
 It MUST describe `donna.lib.task_variable` for rendering task variables.
 
+It MUST describe `donna.lib.path` for rendering normalized project-root-anchored or absolute project paths.
+
 It MUST include at least one complete minimal workflow example.
 
 It MUST describe validation expectations for workflows.

@@ -87,7 +87,9 @@ You run workflows only when explicitly instructed to do so by a developer or Don
 
 Donna is configured to log significant operation steps via `task` tool.
 
-### `depmesh`
+Special workflows to use:
+
+- `@/workflows/polish.donna.md` — format, fix architecture, lint, and test errors. Run it after making changes to the codebase at the moments when the project is expected to be in a working state: between significant implementation steps, before reporting completion of a task, etc. Run this workflow instead of running individual operations, unless you are explicitly needed to run a specific operation for some reason.
 
 `depmesh` — a tool for discovering dependencies between project artifacts.
 

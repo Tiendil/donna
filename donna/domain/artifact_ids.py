@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import pathlib
 from typing import NewType
 
-from donna.domain.constants import ARTIFACT_ID_PREFIX
-from donna.domain.ids import SectionId, _is_artifact_slug_part
+from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
+from donna.domain.ids import SectionId
+from donna.domain.paths import raw_project_path, validate_project_path_id
 
 ArtifactId = NewType("ArtifactId", str)
 ArtifactSectionId = NewType("ArtifactSectionId", str)
@@ -25,30 +25,11 @@ class ArtifactSectionParts:
         self.section_id = section_id
 
 
-def _raw_artifact_path(value: object) -> str | None:
-    if not isinstance(value, str) or not value.startswith(ARTIFACT_ID_PREFIX):
-        return None
-
-    raw = value.removeprefix(ARTIFACT_ID_PREFIX)
-    if not raw:
-        return None
-
-    return raw
-
-
 def validate_artifact_id(value: object) -> bool:
-    raw = _raw_artifact_path(value)
-    if raw is None:
+    if not validate_project_path_id(value):
         return False
 
-    parts = tuple(raw.split("/"))
-    if any(part == "" for part in parts):
-        return False
-
-    if not all(_is_artifact_slug_part(part) for part in parts):
-        return False
-
-    return bool(pathlib.PurePosixPath(parts[-1]).suffix)
+    return value.lower().endswith(DONNA_ARTIFACT_EXTENSION)  # type: ignore[attr-defined, no-any-return]
 
 
 def validate_artifact_section_id(value: object) -> bool:
@@ -57,15 +38,15 @@ def validate_artifact_section_id(value: object) -> bool:
 
 
 def artifact_path_parts(artifact_id: ArtifactId) -> tuple[str, ...]:
-    raw = _raw_artifact_path(str(artifact_id))
-    if raw is None or not validate_artifact_id(str(artifact_id)):
+    raw = raw_project_path(artifact_id)
+    if raw is None or not validate_artifact_id(artifact_id):
         raise ValueError(f"Invalid ArtifactId: {artifact_id}")
 
     return tuple(raw.split("/"))
 
 
 def artifact_section_id(artifact_id: ArtifactId, local_id: SectionId | str) -> ArtifactSectionId:
-    local_id = SectionId(str(local_id))
+    local_id = SectionId(local_id)
     section_id = f"{artifact_id}{ARTIFACT_SECTION_DELIMITER}{local_id}"
 
     if not validate_artifact_section_id(section_id):

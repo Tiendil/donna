@@ -1,6 +1,6 @@
 # Create a Design document
 
-This workflow creates a Design document artifact based on an RFC and aligned with `workflows/rfc/specs/design.md`.
+This workflow creates a Design document artifact based on an RFC and aligned with `{{ donna.lib.path("specs/design.md") }}`.
 
 ## Start Work
 
@@ -10,7 +10,7 @@ kind = "donna.lib.request_action"
 fsm_mode = "start"
 ```
 
-1. Read the `workflows/rfc/specs/design.md` file if you haven't done it yet.
+1. Read the `{{ donna.lib.path("specs/design.md") }}` file if you haven't done it yet.
 2. Read the workflow instructions by running `donna skill workflows` if you haven't done it yet.
 3. `{{ donna.lib.goto("ensure_rfc_artifact_exists") }}`
 
@@ -72,7 +72,7 @@ id = "initial_fill"
 kind = "donna.lib.request_action"
 ```
 
-1. Read the `workflows/rfc/specs/design.md` file if you haven't done it yet.
+1. Read the `{{ donna.lib.path("specs/design.md") }}` file if you haven't done it yet.
 2. Read the RFC artifact selected in the previous step if you haven't done it yet.
 3. Analyze the project if needed to understand the requested change context.
 4. Fill in all sections of the Design draft document.
@@ -86,7 +86,7 @@ id = "review_design_format"
 kind = "donna.lib.request_action"
 ```
 
-1. List mismatches between the Design artifact and the specification in the `workflows/rfc/specs/design.md` file.
+1. List mismatches between the Design artifact and the specification in the `{{ donna.lib.path("specs/design.md") }}` file.
 2. For each mismatch, make necessary edits to the Design draft document to ensure compliance.
 3. `{{ donna.lib.goto("review_design_content") }}`
 
