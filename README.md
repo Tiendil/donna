@@ -1,3 +1,6 @@
+
+![How Donna works](./docs/images/explanation.png)
+
 # Donna
 
 **A CLI tool that helps agents keep long-running work on a predefined path.**
