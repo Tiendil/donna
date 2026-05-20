@@ -1,5 +1,5 @@
 
-![How Donna works](./docs/images/explanation.png)
+![How Donna works](./docs/images/explanation.jpg)
 
 # Donna
 
