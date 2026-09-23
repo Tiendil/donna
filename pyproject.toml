@@ -24,6 +24,8 @@ classifiers = [
   "Topic :: Utilities",
 ]
 dependencies = [
+  # Use the local source below until llm-tool-cli is published.
+  "llm-tool-cli>=0.1.0",
   "pydantic>=2.12,<2.13",
   "typer>=0.20,<0.21",
   "markdown-it-py>=4.0,<4.1",
@@ -40,6 +42,10 @@ Changelog = "https://github.com/Tiendil/donna/blob/main/CHANGELOG.md"
 
 [project.scripts]
 donna = "donna.cli.application:main"
+
+[tool.uv.sources]
+# Keep shared-library edits available without reinstalling during the migration.
+llm-tool-cli = { path = "../llm-tool-cli", editable = true }
 
 [dependency-groups]
 dev = [

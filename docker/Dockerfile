@@ -18,6 +18,8 @@ ENV UV_LINK_MODE=copy
 ENV PATH="/home/donna/.venv/bin:${PATH}"
 
 COPY --chown=$USER:$USER . /repository
+# Preserve ../llm-tool-cli for uv's temporary local source during image builds.
+COPY --from=llm-tool-cli --chown=$USER:$USER . /llm-tool-cli
 
 RUN uv sync --locked
 

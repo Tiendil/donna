@@ -6,6 +6,11 @@ services:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile
+      # Make the temporary sibling dependency available when building the image.
+      additional_contexts:
+        llm-tool-cli: ../llm-tool-cli
 
     volumes:
       - ${PWD}:/repository
+      # Match the editable dependency path and expose shared-library edits live.
+      - ../llm-tool-cli:/llm-tool-cli:ro
