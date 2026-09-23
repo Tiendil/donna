@@ -5,6 +5,9 @@ from contextlib import contextmanager
 from contextvars import Token
 
 import typer
+from llm_tool_cli.config import errors as config_errors
+from llm_tool_cli.config import load_config, locate_config
+from llm_tool_cli.core.errors import Error as SharedError
 
 from donna.cli.entities import GLOBAL_OPTIONS_CONTEXT_KEY, GlobalOptions
 from donna.context.context import Context
@@ -18,15 +21,15 @@ from donna.protocol.formatters import Formatter
 from donna.protocol.journal import JournalRecord
 from donna.protocol.modes import Mode, get_cell_formatter
 from donna.workspaces import config as workspace_config
-from donna.workspaces.initialization import load_workspace
 
 
-def instant_output(text: bytes) -> None:
+def instant_output(text: bytes, *, error: bool = False) -> None:
+    stream = sys.stderr if error else sys.stdout
     if text.endswith(b"\n"):
-        sys.stdout.buffer.write(text)
+        stream.buffer.write(text)
     else:
-        sys.stdout.buffer.write(text + b"\n")
-    sys.stdout.buffer.flush()
+        stream.buffer.write(text + b"\n")
+    stream.buffer.flush()
 
 
 class CliEmitter:
@@ -40,6 +43,9 @@ class CliEmitter:
 
     def emit_journal(self, record: JournalRecord) -> None:
         instant_output(self._formatter.format_journal(record))
+
+    def emit_error(self, error: SharedError, *, stderr: bool) -> None:
+        instant_output(self._formatter.format_error(error), error=stderr)
 
 
 def output_cells(cells: Iterable[Cell]) -> None:
@@ -71,7 +77,11 @@ class CommandContext:
             workspace_config.protocol.set(self.protocol)
 
     def load_workspace(self) -> workspace_config.Workspace:
-        workspace = load_workspace(config_path=self.global_options.config_path).unwrap()
+        config_path = ProjectConfigPath(
+            locate_config(DONNA_CONFIG_NAME, path=self.global_options.config_path, cwd=pathlib.Path.cwd())
+        )
+        loaded_config = load_config(config_path, workspace_config.Config)
+        workspace = workspace_config.construct_workspace(loaded_config, config_path=config_path)
         workspace_config.install_workspace(workspace)
         return workspace
 
@@ -82,11 +92,11 @@ class CommandContext:
         return ProjectConfigPath(pathlib.Path.cwd() / DONNA_CONFIG_NAME)
 
     def target_dir(self) -> PathInput:
-        if self.global_options.config_path is not None:
-            return UntrustedPath(pathlib.Path(self.global_options.config_path).parent)
-
         if workspace_config.project_dir.is_set():
             return workspace_config.project_dir()
+
+        if self.global_options.config_path is not None:
+            return UntrustedPath(pathlib.Path(self.global_options.config_path).parent)
 
         return UntrustedPath(pathlib.Path.cwd())
 
@@ -117,6 +127,9 @@ def command_context(context: typer.Context, *, load_environment: bool = True) ->
     except UnwrapError as error:
         command.write_cells(_cells_from_unwrap(error))
         raise typer.Exit(code=0) from error
+    except SharedError as error:
+        command.emitter.emit_error(error, stderr=command.protocol != Mode.automation)
+        raise typer.Exit(code=2 if isinstance(error, config_errors.Error) else 3) from error
     finally:
         if machine_context_token is not None:
             machine_context.reset_context(machine_context_token)

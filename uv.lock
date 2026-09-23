@@ -142,7 +142,6 @@ dependencies = [
     { name = "llm-tool-cli" },
     { name = "markdown-it-py" },
     { name = "mdformat" },
-    { name = "pydantic" },
     { name = "typer" },
 ]
 
@@ -177,7 +176,6 @@ requires-dist = [
     { name = "llm-tool-cli", editable = "../llm-tool-cli" },
     { name = "markdown-it-py", specifier = ">=4.0,<4.1" },
     { name = "mdformat", specifier = ">=1.0.0,<1.1.0" },
-    { name = "pydantic", specifier = ">=2.12,<2.13" },
     { name = "typer", specifier = ">=0.20,<0.21" },
 ]
 
@@ -472,11 +470,15 @@ name = "llm-tool-cli"
 version = "0.1.0"
 source = { editable = "../llm-tool-cli" }
 dependencies = [
+    { name = "pydantic" },
     { name = "tomli" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "tomli", specifier = ">=2.4.1,<3" }]
+requires-dist = [
+    { name = "pydantic", specifier = ">=2.12,<3" },
+    { name = "tomli", specifier = ">=2.4.1,<3" },
+]
 
 [package.metadata.requires-dev]
 dev = [
@@ -499,7 +501,6 @@ dev = [
     { name = "flake8-pytest", specifier = "==1.4.*" },
     { name = "isort", specifier = "==7.0.*" },
     { name = "mypy", specifier = "==1.19.*" },
-    { name = "pydantic", specifier = "~=2.13.3" },
     { name = "pytest", specifier = "==9.0.*" },
     { name = "pytest-mock", specifier = "==3.15.*" },
     { name = "tach", specifier = "==0.34.*" },

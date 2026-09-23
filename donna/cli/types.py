@@ -167,7 +167,6 @@ ConfigOption = Annotated[
     pathlib.Path | None,
     typer.Option(
         "--config",
-        resolve_path=True,
         file_okay=True,
         dir_okay=False,
         exists=False,

@@ -1,9 +1,22 @@
 import pathlib
 
+from pytest_mock import MockerFixture
+
 from donna.cli.tests import helpers
 
 
 class TestList:
+    def test_config_home_marker__loads_project_in_home(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
+        helpers.write_config(tmp_path)
+        helpers.write_workflow(tmp_path)
+        mocker.patch.dict("os.environ", {"HOME": str(tmp_path)})
+
+        result = helpers.invoke(["--config", "~/donna.toml", "-p", "automation", "list"])
+
+        assert result.exit_code == 0
+        records = helpers.json_lines(result.stdout)
+        assert any(record.get("artifact_id") == "@/workflows/test.donna.md" for record in records)
+
     def test_lists_discovered_artifacts_with_selected_protocol(self, tmp_path: pathlib.Path) -> None:
         config_path = helpers.write_config(tmp_path)
         helpers.write_workflow(tmp_path)
@@ -17,6 +30,18 @@ class TestList:
 
 
 class TestRender:
+    def test_config_home_marker__uses_resolved_project_for_artifact_paths(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
+        helpers.write_config(tmp_path)
+        helpers.write_workflow(tmp_path)
+        mocker.patch.dict("os.environ", {"HOME": str(tmp_path)})
+
+        result = helpers.invoke(["--config", "~/donna.toml", "render", "--mode", "view", "@/workflows/test.donna.md"])
+
+        assert result.exit_code == 0
+        assert "# Test Workflow" in result.stdout
+
     def test_renders_raw_markdown_without_cell_wrapping(self, tmp_path: pathlib.Path) -> None:
         config_path = helpers.write_config(tmp_path)
         helpers.write_workflow(tmp_path)

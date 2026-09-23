@@ -1,11 +1,16 @@
 import json
 
+from llm_tool_cli.core.errors import Error
+
 from donna.protocol.cells import Cell, MetaValue
 from donna.protocol.formatters.base import Formatter as BaseFormatter
 from donna.protocol.journal import JournalRecord, serialize_record
 
 
 class Formatter(BaseFormatter):
+
+    def format_error(self, error: Error) -> bytes:
+        return self._json_line(error.as_record())
 
     def _json_line(self, data: object) -> bytes:
         return (

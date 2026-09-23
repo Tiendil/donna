@@ -27,15 +27,19 @@ The following topics are out of scope:
 
 ## General principles
 
-Expected project failures MUST be represented as Donna-specific errors before they cross module boundaries.
+Expected project failures MUST be represented as Donna-specific errors or documented expected errors from `llm_tool_cli` before they cross module boundaries.
 
 Internal errors MUST be raised as exceptions.
 
-Environment errors MUST be returned as `Result[..., ErrorsList]` values unless a temporary exception bridge is required by an external callback boundary.
+Donna-owned environment errors MUST be returned as `Result[..., ErrorsList]` values unless a temporary exception bridge is required by an external callback boundary.
+
+Documented expected exceptions derived from `llm_tool_cli.core.errors.Error` are part of the application error contract and MUST propagate unchanged to a controlled CLI boundary when no application-specific recovery is required. Donna's environment-error entity, `Result`, and error-cell requirements apply only to Donna-owned error values; adopted shared exceptions retain their shared representation.
+
+Package ownership alone MUST NOT require translating an adopted shared error into a Donna error value or exception.
 
 Lower-level modules MUST NOT print errors, write protocol records, or terminate the process.
 
-The CLI layer MUST be responsible for converting environment errors into Donna cells and command exit behavior.
+The CLI layer MUST be responsible for rendering environment errors and selecting command exit behavior.
 
 Environment error codes MUST be stable enough for automation and tests.
 
@@ -56,7 +60,9 @@ Environment errors are expected to describe what failed and, when practical, how
 
 ## Error ownership
 
-Base error classes MUST be owned by `donna.core.errors`.
+Donna-owned base error classes MUST be owned by `donna.core.errors`.
+
+Adopted shared errors MUST retain their shared error hierarchy, code, message, and record fields.
 
 Each top-level module that owns errors SHOULD define its own error hierarchy in its `errors` submodule.
 
@@ -141,7 +147,7 @@ Functions that can fail with environment errors SHOULD return `Result[T, ErrorsL
 
 Successful results MUST be returned with `Ok(value)`.
 
-Environment failures MUST be returned with `Err(errors)`.
+Donna-owned environment failures MUST be returned with `Err(errors)`.
 
 When multiple validation errors can be discovered in one pass, code SHOULD collect them and return one `Err(errors)` value.
 
@@ -177,7 +183,7 @@ The proxy MUST NOT cross into CLI rendering as an internal error.
 
 ## Exception boundaries
 
-Modules that call external systems MUST convert relevant low-level failures into environment errors at the boundary where useful context is still available.
+Modules that call external systems MUST convert relevant raw low-level failures into environment errors at the boundary where useful context is still available. When `llm_tool_cli` owns that boundary, its documented expected errors already satisfy this requirement.
 
 External systems include:
 
@@ -191,9 +197,9 @@ External systems include:
 
 Pydantic validation errors MUST NOT be exposed directly across high-level module boundaries for user-provided data.
 
-Modules that create Pydantic entities from external input MUST convert `pydantic.ValidationError`, `ValueError`, and similar low-level validation failures into Donna environment errors at the nearest useful boundary.
+Donna-owned validation boundaries that create Pydantic entities from external input MUST convert raw `pydantic.ValidationError`, `ValueError`, and similar low-level validation failures into Donna environment errors at the nearest useful boundary. Adopted shared validation errors MUST propagate unchanged.
 
-Unexpected programming errors MAY propagate during development, but code that handles expected user or environment failures MUST convert them into environment errors.
+Unexpected programming errors MAY propagate during development, but code that handles expected user or environment failures MUST represent them as Donna environment errors or adopted shared errors.
 
 When converting an exception, details SHOULD preserve enough information for diagnosis without requiring stack traces in user-facing output.
 
@@ -204,6 +210,10 @@ Typer command line parsing errors MAY use Typer's standard invalid-argument beha
 CLI argument parsing MAY raise `typer.BadParameter`, `click.UsageError`, or `typer.Exit` before command execution has fully entered Donna's result-based flow.
 
 After the selected protocol is installed, environment errors SHOULD be rendered as Donna error cells.
+
+Adopted shared errors MUST instead use the shared diagnostic contract: automation renders the unchanged shared diagnostic record as JSON Lines on stdout, and human and LLM protocols render its message on stderr.
+
+Shared configuration errors MUST exit with status `2`. Other expected shared errors MUST exit with status `3`. Unexpected exceptions MUST NOT be caught by this expected-error handling.
 
 Human and LLM environment error cells SHOULD be written to stdout like other Donna cells.
 
@@ -241,7 +251,7 @@ Root classification classes MAY use `InternalError`, `EnvironmentError`, or a mo
 
 `assert` statements MUST NOT be used for user input validation, environment validation, artifact validation, or recoverable workflow failures.
 
-Recoverable failures MUST use environment errors.
+Recoverable failures MUST use Donna environment errors or adopted shared errors.
 
 Impossible runtime states SHOULD use internal errors when they need explicit handling.
 

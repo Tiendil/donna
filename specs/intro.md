@@ -23,12 +23,12 @@ Detailed requirements for individual specifications are out of scope except for 
 - `./specs/intro.md` — this file, contains a list of all specifications and their brief descriptions.
 - `./specs/dictionary.md` — shared project-specific terminology used by multiple specifications.
 - `./specs/architecture/entities.md` — specification of project entity and data structure architecture.
-- `./specs/architecture/errors.md` — specification of project error handling architecture.
+- `./specs/architecture/errors.md` — specification of project error handling architecture, including adopted shared exceptions alongside Donna results.
 - `./specs/architecture/modules_layout.md` — specification of the intended project module structure and ownership boundaries.
 - `./specs/architecture/naming.md` — specification of project code naming conventions.
-- `./specs/architecture/tests.md` — specification of project test organization and testing expectations.
-- `./specs/behavior/cli.md` — specification of the `donna` command line interface.
-- `./specs/behavior/config.md` — specification of the `donna.toml` configuration file behavior.
+- `./specs/architecture/tests.md` — specification of project test organization and testing expectations, including shared exception propagation.
+- `./specs/behavior/cli.md` — specification of the `donna` command line interface and shared error diagnostics and exit codes.
+- `./specs/behavior/config.md` — specification of the `donna.toml` configuration file behavior, including shared path selection, home expansion, and missing-config diagnostics.
 - `./specs/behavior/file_paths.md` — specification of Donna local project path, artifact id, and artifact section id syntax and resolution behavior.
 - `./specs/behavior/skill_fixtures.md` — specification of built-in skill documentation fixture behavior.
 - `./specs/documentation/changelog.md` — specification of changelog tooling, source files, version record structure, and entry format.

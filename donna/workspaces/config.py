@@ -126,6 +126,11 @@ class Workspace(BaseEntity):
     config: Config
 
 
+def construct_workspace(config: Config, *, config_path: ProjectConfigPath) -> Workspace:
+    """Derive the workspace root from the selected path without reading files or installing globals."""
+    return Workspace(root=ProjectRootPath(config_path.parent), config_path=config_path, config=config)
+
+
 class GlobalConfig[V]():
     __slots__ = ("_value",)
 

@@ -171,6 +171,34 @@ class TestWorkspace:
         assert workspace.config == Config()
 
 
+class TestConstructWorkspace:
+    def test_derives_root_without_reading_config_or_installing_globals(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
+        mocker.patch.object(workspace_config.project_dir, "_value", None)
+        mocker.patch.object(workspace_config.config_path, "_value", None)
+        mocker.patch.object(workspace_config.config, "_value", None)
+        config_path = ProjectConfigPath(tmp_path / "custom.toml")
+
+        workspace = workspace_config.construct_workspace(Config(), config_path=config_path)
+
+        assert workspace.root == tmp_path
+        assert workspace.config_path == config_path
+        assert not config_path.exists()
+        assert not workspace_config.project_dir.is_set()
+        assert not workspace_config.config_path.is_set()
+        assert not workspace_config.config.is_set()
+
+    def test_selected_symlink__keeps_supplied_path(self, tmp_path: pathlib.Path) -> None:
+        config_path = ProjectConfigPath(tmp_path / "linked.toml")
+        config_path.symlink_to(tmp_path / "target" / "config.toml")
+
+        workspace = workspace_config.construct_workspace(Config(), config_path=config_path)
+
+        assert workspace.root == tmp_path
+        assert workspace.config_path == config_path
+
+
 class TestInstallWorkspace:
     def test_install_workspace__sets_unset_globals(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         project_dir = GlobalConfig[ProjectRootPath]()

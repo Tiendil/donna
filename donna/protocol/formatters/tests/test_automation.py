@@ -1,10 +1,21 @@
 import json
 
+from llm_tool_cli.core.errors import Error
+
 from donna.protocol.formatters.automation import Formatter
 from donna.protocol.tests.make import cell, journal_record
 
 
 class TestFormatter:
+    def test_format_error__preserves_shared_record_without_cell_fields(self) -> None:
+        error = Error("unavailable", code="unavailable", details={"service": "example", "attempts": [1, 2]})
+
+        formatted = Formatter().format_error(error)
+
+        assert json.loads(formatted) == error.as_record()
+        assert formatted.endswith(b"\n")
+        assert len(formatted.splitlines()) == 1
+
     def test_format_cell__serializes_cell_as_sorted_json_line(self) -> None:
         formatted = Formatter().format_cell(cell())
 

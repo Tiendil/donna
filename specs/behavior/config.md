@@ -46,6 +46,8 @@ The directory containing the discovered file MUST be the project root.
 
 When `--config PATH` is provided to a workspace-loading command, `donna` MUST use that file as the configuration file and MUST NOT perform upward discovery.
 
+An explicit configuration path MUST expand a leading `~` or `~user` home-directory marker before path resolution. This rule also applies to the target path used by `donna init`.
+
 If `PATH` is relative, it MUST be resolved relative to the current working directory.
 
 When `--config PATH` is provided, the directory containing the resolved file MUST be the project root.
@@ -53,6 +55,8 @@ When `--config PATH` is provided, the directory containing the resolved file MUS
 When `--config PATH` is provided to a workspace-loading command, the resolved file MUST exist.
 
 If no configuration file can be found or the configured path cannot be loaded, workspace loading MUST fail.
+
+When upward discovery finds no configuration file, Donna MUST report the shared `config_not_found` error with the search starting directory and configuration filename in its diagnostic context.
 
 Configuration loading MUST be deterministic for the same:
 
