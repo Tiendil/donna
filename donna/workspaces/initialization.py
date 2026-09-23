@@ -1,6 +1,7 @@
 import importlib.resources
 import pathlib
-import tomllib
+
+import tomli
 
 from donna.core import errors as core_errors
 from donna.core.result import Err, Ok, Result, unwrap_to_error
@@ -30,8 +31,8 @@ def load_workspace(config_path: PathInput | None = None) -> Result[config.Worksp
 
     try:
         data = pathlib.Path(resolved_config_path).read_text(encoding="utf-8")
-        parsed = tomllib.loads(data)
-    except tomllib.TOMLDecodeError as e:
+        parsed = tomli.loads(data)
+    except tomli.TOMLDecodeError as e:
         return Err([world_errors.ConfigParseFailed(config_path=resolved_config_path, details=str(e))])
 
     try:

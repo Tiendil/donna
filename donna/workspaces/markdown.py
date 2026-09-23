@@ -38,9 +38,9 @@ class CodeSource(BaseEntity):
             return Ok(yaml.safe_load(self.content))
 
         if self.format == "toml":
-            import tomllib
+            import tomli
 
-            return Ok(tomllib.loads(self.content))
+            return Ok(tomli.loads(self.content))
 
         return Err([world_errors.MarkdownUnsupportedCodeFormat(format=self.format)])
 

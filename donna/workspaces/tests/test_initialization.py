@@ -28,6 +28,18 @@ class TestLoadWorkspace:
         assert workspace.config.session_dir == pathlib.Path(".session/custom")
         assert workspace.config.workflow_dirs == [pathlib.Path("workflows")]
 
+    def test_toml_1_1__loads_multiline_inline_table(self, tmp_path: pathlib.Path) -> None:
+        config_path = tmp_path / DONNA_CONFIG_NAME
+        config_path.write_text(
+            'version = 1\ndefaults = {\n    primary_section_id = "workflow",\n}\n',
+            encoding="utf-8",
+        )
+
+        result = load_workspace(config_path=config_path)
+
+        assert result.is_ok()
+        assert result.unwrap().config.defaults.primary_section_id == "workflow"
+
     def test_discovery__uses_nearest_project_config(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text("version = 1", encoding="utf-8")
@@ -51,7 +63,11 @@ class TestLoadWorkspace:
         result = load_workspace(config_path=config_path)
 
         assert result.is_err()
-        assert isinstance(result.unwrap_err()[0], workspace_errors.ConfigParseFailed)
+        error = result.unwrap_err()[0]
+        assert isinstance(error, workspace_errors.ConfigParseFailed)
+        assert error.code == "donna.workspaces.config_parse_failed"
+        assert error.config_path == config_path
+        assert error.details
 
     def test_invalid_config_schema__returns_validation_error(self, tmp_path: pathlib.Path) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
