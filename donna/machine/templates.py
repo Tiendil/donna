@@ -1,6 +1,6 @@
 import enum
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING, ClassVar, TypeAlias
 
 from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Ok, Result
@@ -37,9 +37,7 @@ class RenderMode(enum.StrEnum):
 
 
 class DirectiveUnsupportedRenderMode(machine_errors.InternalError):
-    message_template: str = "Render mode {render_mode} not implemented in directive {directive_name}."
-    render_mode: object
-    directive_name: str
+    message_template: ClassVar[str] = "Render mode {render_mode} not implemented in directive {directive_name}."
 
 
 class Directive(Primitive, ABC):
@@ -66,7 +64,9 @@ class Directive(Primitive, ABC):
             case RenderMode.analysis:
                 return self.render_analyze(context, *argv)
             case _:
-                raise DirectiveUnsupportedRenderMode(render_mode=render_mode, directive_name=self.__class__.__name__)
+                raise DirectiveUnsupportedRenderMode(
+                    details={"render_mode": render_mode, "directive_name": self.__class__.__name__}
+                )
 
     def _prepare_arguments(
         self,

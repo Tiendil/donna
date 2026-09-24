@@ -1,11 +1,10 @@
+from typing import ClassVar
+
 from llm_tool_cli.core import errors as llm_tool_errors
 
 
 class InternalError(llm_tool_errors.InternalError):
-    message_template: str = "An internal error occurred"
-
-    def __init__(self, **kwargs: object) -> None:
-        super().__init__(self.message_template.format(**kwargs), details=kwargs)
+    message_template: ClassVar[str] = "An internal error occurred"
 
 
 class EnvironmentError(llm_tool_errors.EnvironmentError):

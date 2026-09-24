@@ -33,7 +33,7 @@ class Journal:
             case protocol_modes.Mode.automation:
                 return "automation"
             case _:
-                raise protocol_errors.UnsupportedFormatterMode(mode=protocol_mode())
+                raise protocol_errors.UnsupportedFormatterMode(details={"mode": protocol_mode()})
 
     @unwrap_to_error
     def add(

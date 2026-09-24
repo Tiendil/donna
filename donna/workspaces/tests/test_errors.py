@@ -156,9 +156,7 @@ class TestDirectiveUnexpectedError(_EnvironmentErrorCase):
 class TestMarkdownSectionsCountMismatch(_InternalErrorCase):
     def error(self) -> workspace_errors.InternalError:
         return workspace_errors.MarkdownSectionsCountMismatch(
-            artifact_id=make.ARTIFACT_ID,
-            original_count=1,
-            analyzed_count=2,
+            details={"artifact_id": make.ARTIFACT_ID, "original_count": 1, "analyzed_count": 2}
         )
 
 

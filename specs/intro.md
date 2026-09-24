@@ -23,7 +23,7 @@ Detailed requirements for individual specifications are out of scope except for 
 - `./specs/intro.md` — this file, contains a list of all specifications and their brief descriptions.
 - `./specs/dictionary.md` — shared project-specific terminology used by multiple specifications.
 - `./specs/architecture/entities.md` — specification of project entity and data structure architecture.
-- `./specs/architecture/errors.md` — specification of project error handling architecture, including adopted shared exceptions alongside Donna results.
+- `./specs/architecture/errors.md` — specification of project error handling architecture, including adopted shared exceptions alongside Donna results and shared internal-error template formatting.
 - `./specs/architecture/modules_layout.md` — specification of the intended project module structure and ownership boundaries.
 - `./specs/architecture/naming.md` — specification of project code naming conventions.
 - `./specs/architecture/tests.md` — specification of project test organization and testing expectations, including shared exception propagation.

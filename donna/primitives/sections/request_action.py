@@ -35,7 +35,7 @@ def extract_transitions(text: str) -> set[SectionId]:
     for match in matches:
         transition_result = SectionId.parse(match)
         if transition_result.is_err():
-            raise domain_errors.InvalidIdentifier(value=match)
+            raise domain_errors.InvalidIdentifier(details={"value": match})
         transitions.add(transition_result.unwrap())
 
     return transitions

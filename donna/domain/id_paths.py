@@ -55,7 +55,7 @@ class IdPath:
         cls = type(self)
 
         if not cls.validate(value):
-            raise domain_errors.InvalidIdPath(id_type=cls.__name__, value=value)
+            raise domain_errors.InvalidIdPath(details={"id_type": cls.__name__, "value": value})
 
         object.__setattr__(self, "parts", tuple(cls._split(value)))
 

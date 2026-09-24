@@ -27,7 +27,7 @@ class Identifier(str):
 
     def __new__(cls, value: str) -> "Identifier":
         if not cls.validate(value):
-            raise domain_errors.InvalidIdentifier(value=value)
+            raise domain_errors.InvalidIdentifier(details={"value": value})
 
         return super().__new__(cls, value)
 

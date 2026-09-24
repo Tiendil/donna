@@ -90,6 +90,8 @@ Test-only error classes MAY be defined in test modules when they are required to
 
 Internal error subclasses MAY define a parametrized message template.
 
+Template formatting MUST be owned by the shared internal-error base. Donna extensions MAY provide project-specific default templates.
+
 Internal error instances MUST use the shared `message` and `details` contract for their formatted diagnostic and constructor context.
 
 Internal errors SHOULD be raised with the standard `raise` statement.

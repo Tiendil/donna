@@ -29,14 +29,14 @@ class Primitive(BaseEntity):
         self, task: "Task", unit: "WorkUnit", artifact: "Artifact", section_id: SectionId
     ) -> Result[list["Change"], EnvironmentErrors]:
         raise machine_errors.PrimitiveMethodUnsupported(
-            primitive_name=self.__class__.__name__, method_name="execute_section()"
+            details={"primitive_name": self.__class__.__name__, "method_name": "execute_section()"}
         )
 
     def apply_directive(
         self, context: DirectiveContext, *argv: object, **kwargs: object
     ) -> Result[object, EnvironmentErrors]:
         raise machine_errors.PrimitiveMethodUnsupported(
-            primitive_name=self.__class__.__name__, method_name="apply_directive()"
+            details={"primitive_name": self.__class__.__name__, "method_name": "apply_directive()"}
         )
 
 

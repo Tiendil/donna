@@ -118,9 +118,11 @@ def parse_artifact_content(
 
     if len(original_sections) != len(analyzed_sections):
         raise world_errors.MarkdownSectionsCountMismatch(
-            artifact_id=artifact_id,
-            original_count=len(original_sections),
-            analyzed_count=len(analyzed_sections),
+            details={
+                "artifact_id": artifact_id,
+                "original_count": len(original_sections),
+                "analyzed_count": len(analyzed_sections),
+            }
         )
 
     if not original_sections:

@@ -22,4 +22,4 @@ def get_cell_formatter(mode: Mode) -> Formatter:
         case Mode.automation:
             return AutomationFormatter()
         case _:
-            raise UnsupportedFormatterMode(mode=mode)
+            raise UnsupportedFormatterMode(details={"mode": mode})

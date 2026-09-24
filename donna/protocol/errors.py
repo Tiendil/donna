@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from llm_tool_cli.core.errors import EnvironmentError
 
 from donna.core import errors as core_errors
@@ -10,15 +12,15 @@ class InternalError(core_errors.InternalError):
 
 
 class ModeNotSet(InternalError):
-    message_template: str = "Mode is not set. Pass -p <mode> to the CLI."
+    message_template: ClassVar[str] = "Mode is not set. Pass -p <mode> to the CLI."
 
 
 class UnsupportedFormatterMode(InternalError):
-    message_template: str = "Formatter for mode '{mode}' is not implemented."
+    message_template: ClassVar[str] = "Formatter for mode '{mode}' is not implemented."
 
 
 class ContentWithoutMediaType(InternalError):
-    message_template: str = "Cannot set content when media_type is None."
+    message_template: ClassVar[str] = "Cannot set content when media_type is None."
 
 
 class EnvironmentErrorNode(Node):
