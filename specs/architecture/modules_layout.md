@@ -25,9 +25,7 @@ The following topics are out of scope:
 
 - `./donna/` — root module of the project, contains all code related to the `donna` tool.
 - `./donna/core/` — module responsible for the core functionality not related to domain logic. Contains:
-  - shared entity base classes.
-  - shared error base classes.
-  - shared result types.
+  - Donna extensions of shared error base classes.
   - domain-independent utilities.
 - `./donna/domain/` — module responsible only for universal domain entities and logic required by all or most other modules. Contains:
   - shared domain-specific types.
@@ -99,7 +97,9 @@ List of specific submodules:
 
 The `errors`, `entities`, and `tests` submodules MUST follow the corresponding architecture specifications when they are present.
 
-The shared `entities` submodule in `./donna/core/` MUST define the common entity base used by higher-level modules.
+Shared result types, the common environment-error model, and the environment-error callback proxy MUST be provided by `llm_tool_cli` and imported directly from their owning modules.
+
+The common entity base MUST be provided by `llm_tool_cli.core.entities` and imported directly by higher-level modules.
 
 ### Submodule nuances
 
@@ -202,6 +202,6 @@ Constructing protocol-neutral output values with kind, content, media type, and 
 
 ## Data structures
 
-Project data structures SHOULD inherit from `donna.core.entities.BaseEntity` unless a third-party interface or standard-library protocol requires another type.
+Project data structures SHOULD inherit from `llm_tool_cli.core.entities.BaseEntity` unless a third-party interface or standard-library protocol requires another type.
 
 Project data structures MUST NOT use `dataclass` for domain entities.

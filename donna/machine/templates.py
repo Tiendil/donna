@@ -2,8 +2,9 @@ import enum
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, TypeAlias
 
-from donna.core.errors import ErrorsList
-from donna.core.result import Ok, Result
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Ok, Result
+
 from donna.machine import errors as machine_errors
 from donna.machine.primitives import Primitive
 from donna.machine.templates_context import DirectiveContext
@@ -12,7 +13,7 @@ if TYPE_CHECKING:
     pass
 
 PreparedDirectiveArguments: TypeAlias = tuple[object, ...]
-PreparedDirectiveResult: TypeAlias = Result[PreparedDirectiveArguments, ErrorsList]
+PreparedDirectiveResult: TypeAlias = Result[PreparedDirectiveArguments, EnvironmentErrors]
 
 
 class RenderMode(enum.StrEnum):
@@ -36,7 +37,7 @@ class RenderMode(enum.StrEnum):
 
 
 class DirectiveUnsupportedRenderMode(machine_errors.InternalError):
-    message: str = "Render mode {render_mode} not implemented in directive {directive_name}."
+    message_template: str = "Render mode {render_mode} not implemented in directive {directive_name}."
     render_mode: object
     directive_name: str
 
@@ -49,7 +50,7 @@ class Directive(Primitive, ABC):
         context: DirectiveContext,
         *argv: object,
         **kwargs: object,
-    ) -> Result[object, ErrorsList]:
+    ) -> Result[object, EnvironmentErrors]:
         render_mode = context["render_mode"]
         arguments_result = self._prepare_arguments(context, *argv, **kwargs)
         if arguments_result.is_err():
@@ -80,20 +81,20 @@ class Directive(Primitive, ABC):
         self,
         context: DirectiveContext,
         *argv: object,
-    ) -> Result[object, ErrorsList]: ...
+    ) -> Result[object, EnvironmentErrors]: ...
 
     def render_execute(
         self,
         context: DirectiveContext,
         *argv: object,
-    ) -> Result[object, ErrorsList]:
+    ) -> Result[object, EnvironmentErrors]:
         return self.render_view(context, *argv)
 
     def render_analyze(
         self,
         context: DirectiveContext,
         *argv: object,
-    ) -> Result[object, ErrorsList]:
+    ) -> Result[object, EnvironmentErrors]:
         parts = [str(arg) for arg in argv]
         arguments = " ".join(parts)
 

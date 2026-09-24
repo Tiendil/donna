@@ -1,8 +1,9 @@
 import enum
 
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Err, Ok, Result
+
 from donna.core import errors as core_errors
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
 from donna.domain.artifact_ids import ArtifactId
 from donna.machine.templates import Directive, PreparedDirectiveResult
 from donna.machine.templates_context import DirectiveContext
@@ -81,7 +82,7 @@ class Path(Directive):
 
         return Ok((str(argv[0]), mode, ArtifactId(raw_artifact_id)))
 
-    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object, ErrorsList]:
+    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object, EnvironmentErrors]:
         raw_path = str(argv[0])
         mode: PathRenderMode = argv[1]  # type: ignore[assignment]
         artifact_id: ArtifactId = argv[2]  # type: ignore[assignment]
@@ -102,5 +103,5 @@ class Path(Directive):
 
         return Ok(str(absolute))
 
-    def render_analyze(self, context: DirectiveContext, *argv: object) -> Result[object, ErrorsList]:
+    def render_analyze(self, context: DirectiveContext, *argv: object) -> Result[object, EnvironmentErrors]:
         return self.render_view(context, *argv)

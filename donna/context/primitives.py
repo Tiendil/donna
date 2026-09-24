@@ -1,8 +1,9 @@
 import importlib
 from typing import TYPE_CHECKING
 
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+
 from donna.domain.python_path import PythonPath
 from donna.machine import errors as machine_errors
 
@@ -17,7 +18,7 @@ class PrimitivesCache:
         self._cache: dict[PythonPath, "Primitive"] = {}
 
     @unwrap_to_error
-    def resolve(self, primitive_id: PythonPath) -> Result["Primitive", ErrorsList]:  # noqa: CCR001
+    def resolve(self, primitive_id: PythonPath) -> Result["Primitive", EnvironmentErrors]:  # noqa: CCR001
         from donna.machine.primitives import Primitive
 
         cached = self._cache.get(primitive_id)

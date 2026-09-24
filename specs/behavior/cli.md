@@ -560,13 +560,13 @@ Typer command line parsing errors SHOULD use Typer's standard invalid-arguments 
 
 Workspace, artifact, validation, and environment errors SHOULD be rendered as Donna error cells when possible.
 
-Expected errors from `llm_tool_cli` MUST retain their shared codes, messages, and record fields. They MUST NOT be renamed or wrapped in Donna-specific error records.
+Environment-error values from `llm_tool_cli` MUST retain their shared codes, messages, and record fields. They MUST NOT be renamed or wrapped in Donna-specific error records.
 
 For automation output, shared errors MUST be written to stdout as one JSON Lines object preserving their shared diagnostic record, without added cell fields. This includes `type`, `code`, and `message`, and configuration errors also include `path` and `reason`.
 
 For human and LLM output, the shared error message MUST be written to stderr followed by a newline. The message for a shared configuration error includes its path and reason.
 
-Shared configuration errors MUST exit with status `2`. Other expected shared errors MUST exit with status `3`. Unexpected exceptions MUST propagate rather than being presented as expected failures.
+Shared configuration errors MUST exit with status `2`. Other expected shared errors MUST exit with status `3`. When a result contains several errors, the CLI MUST render each error in order using its applicable representation and exit with the highest applicable status. Unexpected exceptions MUST propagate rather than being presented as expected failures.
 
 These shared diagnostics replace the previous Donna config parse, validation, read, discovery, and file-creation adapters. An unreadable explicit config path and an existing initialization target MUST likewise use the shared `config_unreadable` and `config_already_exists` errors. When no configuration can be discovered, the CLI MUST use the shared `config_not_found` diagnostic and exit with status `2`. Donna-owned starter-template failures retain their Donna error cells.
 

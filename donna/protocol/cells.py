@@ -2,8 +2,7 @@ import base64
 import uuid
 
 import pydantic
-
-from donna.core.entities import BaseEntity
+from llm_tool_cli.core.entities import BaseEntity
 
 MetaValue = str | int | bool | None | list[str]
 

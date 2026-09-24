@@ -4,8 +4,8 @@ import enum
 from typing import TYPE_CHECKING, Literal
 
 import pydantic
+from llm_tool_cli.core.entities import BaseEntity
 
-from donna.core.entities import BaseEntity
 from donna.domain.constants import DONNA_DEFAULT_SESSION_DIR, DONNA_DEFAULT_WORKFLOW_DIR
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId

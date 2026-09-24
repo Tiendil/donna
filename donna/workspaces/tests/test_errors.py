@@ -15,8 +15,8 @@ class TestWorkspaceConfigError:
 
 
 class TestInternalError:
-    def test_error_message__uses_workspace_internal_error_base(self) -> None:
-        assert workspace_errors.InternalError().error_message() == "An internal error occurred"
+    def test_message__uses_workspace_internal_error_base(self) -> None:
+        assert workspace_errors.InternalError().message == "An internal error occurred"
 
 
 class TestWorkspaceError:
@@ -38,8 +38,8 @@ class _InternalErrorCase:
     def error(self) -> workspace_errors.InternalError:
         raise NotImplementedError
 
-    def test_error_message__formats_without_failure(self) -> None:
-        assert self.error().error_message()
+    def test_message__formats_without_failure(self) -> None:
+        assert self.error().message
 
 
 class TestJournalCommandConfigInvalid(_EnvironmentErrorCase):

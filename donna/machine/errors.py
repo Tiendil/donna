@@ -9,21 +9,21 @@ class InternalError(core_errors.InternalError):
 
 
 class PrimitiveMethodUnsupported(InternalError):
-    message: str = "Primitive '{primitive_name}' does not support {method_name}."
+    message_template: str = "Primitive '{primitive_name}' does not support {method_name}."
     primitive_name: str
     method_name: str
 
 
 class SessionStateStatusInvalid(InternalError):
-    message: str = "Session state status is invalid."
+    message_template: str = "Session state status is invalid."
 
 
 class MachineContextNotSet(InternalError):
-    message: str = "Machine context is not initialized."
+    message_template: str = "Machine context is not initialized."
 
 
 class UnsupportedFormatterMode(InternalError):
-    message: str = "Formatter for mode '{mode}' is not implemented."
+    message_template: str = "Formatter for mode '{mode}' is not implemented."
 
 
 class EnvironmentError(core_errors.EnvironmentError):

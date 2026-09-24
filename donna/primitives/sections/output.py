@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING, ClassVar, cast
 
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+
 from donna.context.context import context
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId, artifact_section_id, split_artifact_section_id
 from donna.domain.ids import SectionId
 from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
@@ -43,7 +44,7 @@ class Output(MarkdownSectionMixin, OperationKind):
         section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
-    ) -> Result[ArtifactSectionMeta, ErrorsList]:
+    ) -> Result[ArtifactSectionMeta, EnvironmentErrors]:
         output_config = cast(OutputConfig, section_config)
 
         allowed_transitions: set[SectionId] = set()
@@ -61,7 +62,7 @@ class Output(MarkdownSectionMixin, OperationKind):
     @unwrap_to_error
     def execute_section(
         self, task: "Task", unit: "WorkUnit", artifact: Artifact, section_id: SectionId
-    ) -> Result[list["Change"], ErrorsList]:
+    ) -> Result[list["Change"], EnvironmentErrors]:
         from donna.machine.changes import ChangeAddWorkUnit
 
         operation = artifact.get_section(section_id).unwrap()
@@ -78,7 +79,7 @@ class Output(MarkdownSectionMixin, OperationKind):
 
         return Ok([ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id)])
 
-    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None, ErrorsList]:
+    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None, EnvironmentErrors]:
         section = artifact.get_section(section_id).unwrap()
         meta = cast(OutputMeta, section.meta)
 

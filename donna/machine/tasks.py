@@ -2,9 +2,10 @@ import copy
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
-from donna.core.entities import BaseEntity
-from donna.core.errors import ErrorsList
-from donna.core.result import Ok, Result, unwrap_to_error
+from llm_tool_cli.core.entities import BaseEntity
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Ok, Result, unwrap_to_error
+
 from donna.domain.artifact_ids import ArtifactSectionId, split_artifact_section_id
 from donna.domain.internal_ids import TaskId, WorkUnitId
 from donna.machine.context import context
@@ -55,7 +56,7 @@ class WorkUnit(BaseEntity):
         return unit
 
     @unwrap_to_error
-    def run(self, task: Task) -> Result[list["Change"], ErrorsList]:
+    def run(self, task: Task) -> Result[list["Change"], EnvironmentErrors]:
         ctx = context()
         with ctx.current_operation_id.scope(self.operation_id):
             operation_parts = split_artifact_section_id(self.operation_id)

@@ -1,5 +1,7 @@
 from decimal import Decimal
 
+from llm_tool_cli.core.errors import EnvironmentError
+
 from donna.core import errors as core_errors
 from donna.protocol.errors import EnvironmentErrorNode, environment_error_node
 
@@ -34,6 +36,16 @@ class _MultilineError(core_errors.EnvironmentError):
 
 
 class TestEnvironmentErrorNode:
+    def test_status__renders_shared_error_without_presentation_fields(self) -> None:
+        error = EnvironmentError(code="service_unavailable", message="Service unavailable", ways_to_fix=["Retry."])
+
+        cell = EnvironmentErrorNode(error).status()
+
+        assert cell.kind == "environment_error"
+        assert cell.media_type == "text/markdown"
+        assert cell.meta == {"error_code": "service_unavailable"}
+        assert cell.content == "Error: Service unavailable\nWay to fix: Retry."
+
     def test_meta__includes_code_and_scalar_context_fields(self) -> None:
         node = EnvironmentErrorNode(
             _SingleFixError(item="artifact", count=3, active=True, decimal_value=Decimal("1.5"))

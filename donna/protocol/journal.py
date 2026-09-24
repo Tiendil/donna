@@ -2,8 +2,8 @@ import datetime
 import json
 
 import pydantic
+from llm_tool_cli.core.entities import BaseEntity
 
-from donna.core.entities import BaseEntity
 from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import TaskId, WorkUnitId
 

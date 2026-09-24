@@ -1,10 +1,10 @@
 import pathlib
 
+from llm_tool_cli.core.result import Ok
 from pytest_mock import MockerFixture
 
 from donna.context.artifacts import ArtifactsCache
 from donna.context.tests import make
-from donna.core.result import Ok
 from donna.domain.artifact_ids import ArtifactId
 from donna.machine.templates import RenderMode
 from donna.machine.tests import make as machine_make

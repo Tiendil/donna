@@ -1,8 +1,8 @@
 import pathlib
 
+from llm_tool_cli.core.result import Err, Ok
 from pytest_mock import MockerFixture
 
-from donna.core.result import Err, Ok
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.paths import RelativeProjectPath, ResolvedProjectPath
 from donna.machine.artifacts import Artifact

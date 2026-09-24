@@ -1,9 +1,9 @@
 from typing import ClassVar
 
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Err, Ok, Result
 from pytest_mock import MockerFixture
 
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
@@ -33,7 +33,7 @@ class _FailingMarkdownPrimitive(_MarkdownPrimitive):
         source: SectionSource,
         config: dict[str, object],
         primary: bool = False,
-    ) -> Result[ArtifactSection, ErrorsList]:
+    ) -> Result[ArtifactSection, EnvironmentErrors]:
         return Err([workspace_errors.MarkdownArtifactWithoutSections(artifact_id=artifact_id)])
 
 
@@ -111,8 +111,8 @@ class TestParseArtifactContent:
         try:
             markdown_parser.parse_artifact_content(make.ARTIFACT_ID, "# Workflow\n", RENDER_CONTEXT_VIEW)
         except workspace_errors.MarkdownSectionsCountMismatch as error:
-            assert error.arguments["original_count"] == 1
-            assert error.arguments["analyzed_count"] == 2
+            assert error.details["original_count"] == 1
+            assert error.details["analyzed_count"] == 2
         else:
             raise AssertionError("Expected MarkdownSectionsCountMismatch")
 

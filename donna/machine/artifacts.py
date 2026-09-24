@@ -1,8 +1,9 @@
 from collections.abc import Mapping
 
-from donna.core.entities import BaseEntity
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.core.entities import BaseEntity
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
@@ -48,7 +49,7 @@ class Artifact(BaseEntity):
     def _primary_sections(self) -> list[ArtifactSection]:
         return [section for section in self.sections if section.primary]
 
-    def primary_section(self) -> Result[ArtifactSection, ErrorsList]:
+    def primary_section(self) -> Result[ArtifactSection, EnvironmentErrors]:
         primary_sections = self._primary_sections()
         if len(primary_sections) == 0:
             return Err([ArtifactPrimarySectionMissing(artifact_id=self.id)])
@@ -63,10 +64,10 @@ class Artifact(BaseEntity):
             )
         return Ok(primary_sections[0])
 
-    def validate_artifact(self) -> Result[None, ErrorsList]:  # noqa: CCR001
+    def validate_artifact(self) -> Result[None, EnvironmentErrors]:  # noqa: CCR001
         primary_sections = self._primary_sections()
 
-        errors: ErrorsList = []
+        errors: EnvironmentErrors = []
 
         if len(primary_sections) == 0:
             errors.append(ArtifactPrimarySectionMissing(artifact_id=self.id))
@@ -97,7 +98,7 @@ class Artifact(BaseEntity):
 
         return Ok(None)
 
-    def get_section(self, section_id: SectionId | None) -> Result[ArtifactSection, ErrorsList]:
+    def get_section(self, section_id: SectionId | None) -> Result[ArtifactSection, EnvironmentErrors]:
         if section_id is None:
             return self.primary_section()
         for section in self.sections:
@@ -116,7 +117,7 @@ class Artifact(BaseEntity):
         return ArtifactNode(self)
 
     @unwrap_to_error
-    def markdown_blocks(self) -> Result[list[str], ErrorsList]:
+    def markdown_blocks(self) -> Result[list[str], EnvironmentErrors]:
         primary_section = self.primary_section().unwrap()
         blocks = [f"# {primary_section.title}", primary_section.description]
 

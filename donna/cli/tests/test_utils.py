@@ -2,12 +2,15 @@ import pathlib
 
 import pytest
 from llm_tool_cli.config import errors as config_errors
-from llm_tool_cli.core.errors import Error as SharedError
+from llm_tool_cli.core import errors as llm_tool_errors
+from llm_tool_cli.core.result import Err, Ok, UnwrapError
 from pytest_mock import MockerFixture
 
 from donna.cli.tests import helpers
 from donna.context import Context, context, reset_context, set_context
+from donna.domain.artifact_ids import ArtifactId
 from donna.machine import context as machine_context
+from donna.workspaces import errors as workspace_errors
 
 
 class TestCommandContext:
@@ -45,18 +48,18 @@ class TestCommandContext:
     def test_shared_config_errors__write_text_to_stderr(
         self, mocker: MockerFixture, tmp_path: pathlib.Path, protocol: str
     ) -> None:
-        failure = config_errors.DiscoveryFailed(tmp_path, "permission denied")
-        mocker.patch("donna.cli.utils.locate_config", side_effect=failure)
+        failure = config_errors.DiscoveryFailed(path=tmp_path, reason="permission denied")
+        mocker.patch("donna.cli.utils.locate_config", return_value=Err([failure]))
 
         result = helpers.invoke(["-p", protocol, "list"])
 
         assert result.exit_code == 2
         assert not result.stdout
-        assert result.stderr == f"{failure.message}\n"
+        assert result.stderr == f"{failure.format_message()}\n"
 
     def test_other_shared_errors__preserve_record_and_exit_three(self, mocker: MockerFixture) -> None:
-        failure = SharedError("service unavailable", code="service_unavailable", details={"attempts": 2})
-        mocker.patch("donna.cli.utils.locate_config", side_effect=failure)
+        failure = llm_tool_errors.EnvironmentError(message="service unavailable", code="service_unavailable")
+        mocker.patch("donna.cli.utils.locate_config", return_value=Err([failure]))
 
         result = helpers.invoke(["-p", "automation", "list"])
 
@@ -68,8 +71,8 @@ class TestCommandContext:
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
         config_path = helpers.write_config(tmp_path)
-        failure = SharedError("command failed", code="command_failed")
-        mocker.patch("donna.cli.commands.artifacts._log_artifact_operation", side_effect=failure)
+        failure = llm_tool_errors.EnvironmentError(message="command failed", code="command_failed")
+        mocker.patch("donna.cli.commands.artifacts._log_artifact_operation", side_effect=UnwrapError(error=[failure]))
         previous_context = Context()
         context_token = set_context(previous_context)
         machine_context_token = machine_context.set_context(previous_context)
@@ -94,6 +97,42 @@ class TestCommandContext:
         assert not result.stdout
         assert not result.stderr
 
+    def test_shared_internal_errors__propagate_without_expected_diagnostic(self, mocker: MockerFixture) -> None:
+        failure = llm_tool_errors.InternalError("unexpected defect")
+        mocker.patch("donna.cli.utils.locate_config", side_effect=failure)
+
+        result = helpers.invoke(["-p", "automation", "list"])
+
+        assert result.exception == failure
+        assert not result.stdout
+        assert not result.stderr
+
+    def test_mixed_errors__preserves_all_diagnostics(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
+        local = workspace_errors.ArtifactNotFound(artifact_id=ArtifactId("@/missing.donna.md"))
+        config_failure = config_errors.Unreadable(path=tmp_path / "donna.toml", reason="denied")
+        shared = llm_tool_errors.EnvironmentError(code="unavailable", message="Service unavailable")
+        mocker.patch("donna.cli.utils.locate_config", return_value=Err([local, config_failure, shared]))
+
+        result = helpers.invoke(["-p", "automation", "list"])
+
+        assert result.exit_code == 3
+        records = helpers.json_lines(result.stdout)
+        assert records[0]["error_code"] == local.code
+        assert records[0]["artifact_id"] == local.artifact_id
+        assert records[1:] == [config_failure.as_record(), shared.as_record()]
+        assert not result.stderr
+
+    def test_unrecognized_unwrap_payload__is_not_silently_dropped(self, mocker: MockerFixture) -> None:
+        failure = UnwrapError(error=["unexpected payload"])
+        mocker.patch("donna.cli.utils.locate_config", side_effect=failure)
+
+        result = helpers.invoke(["-p", "automation", "list"])
+
+        assert isinstance(result.exception, UnwrapError)
+        assert result.exception.details == failure.details
+        assert not result.stdout
+        assert not result.stderr
+
     def test_local_errors__retain_donna_result_and_cell_behavior(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
@@ -113,7 +152,7 @@ class TestCommandContext:
     def test_missing_discovered_config__uses_shared_diagnostic(
         self, mocker: MockerFixture, tmp_path: pathlib.Path, protocol: str
     ) -> None:
-        mocker.patch("llm_tool_cli.config.files.find_config", return_value=None)
+        mocker.patch("llm_tool_cli.config.files.find_config", return_value=Ok(None))
         mocker.patch("pathlib.Path.cwd", return_value=tmp_path)
 
         result = helpers.invoke(["-p", protocol, "list"])

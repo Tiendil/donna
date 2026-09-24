@@ -1,8 +1,9 @@
 from typing import cast
 
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Err, Ok, Result
+
 from donna.core import errors as core_errors
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId, artifact_section_id, split_artifact_section_id
 from donna.machine.templates import Directive, PreparedDirectiveResult
 from donna.machine.templates_context import DirectiveContext
@@ -36,7 +37,7 @@ class GoTo(Directive):
 
         return Ok((next_operation_id,))
 
-    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object, ErrorsList]:
+    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object, EnvironmentErrors]:
         next_operation_id = cast(ArtifactSectionId, argv[0])
         protocol = workspace_config.protocol().value
         config_path = workspace_config.config_path()
@@ -45,7 +46,7 @@ class GoTo(Directive):
             f"complete-action-request <action-request-id> '{next_operation_id}'"
         )
 
-    def render_analyze(self, context: DirectiveContext, *argv: object) -> Result[object, ErrorsList]:
+    def render_analyze(self, context: DirectiveContext, *argv: object) -> Result[object, EnvironmentErrors]:
         next_operation_id = cast(ArtifactSectionId, argv[0])
         parts = split_artifact_section_id(next_operation_id)
         assert parts is not None

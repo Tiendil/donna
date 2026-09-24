@@ -5,8 +5,9 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Generic, Protocol, TypeVar
 
-from donna.core.errors import ErrorsList
-from donna.core.result import Result
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Result
+
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
 from donna.domain.internal_ids import WorkUnitId
 from donna.domain.python_path import PythonPath
@@ -40,7 +41,7 @@ class ValueScope(Generic[TScopedValue]):
 
 
 class MachineArtifacts(Protocol):
-    def load_for_view(self, artifact_id: ArtifactId) -> Result["Artifact", ErrorsList]:
+    def load_for_view(self, artifact_id: ArtifactId) -> Result["Artifact", EnvironmentErrors]:
         pass
 
     def load_for_execution(
@@ -48,17 +49,17 @@ class MachineArtifacts(Protocol):
         artifact_id: ArtifactId,
         task: "Task",
         work_unit: "WorkUnit",
-    ) -> Result["Artifact", ErrorsList]:
+    ) -> Result["Artifact", EnvironmentErrors]:
         pass
 
 
 class MachinePrimitives(Protocol):
-    def resolve(self, primitive_id: PythonPath) -> Result["Primitive", ErrorsList]:
+    def resolve(self, primitive_id: PythonPath) -> Result["Primitive", EnvironmentErrors]:
         pass
 
 
 class MachineJournal(Protocol):
-    def add(self, message: str, actor_id: str | None = None) -> Result[object, ErrorsList]:
+    def add(self, message: str, actor_id: str | None = None) -> Result[object, EnvironmentErrors]:
         pass
 
 

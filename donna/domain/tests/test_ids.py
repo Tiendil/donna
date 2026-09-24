@@ -1,7 +1,7 @@
 import pydantic
 import pytest
+from llm_tool_cli.core.entities import BaseEntity
 
-from donna.core.entities import BaseEntity
 from donna.domain import errors
 from donna.domain.ids import Identifier, SectionId
 

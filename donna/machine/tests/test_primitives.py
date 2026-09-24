@@ -21,14 +21,14 @@ class TestPrimitive:
             sample_primitive.execute_section(make.task(), make.work_unit(), make.artifact(), make.PRIMARY_SECTION_ID)
 
         error = exception_info.value
-        assert error.arguments == {"primitive_name": "Primitive", "method_name": "execute_section()"}
+        assert error.details == {"primitive_name": "Primitive", "method_name": "execute_section()"}
 
     def test_apply_directive__raises_unsupported_method(self) -> None:
         with pytest.raises(machine_errors.PrimitiveMethodUnsupported) as exception_info:
             sample_primitive.apply_directive({})
 
         error = exception_info.value
-        assert error.arguments == {"primitive_name": "Primitive", "method_name": "apply_directive()"}
+        assert error.details == {"primitive_name": "Primitive", "method_name": "apply_directive()"}
 
 
 class TestResolvePrimitive:

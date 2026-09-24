@@ -12,17 +12,17 @@ class EnvironmentError(core_errors.EnvironmentError):
 
 
 class InvalidInternalId(InternalError):
-    message: str = "Invalid InternalId: '{value}'."
+    message_template: str = "Invalid InternalId: '{value}'."
     value: str
 
 
 class InvalidIdentifier(InternalError):
-    message: str = "Invalid identifier: '{value}'."
+    message_template: str = "Invalid identifier: '{value}'."
     value: str
 
 
 class InvalidIdPath(InternalError):
-    message: str = "Invalid {id_type}: '{value}'."
+    message_template: str = "Invalid {id_type}: '{value}'."
     id_type: str
     value: str
 

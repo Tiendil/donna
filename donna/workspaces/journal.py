@@ -3,8 +3,9 @@ from __future__ import annotations
 import subprocess  # noqa: S404
 from typing import TYPE_CHECKING
 
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+
 from donna.workspaces import errors as workspace_errors
 from donna.workspaces.config import JournalRecordAttribute
 
@@ -16,7 +17,7 @@ def _is_variable_argument(argument: str) -> bool:
     return len(argument) >= 2 and argument[0] == "{" and argument[-1] == "}"
 
 
-def _parse_record_attribute(name: str, argument: str) -> Result[JournalRecordAttribute, ErrorsList]:
+def _parse_record_attribute(name: str, argument: str) -> Result[JournalRecordAttribute, EnvironmentErrors]:
     if not JournalRecordAttribute.has_attribute(name):
         return Err(
             [
@@ -48,7 +49,7 @@ def _format_record_attribute(attribute: JournalRecordAttribute, record: JournalR
     raise AssertionError(f"Unsupported journal record attribute: {attribute}")
 
 
-def _resolve_command_argument(argument: str, record: JournalRecord) -> Result[str, ErrorsList]:
+def _resolve_command_argument(argument: str, record: JournalRecord) -> Result[str, EnvironmentErrors]:
     if not _is_variable_argument(argument):
         return Ok(argument)
 
@@ -58,7 +59,7 @@ def _resolve_command_argument(argument: str, record: JournalRecord) -> Result[st
 
 
 @unwrap_to_error
-def _build_command_args(command: list[str], record: JournalRecord) -> Result[list[str], ErrorsList]:
+def _build_command_args(command: list[str], record: JournalRecord) -> Result[list[str], EnvironmentErrors]:
     args = []
 
     for argument in command:
@@ -68,7 +69,7 @@ def _build_command_args(command: list[str], record: JournalRecord) -> Result[lis
 
 
 @unwrap_to_error
-def write_record(record: JournalRecord) -> Result[None, ErrorsList]:
+def write_record(record: JournalRecord) -> Result[None, EnvironmentErrors]:
     from donna.workspaces import config as workspace_config
 
     command = workspace_config.config().journal.cmd

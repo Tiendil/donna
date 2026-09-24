@@ -1,12 +1,13 @@
 import contextvars
 from typing import cast
 
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Err, Ok, Result
+
 from donna.context.context import Context
 from donna.context.context import reset_context as reset_runtime_context
 from donna.context.context import set_context as set_runtime_context
 from donna.context.tests.helpers import FakeJournal, FakeOutputEmitter
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
 from donna.domain.internal_ids import WorkUnitId
 from donna.domain.python_path import PythonPath
@@ -21,13 +22,13 @@ from donna.workspaces.artifacts import ArtifactRenderContext
 
 
 class FakeStateStore:
-    def __init__(self, state: ConsistentState | None = None, errors: ErrorsList | None = None) -> None:
+    def __init__(self, state: ConsistentState | None = None, errors: EnvironmentErrors | None = None) -> None:
         self.state = state
         self.errors = errors
         self.loaded_count = 0
         self.saved: list[ConsistentState] = []
 
-    def load(self) -> Result[ConsistentState, ErrorsList]:
+    def load(self) -> Result[ConsistentState, EnvironmentErrors]:
         self.loaded_count += 1
 
         if self.errors is not None:
@@ -36,7 +37,7 @@ class FakeStateStore:
         assert self.state is not None
         return Ok(self.state)
 
-    def save(self, state: ConsistentState) -> Result[None, ErrorsList]:
+    def save(self, state: ConsistentState) -> Result[None, EnvironmentErrors]:
         self.saved.append(state)
         self.state = state
         self.errors = None
@@ -50,11 +51,13 @@ class FakeArtifacts:
         self.viewed: list[ArtifactId] = []
         self.executed: list[tuple[ArtifactId, Task, WorkUnit]] = []
 
-    def load(self, artifact_id: ArtifactId, render_context: ArtifactRenderContext) -> Result[Artifact, ErrorsList]:
+    def load(
+        self, artifact_id: ArtifactId, render_context: ArtifactRenderContext
+    ) -> Result[Artifact, EnvironmentErrors]:
         self.loaded.append((artifact_id, render_context))
         return Ok(self.artifact)
 
-    def load_for_view(self, artifact_id: ArtifactId) -> Result[Artifact, ErrorsList]:
+    def load_for_view(self, artifact_id: ArtifactId) -> Result[Artifact, EnvironmentErrors]:
         self.viewed.append(artifact_id)
         return Ok(self.artifact)
 
@@ -63,7 +66,7 @@ class FakeArtifacts:
         artifact_id: ArtifactId,
         task: Task,
         work_unit: WorkUnit,
-    ) -> Result[Artifact, ErrorsList]:
+    ) -> Result[Artifact, EnvironmentErrors]:
         self.executed.append((artifact_id, task, work_unit))
         return Ok(self.artifact)
 
@@ -73,7 +76,7 @@ class FakePrimitives:
         self.primitive = primitive
         self.resolved: list[PythonPath] = []
 
-    def resolve(self, primitive_id: PythonPath) -> Result[Primitive, ErrorsList]:
+    def resolve(self, primitive_id: PythonPath) -> Result[Primitive, EnvironmentErrors]:
         self.resolved.append(primitive_id)
         return Ok(self.primitive)
 

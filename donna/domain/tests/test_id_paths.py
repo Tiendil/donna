@@ -2,8 +2,8 @@ import copy
 
 import pydantic
 import pytest
+from llm_tool_cli.core.entities import BaseEntity
 
-from donna.core.entities import BaseEntity
 from donna.domain import errors
 from donna.domain.id_paths import IdPath, NormalizedRawIdPath
 from donna.domain.python_path import PythonPath

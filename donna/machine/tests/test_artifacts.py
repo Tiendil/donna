@@ -1,5 +1,6 @@
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Result
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Err, Result
+
 from donna.domain.ids import SectionId
 from donna.machine import errors as machine_errors
 from donna.machine.artifacts import Artifact, ArtifactNode, ArtifactSectionMeta, ArtifactSectionNode
@@ -15,7 +16,7 @@ class _Meta(ArtifactSectionMeta):
 
 
 class _RejectingPrimitive(Primitive):
-    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None, ErrorsList]:
+    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None, EnvironmentErrors]:
         return Err([machine_errors.PrimitiveInvalidImportPath(import_path="bad")])
 
 

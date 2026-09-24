@@ -2,12 +2,12 @@ import datetime
 from typing import cast
 
 import pytest
+from llm_tool_cli.core.result import Ok
 from pytest_mock import MockerFixture
 
 from donna.context.context import Context
 from donna.context.journal import Journal
 from donna.context.tests.helpers import FakeOutputEmitter
-from donna.core.result import Ok
 from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import WorkUnitId
 from donna.machine.context import ValueScope

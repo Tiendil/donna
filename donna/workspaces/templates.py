@@ -5,10 +5,10 @@ import importlib.util
 from typing import TYPE_CHECKING, cast
 
 import jinja2
+from llm_tool_cli.core import errors as llm_tool_errors
+from llm_tool_cli.core.errors import EnvironmentErrors, EnvironmentErrorsProxy
+from llm_tool_cli.core.result import Err, Ok, Result
 
-from donna.core import errors as core_errors
-from donna.core.errors import EnvironmentErrorsProxy, ErrorsList
-from donna.core.result import Err, Ok, Result
 from donna.domain.artifact_ids import ArtifactId
 from donna.machine.templates import Directive
 from donna.machine.templates_context import DirectiveContext
@@ -54,7 +54,7 @@ class DirectivePathBuilder:
             raise EnvironmentErrorsProxy(
                 [world_errors.DirectiveModuleNotImportable(module_path=module_path, artifact_id=artifact_id)]
             ) from exc
-        except core_errors.InternalError:
+        except llm_tool_errors.InternalError:
             raise
         except Exception as exc:
             raise EnvironmentErrorsProxy(
@@ -93,9 +93,7 @@ class DirectivePathBuilder:
 
         try:
             result = directive.apply_directive(context, *argv, **kwargs)
-        except EnvironmentErrorsProxy:
-            raise
-        except core_errors.InternalError:
+        except llm_tool_errors.InternalError:
             raise
         except Exception as exc:
             raise EnvironmentErrorsProxy(
@@ -143,7 +141,9 @@ def env() -> jinja2.Environment:
     return _ENVIRONMENT
 
 
-def render(artifact_id: ArtifactId, template: str, render_context: "ArtifactRenderContext") -> Result[str, ErrorsList]:
+def render(
+    artifact_id: ArtifactId, template: str, render_context: "ArtifactRenderContext"
+) -> Result[str, EnvironmentErrors]:
     context: dict[str, object] = {"render_mode": render_context.primary_mode, "artifact_id": artifact_id}
 
     if render_context.current_task is not None:
@@ -156,4 +156,4 @@ def render(artifact_id: ArtifactId, template: str, render_context: "ArtifactRend
         template_obj = env().from_string(template)
         return Ok(template_obj.render(**context))
     except EnvironmentErrorsProxy as exc:
-        return Err(cast(ErrorsList, exc.arguments["errors"]))
+        return Err(cast(EnvironmentErrors, exc.details["errors"]))

@@ -1,9 +1,10 @@
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, ClassVar, cast
 
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+
 from donna.core import errors as core_errors
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId, artifact_section_id
 from donna.domain.ids import SectionId
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
@@ -125,14 +126,14 @@ class Workflow(MarkdownSectionMixin, Primitive):
         section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
-    ) -> Result[ArtifactSectionMeta, ErrorsList]:
+    ) -> Result[ArtifactSectionMeta, EnvironmentErrors]:
         workflow_config = cast(WorkflowConfig, section_config)
         return Ok(WorkflowMeta(start_operation_id=workflow_config.start_operation_id))
 
     @unwrap_to_error
     def execute_section(
         self, task: "Task", unit: "WorkUnit", artifact: Artifact, section_id: SectionId
-    ) -> Result[list["Change"], ErrorsList]:
+    ) -> Result[list["Change"], EnvironmentErrors]:
         from donna.machine.changes import ChangeAddWorkUnit
 
         section = artifact.get_section(section_id).unwrap()
@@ -145,7 +146,7 @@ class Workflow(MarkdownSectionMixin, Primitive):
         self,
         artifact: Artifact,
         section: ArtifactSection,
-    ) -> Result[SectionId, ErrorsList]:
+    ) -> Result[SectionId, EnvironmentErrors]:
         if not isinstance(section.meta, WorkflowMeta):
             return Err([WorkflowSectionNotWorkflow(artifact_id=artifact.id, section_id=section.id)])
 
@@ -163,11 +164,11 @@ class Workflow(MarkdownSectionMixin, Primitive):
     @unwrap_to_error
     def validate_section(  # noqa: CCR001, CFQ001
         self, artifact: Artifact, section_id: SectionId
-    ) -> Result[None, ErrorsList]:
+    ) -> Result[None, EnvironmentErrors]:
         section = artifact.get_section(section_id).unwrap()
         start_operation_id = self._resolve_start_operation_id(artifact, section).unwrap()
 
-        errors: ErrorsList = []
+        errors: EnvironmentErrors = []
 
         start_operation_result = artifact.get_section(start_operation_id)
         if start_operation_result.is_err():

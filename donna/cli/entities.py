@@ -1,4 +1,5 @@
-from donna.core.entities import BaseEntity
+from llm_tool_cli.core.entities import BaseEntity
+
 from donna.domain.paths import UntrustedPath
 from donna.protocol.modes import Mode
 

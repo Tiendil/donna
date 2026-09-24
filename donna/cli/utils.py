@@ -7,12 +7,13 @@ from contextvars import Token
 import typer
 from llm_tool_cli.config import errors as config_errors
 from llm_tool_cli.config import load_config, locate_config
-from llm_tool_cli.core.errors import Error as SharedError
+from llm_tool_cli.core import errors as llm_tool_errors
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Ok, Result, UnwrapError, unwrap_to_error
 
 from donna.cli.entities import GLOBAL_OPTIONS_CONTEXT_KEY, GlobalOptions
 from donna.context.context import Context
-from donna.core.errors import EnvironmentError, ErrorsList
-from donna.core.result import UnwrapError
+from donna.core.errors import EnvironmentError
 from donna.domain.constants import DONNA_CONFIG_NAME
 from donna.domain.paths import PathInput, ProjectConfigPath, UntrustedPath
 from donna.protocol.cells import Cell
@@ -44,7 +45,7 @@ class CliEmitter:
     def emit_journal(self, record: JournalRecord) -> None:
         instant_output(self._formatter.format_journal(record))
 
-    def emit_error(self, error: SharedError, *, stderr: bool) -> None:
+    def emit_error(self, error: llm_tool_errors.EnvironmentError, *, stderr: bool) -> None:
         instant_output(self._formatter.format_error(error), error=stderr)
 
 
@@ -76,14 +77,15 @@ class CommandContext:
         if not workspace_config.protocol.is_set():
             workspace_config.protocol.set(self.protocol)
 
-    def load_workspace(self) -> workspace_config.Workspace:
+    @unwrap_to_error
+    def load_workspace(self) -> Result[workspace_config.Workspace, EnvironmentErrors]:
         config_path = ProjectConfigPath(
-            locate_config(DONNA_CONFIG_NAME, path=self.global_options.config_path, cwd=pathlib.Path.cwd())
+            locate_config(DONNA_CONFIG_NAME, path=self.global_options.config_path, cwd=pathlib.Path.cwd()).unwrap()
         )
-        loaded_config = load_config(config_path, workspace_config.Config)
+        loaded_config = load_config(config_path, workspace_config.Config).unwrap()
         workspace = workspace_config.construct_workspace(loaded_config, config_path=config_path)
         workspace_config.install_workspace(workspace)
-        return workspace
+        return Ok(workspace)
 
     def target_config_path(self) -> ProjectConfigPath:
         if self.global_options.config_path is not None:
@@ -104,6 +106,16 @@ class CommandContext:
         for cell in cells:
             self.emitter.emit_cell(cell)
 
+    def write_errors(self, errors: EnvironmentErrors) -> int:
+        exit_code = 0
+        for error in errors:
+            if isinstance(error, EnvironmentError):
+                self.emitter.emit_cell(environment_error_node(error).info())
+            else:
+                self.emitter.emit_error(error, stderr=self.protocol != Mode.automation)
+                exit_code = max(exit_code, 2 if isinstance(error, config_errors.EnvironmentError) else 3)
+        return exit_code
+
 
 @contextmanager
 def command_context(context: typer.Context, *, load_environment: bool = True) -> Iterator[CommandContext]:
@@ -118,18 +130,17 @@ def command_context(context: typer.Context, *, load_environment: bool = True) ->
         command.install_protocol()
 
         if load_environment:
-            command.load_workspace()
+            command.load_workspace().unwrap()
             runtime_context = Context(output=command.emitter)
             context_token = set_context(runtime_context)
             machine_context_token = machine_context.set_context(runtime_context)
 
         yield command
     except UnwrapError as error:
-        command.write_cells(_cells_from_unwrap(error))
-        raise typer.Exit(code=0) from error
-    except SharedError as error:
-        command.emitter.emit_error(error, stderr=command.protocol != Mode.automation)
-        raise typer.Exit(code=2 if isinstance(error, config_errors.Error) else 3) from error
+        errors = _errors_from_unwrap(error)
+        if context_token is not None:
+            _write_errors_to_journal(errors)
+        raise typer.Exit(code=command.write_errors(errors)) from error
     finally:
         if machine_context_token is not None:
             machine_context.reset_context(machine_context_token)
@@ -138,7 +149,7 @@ def command_context(context: typer.Context, *, load_environment: bool = True) ->
             reset_context(context_token)
 
 
-def _write_errors_to_journal(errors: ErrorsList) -> None:
+def _write_errors_to_journal(errors: EnvironmentErrors) -> None:
     from donna.context.context import context
 
     for error in errors:
@@ -150,22 +161,16 @@ def _write_errors_to_journal(errors: ErrorsList) -> None:
         )
 
 
-def _errors_from_unwrap(error: UnwrapError) -> ErrorsList:
-    unwrapped = error.arguments["error"]
+def _errors_from_unwrap(error: UnwrapError) -> EnvironmentErrors:
+    unwrapped = error.details["error"]
 
-    if isinstance(unwrapped, EnvironmentError):
+    if isinstance(unwrapped, llm_tool_errors.EnvironmentError):
         return [unwrapped]
 
     if isinstance(unwrapped, Iterable):
-        return [item for item in unwrapped if isinstance(item, EnvironmentError)]
+        items = list(unwrapped)
+        errors = [item for item in items if isinstance(item, llm_tool_errors.EnvironmentError)]
+        if len(errors) == len(items):
+            return errors
 
     raise error
-
-
-def _cells_from_unwrap(error: UnwrapError) -> Iterable[Cell]:
-    errors = _errors_from_unwrap(error)
-
-    if workspace_config.config.is_set():
-        _write_errors_to_journal(errors)
-
-    return [environment_error_node(item).info() for item in errors]

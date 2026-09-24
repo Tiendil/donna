@@ -23,4 +23,4 @@ class TestGetCellFormatter:
         with pytest.raises(UnsupportedFormatterMode) as error_info:
             get_cell_formatter("missing")  # type: ignore[arg-type]
 
-        assert error_info.value.arguments == {"mode": "missing"}
+        assert error_info.value.details == {"mode": "missing"}

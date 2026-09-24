@@ -282,7 +282,7 @@ Tests for Donna-owned exception boundaries SHOULD verify that `pydantic.Validati
 
 When `llm_tool_cli` owns an external-input boundary, tests SHOULD verify that its expected errors propagate unchanged and that the CLI preserves their shared diagnostics and exit codes.
 
-Tests for `Result`-returning functions SHOULD verify Donna-owned error values through `Result` state. Tests of boundaries that propagate adopted shared errors MUST verify that those exceptions are raised unchanged.
+Tests for `Result`-returning functions SHOULD verify local and shared environment-error values through `Result` state. Tests of propagation boundaries MUST verify that shared error values retain their diagnostic information. Tests SHOULD verify that mixed error lists are preserved and that unexpected exceptions are not rendered as expected failures.
 
 Tests that verify produced environment errors SHOULD assert the expected error type, stable error code, and relevant structured fields through the behavior boundary that returns the error.
 

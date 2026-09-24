@@ -1,5 +1,6 @@
-from donna.core.errors import ErrorsList
-from donna.core.result import Ok, Result
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Ok, Result
+
 from donna.domain.internal_ids import TaskId, WorkUnitId
 from donna.machine.changes import Change, ChangeSetTaskContext
 from donna.machine.context import reset_context, set_context
@@ -16,7 +17,7 @@ class _ContextSettingOperation(OperationKind):
         unit: WorkUnit,
         artifact: object,
         section_id: object,
-    ) -> Result[list[Change], ErrorsList]:
+    ) -> Result[list[Change], EnvironmentErrors]:
         return Ok(
             [
                 ChangeSetTaskContext(

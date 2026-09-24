@@ -1,9 +1,9 @@
 from typing import TypeVar
 
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Ok, Result
 from pydantic_core import core_schema
 
-from donna.core.errors import ErrorsList
-from donna.core.result import Ok, Result
 from donna.domain import errors as domain_errors
 from donna.domain.id_paths import _invalid_format, _pydantic_type_error, _pydantic_value_error
 
@@ -38,7 +38,7 @@ class Identifier(str):
         return value.isidentifier()
 
     @classmethod
-    def parse(cls: type[TIdentifier], text: str) -> Result[TIdentifier, ErrorsList]:
+    def parse(cls: type[TIdentifier], text: str) -> Result[TIdentifier, EnvironmentErrors]:
         if not isinstance(text, str) or not text:
             return _invalid_format(cls.__name__, text)
 

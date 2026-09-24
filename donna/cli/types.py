@@ -2,9 +2,9 @@ import pathlib
 from typing import Annotated, NoReturn
 
 import typer
+from llm_tool_cli.core.errors import EnvironmentErrors
 
 from donna.cli.utils import output_cells
-from donna.core.errors import ErrorsList
 from donna.domain import errors as domain_errors
 from donna.domain.artifact_ids import (
     ARTIFACT_SECTION_DELIMITER,
@@ -21,7 +21,7 @@ from donna.workspaces import paths as workspace_paths
 from donna.workspaces.artifacts import has_donna_artifact_extension
 
 
-def _exit_with_errors(errors: ErrorsList) -> NoReturn:
+def _exit_with_errors(errors: EnvironmentErrors) -> NoReturn:
     output_cells([environment_error_node(error).info() for error in errors])
     raise typer.Exit(code=0)
 

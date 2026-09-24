@@ -80,7 +80,7 @@ Entities that can be used for de-duplication SHOULD be hashable when practical.
 
 The project accepts Pydantic v2 as the default dependency for entity modeling.
 
-The project SHOULD provide shared base entity infrastructure owned by the core module.
+The project MUST use the shared base entity infrastructure provided by `llm_tool_cli.core.entities`.
 
 Project entities SHOULD inherit from the shared base entity unless they have a specific reason to use Pydantic directly.
 
@@ -159,7 +159,7 @@ Runtime constructors and validation functions SHOULD remain the preferred way to
 
 ## Entity ownership
 
-Shared entity infrastructure MUST belong to the core module.
+Shared entity infrastructure MUST belong to the shared library's core module.
 
 Shared domain primitive types and universal domain entities MUST belong to the domain module.
 
@@ -173,7 +173,7 @@ Public re-exports MUST NOT hide ownership. The defining module MUST remain clear
 
 ## Core and domain entities
 
-The core module MUST contain only shared entity infrastructure.
+Core entity infrastructure MUST be provided by the shared library rather than duplicated in Donna.
 
 Core entity infrastructure MUST NOT contain domain-specific Donna concepts such as artifacts, workflows, sections, sessions, protocols, primitives, or workspace paths.
 

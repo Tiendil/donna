@@ -1,7 +1,7 @@
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Ok, Result
 from pytest_mock import MockerFixture
 
-from donna.core.errors import ErrorsList
-from donna.core.result import Ok, Result
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
@@ -37,7 +37,7 @@ class _NoopOperation(OperationKind):
         unit: WorkUnit,
         artifact: Artifact,
         section_id: SectionId,
-    ) -> Result[list[Change], ErrorsList]:
+    ) -> Result[list[Change], EnvironmentErrors]:
         return Ok([])
 
 
@@ -48,7 +48,7 @@ class _RequestActionOperation(OperationKind):
         unit: WorkUnit,
         artifact: Artifact,
         section_id: SectionId,
-    ) -> Result[list[Change], ErrorsList]:
+    ) -> Result[list[Change], EnvironmentErrors]:
         request = ActionRequest.build(
             title="Choose next",
             request="Pick the next operation",

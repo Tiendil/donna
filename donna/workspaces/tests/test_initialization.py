@@ -3,6 +3,8 @@ import pathlib
 import pytest
 from llm_tool_cli.config import create_config
 from llm_tool_cli.config import errors as config_errors
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Err, Ok, Result
 from pytest_mock import MockerFixture
 
 from donna.domain.constants import DONNA_CONFIG_NAME
@@ -29,7 +31,7 @@ class TestInitializeRuntime:
             encoding="utf-8",
         )
 
-        workspace = initialize_runtime(config_path=config_path)
+        workspace = initialize_runtime(config_path=config_path).unwrap()
         assert workspace.root == tmp_path
         assert workspace.config_path == config_path
         assert workspace.config.session_dir == pathlib.Path(".session/custom")
@@ -42,7 +44,7 @@ class TestInitializeRuntime:
         config_path.write_text("version = 1", encoding="utf-8")
         mocker.patch("pathlib.Path.cwd", return_value=tmp_path)
 
-        workspace = initialize_runtime(config_path=pathlib.Path("custom.toml"))
+        workspace = initialize_runtime(config_path=pathlib.Path("custom.toml")).unwrap()
 
         assert workspace.config_path == config_path
         assert workspace.root == tmp_path
@@ -55,7 +57,7 @@ class TestInitializeRuntime:
         link = tmp_path / DONNA_CONFIG_NAME
         link.symlink_to(target)
 
-        workspace = initialize_runtime(config_path=link)
+        workspace = initialize_runtime(config_path=link).unwrap()
 
         assert workspace.config_path == target
         assert workspace.root == target_dir
@@ -71,7 +73,7 @@ class TestInitializeRuntime:
         link.symlink_to(target)
         mocker.patch("pathlib.Path.cwd", return_value=tmp_path)
 
-        workspace = initialize_runtime()
+        workspace = initialize_runtime().unwrap()
 
         assert workspace.config_path == link
         assert workspace.root == tmp_path
@@ -83,7 +85,7 @@ class TestInitializeRuntime:
             encoding="utf-8",
         )
 
-        result = initialize_runtime(config_path=config_path)
+        result = initialize_runtime(config_path=config_path).unwrap()
 
         assert result.config.defaults.primary_section_id == "workflow"
 
@@ -96,42 +98,42 @@ class TestInitializeRuntime:
         config_path.write_text("version = 1", encoding="utf-8")
         mocker.patch("pathlib.Path.cwd", return_value=nested_dir)
 
-        result = initialize_runtime()
+        result = initialize_runtime().unwrap()
 
         assert result.root == project_dir
         assert result.config_path == config_path
 
-    def test_discovery__raises_shared_missing_config_error(
+    def test_discovery__returns_shared_missing_config_error(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
-        mocker.patch("llm_tool_cli.config.files.find_config", return_value=None)
+        mocker.patch("llm_tool_cli.config.files.find_config", return_value=Ok(None))
         mocker.patch("pathlib.Path.cwd", return_value=tmp_path)
 
-        with pytest.raises(config_errors.NotFound) as raised:
-            initialize_runtime()
+        error = initialize_runtime().unwrap_err()[0]
+        assert isinstance(error, config_errors.NotFound)
 
-        assert raised.value.code == "config_not_found"
-        assert raised.value.path == tmp_path
-        assert DONNA_CONFIG_NAME in raised.value.reason
+        assert error.code == "config_not_found"
+        assert error.path == tmp_path
+        assert DONNA_CONFIG_NAME in error.reason
 
-    def test_missing_explicit_config__raises_shared_error(self, tmp_path: pathlib.Path) -> None:
+    def test_missing_explicit_config__returns_shared_error(self, tmp_path: pathlib.Path) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
-        with pytest.raises(config_errors.Unreadable) as raised:
-            initialize_runtime(config_path=config_path)
+        error = initialize_runtime(config_path=config_path).unwrap_err()[0]
+        assert isinstance(error, config_errors.Unreadable)
 
-        assert raised.value.path == config_path
-        assert isinstance(raised.value.__cause__, FileNotFoundError)
+        assert error.path == config_path
+        assert isinstance(error.cause, FileNotFoundError)
 
-    def test_invalid_toml__raises_shared_error(self, tmp_path: pathlib.Path) -> None:
+    def test_invalid_toml__returns_shared_error(self, tmp_path: pathlib.Path) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text("version = ", encoding="utf-8")
 
-        with pytest.raises(config_errors.InvalidToml) as raised:
-            initialize_runtime(config_path=config_path)
+        error = initialize_runtime(config_path=config_path).unwrap_err()[0]
+        assert isinstance(error, config_errors.InvalidToml)
 
-        assert raised.value.code == "config_invalid_toml"
-        assert raised.value.path == config_path
-        assert raised.value.reason
+        assert error.code == "config_invalid_toml"
+        assert error.path == config_path
+        assert error.reason
 
     @pytest.mark.parametrize(
         ("config_text", "field"),
@@ -142,78 +144,78 @@ class TestInitializeRuntime:
             ("[journal]\ncmd = []", "journal.cmd"),
         ],
     )
-    def test_invalid_config_schema__raises_shared_error(
+    def test_invalid_config_schema__returns_shared_error(
         self, tmp_path: pathlib.Path, config_text: str, field: str
     ) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text(config_text, encoding="utf-8")
 
-        with pytest.raises(config_errors.ValidationFailed) as raised:
-            initialize_runtime(config_path=config_path)
+        error = initialize_runtime(config_path=config_path).unwrap_err()[0]
+        assert isinstance(error, config_errors.ValidationFailed)
 
-        assert raised.value.code == "config_validation_failed"
-        assert raised.value.path == config_path
-        assert field in raised.value.reason
+        assert error.code == "config_validation_failed"
+        assert error.path == config_path
+        assert field in error.reason
 
-    def test_unknown_config_fields__raise_shared_error(self, tmp_path: pathlib.Path) -> None:
+    def test_unknown_config_fields__returns_shared_error(self, tmp_path: pathlib.Path) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text("[defaults]\nunknown = true\n", encoding="utf-8")
 
-        with pytest.raises(config_errors.ValidationFailed) as raised:
-            initialize_runtime(config_path=config_path)
+        error = initialize_runtime(config_path=config_path).unwrap_err()[0]
+        assert isinstance(error, config_errors.ValidationFailed)
 
-        assert "defaults.unknown" in raised.value.reason
+        assert "defaults.unknown" in error.reason
 
     def test_reports_discovery_failure(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
-        failure = config_errors.DiscoveryFailed(tmp_path, "permission denied")
+        failure = config_errors.DiscoveryFailed(path=tmp_path, reason="permission denied")
         mocker.patch(
             "llm_tool_cli.config.files.find_config",
-            side_effect=failure,
+            return_value=Err([failure]),
         )
 
-        with pytest.raises(config_errors.DiscoveryFailed) as raised:
-            initialize_runtime()
+        error = initialize_runtime().unwrap_err()[0]
+        assert isinstance(error, config_errors.DiscoveryFailed)
 
-        assert raised.value == failure
+        assert error == failure
 
-    def test_invalid_utf8__raises_shared_error(self, tmp_path: pathlib.Path) -> None:
+    def test_invalid_utf8__returns_shared_error(self, tmp_path: pathlib.Path) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_bytes(b"\xff")
 
-        with pytest.raises(config_errors.InvalidEncoding) as raised:
-            initialize_runtime(config_path=config_path)
+        error = initialize_runtime(config_path=config_path).unwrap_err()[0]
+        assert isinstance(error, config_errors.InvalidEncoding)
 
-        assert raised.value.path == config_path
-        assert isinstance(raised.value.__cause__, UnicodeDecodeError)
+        assert error.path == config_path
+        assert isinstance(error.cause, UnicodeDecodeError)
 
     def test_unreadable_config__propagates_shared_error(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text("version = 1", encoding="utf-8")
-        failure = config_errors.Unreadable(config_path, "permission denied")
+        failure = config_errors.Unreadable(path=config_path, reason="permission denied")
         mocker.patch(
             "donna.workspaces.initialization.load_config",
-            side_effect=failure,
+            return_value=Err([failure]),
         )
 
-        with pytest.raises(config_errors.Unreadable) as raised:
-            initialize_runtime(config_path=config_path)
+        error = initialize_runtime(config_path=config_path).unwrap_err()[0]
+        assert isinstance(error, config_errors.Unreadable)
 
-        assert raised.value == failure
+        assert error == failure
 
     def test_path_resolution_failure__propagates_shared_error(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
-        failure = config_errors.PathResolutionFailed(config_path, "symlink loop")
+        failure = config_errors.PathResolutionFailed(path=config_path, reason="symlink loop")
         mocker.patch(
             "llm_tool_cli.config.files.resolve_config_path",
-            side_effect=failure,
+            return_value=Err([failure]),
         )
 
-        with pytest.raises(config_errors.PathResolutionFailed) as raised:
-            initialize_runtime(config_path=config_path)
+        error = initialize_runtime(config_path=config_path).unwrap_err()[0]
+        assert isinstance(error, config_errors.PathResolutionFailed)
 
-        assert raised.value == failure
+        assert error == failure
 
     def test_loads_workspace_installs_protocol_and_workspace(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
@@ -224,7 +226,7 @@ class TestInitializeRuntime:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text("version = 1", encoding="utf-8")
 
-        workspace = initialize_runtime(config_path=config_path, protocol=Mode.llm)
+        workspace = initialize_runtime(config_path=config_path, protocol=Mode.llm).unwrap()
         assert protocol.get() == Mode.llm
         install_workspace.assert_called_once_with(workspace)
 
@@ -234,7 +236,7 @@ class TestInitializeRuntime:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text("version = 1", encoding="utf-8")
 
-        initialize_runtime(config_path=config_path)
+        initialize_runtime(config_path=config_path).unwrap()
 
         assert not protocol.is_set()
 
@@ -262,20 +264,20 @@ class TestInitializeWorkspace:
 
     def test_rejects_missing_config_directory(self, tmp_path: pathlib.Path) -> None:
         config_path = tmp_path / "missing" / DONNA_CONFIG_NAME
-        with pytest.raises(config_errors.Unwritable) as raised:
-            initialize_workspace(config_path)
+        error = initialize_workspace(config_path).unwrap_err()[0]
+        assert isinstance(error, config_errors.Unwritable)
 
-        assert raised.value.path == config_path
+        assert error.path == config_path
         assert not config_path.parent.exists()
 
     def test_rejects_existing_config(self, tmp_path: pathlib.Path) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text("version = 1", encoding="utf-8")
 
-        with pytest.raises(config_errors.AlreadyExists) as raised:
-            initialize_workspace(config_path)
+        error = initialize_workspace(config_path).unwrap_err()[0]
+        assert isinstance(error, config_errors.AlreadyExists)
 
-        assert raised.value.path == config_path
+        assert error.path == config_path
         assert config_path.read_text(encoding="utf-8") == "version = 1"
 
     def test_concurrent_creation__preserves_existing_config(
@@ -283,42 +285,42 @@ class TestInitializeWorkspace:
     ) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
 
-        def create_concurrently(path: pathlib.Path, text: str) -> None:
+        def create_concurrently(path: pathlib.Path, text: str) -> Result[None, EnvironmentErrors]:
             path.write_text("version = 1", encoding="utf-8")
-            create_config(path, text)
+            return create_config(path, text)
 
         mocker.patch("donna.workspaces.initialization.create_config", side_effect=create_concurrently)
 
-        with pytest.raises(config_errors.AlreadyExists) as raised:
-            initialize_workspace(config_path)
+        error = initialize_workspace(config_path).unwrap_err()[0]
+        assert isinstance(error, config_errors.AlreadyExists)
 
-        assert raised.value.path == config_path
+        assert error.path == config_path
         assert config_path.read_text(encoding="utf-8") == "version = 1"
 
     def test_write_failure__propagates_shared_error(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
-        failure = config_errors.Unwritable(config_path, "read-only filesystem")
+        failure = config_errors.Unwritable(path=config_path, reason="read-only filesystem")
         mocker.patch(
             "donna.workspaces.initialization.create_config",
-            side_effect=failure,
+            return_value=Err([failure]),
         )
 
-        with pytest.raises(config_errors.Unwritable) as raised:
-            initialize_workspace(config_path)
+        error = initialize_workspace(config_path).unwrap_err()[0]
+        assert isinstance(error, config_errors.Unwritable)
 
-        assert raised.value == failure
+        assert error == failure
 
     def test_path_resolution_failure__propagates_shared_error(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
-        failure = config_errors.PathResolutionFailed(config_path, "symlink loop")
-        mocker.patch("donna.workspaces.initialization.resolve_config_path", side_effect=failure)
+        failure = config_errors.PathResolutionFailed(path=config_path, reason="symlink loop")
+        mocker.patch("donna.workspaces.initialization.resolve_config_path", return_value=Err([failure]))
 
-        with pytest.raises(config_errors.PathResolutionFailed) as raised:
-            initialize_workspace(config_path)
+        error = initialize_workspace(config_path).unwrap_err()[0]
+        assert isinstance(error, config_errors.PathResolutionFailed)
 
-        assert raised.value == failure
+        assert error == failure
 
 
 class TestConfigCreateFailed:

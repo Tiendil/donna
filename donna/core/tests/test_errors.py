@@ -2,7 +2,7 @@ from donna.core import errors
 
 
 class _FormattedInternalError(errors.InternalError):
-    message = "Broken {thing}"
+    message_template: str = "Broken {thing}"
 
 
 class _SampleEnvironmentError(errors.EnvironmentError):
@@ -15,12 +15,13 @@ class _SampleEnvironmentError(errors.EnvironmentError):
 
 
 class TestInternalError:
-    def test_error_message__formats_keyword_arguments(self) -> None:
+    def test_init__formats_keyword_arguments(self) -> None:
         error = _FormattedInternalError(thing="state")
 
-        assert error.arguments == {"thing": "state"}
-        assert error.error_message() == "Broken state"
-        assert str(error) == "_FormattedInternalError: Broken state"
+        assert error.details == {"thing": "state"}
+        assert error.message == "Broken state"
+        assert str(error) == "Broken state"
+        assert error.args == ("Broken state",)
 
 
 class TestEnvironmentError:
@@ -28,20 +29,3 @@ class TestEnvironmentError:
         error = _SampleEnvironmentError()
 
         assert error.content_intro() == "Sample"
-
-    def test_ways_to_fix__uses_independent_default_list(self) -> None:
-        first = _SampleEnvironmentError()
-        second = _SampleEnvironmentError()
-
-        first.ways_to_fix.append("Fix it.")
-
-        assert first.ways_to_fix == ["Fix it."]
-        assert second.ways_to_fix == []
-
-
-class TestEnvironmentErrorsProxy:
-    def test_init__stores_errors_for_technical_unwrap_bridge(self) -> None:
-        error = _SampleEnvironmentError()
-        proxy = errors.EnvironmentErrorsProxy([error])
-
-        assert proxy.arguments == {"errors": [error]}

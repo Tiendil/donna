@@ -1,6 +1,6 @@
 import json
 
-from llm_tool_cli.core.errors import Error
+from llm_tool_cli.core.errors import EnvironmentError
 
 from donna.protocol.formatters.automation import Formatter
 from donna.protocol.tests.make import cell, journal_record
@@ -8,7 +8,7 @@ from donna.protocol.tests.make import cell, journal_record
 
 class TestFormatter:
     def test_format_error__preserves_shared_record_without_cell_fields(self) -> None:
-        error = Error("unavailable", code="unavailable", details={"service": "example", "attempts": [1, 2]})
+        error = EnvironmentError(message="unavailable", code="unavailable")
 
         formatted = Formatter().format_error(error)
 

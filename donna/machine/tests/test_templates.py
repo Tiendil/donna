@@ -1,7 +1,7 @@
 import pytest
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Err, Ok, Result
 
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
 from donna.machine import errors as machine_errors
 from donna.machine.templates import Directive, DirectiveUnsupportedRenderMode, RenderMode
 from donna.machine.templates_context import DirectiveContext
@@ -10,21 +10,21 @@ from donna.machine.templates_context import DirectiveContext
 class _Directive(Directive):
     analyze_id: str = "sample"
 
-    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object, ErrorsList]:
+    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object, EnvironmentErrors]:
         return Ok({"mode": context["render_mode"], "argv": argv})
 
 
 class _PreparingDirective(_Directive):
     def _prepare_arguments(
         self, context: DirectiveContext, *argv: object, **kwargs: object
-    ) -> Result[tuple[object, ...], ErrorsList]:
+    ) -> Result[tuple[object, ...], EnvironmentErrors]:
         return Ok(("prepared", *argv, kwargs["extra"]))
 
 
 class _FailingDirective(_Directive):
     def _prepare_arguments(
         self, context: DirectiveContext, *argv: object, **kwargs: object
-    ) -> Result[tuple[object, ...], ErrorsList]:
+    ) -> Result[tuple[object, ...], EnvironmentErrors]:
         return Err([machine_errors.PrimitiveInvalidImportPath(import_path="bad")])
 
 
@@ -64,7 +64,7 @@ class TestDirective:
             _Directive().apply_directive({"render_mode": "unsupported"})
 
         error = exception_info.value
-        assert error.arguments == {"render_mode": "unsupported", "directive_name": "_Directive"}
+        assert error.details == {"render_mode": "unsupported", "directive_name": "_Directive"}
 
     def test_render_analyze__omits_empty_argument_gap(self) -> None:
         result = _Directive().render_analyze({"render_mode": RenderMode.analysis})

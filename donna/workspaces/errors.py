@@ -206,15 +206,15 @@ class PrimitiveDoesNotSupportMarkdown(MarkdownError):
 
 
 class MarkdownSectionsCountMismatch(InternalError):
-    message = (
+    message_template: str = (
         "Artifact `{artifact_id}` has {original_count} sections in the original render "
         "and {analyzed_count} sections in the analysis render."
     )
 
 
 class GlobalConfigAlreadySet(InternalError):
-    message = "Global config value is already set"
+    message_template: str = "Global config value is already set"
 
 
 class GlobalConfigNotSet(InternalError):
-    message = "Global config value is not set"
+    message_template: str = "Global config value is not set"

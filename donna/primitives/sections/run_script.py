@@ -4,11 +4,11 @@ import tempfile
 from typing import TYPE_CHECKING, ClassVar, cast
 
 import pydantic
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 
 from donna.context.context import context
 from donna.core import errors as core_errors
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId, artifact_section_id, split_artifact_section_id
 from donna.domain.ids import SectionId
 from donna.domain.paths import ProjectRootPath
@@ -110,7 +110,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
-    ) -> Result[ArtifactSectionMeta, ErrorsList]:
+    ) -> Result[ArtifactSectionMeta, EnvironmentErrors]:
         run_config = cast(RunScriptConfig, section_config)
         script = source.script().unwrap()
         if script is None:
@@ -143,7 +143,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
     @unwrap_to_error
     def execute_section(
         self, task: "Task", unit: "WorkUnit", artifact: Artifact, section_id: SectionId
-    ) -> Result[list["Change"], ErrorsList]:
+    ) -> Result[list["Change"], EnvironmentErrors]:
         from donna.machine.changes import ChangeAddWorkUnit, ChangeSetTaskContext
 
         operation = artifact.get_section(section_id).unwrap()
@@ -186,12 +186,14 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         changes.append(ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id))
         return Ok(changes)
 
-    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None, ErrorsList]:  # noqa: CCR001
+    def validate_section(  # noqa: CCR001
+        self, artifact: Artifact, section_id: SectionId
+    ) -> Result[None, EnvironmentErrors]:
         section = artifact.get_section(section_id).unwrap()
 
         meta = cast(RunScriptMeta, section.meta)
 
-        errors: ErrorsList = []
+        errors: EnvironmentErrors = []
 
         if meta.goto_on_success is None:
             errors.append(RunScriptMissingGotoOnSuccess(artifact_id=artifact.id, section_id=section_id))
