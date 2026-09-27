@@ -1,10 +1,10 @@
 import pathlib
 
+from llm_tool_cli.paths import RelativeProjectPath
 from pytest_mock import MockerFixture
 
 from donna.context.state import StateCache
 from donna.domain.constants import STATE_FILE_NAME
-from donna.domain.paths import RelativeProjectPath
 from donna.machine import errors as machine_errors
 from donna.machine.tests import make as machine_make
 from donna.workspaces import sessions as workspace_sessions

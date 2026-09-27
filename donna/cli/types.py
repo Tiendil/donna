@@ -3,7 +3,7 @@ from typing import Annotated
 
 import typer
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
-from llm_tool_cli.paths import UntrustedPath
+from llm_tool_cli.paths import PathInput, UntrustedPath
 
 from donna.domain import errors as domain_errors
 from donna.domain.artifact_ids import (
@@ -14,7 +14,6 @@ from donna.domain.artifact_ids import (
 )
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 from donna.domain.internal_ids import ActionRequestId
-from donna.domain.paths import PathInput
 from donna.machine.templates import RenderMode
 from donna.protocol.modes import Mode
 from donna.workspaces import paths as workspace_paths
@@ -35,7 +34,7 @@ def _artifact_filename(value: str) -> str:
 @unwrap_to_error
 def parse_artifact_id_argument(value: str, project_root: PathInput) -> Result[ArtifactId]:
     artifact_path = workspace_paths.normalize_project_path(
-        value, UntrustedPath(project_root), cwd=UntrustedPath(pathlib.Path.cwd())
+        value, project_root, cwd=PathInput(pathlib.Path.cwd())
     ).unwrap()
 
     if not has_donna_artifact_extension(_artifact_filename(artifact_path)):
@@ -50,9 +49,7 @@ def parse_artifact_id_argument(value: str, project_root: PathInput) -> Result[Ar
 
 
 def parse_artifact_section_id_argument(value: str, project_root: PathInput) -> Result[ArtifactSectionId]:
-    return workspace_paths.normalize_artifact_section_id(
-        value, UntrustedPath(project_root), cwd=UntrustedPath(pathlib.Path.cwd())
-    )
+    return workspace_paths.normalize_artifact_section_id(value, project_root, cwd=PathInput(pathlib.Path.cwd()))
 
 
 def _parse_action_request_id(value: str) -> ActionRequestId:

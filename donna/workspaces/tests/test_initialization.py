@@ -4,6 +4,7 @@ import pytest
 from llm_tool_cli.config import create_config
 from llm_tool_cli.config import errors as config_errors
 from llm_tool_cli.core.result import Err, Ok, Result
+from llm_tool_cli.paths import PathInput
 from pytest_mock import MockerFixture
 
 from donna.domain.constants import DONNA_CONFIG_NAME
@@ -30,7 +31,7 @@ class TestInitializeRuntime:
             encoding="utf-8",
         )
 
-        workspace = initialize_runtime(config_path=config_path).unwrap()
+        workspace = initialize_runtime(config_path=PathInput(config_path)).unwrap()
         assert workspace.root == tmp_path
         assert workspace.config_path == config_path
         assert workspace.config.session_dir == pathlib.Path(".session/custom")
@@ -43,7 +44,7 @@ class TestInitializeRuntime:
         config_path.write_text("version = 1", encoding="utf-8")
         mocker.patch("pathlib.Path.cwd", return_value=tmp_path)
 
-        workspace = initialize_runtime(config_path=pathlib.Path("custom.toml")).unwrap()
+        workspace = initialize_runtime(config_path=PathInput(pathlib.Path("custom.toml"))).unwrap()
 
         assert workspace.config_path == config_path
         assert workspace.root == tmp_path
@@ -56,7 +57,7 @@ class TestInitializeRuntime:
         link = tmp_path / DONNA_CONFIG_NAME
         link.symlink_to(target)
 
-        workspace = initialize_runtime(config_path=link).unwrap()
+        workspace = initialize_runtime(config_path=PathInput(link)).unwrap()
 
         assert workspace.config_path == target
         assert workspace.root == target_dir
@@ -84,7 +85,7 @@ class TestInitializeRuntime:
             encoding="utf-8",
         )
 
-        result = initialize_runtime(config_path=config_path).unwrap()
+        result = initialize_runtime(config_path=PathInput(config_path)).unwrap()
 
         assert result.config.defaults.primary_section_id == "workflow"
 
@@ -117,7 +118,7 @@ class TestInitializeRuntime:
 
     def test_missing_explicit_config__returns_shared_error(self, tmp_path: pathlib.Path) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
-        error = initialize_runtime(config_path=config_path).unwrap_err()[0]
+        error = initialize_runtime(config_path=PathInput(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.Unreadable)
 
         assert error.path == config_path
@@ -127,7 +128,7 @@ class TestInitializeRuntime:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text("version = ", encoding="utf-8")
 
-        error = initialize_runtime(config_path=config_path).unwrap_err()[0]
+        error = initialize_runtime(config_path=PathInput(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.InvalidToml)
 
         assert error.code == "config_invalid_toml"
@@ -149,7 +150,7 @@ class TestInitializeRuntime:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text(config_text, encoding="utf-8")
 
-        error = initialize_runtime(config_path=config_path).unwrap_err()[0]
+        error = initialize_runtime(config_path=PathInput(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.ValidationFailed)
 
         assert error.code == "config_validation_failed"
@@ -160,7 +161,7 @@ class TestInitializeRuntime:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text("[defaults]\nunknown = true\n", encoding="utf-8")
 
-        error = initialize_runtime(config_path=config_path).unwrap_err()[0]
+        error = initialize_runtime(config_path=PathInput(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.ValidationFailed)
 
         assert "defaults.unknown" in error.reason
@@ -181,7 +182,7 @@ class TestInitializeRuntime:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_bytes(b"\xff")
 
-        error = initialize_runtime(config_path=config_path).unwrap_err()[0]
+        error = initialize_runtime(config_path=PathInput(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.InvalidEncoding)
 
         assert error.path == config_path
@@ -196,7 +197,7 @@ class TestInitializeRuntime:
             return_value=Err([failure]),
         )
 
-        error = initialize_runtime(config_path=config_path).unwrap_err()[0]
+        error = initialize_runtime(config_path=PathInput(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.Unreadable)
 
         assert error == failure
@@ -211,7 +212,7 @@ class TestInitializeRuntime:
             return_value=Err([failure]),
         )
 
-        error = initialize_runtime(config_path=config_path).unwrap_err()[0]
+        error = initialize_runtime(config_path=PathInput(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.PathResolutionFailed)
 
         assert error == failure
@@ -225,7 +226,7 @@ class TestInitializeRuntime:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text("version = 1", encoding="utf-8")
 
-        workspace = initialize_runtime(config_path=config_path, protocol=Mode.llm).unwrap()
+        workspace = initialize_runtime(config_path=PathInput(config_path), protocol=Mode.llm).unwrap()
         assert protocol.get() == Mode.llm
         install_workspace.assert_called_once_with(workspace)
 
@@ -235,7 +236,7 @@ class TestInitializeRuntime:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text("version = 1", encoding="utf-8")
 
-        initialize_runtime(config_path=config_path).unwrap()
+        initialize_runtime(config_path=PathInput(config_path)).unwrap()
 
         assert not protocol.is_set()
 
@@ -245,7 +246,7 @@ class TestInitializeWorkspace:
         install_workspace = mocker.patch("donna.workspaces.config.install_workspace")
         config_path = tmp_path / DONNA_CONFIG_NAME
 
-        result = initialize_workspace(config_path)
+        result = initialize_workspace(PathInput(config_path))
 
         assert result.is_ok()
         assert config_path.is_file()
@@ -263,7 +264,7 @@ class TestInitializeWorkspace:
 
     def test_rejects_missing_config_directory(self, tmp_path: pathlib.Path) -> None:
         config_path = tmp_path / "missing" / DONNA_CONFIG_NAME
-        error = initialize_workspace(config_path).unwrap_err()[0]
+        error = initialize_workspace(PathInput(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.Unwritable)
 
         assert error.path == config_path
@@ -273,7 +274,7 @@ class TestInitializeWorkspace:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text("version = 1", encoding="utf-8")
 
-        error = initialize_workspace(config_path).unwrap_err()[0]
+        error = initialize_workspace(PathInput(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.AlreadyExists)
 
         assert error.path == config_path
@@ -290,7 +291,7 @@ class TestInitializeWorkspace:
 
         mocker.patch("donna.workspaces.initialization.create_config", side_effect=create_concurrently)
 
-        error = initialize_workspace(config_path).unwrap_err()[0]
+        error = initialize_workspace(PathInput(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.AlreadyExists)
 
         assert error.path == config_path
@@ -304,7 +305,7 @@ class TestInitializeWorkspace:
             return_value=Err([failure]),
         )
 
-        error = initialize_workspace(config_path).unwrap_err()[0]
+        error = initialize_workspace(PathInput(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.Unwritable)
 
         assert error == failure
@@ -316,7 +317,7 @@ class TestInitializeWorkspace:
         failure = config_errors.PathResolutionFailed(path=config_path, reason="symlink loop")
         mocker.patch("donna.workspaces.initialization.resolve_config_path", return_value=Err([failure]))
 
-        error = initialize_workspace(config_path).unwrap_err()[0]
+        error = initialize_workspace(PathInput(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.PathResolutionFailed)
 
         assert error == failure
@@ -334,7 +335,7 @@ class TestConfigCreateFailed:
         config_path = tmp_path / DONNA_CONFIG_NAME
         mocker.patch("donna.workspaces.initialization.importlib.resources.files", side_effect=failure)
 
-        result = initialize_workspace(config_path)
+        result = initialize_workspace(PathInput(config_path))
 
         error = result.unwrap_err()[0]
         assert isinstance(error, workspace_errors.ConfigCreateFailed)

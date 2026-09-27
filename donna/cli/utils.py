@@ -10,13 +10,12 @@ from llm_tool_cli.config import load_config, locate_config
 from llm_tool_cli.core import errors as llm_tool_errors
 from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Ok, Result, UnwrapError, unwrap_to_error
-from llm_tool_cli.paths import UntrustedPath
+from llm_tool_cli.paths import PathInput, ProjectConfigPath
 
 from donna.cli.entities import GLOBAL_OPTIONS_CONTEXT_KEY, GlobalOptions
 from donna.context.context import Context
 from donna.core.errors import EnvironmentError
 from donna.domain.constants import DONNA_CONFIG_NAME
-from donna.domain.paths import PathInput, ProjectConfigPath
 from donna.protocol.cells import Cell
 from donna.protocol.errors import environment_error_node
 from donna.protocol.formatters import Formatter
@@ -80,9 +79,9 @@ class CommandContext:
 
     @unwrap_to_error
     def load_workspace(self) -> Result[workspace_config.Workspace]:
-        config_path = ProjectConfigPath(
-            locate_config(DONNA_CONFIG_NAME, path=self.global_options.config_path, cwd=pathlib.Path.cwd()).unwrap()
-        )
+        config_path = locate_config(
+            DONNA_CONFIG_NAME, path=self.global_options.config_path, cwd=pathlib.Path.cwd()
+        ).unwrap()
         loaded_config = load_config(config_path, workspace_config.Config).unwrap()
         workspace = workspace_config.construct_workspace(loaded_config, config_path=config_path)
         workspace_config.install_workspace(workspace)
@@ -96,12 +95,12 @@ class CommandContext:
 
     def target_dir(self) -> PathInput:
         if workspace_config.project_dir.is_set():
-            return workspace_config.project_dir()
+            return PathInput(workspace_config.project_dir())
 
         if self.global_options.config_path is not None:
-            return UntrustedPath(pathlib.Path(self.global_options.config_path).parent)
+            return PathInput(self.global_options.config_path.parent)
 
-        return UntrustedPath(pathlib.Path.cwd())
+        return PathInput(pathlib.Path.cwd())
 
     def write_cells(self, cells: Iterable[Cell]) -> None:
         for cell in cells:

@@ -3,12 +3,17 @@ from typing import TYPE_CHECKING, Iterator, Sequence
 
 from llm_tool_cli.core.entities import BaseEntity
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
-from llm_tool_cli.paths import ProjectPathId, ResolvedProjectPath, UntrustedPath, project_path_id_from_filesystem
+from llm_tool_cli.paths import (
+    ProjectPathId,
+    RelativeProjectPath,
+    ResolvedProjectPath,
+    UntrustedPath,
+    project_path_id_from_filesystem,
+)
 from llm_tool_cli.paths.errors import InvalidProjectPath
 
 from donna.domain.artifact_ids import ArtifactId, artifact_path_parts, validate_artifact_id
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
-from donna.domain.paths import RelativeProjectPath
 from donna.machine.tasks import Task, WorkUnit
 from donna.machine.templates import RenderMode
 from donna.workspaces import errors as world_errors

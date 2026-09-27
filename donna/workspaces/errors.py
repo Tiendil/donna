@@ -1,8 +1,9 @@
 from typing import ClassVar
 
+from llm_tool_cli.paths import ProjectConfigPath
+
 from donna.core import errors as core_errors
 from donna.domain.artifact_ids import ArtifactId
-from donna.domain.paths import ProjectConfigPath
 
 
 class InternalError(core_errors.InternalError):

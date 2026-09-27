@@ -3,9 +3,9 @@ import pathlib
 
 from llm_tool_cli.config import create_config, load_config, locate_config, resolve_config_path
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.paths import PathInput
 
 from donna.domain.constants import DONNA_CONFIG_NAME
-from donna.domain.paths import PathInput, ProjectConfigPath
 from donna.protocol.modes import Mode
 from donna.workspaces import config
 from donna.workspaces import errors as world_errors
@@ -25,9 +25,7 @@ def initialize_runtime(
     if protocol is not None:
         config.protocol.set(protocol)
 
-    selected_path = ProjectConfigPath(
-        locate_config(DONNA_CONFIG_NAME, path=config_path, cwd=pathlib.Path.cwd()).unwrap()
-    )
+    selected_path = locate_config(DONNA_CONFIG_NAME, path=config_path, cwd=pathlib.Path.cwd()).unwrap()
     loaded_config = load_config(selected_path, config.Config).unwrap()
     workspace = config.construct_workspace(loaded_config, config_path=selected_path)
     config.install_workspace(workspace)
@@ -38,7 +36,7 @@ def initialize_runtime(
 @unwrap_to_error
 def initialize_workspace(config_path: PathInput) -> Result[config.Workspace]:
     """Initialize Donna project configuration."""
-    config_path = ProjectConfigPath(resolve_config_path(pathlib.Path(config_path), pathlib.Path.cwd()).unwrap())
+    selected_path = resolve_config_path(config_path, pathlib.Path.cwd()).unwrap()
     try:
         config_text = (
             importlib.resources.files(__package__)
@@ -46,12 +44,12 @@ def initialize_workspace(config_path: PathInput) -> Result[config.Workspace]:
             .read_text(encoding="utf-8")
         )
     except (OSError, UnicodeDecodeError) as e:
-        return Err([world_errors.ConfigCreateFailed(config_path=config_path, details=str(e))])
+        return Err([world_errors.ConfigCreateFailed(config_path=selected_path, details=str(e))])
 
-    create_config(pathlib.Path(config_path), config_text).unwrap()
+    create_config(selected_path, config_text).unwrap()
 
-    loaded_config = load_config(config_path, config.Config).unwrap()
-    workspace = config.construct_workspace(loaded_config, config_path=config_path)
+    loaded_config = load_config(selected_path, config.Config).unwrap()
+    workspace = config.construct_workspace(loaded_config, config_path=selected_path)
     config.install_workspace(workspace)
 
     return Ok(workspace)

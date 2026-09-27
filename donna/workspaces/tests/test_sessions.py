@@ -1,9 +1,9 @@
 import pathlib
 
+from llm_tool_cli.paths import RelativeProjectPath
 from pytest_mock import MockerFixture
 
 from donna.domain.constants import STATE_FILE_NAME
-from donna.domain.paths import RelativeProjectPath
 from donna.workspaces import sessions
 from donna.workspaces.config import Config
 from donna.workspaces.files import FileFingerprint

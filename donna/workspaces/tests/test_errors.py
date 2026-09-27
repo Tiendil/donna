@@ -1,6 +1,7 @@
 import pathlib
 
-from donna.domain.paths import ProjectConfigPath
+from llm_tool_cli.paths import ProjectConfigPath
+
 from donna.workspaces import errors as workspace_errors
 from donna.workspaces.tests import make
 

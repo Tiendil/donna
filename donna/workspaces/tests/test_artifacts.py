@@ -1,12 +1,11 @@
 import pathlib
 
 from llm_tool_cli.core.result import Err, Ok
-from llm_tool_cli.paths import ResolvedProjectPath
+from llm_tool_cli.paths import RelativeProjectPath, ResolvedProjectPath
 from llm_tool_cli.paths.errors import PathResolutionFailed
 from pytest_mock import MockerFixture
 
 from donna.domain.artifact_ids import ArtifactId
-from donna.domain.paths import RelativeProjectPath
 from donna.machine.artifacts import Artifact
 from donna.workspaces import artifacts
 from donna.workspaces import errors as workspace_errors

@@ -4,6 +4,7 @@ import pathlib
 
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 from llm_tool_cli.paths import (
+    PathInput,
     ProjectPathId,
     normalize_path,
     normalize_project_path_id,
@@ -21,7 +22,6 @@ from donna.domain.artifact_ids import (
 )
 from donna.domain.constants import ARTIFACT_ID_PREFIX
 from donna.domain.ids import SectionId
-from donna.domain.paths import PathInput
 
 PROJECT_ROOT_PREFIX = ARTIFACT_ID_PREFIX
 
