@@ -23,15 +23,3 @@ def raw_project_path(value: object) -> ProjectPathRaw | None:
         return None
 
     return ProjectPathRaw(raw)
-
-
-def validate_project_path_id(value: object) -> bool:
-    raw = raw_project_path(value)
-    if raw is None:
-        return False
-
-    parts = tuple(raw.split("/"))
-    if any(part in ("", ".", "..") for part in parts):
-        return False
-
-    return True

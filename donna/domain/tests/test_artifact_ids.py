@@ -34,6 +34,8 @@ class TestValidateArtifactId:
             "@",
             "@/",
             "@/workflows/../README.md",
+            "@/workflows/./polish.donna.md",
+            "@/workflows/../polish.donna.md",
             "@/workflows//polish.donna.md",
             "@/workflows/",
             "@/README",

@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from typing import NewType
 
+from llm_tool_cli.paths import is_project_path_id
+
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 from donna.domain.ids import SectionId
-from donna.domain.paths import raw_project_path, validate_project_path_id
+from donna.domain.paths import raw_project_path
 
 ArtifactId = NewType("ArtifactId", str)
 ArtifactSectionId = NewType("ArtifactSectionId", str)
@@ -26,7 +28,7 @@ class ArtifactSectionParts:
 
 
 def validate_artifact_id(value: object) -> bool:
-    if not validate_project_path_id(value):
+    if not is_project_path_id(value):
         return False
 
     return value.lower().endswith(DONNA_ARTIFACT_EXTENSION)  # type: ignore[attr-defined, no-any-return]
