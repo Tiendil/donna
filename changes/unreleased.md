@@ -19,6 +19,7 @@
 
 ### Changes
 
+- Delegate empty project-path rejection to the shared normalizer, including artifact-relative inputs; root-resolution failures take precedence over empty-input diagnostics.
 - Use the shared `UntrustedPath` semantic type for filesystem inputs, preserving runtime path behavior.
 - Use the shared project-path resolver directly for absolute path directives, preserving project containment and resolution diagnostics.
 - Use shared mixed path normalization directly, preserving artifact-relative behavior and returning `path_resolution_failed` diagnostics for home expansion failures during normalization.

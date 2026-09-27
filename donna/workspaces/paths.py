@@ -33,10 +33,10 @@ def normalize_project_path(
     cwd: PathInput | None = None,
     relative_to: ArtifactId | None = None,
 ) -> Result[ProjectPathId]:
-    if not isinstance(value, str) or not value:
+    if not isinstance(value, str):
         return Err([InvalidProjectPath(path=str(value))])
 
-    if relative_to is None:
+    if relative_to is None or not value:
         return normalize_path(value, root, cwd=cwd)
 
     path = pathlib.Path(value)

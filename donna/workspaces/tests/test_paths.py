@@ -15,6 +15,28 @@ from donna.workspaces.paths import (
 
 class TestNormalizeProjectPath:
     @pytest.mark.parametrize("relative_to", [None, ArtifactId("@/workflows/source.donna.md")])
+    def test_empty_input_propagates_shared_diagnostic(
+        self, tmp_path: pathlib.Path, relative_to: ArtifactId | None
+    ) -> None:
+        result = normalize_project_path("", tmp_path, cwd=tmp_path / "nested", relative_to=relative_to)
+
+        assert result.unwrap_err() == [InvalidProjectPath(path="")]
+
+    @pytest.mark.parametrize("relative_to", [None, ArtifactId("@/workflows/source.donna.md")])
+    def test_root_failure_precedes_empty_input_rejection(
+        self, tmp_path: pathlib.Path, relative_to: ArtifactId | None
+    ) -> None:
+        root = tmp_path / "loop"
+        root.symlink_to(root)
+
+        failure = normalize_project_path("", root, relative_to=relative_to).unwrap_err()[0]
+
+        assert isinstance(failure, PathResolutionFailed)
+        assert failure.code == "path_resolution_failed"
+        assert failure.path == str(root)
+        assert isinstance(failure.cause, (OSError, RuntimeError))
+
+    @pytest.mark.parametrize("relative_to", [None, ArtifactId("@/workflows/source.donna.md")])
     def test_home_path_uses_shared_normalization(
         self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch, relative_to: ArtifactId | None
     ) -> None:
@@ -51,7 +73,6 @@ class TestNormalizeProjectPath:
             "../outside.donna.md", tmp_path, relative_to=ArtifactId("@/file.donna.md")
         ).is_err()
 
-        assert normalize_project_path("", tmp_path).is_err()
         assert normalize_project_path(None, tmp_path).is_err()  # type: ignore[arg-type]
 
     def test_normalizes_relative_to_artifact_file(self, tmp_path: pathlib.Path) -> None:
