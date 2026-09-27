@@ -2,6 +2,7 @@ import pathlib
 
 from llm_tool_cli.core.result import Err, Ok
 from llm_tool_cli.paths import ResolvedProjectPath
+from llm_tool_cli.paths.errors import PathResolutionFailed
 from pytest_mock import MockerFixture
 
 from donna.domain.artifact_ids import ArtifactId
@@ -171,6 +172,32 @@ class TestListArtifactIds:
 
 
 class TestResolveArtifactPath:
+    def test_resolve_artifact_path__preserves_resolution_failure(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
+        path = tmp_path / "workflows" / "test.donna.md"
+        path.parent.mkdir()
+        path.touch()
+        cause = PermissionError("permission denied")
+        resolve = pathlib.Path.resolve
+
+        def fail_target(candidate: pathlib.Path) -> pathlib.Path:
+            if candidate == path:
+                raise cause
+            return resolve(candidate)
+
+        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
+        mocker.patch.object(pathlib.Path, "resolve", autospec=True, side_effect=fail_target)
+
+        failures = artifacts.resolve_artifact_path(make.ARTIFACT_ID).unwrap_err()
+
+        assert len(failures) == 1
+        failure = failures[0]
+        assert isinstance(failure, PathResolutionFailed)
+        assert failure.code == "path_resolution_failed"
+        assert failure.path == str(path)
+        assert failure.cause == cause
+
     def test_resolve_artifact_path__skips_symlink_outside_project(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:

@@ -25,7 +25,7 @@ from donna.domain.artifact_ids import (
 )
 from donna.domain.constants import ARTIFACT_ID_PREFIX
 from donna.domain.ids import SectionId
-from donna.domain.paths import PathInput, UntrustedPath
+from donna.domain.paths import PathInput
 
 PROJECT_ROOT_PREFIX = ARTIFACT_ID_PREFIX
 
@@ -56,14 +56,6 @@ def normalize_path(value: str, root: PathInput, *, cwd: PathInput | None = None)
     path = pathlib.Path(value).expanduser()
     candidate = path if path.is_absolute() else pathlib.Path(cwd or project_root) / path
     resolved = resolve_inside_project(candidate, project_root).unwrap()
-
-    return Ok(project_path_id_from_resolved(resolved, project_root))
-
-
-@unwrap_to_error
-def normalize_existing_path(path: UntrustedPath, root: PathInput) -> Result[ProjectPathId]:
-    project_root = resolve_project_root(root).unwrap()
-    resolved = resolve_inside_project(path, project_root).unwrap()
 
     return Ok(project_path_id_from_resolved(resolved, project_root))
 

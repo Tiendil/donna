@@ -1,55 +1,17 @@
 import pathlib
 
 import pytest
-from llm_tool_cli.paths import ProjectRootPath, ResolvedProjectPath
 from llm_tool_cli.paths.errors import InvalidProjectPath, PathResolutionFailed
 
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.errors import InvalidIdFormat
-from donna.domain.paths import UntrustedPath
-from donna.workspaces import paths
 from donna.workspaces.paths import (
     normalize_artifact_id,
     normalize_artifact_section_id,
-    normalize_existing_path,
     normalize_path,
     normalize_project_path,
     resolve_project_path,
 )
-
-
-class TestCanonicalFromResolved:
-    def test_returns_canonical_path_for_valid_resolved_path(self, tmp_path: pathlib.Path) -> None:
-        project_file = tmp_path / "workflow.donna.md"
-
-        assert (
-            paths._canonical_from_resolved(ResolvedProjectPath(project_file), ProjectRootPath(tmp_path)).unwrap()
-            == "@/workflow.donna.md"
-        )
-
-    def test_returns_canonical_path_for_filesystem_like_path(self, tmp_path: pathlib.Path) -> None:
-        project_file = tmp_path / "project plan.donna.md"
-
-        assert (
-            paths._canonical_from_resolved(ResolvedProjectPath(project_file), ProjectRootPath(tmp_path)).unwrap()
-            == "@/project plan.donna.md"
-        )
-
-    def test_returns_canonical_path_for_suffixless_path(self, tmp_path: pathlib.Path) -> None:
-        project_file = tmp_path / "README"
-
-        assert (
-            paths._canonical_from_resolved(ResolvedProjectPath(project_file), ProjectRootPath(tmp_path)).unwrap()
-            == "@/README"
-        )
-
-    def test_returns_canonical_path_for_directory_path(self, tmp_path: pathlib.Path) -> None:
-        project_dir = tmp_path / "workflows"
-
-        assert (
-            paths._canonical_from_resolved(ResolvedProjectPath(project_dir), ProjectRootPath(tmp_path)).unwrap()
-            == "@/workflows"
-        )
 
 
 class TestResolveProjectPath:
@@ -169,38 +131,6 @@ class TestNormalizePath:
 
         assert normalize_path(str(outside), tmp_path).is_err()
         assert normalize_path("../outside.donna.md", tmp_path, cwd=tmp_path).is_err()
-
-
-class TestNormalizeExistingPath:
-    def test_propagates_target_resolution_failure(self, tmp_path: pathlib.Path) -> None:
-        link = tmp_path / "loop"
-        link.symlink_to(link)
-
-        failure = normalize_existing_path(UntrustedPath(link), tmp_path).unwrap_err()[0]
-
-        assert isinstance(failure, PathResolutionFailed)
-        assert failure.path == str(link)
-        assert isinstance(failure.cause, (OSError, RuntimeError))
-
-    def test_propagates_root_resolution_failure(self, tmp_path: pathlib.Path) -> None:
-        root = tmp_path / "loop"
-        root.symlink_to(root)
-
-        failure = normalize_existing_path(UntrustedPath(tmp_path / "workflow.donna.md"), root).unwrap_err()[0]
-
-        assert isinstance(failure, PathResolutionFailed)
-        assert failure.path == str(root)
-        assert isinstance(failure.cause, (OSError, RuntimeError))
-
-    def test_normalizes_existing_file(self, tmp_path: pathlib.Path) -> None:
-        project_file = tmp_path / "workflows" / "test.donna.md"
-        project_file.parent.mkdir()
-        project_file.write_text("", encoding="utf-8")
-
-        assert normalize_existing_path(UntrustedPath(project_file), tmp_path).unwrap() == "@/workflows/test.donna.md"
-
-    def test_rejects_project_root(self, tmp_path: pathlib.Path) -> None:
-        assert normalize_existing_path(UntrustedPath(tmp_path), tmp_path).is_err()
 
 
 class TestNormalizeProjectPath:
