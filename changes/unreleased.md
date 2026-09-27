@@ -15,6 +15,7 @@
 
 ### Changes
 
+- Resolve root-anchored identifiers through `llm-tool-cli` directly, preserving path results and shared failure diagnostics.
 - Use shared filesystem containment and resolved-path types; target resolution failures now return `path_resolution_failed` diagnostics with private causes instead of escaping as raw exceptions.
 - Use shared filesystem project-root resolution directly, preserving successful path behavior and propagating structured failures through path operations and CLI commands.
 - Share lexical `@/` path normalization with `llm-tool-cli`, including artifact-relative paths, and propagate shared errors through CLI arguments and path directives. Filesystem resolution and symlink containment retain their existing behavior.

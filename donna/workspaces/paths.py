@@ -10,6 +10,7 @@ from llm_tool_cli.paths import (
     normalize_project_path_id,
     resolve_inside_project,
     resolve_project_root,
+    resolve_root_anchored_path,
 )
 from llm_tool_cli.paths.errors import InvalidProjectPath
 
@@ -36,19 +37,11 @@ def _canonical_from_resolved(resolved: ResolvedProjectPath, root: ProjectRootPat
 
 
 @unwrap_to_error
-def _resolve_root_anchored_path(value: str, root: ProjectRootPath) -> Result[ResolvedProjectPath]:
-    normalized = normalize_project_path_id(value).unwrap()
-
-    path = pathlib.Path(root).joinpath(*normalized.removeprefix(PROJECT_ROOT_PREFIX).split("/"))
-    return resolve_inside_project(path, root)
-
-
-@unwrap_to_error
 def resolve_project_path(value: str, root: PathInput, *, allow_absolute: bool = True) -> Result[ResolvedProjectPath]:
     project_root = resolve_project_root(root).unwrap()
 
     if value.startswith("@"):
-        return _resolve_root_anchored_path(value, project_root)
+        return resolve_root_anchored_path(value, project_root)
 
     path = pathlib.Path(value).expanduser()
 

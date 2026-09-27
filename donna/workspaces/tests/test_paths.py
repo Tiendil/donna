@@ -52,26 +52,6 @@ class TestCanonicalFromResolved:
         )
 
 
-class TestResolveRootAnchoredPath:
-    def test_resolves_root_anchored_path_inside_project(self, tmp_path: pathlib.Path) -> None:
-        project_file = tmp_path / "workflow.donna.md"
-        project_file.write_text("", encoding="utf-8")
-
-        assert (
-            paths._resolve_root_anchored_path("@/workflow.donna.md", ProjectRootPath(tmp_path)).unwrap()
-            == project_file
-        )
-
-    def test_resolves_filesystem_like_root_anchored_path(self, tmp_path: pathlib.Path) -> None:
-        assert (
-            paths._resolve_root_anchored_path("@/project plan.donna.md", ProjectRootPath(tmp_path)).unwrap()
-            == tmp_path / "project plan.donna.md"
-        )
-
-    def test_rejects_invalid_root_anchored_path(self, tmp_path: pathlib.Path) -> None:
-        assert paths._resolve_root_anchored_path("@/../outside.donna.md", ProjectRootPath(tmp_path)).is_err()
-
-
 class TestResolveProjectPath:
     @pytest.mark.parametrize("value", ["@/loop/file.donna.md", "loop/file.donna.md"])
     def test_propagates_target_resolution_failure(self, tmp_path: pathlib.Path, value: str) -> None:
@@ -109,9 +89,17 @@ class TestResolveProjectPath:
 
         assert resolve_project_path(str(project_file), tmp_path).unwrap() == project_file
 
-    def test_rejects_root_escape_and_project_root(self, tmp_path: pathlib.Path) -> None:
-        assert resolve_project_path("@/../outside.donna.md", tmp_path).is_err()
-        assert resolve_project_path("@/.", tmp_path).is_err()
+    @pytest.mark.parametrize("value", ["@/../outside.donna.md", "@/.", "@file", "@/a//b", "@/a/"])
+    def test_invalid_root_anchored_path_returns_shared_error(self, tmp_path: pathlib.Path, value: str) -> None:
+        assert resolve_project_path(value, tmp_path).unwrap_err() == [InvalidProjectPath(path=value)]
+
+    def test_root_anchored_symlink_outside_project_returns_shared_error(self, tmp_path: pathlib.Path) -> None:
+        link = tmp_path / "outside"
+        link.symlink_to(tmp_path.parent, target_is_directory=True)
+
+        assert resolve_project_path("@/outside/file.donna.md", tmp_path).unwrap_err() == [
+            InvalidProjectPath(path=str(link / "file.donna.md"))
+        ]
 
     def test_rejects_absolute_path_when_not_allowed(self, tmp_path: pathlib.Path) -> None:
         project_file = tmp_path / "workflow.donna.md"
