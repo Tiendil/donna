@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import NewType
 
-from llm_tool_cli.paths import is_project_path_id
+from llm_tool_cli.paths import is_project_path_id, project_path_parts
 
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 from donna.domain.ids import SectionId
-from donna.domain.paths import raw_project_path
 
 ArtifactId = NewType("ArtifactId", str)
 ArtifactSectionId = NewType("ArtifactSectionId", str)
@@ -40,11 +39,10 @@ def validate_artifact_section_id(value: object) -> bool:
 
 
 def artifact_path_parts(artifact_id: ArtifactId) -> tuple[str, ...]:
-    raw = raw_project_path(artifact_id)
-    if raw is None or not validate_artifact_id(artifact_id):
+    if not validate_artifact_id(artifact_id):
         raise ValueError(f"Invalid ArtifactId: {artifact_id}")
 
-    return tuple(raw.split("/"))
+    return project_path_parts(artifact_id)  # type: ignore[arg-type]
 
 
 def artifact_section_id(artifact_id: ArtifactId, local_id: SectionId | str) -> ArtifactSectionId:

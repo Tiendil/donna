@@ -68,12 +68,35 @@ class TestValidateArtifactSectionId:
 
 
 class TestArtifactPathParts:
-    def test_valid_artifact_id(self) -> None:
-        assert artifact_path_parts(ArtifactId("@/workflows/polish.donna.md")) == ("workflows", "polish.donna.md")
+    @pytest.mark.parametrize(
+        ("value", "expected"),
+        [
+            ("@/workflow.donna.md", ("workflow.donna.md",)),
+            ("@/workflows/polish.donna.md", ("workflows", "polish.donna.md")),
+            ("@/workflows/Проектный план.donna.md", ("workflows", "Проектный план.donna.md")),
+            ("@/ workflows /plan.donna.md", (" workflows ", "plan.donna.md")),
+        ],
+    )
+    def test_valid_artifact_id(self, value: str, expected: tuple[str, ...]) -> None:
+        assert artifact_path_parts(ArtifactId(value)) == expected
 
-    def test_invalid_artifact_id(self) -> None:
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "",
+            "@",
+            "@/",
+            "workflows/polish.donna.md",
+            "@/workflows//polish.donna.md",
+            "@/workflows/./polish.donna.md",
+            "@/workflows/../polish.donna.md",
+            "@/workflows/polish.donna.md/",
+            "@/workflows/polish.md",
+        ],
+    )
+    def test_invalid_artifact_id(self, value: str) -> None:
         with pytest.raises(ValueError):
-            artifact_path_parts(ArtifactId("workflows/polish.donna.md"))
+            artifact_path_parts(ArtifactId(value))
 
 
 class TestArtifactSectionId:
