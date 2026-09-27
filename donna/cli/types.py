@@ -3,6 +3,7 @@ from typing import Annotated
 
 import typer
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.paths import UntrustedPath
 
 from donna.domain import errors as domain_errors
 from donna.domain.artifact_ids import (
@@ -13,7 +14,7 @@ from donna.domain.artifact_ids import (
 )
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 from donna.domain.internal_ids import ActionRequestId
-from donna.domain.paths import PathInput, UntrustedPath
+from donna.domain.paths import PathInput
 from donna.machine.templates import RenderMode
 from donna.protocol.modes import Mode
 from donna.workspaces import paths as workspace_paths

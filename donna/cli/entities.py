@@ -1,6 +1,6 @@
 from llm_tool_cli.core.entities import BaseEntity
+from llm_tool_cli.paths import UntrustedPath
 
-from donna.domain.paths import UntrustedPath
 from donna.protocol.modes import Mode
 
 GLOBAL_OPTIONS_CONTEXT_KEY = "donna_global_options"

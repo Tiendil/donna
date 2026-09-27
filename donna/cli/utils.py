@@ -10,12 +10,13 @@ from llm_tool_cli.config import load_config, locate_config
 from llm_tool_cli.core import errors as llm_tool_errors
 from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Ok, Result, UnwrapError, unwrap_to_error
+from llm_tool_cli.paths import UntrustedPath
 
 from donna.cli.entities import GLOBAL_OPTIONS_CONTEXT_KEY, GlobalOptions
 from donna.context.context import Context
 from donna.core.errors import EnvironmentError
 from donna.domain.constants import DONNA_CONFIG_NAME
-from donna.domain.paths import PathInput, ProjectConfigPath, UntrustedPath
+from donna.domain.paths import PathInput, ProjectConfigPath
 from donna.protocol.cells import Cell
 from donna.protocol.errors import environment_error_node
 from donna.protocol.formatters import Formatter

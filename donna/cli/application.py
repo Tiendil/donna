@@ -1,8 +1,8 @@
 import typer
+from llm_tool_cli.paths import UntrustedPath
 
 from donna.cli.entities import GLOBAL_OPTIONS_CONTEXT_KEY, GlobalOptions
 from donna.cli.types import ConfigOption, ProtocolModeOption
-from donna.domain.paths import UntrustedPath
 from donna.protocol.modes import Mode
 
 app = typer.Typer(help="Donna CLI: manage hierarchical state machines to guide your AI agents.")
