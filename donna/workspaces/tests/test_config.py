@@ -2,10 +2,11 @@ import pathlib
 
 import pydantic
 import pytest
+from llm_tool_cli.paths import ProjectRootPath
 from pytest_mock import MockerFixture
 
 from donna.domain.id_paths import NormalizedRawIdPath
-from donna.domain.paths import ProjectConfigPath, ProjectRootPath, RelativeProjectPath
+from donna.domain.paths import ProjectConfigPath, RelativeProjectPath
 from donna.domain.python_path import PythonPath
 from donna.workspaces import config as workspace_config
 from donna.workspaces import errors as workspace_errors

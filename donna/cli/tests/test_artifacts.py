@@ -1,6 +1,7 @@
 import pathlib
 
 import pytest
+from llm_tool_cli.paths import resolve_project_root
 from llm_tool_cli.paths.errors import InvalidProjectPath
 from pytest_mock import MockerFixture
 
@@ -107,6 +108,29 @@ class TestValidate:
 
 
 class TestParseArtifactIdArgument:
+    @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
+    def test_root_resolution_failure_uses_shared_diagnostic(
+        self, tmp_path: pathlib.Path, mocker: MockerFixture, protocol: str
+    ) -> None:
+        config_path = helpers.write_config(tmp_path)
+        root = tmp_path / "loop"
+        root.symlink_to(root)
+        failure = resolve_project_root(root)
+        mocker.patch("donna.workspaces.paths.resolve_project_root", return_value=failure)
+
+        result = helpers.invoke(["--config", str(config_path), "-p", protocol, "validate", "@/workflow.donna.md"])
+
+        assert result.exit_code == 3
+        error = failure.unwrap_err()[0]
+        if protocol == "automation":
+            records = helpers.json_lines(result.stdout)
+            assert [record for record in records if record.get("code") == "path_resolution_failed"] == [
+                error.as_record()
+            ]
+            assert not result.stderr
+        else:
+            assert result.stderr == error.format_message() + "\n"
+
     @pytest.mark.parametrize("command", [["render", "--mode", "view"], ["validate"], ["run"]])
     def test_invalid_path_uses_shared_automation_diagnostic(self, tmp_path: pathlib.Path, command: list[str]) -> None:
         config_path = helpers.write_config(tmp_path)

@@ -1,5 +1,6 @@
 ### Migration
 
+- Import `ProjectRootPath` and `resolve_project_root` from `llm_tool_cli.paths`; root resolution now returns `Result[ProjectRootPath]`. Expected root-resolution failures use `path_resolution_failed` diagnostics and exit with status `3` instead of escaping as raw filesystem exceptions.
 - Project-path normalization and resolution now return shared `Result` values instead of `None` on failure. Import `ProjectPathId` from `llm_tool_cli.paths` and use `normalize_project_path` instead of the removed `normalize_artifact_path` alias.
 - Invalid project paths now report the shared `invalid_project_path` diagnostic with a `path` field and exit with status `3`, replacing Donna identifier error cells with status `0`. Human and LLM diagnostics use stderr; automation uses shared JSON Lines records. Artifact extension and section validation remain Donna-specific.
 
@@ -14,6 +15,7 @@
 
 ### Changes
 
+- Use shared filesystem project-root resolution directly, preserving successful path behavior and propagating structured failures through path operations and CLI commands.
 - Share lexical `@/` path normalization with `llm-tool-cli`, including artifact-relative paths, and propagate shared errors through CLI arguments and path directives. Filesystem resolution and symlink containment retain their existing behavior.
 - Use the shared typed result predicate when treating invalid artifact paths as unavailable.
 

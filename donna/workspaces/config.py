@@ -5,11 +5,12 @@ from typing import TYPE_CHECKING, Literal
 
 import pydantic
 from llm_tool_cli.core.entities import BaseEntity
+from llm_tool_cli.paths import ProjectRootPath
 
 from donna.domain.constants import DONNA_DEFAULT_SESSION_DIR, DONNA_DEFAULT_WORKFLOW_DIR
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
-from donna.domain.paths import ProjectConfigPath, ProjectRootPath, RelativeProjectPath
+from donna.domain.paths import ProjectConfigPath, RelativeProjectPath
 from donna.domain.python_path import PythonPath
 from donna.workspaces import errors as world_errors
 

@@ -3,9 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import NewType
 
+from llm_tool_cli.paths import ProjectRootPath
+
 from donna.domain.constants import ARTIFACT_ID_PREFIX
 
-ProjectRootPath = NewType("ProjectRootPath", Path)
 ProjectPathRaw = NewType("ProjectPathRaw", str)
 ProjectConfigPath = NewType("ProjectConfigPath", Path)
 RelativeProjectPath = NewType("RelativeProjectPath", Path)

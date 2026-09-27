@@ -6,12 +6,12 @@ from typing import TYPE_CHECKING, ClassVar, cast
 import pydantic
 from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.paths import ProjectRootPath
 
 from donna.context.context import context
 from donna.core import errors as core_errors
 from donna.domain.artifact_ids import ArtifactId, artifact_section_id, split_artifact_section_id
 from donna.domain.ids import SectionId
-from donna.domain.paths import ProjectRootPath
 from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta

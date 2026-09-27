@@ -3,7 +3,7 @@ from __future__ import annotations
 import pathlib
 
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
-from llm_tool_cli.paths import ProjectPathId, normalize_project_path_id
+from llm_tool_cli.paths import ProjectPathId, ProjectRootPath, normalize_project_path_id, resolve_project_root
 from llm_tool_cli.paths.errors import InvalidProjectPath
 
 from donna.domain import errors as domain_errors
@@ -17,18 +17,9 @@ from donna.domain.artifact_ids import (
 )
 from donna.domain.constants import ARTIFACT_ID_PREFIX
 from donna.domain.ids import SectionId
-from donna.domain.paths import (
-    PathInput,
-    ProjectRootPath,
-    ResolvedProjectPath,
-    UntrustedPath,
-)
+from donna.domain.paths import PathInput, ResolvedProjectPath, UntrustedPath
 
 PROJECT_ROOT_PREFIX = ARTIFACT_ID_PREFIX
-
-
-def resolve_project_root(root: UntrustedPath) -> ProjectRootPath:
-    return ProjectRootPath(root.resolve())
 
 
 def _resolve_inside_project(path: UntrustedPath, root: ProjectRootPath) -> Result[ResolvedProjectPath]:
@@ -55,8 +46,9 @@ def _resolve_root_anchored_path(value: str, root: ProjectRootPath) -> Result[Res
     return _resolve_inside_project(UntrustedPath(path), root)
 
 
+@unwrap_to_error
 def resolve_project_path(value: str, root: PathInput, *, allow_absolute: bool = True) -> Result[ResolvedProjectPath]:
-    project_root = ProjectRootPath(root.resolve())
+    project_root = resolve_project_root(root).unwrap()
 
     if value.startswith("@"):
         return _resolve_root_anchored_path(value, project_root)
@@ -72,7 +64,7 @@ def resolve_project_path(value: str, root: PathInput, *, allow_absolute: bool = 
 
 @unwrap_to_error
 def normalize_path(value: str, root: PathInput, *, cwd: PathInput | None = None) -> Result[ProjectPathId]:
-    project_root = ProjectRootPath(root.resolve())
+    project_root = resolve_project_root(root).unwrap()
 
     if value.startswith("@"):
         return normalize_project_path_id(value)
@@ -86,7 +78,7 @@ def normalize_path(value: str, root: PathInput, *, cwd: PathInput | None = None)
 
 @unwrap_to_error
 def normalize_existing_path(path: UntrustedPath, root: PathInput) -> Result[ProjectPathId]:
-    project_root = ProjectRootPath(root.resolve())
+    project_root = resolve_project_root(root).unwrap()
     resolved = _resolve_inside_project(path, project_root).unwrap()
 
     return _canonical_from_resolved(resolved, project_root)

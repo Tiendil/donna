@@ -1,11 +1,12 @@
 import pathlib
 
 import pytest
-from llm_tool_cli.paths.errors import InvalidProjectPath
+from llm_tool_cli.paths import ProjectRootPath
+from llm_tool_cli.paths.errors import InvalidProjectPath, PathResolutionFailed
 
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.errors import InvalidIdFormat
-from donna.domain.paths import ProjectRootPath, ResolvedProjectPath, UntrustedPath
+from donna.domain.paths import ResolvedProjectPath, UntrustedPath
 from donna.workspaces import paths
 from donna.workspaces.paths import (
     normalize_artifact_id,
@@ -14,17 +15,7 @@ from donna.workspaces.paths import (
     normalize_path,
     normalize_project_path,
     resolve_project_path,
-    resolve_project_root,
 )
-
-
-class TestResolveProjectRoot:
-    def test_returns_resolved_root_path(self, tmp_path: pathlib.Path) -> None:
-        project = tmp_path / "project"
-        project.mkdir()
-        root = project / ".." / "project"
-
-        assert resolve_project_root(UntrustedPath(root)) == project
 
 
 class TestResolveInsideProject:
@@ -97,6 +88,16 @@ class TestResolveRootAnchoredPath:
 
 
 class TestResolveProjectPath:
+    def test_propagates_root_resolution_failure(self, tmp_path: pathlib.Path) -> None:
+        root = tmp_path / "loop"
+        root.symlink_to(root)
+
+        failure = resolve_project_path("@/workflow.donna.md", root).unwrap_err()[0]
+
+        assert isinstance(failure, PathResolutionFailed)
+        assert failure.path == str(root)
+        assert isinstance(failure.cause, (OSError, RuntimeError))
+
     def test_resolves_root_anchored_path_inside_project(self, tmp_path: pathlib.Path) -> None:
         project_file = tmp_path / "workflows" / "test.donna.md"
         project_file.parent.mkdir()
@@ -123,6 +124,16 @@ class TestResolveProjectPath:
 
 
 class TestNormalizePath:
+    def test_propagates_root_resolution_failure(self, tmp_path: pathlib.Path) -> None:
+        root = tmp_path / "loop"
+        root.symlink_to(root)
+
+        failure = normalize_path("@/workflow.donna.md", root).unwrap_err()[0]
+
+        assert isinstance(failure, PathResolutionFailed)
+        assert failure.path == str(root)
+        assert isinstance(failure.cause, (OSError, RuntimeError))
+
     def test_propagates_shared_lexical_error(self, tmp_path: pathlib.Path) -> None:
         value = "@/workflows//test.donna.md"
         result = normalize_path(value, tmp_path)
@@ -166,6 +177,16 @@ class TestNormalizePath:
 
 
 class TestNormalizeExistingPath:
+    def test_propagates_root_resolution_failure(self, tmp_path: pathlib.Path) -> None:
+        root = tmp_path / "loop"
+        root.symlink_to(root)
+
+        failure = normalize_existing_path(UntrustedPath(tmp_path / "workflow.donna.md"), root).unwrap_err()[0]
+
+        assert isinstance(failure, PathResolutionFailed)
+        assert failure.path == str(root)
+        assert isinstance(failure.cause, (OSError, RuntimeError))
+
     def test_normalizes_existing_file(self, tmp_path: pathlib.Path) -> None:
         project_file = tmp_path / "workflows" / "test.donna.md"
         project_file.parent.mkdir()

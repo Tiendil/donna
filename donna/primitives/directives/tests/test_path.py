@@ -1,10 +1,10 @@
 import pathlib
 
+from llm_tool_cli.paths import ProjectRootPath
 from llm_tool_cli.paths.errors import InvalidProjectPath
 from pytest_mock import MockerFixture
 
 from donna.domain.artifact_ids import ArtifactId
-from donna.domain.paths import ProjectRootPath
 from donna.machine.tests import make as machine_make
 from donna.primitives.directives import path
 from donna.primitives.directives.path import (

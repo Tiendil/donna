@@ -1,9 +1,11 @@
 import pathlib
 
+from llm_tool_cli.paths import ProjectRootPath
+
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
-from donna.domain.paths import ProjectConfigPath, ProjectRootPath
+from donna.domain.paths import ProjectConfigPath
 from donna.domain.python_path import PythonPath
 from donna.machine.artifacts import ArtifactSectionConfig
 from donna.workspaces import markdown
