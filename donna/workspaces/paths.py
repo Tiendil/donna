@@ -5,9 +5,9 @@ import pathlib
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 from llm_tool_cli.paths import (
     ProjectPathId,
-    ProjectRootPath,
     ResolvedProjectPath,
     normalize_project_path_id,
+    project_path_id_from_resolved,
     resolve_inside_project,
     resolve_project_root,
     resolve_root_anchored_path,
@@ -28,12 +28,6 @@ from donna.domain.ids import SectionId
 from donna.domain.paths import PathInput, UntrustedPath
 
 PROJECT_ROOT_PREFIX = ARTIFACT_ID_PREFIX
-
-
-def _canonical_from_resolved(resolved: ResolvedProjectPath, root: ProjectRootPath) -> Result[ProjectPathId]:
-    return normalize_project_path_id(
-        PROJECT_ROOT_PREFIX + pathlib.Path(resolved).relative_to(pathlib.Path(root)).as_posix()
-    )
 
 
 @unwrap_to_error
@@ -63,7 +57,7 @@ def normalize_path(value: str, root: PathInput, *, cwd: PathInput | None = None)
     candidate = path if path.is_absolute() else pathlib.Path(cwd or project_root) / path
     resolved = resolve_inside_project(candidate, project_root).unwrap()
 
-    return _canonical_from_resolved(resolved, project_root)
+    return Ok(project_path_id_from_resolved(resolved, project_root))
 
 
 @unwrap_to_error
@@ -71,7 +65,7 @@ def normalize_existing_path(path: UntrustedPath, root: PathInput) -> Result[Proj
     project_root = resolve_project_root(root).unwrap()
     resolved = resolve_inside_project(path, project_root).unwrap()
 
-    return _canonical_from_resolved(resolved, project_root)
+    return Ok(project_path_id_from_resolved(resolved, project_root))
 
 
 def normalize_project_path(
