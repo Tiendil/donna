@@ -10,7 +10,6 @@ from donna.domain.constants import ARTIFACT_ID_PREFIX
 ProjectPathRaw = NewType("ProjectPathRaw", str)
 ProjectConfigPath = NewType("ProjectConfigPath", Path)
 RelativeProjectPath = NewType("RelativeProjectPath", Path)
-ResolvedProjectPath = NewType("ResolvedProjectPath", Path)
 UntrustedPath = NewType("UntrustedPath", Path)
 PathInput = Path | UntrustedPath | ProjectRootPath | ProjectConfigPath
 

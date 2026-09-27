@@ -1,12 +1,12 @@
 import pathlib
 
 import pytest
-from llm_tool_cli.paths import ProjectRootPath
+from llm_tool_cli.paths import ProjectRootPath, ResolvedProjectPath
 from llm_tool_cli.paths.errors import InvalidProjectPath, PathResolutionFailed
 
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.errors import InvalidIdFormat
-from donna.domain.paths import ResolvedProjectPath, UntrustedPath
+from donna.domain.paths import UntrustedPath
 from donna.workspaces import paths
 from donna.workspaces.paths import (
     normalize_artifact_id,
@@ -16,21 +16,6 @@ from donna.workspaces.paths import (
     normalize_project_path,
     resolve_project_path,
 )
-
-
-class TestResolveInsideProject:
-    def test_returns_resolved_project_path_inside_root(self, tmp_path: pathlib.Path) -> None:
-        project_file = tmp_path / "workflow.donna.md"
-        project_file.write_text("", encoding="utf-8")
-
-        assert paths._resolve_inside_project(
-            UntrustedPath(project_file),
-            ProjectRootPath(tmp_path),
-        ).unwrap() == ResolvedProjectPath(project_file)
-
-    def test_rejects_project_root_and_outside_paths(self, tmp_path: pathlib.Path) -> None:
-        assert paths._resolve_inside_project(UntrustedPath(tmp_path), ProjectRootPath(tmp_path)).is_err()
-        assert paths._resolve_inside_project(UntrustedPath(tmp_path.parent), ProjectRootPath(tmp_path)).is_err()
 
 
 class TestCanonicalFromResolved:
@@ -88,6 +73,18 @@ class TestResolveRootAnchoredPath:
 
 
 class TestResolveProjectPath:
+    @pytest.mark.parametrize("value", ["@/loop/file.donna.md", "loop/file.donna.md"])
+    def test_propagates_target_resolution_failure(self, tmp_path: pathlib.Path, value: str) -> None:
+        link = tmp_path / "loop"
+        link.symlink_to(link)
+
+        failure = resolve_project_path(value, tmp_path).unwrap_err()[0]
+
+        assert isinstance(failure, PathResolutionFailed)
+        assert failure.code == "path_resolution_failed"
+        assert failure.path == str(link / "file.donna.md")
+        assert isinstance(failure.cause, (OSError, RuntimeError))
+
     def test_propagates_root_resolution_failure(self, tmp_path: pathlib.Path) -> None:
         root = tmp_path / "loop"
         root.symlink_to(root)
@@ -124,6 +121,16 @@ class TestResolveProjectPath:
 
 
 class TestNormalizePath:
+    def test_propagates_target_resolution_failure(self, tmp_path: pathlib.Path) -> None:
+        link = tmp_path / "loop"
+        link.symlink_to(link)
+
+        failure = normalize_path("loop/file.donna.md", tmp_path).unwrap_err()[0]
+
+        assert isinstance(failure, PathResolutionFailed)
+        assert failure.path == str(link / "file.donna.md")
+        assert isinstance(failure.cause, (OSError, RuntimeError))
+
     def test_propagates_root_resolution_failure(self, tmp_path: pathlib.Path) -> None:
         root = tmp_path / "loop"
         root.symlink_to(root)
@@ -177,6 +184,16 @@ class TestNormalizePath:
 
 
 class TestNormalizeExistingPath:
+    def test_propagates_target_resolution_failure(self, tmp_path: pathlib.Path) -> None:
+        link = tmp_path / "loop"
+        link.symlink_to(link)
+
+        failure = normalize_existing_path(UntrustedPath(link), tmp_path).unwrap_err()[0]
+
+        assert isinstance(failure, PathResolutionFailed)
+        assert failure.path == str(link)
+        assert isinstance(failure.cause, (OSError, RuntimeError))
+
     def test_propagates_root_resolution_failure(self, tmp_path: pathlib.Path) -> None:
         root = tmp_path / "loop"
         root.symlink_to(root)

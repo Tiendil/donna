@@ -1,7 +1,8 @@
 import shutil
 
+from llm_tool_cli.paths import ResolvedProjectPath
+
 from donna.domain.constants import STATE_FILE_NAME
-from donna.domain.paths import ResolvedProjectPath
 from donna.workspaces.config import config, project_dir
 from donna.workspaces.files import FileFingerprint
 

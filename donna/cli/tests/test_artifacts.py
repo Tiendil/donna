@@ -109,6 +109,27 @@ class TestValidate:
 
 class TestParseArtifactIdArgument:
     @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
+    def test_target_resolution_failure_uses_shared_diagnostic(self, tmp_path: pathlib.Path, protocol: str) -> None:
+        config_path = helpers.write_config(tmp_path)
+        link = tmp_path / "loop"
+        link.symlink_to(link)
+        target = link / "workflow.donna.md"
+
+        result = helpers.invoke(["--config", str(config_path), "-p", protocol, "validate", str(target)])
+
+        assert result.exit_code == 3
+        if protocol == "automation":
+            records = helpers.json_lines(result.stdout)
+            diagnostics = [record for record in records if record.get("code") == "path_resolution_failed"]
+            assert len(diagnostics) == 1
+            assert diagnostics[0]["path"] == str(target)
+            assert diagnostics[0]["reason"]
+            assert "cause" not in diagnostics[0]
+            assert not result.stderr
+        else:
+            assert str(target) in result.stderr
+
+    @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
     def test_root_resolution_failure_uses_shared_diagnostic(
         self, tmp_path: pathlib.Path, mocker: MockerFixture, protocol: str
     ) -> None:
