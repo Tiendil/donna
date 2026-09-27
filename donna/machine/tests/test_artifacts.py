@@ -1,4 +1,3 @@
-from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Err, Result
 
 from donna.domain.ids import SectionId
@@ -16,7 +15,7 @@ class _Meta(ArtifactSectionMeta):
 
 
 class _RejectingPrimitive(Primitive):
-    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None, EnvironmentErrors]:
+    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None]:
         return Err([machine_errors.PrimitiveInvalidImportPath(import_path="bad")])
 
 

@@ -1,4 +1,3 @@
-from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Ok, Result
 from pytest_mock import MockerFixture
 
@@ -37,7 +36,7 @@ class _NoopOperation(OperationKind):
         unit: WorkUnit,
         artifact: Artifact,
         section_id: SectionId,
-    ) -> Result[list[Change], EnvironmentErrors]:
+    ) -> Result[list[Change]]:
         return Ok([])
 
 
@@ -48,7 +47,7 @@ class _RequestActionOperation(OperationKind):
         unit: WorkUnit,
         artifact: Artifact,
         section_id: SectionId,
-    ) -> Result[list[Change], EnvironmentErrors]:
+    ) -> Result[list[Change]]:
         request = ActionRequest.build(
             title="Choose next",
             request="Pick the next operation",

@@ -4,7 +4,6 @@ from typing import Sequence, cast
 
 import pydantic
 from llm_tool_cli.core.entities import BaseEntity
-from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 
 from donna.domain.artifact_ids import ArtifactSectionId, split_artifact_section_id
@@ -49,7 +48,7 @@ class BaseState(BaseEntity):
 
         return self.tasks[-1]
 
-    def get_action_request(self, request_id: ActionRequestId) -> Result[ActionRequest, EnvironmentErrors]:
+    def get_action_request(self, request_id: ActionRequestId) -> Result[ActionRequest]:
         for request in self.action_requests:
             if request.id == request_id:
                 return Ok(request)
@@ -155,7 +154,7 @@ class MutableState(BaseState):
     @unwrap_to_error
     def complete_action_request(
         self, request_id: ActionRequestId, next_operation_id: ArtifactSectionId
-    ) -> Result[None, EnvironmentErrors]:
+    ) -> Result[None]:
         current_task = self.current_task
         assert current_task is not None
 
@@ -172,7 +171,7 @@ class MutableState(BaseState):
         return Ok(None)
 
     @unwrap_to_error
-    def start_workflow(self, full_operation_id: ArtifactSectionId) -> Result[None, EnvironmentErrors]:
+    def start_workflow(self, full_operation_id: ArtifactSectionId) -> Result[None]:
         operation_parts = split_artifact_section_id(full_operation_id)
         assert operation_parts is not None
         artifact = context().artifacts.load_for_view(operation_parts.artifact_id).unwrap()
@@ -202,7 +201,7 @@ class MutableState(BaseState):
         self.apply_changes(changes)
 
     @unwrap_to_error
-    def execute_next_work_unit(self) -> Result[None, EnvironmentErrors]:
+    def execute_next_work_unit(self) -> Result[None]:
         next_work_unit = self.get_next_work_unit()
         assert next_work_unit is not None
         current_task = self.current_task

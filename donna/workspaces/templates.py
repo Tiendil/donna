@@ -141,9 +141,7 @@ def env() -> jinja2.Environment:
     return _ENVIRONMENT
 
 
-def render(
-    artifact_id: ArtifactId, template: str, render_context: "ArtifactRenderContext"
-) -> Result[str, EnvironmentErrors]:
+def render(artifact_id: ArtifactId, template: str, render_context: "ArtifactRenderContext") -> Result[str]:
     context: dict[str, object] = {"render_mode": render_context.primary_mode, "artifact_id": artifact_id}
 
     if render_context.current_task is not None:

@@ -3,7 +3,6 @@ import pathlib
 import pytest
 from llm_tool_cli.config import create_config
 from llm_tool_cli.config import errors as config_errors
-from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Err, Ok, Result
 from pytest_mock import MockerFixture
 
@@ -285,7 +284,7 @@ class TestInitializeWorkspace:
     ) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
 
-        def create_concurrently(path: pathlib.Path, text: str) -> Result[None, EnvironmentErrors]:
+        def create_concurrently(path: pathlib.Path, text: str) -> Result[None]:
             path.write_text("version = 1", encoding="utf-8")
             return create_config(path, text)
 

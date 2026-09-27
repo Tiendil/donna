@@ -6,7 +6,6 @@ from typing import NewType
 from donna.domain.constants import ARTIFACT_ID_PREFIX
 
 ProjectRootPath = NewType("ProjectRootPath", Path)
-ProjectPathId = NewType("ProjectPathId", str)
 ProjectPathRaw = NewType("ProjectPathRaw", str)
 ProjectConfigPath = NewType("ProjectConfigPath", Path)
 RelativeProjectPath = NewType("RelativeProjectPath", Path)

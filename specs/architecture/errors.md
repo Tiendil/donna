@@ -31,7 +31,7 @@ Expected project failures MUST be represented as environment-error values before
 
 Internal errors MUST be raised as exceptions.
 
-Environment errors MUST be returned as shared `Result[..., EnvironmentErrors]` values unless a temporary exception bridge is required by an external callback boundary.
+Environment errors MUST be returned as shared `Result[T]` values unless a temporary exception bridge is required by an external callback boundary.
 
 Donna MUST use the result implementation and environment-error foundation provided by `llm_tool_cli`. Shared environment errors MUST propagate as values without translation when no application-specific recovery or additional domain meaning is required. Raised shared exceptions MUST NOT be treated as expected environment failures.
 
@@ -139,7 +139,7 @@ Rendered environment error cell metadata SHOULD include structured context field
 
 ## Results
 
-Functions that can fail with environment errors SHOULD return `Result[T, EnvironmentErrors]`.
+Functions that can fail with environment errors SHOULD return `Result[T]`, where `T` is the successful value type and failures always contain `EnvironmentErrors`.
 
 `EnvironmentErrors` MUST use the shared list type and MAY contain both shared and Donna-owned environment-error instances.
 
@@ -159,7 +159,7 @@ If a function is changed to return environment errors, callers up the call stack
 
 The `unwrap_to_error` decorator SHOULD be the preferred way to compose calls to functions that return `Result` objects when it makes unwrapping and propagation simpler.
 
-The decorator SHOULD be used on functions that return `Result[T, EnvironmentErrors]` and primarily call other `Result`-returning functions.
+The decorator SHOULD be used on functions that return `Result[T]` and primarily call other `Result`-returning functions.
 
 Decorated functions MAY call `.unwrap()` on intermediate `Result` values to keep straight-line code readable.
 
@@ -175,7 +175,7 @@ Some external callback boundaries cannot return `Result` directly.
 
 At those boundaries, Donna MAY use the shared `EnvironmentErrorsProxy` technical exception to carry environment errors through the callback stack.
 
-The proxy MUST be caught at the nearest Donna-controlled boundary and converted back into `Result[..., EnvironmentErrors]`.
+The proxy MUST be caught at the nearest Donna-controlled boundary and converted back into `Result[T]`.
 
 The proxy MUST NOT cross into CLI rendering as an internal error.
 

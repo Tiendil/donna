@@ -2,7 +2,6 @@ import enum
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, ClassVar, TypeAlias
 
-from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Ok, Result
 
 from donna.machine import errors as machine_errors
@@ -13,7 +12,7 @@ if TYPE_CHECKING:
     pass
 
 PreparedDirectiveArguments: TypeAlias = tuple[object, ...]
-PreparedDirectiveResult: TypeAlias = Result[PreparedDirectiveArguments, EnvironmentErrors]
+PreparedDirectiveResult: TypeAlias = Result[PreparedDirectiveArguments]
 
 
 class RenderMode(enum.StrEnum):
@@ -48,7 +47,7 @@ class Directive(Primitive, ABC):
         context: DirectiveContext,
         *argv: object,
         **kwargs: object,
-    ) -> Result[object, EnvironmentErrors]:
+    ) -> Result[object]:
         render_mode = context["render_mode"]
         arguments_result = self._prepare_arguments(context, *argv, **kwargs)
         if arguments_result.is_err():
@@ -81,20 +80,20 @@ class Directive(Primitive, ABC):
         self,
         context: DirectiveContext,
         *argv: object,
-    ) -> Result[object, EnvironmentErrors]: ...
+    ) -> Result[object]: ...
 
     def render_execute(
         self,
         context: DirectiveContext,
         *argv: object,
-    ) -> Result[object, EnvironmentErrors]:
+    ) -> Result[object]:
         return self.render_view(context, *argv)
 
     def render_analyze(
         self,
         context: DirectiveContext,
         *argv: object,
-    ) -> Result[object, EnvironmentErrors]:
+    ) -> Result[object]:
         parts = [str(arg) for arg in argv]
         arguments = " ".join(parts)
 

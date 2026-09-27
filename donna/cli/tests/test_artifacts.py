@@ -1,8 +1,11 @@
 import pathlib
 
+import pytest
+from llm_tool_cli.paths.errors import InvalidProjectPath
 from pytest_mock import MockerFixture
 
 from donna.cli.tests import helpers
+from donna.domain.internal_ids import ActionRequestId
 
 
 class TestList:
@@ -104,6 +107,30 @@ class TestValidate:
 
 
 class TestParseArtifactIdArgument:
+    @pytest.mark.parametrize("command", [["render", "--mode", "view"], ["validate"], ["run"]])
+    def test_invalid_path_uses_shared_automation_diagnostic(self, tmp_path: pathlib.Path, command: list[str]) -> None:
+        config_path = helpers.write_config(tmp_path)
+        value = "@/../outside.donna.md"
+
+        result = helpers.invoke(["--config", str(config_path), "-p", "automation", *command, value])
+
+        assert result.exit_code == 3
+        records = helpers.json_lines(result.stdout)
+        diagnostic = [record for record in records if record.get("code") == "invalid_project_path"]
+        assert diagnostic == [InvalidProjectPath(path=value).as_record()]
+        assert result.stderr == ""
+
+    @pytest.mark.parametrize("protocol", ["human", "llm"])
+    def test_invalid_path_uses_shared_stderr_diagnostic(self, tmp_path: pathlib.Path, protocol: str) -> None:
+        config_path = helpers.write_config(tmp_path)
+        value = "@/workflows//test.donna.md"
+
+        result = helpers.invoke(["--config", str(config_path), "-p", protocol, "validate", value])
+
+        assert result.exit_code == 3
+        assert result.stderr == InvalidProjectPath(path=value).format_message() + "\n"
+        assert "kind=domain_error" not in result.stdout
+
     def test_rejects_unsupported_artifact_extension(self, tmp_path: pathlib.Path) -> None:
         config_path = helpers.write_config(tmp_path)
         (tmp_path / "workflows").mkdir()
@@ -113,3 +140,46 @@ class TestParseArtifactIdArgument:
 
         assert result.exit_code != 0
         assert "Unsupported artifact extension" in result.output
+
+
+class TestParseArtifactSectionIdArgument:
+    def test_invalid_artifact_path_uses_shared_diagnostic(self, tmp_path: pathlib.Path) -> None:
+        config_path = helpers.write_config(tmp_path)
+        value = "@/../workflow.donna.md"
+
+        result = helpers.invoke(
+            [
+                "--config",
+                str(config_path),
+                "-p",
+                "automation",
+                "complete-action-request",
+                str(ActionRequestId.build("AR", 1)),
+                value + ":finish",
+            ]
+        )
+
+        assert result.exit_code == 3
+        records = helpers.json_lines(result.stdout)
+        assert [record for record in records if record.get("code") == "invalid_project_path"] == [
+            InvalidProjectPath(path=value).as_record()
+        ]
+
+    def test_invalid_section_retains_domain_diagnostic(self, tmp_path: pathlib.Path) -> None:
+        config_path = helpers.write_config(tmp_path)
+
+        result = helpers.invoke(
+            [
+                "--config",
+                str(config_path),
+                "-p",
+                "automation",
+                "complete-action-request",
+                str(ActionRequestId.build("AR", 1)),
+                "@/workflow.donna.md:---",
+            ]
+        )
+
+        assert result.exit_code == 0
+        records = helpers.json_lines(result.stdout)
+        assert any(record.get("error_code") == "donna.domain.invalid_id_format" for record in records)

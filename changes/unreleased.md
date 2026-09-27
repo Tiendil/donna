@@ -1,7 +1,11 @@
 ### Migration
 
+- Project-path normalization and resolution now return shared `Result` values instead of `None` on failure. Import `ProjectPathId` from `llm_tool_cli.paths` and use `normalize_project_path` instead of the removed `normalize_artifact_path` alias.
+- Invalid project paths now report the shared `invalid_project_path` diagnostic with a `path` field and exit with status `3`, replacing Donna identifier error cells with status `0`. Human and LLM diagnostics use stderr; automation uses shared JSON Lines records. Artifact extension and section validation remain Donna-specific.
+
 - Import `BaseEntity` from `llm_tool_cli.core.entities` instead of `donna.core.entities`.
 - Import `Result` and its helpers from `llm_tool_cli.core.result`, and `EnvironmentErrors` and `EnvironmentErrorsProxy` from `llm_tool_cli.core.errors`; Donna retains its presentation-specific environment-error extension.
+- Annotate results as `Result[T]` instead of `Result[T, EnvironmentErrors]`; the shared result now always carries environment-error lists on failure.
 - Custom internal-error subclasses must define `message_template` instead of `message`. Read the formatted diagnostic from `message` and structured context from `details` instead of `error_message()` and `arguments`; exception strings now contain the formatted message without a class-name prefix.
 
 - Configuration failures now use shared `llm-tool-cli` diagnostic codes and exit with status `2`; other expected shared errors exit with status `3`. Automation consumers must read `type`, `code`, `message`, `path`, and `reason` from the shared record instead of Donna error-cell fields. Human and LLM shared diagnostics now go to stderr. Donna-owned errors retain their existing result and cell behavior.
@@ -9,6 +13,9 @@
 - Python callers must use shared `load_config` followed by `construct_workspace` instead of `load_workspace`; `initialize_runtime` and shared configuration operations return `Result` values.
 
 ### Changes
+
+- Share lexical `@/` path normalization with `llm-tool-cli`, including artifact-relative paths, and propagate shared errors through CLI arguments and path directives. Filesystem resolution and symlink containment retain their existing behavior.
+- Use the shared typed result predicate when treating invalid artifact paths as unavailable.
 
 - Use the shared entity base for models and environment errors, preserving entity copying, JSON conversion, and string normalization.
 - Adopt `Result`, the environment-error foundation, and the callback proxy from `llm-tool-cli`; expected shared failures propagate as values alongside Donna diagnostics.

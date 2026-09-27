@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING, ClassVar, Literal, cast
 
-from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Ok, Result, unwrap_to_error
 
 from donna.context.context import context
@@ -25,7 +24,7 @@ class FinishWorkflow(MarkdownSectionMixin, OperationKind):
     @unwrap_to_error
     def execute_section(
         self, task: "Task", unit: "WorkUnit", artifact: Artifact, section_id: SectionId
-    ) -> Result[list["Change"], EnvironmentErrors]:
+    ) -> Result[list["Change"]]:
         from donna.machine.changes import ChangeFinishTask
 
         operation = artifact.get_section(section_id).unwrap()
@@ -43,6 +42,6 @@ class FinishWorkflow(MarkdownSectionMixin, OperationKind):
         section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
-    ) -> Result[ArtifactSectionMeta, EnvironmentErrors]:
+    ) -> Result[ArtifactSectionMeta]:
         finish_config = cast(FinishWorkflowConfig, section_config)
         return Ok(OperationMeta(fsm_mode=finish_config.fsm_mode, allowed_transitions=set()))

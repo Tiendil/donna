@@ -126,14 +126,14 @@ class Workflow(MarkdownSectionMixin, Primitive):
         section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
-    ) -> Result[ArtifactSectionMeta, EnvironmentErrors]:
+    ) -> Result[ArtifactSectionMeta]:
         workflow_config = cast(WorkflowConfig, section_config)
         return Ok(WorkflowMeta(start_operation_id=workflow_config.start_operation_id))
 
     @unwrap_to_error
     def execute_section(
         self, task: "Task", unit: "WorkUnit", artifact: Artifact, section_id: SectionId
-    ) -> Result[list["Change"], EnvironmentErrors]:
+    ) -> Result[list["Change"]]:
         from donna.machine.changes import ChangeAddWorkUnit
 
         section = artifact.get_section(section_id).unwrap()
@@ -146,7 +146,7 @@ class Workflow(MarkdownSectionMixin, Primitive):
         self,
         artifact: Artifact,
         section: ArtifactSection,
-    ) -> Result[SectionId, EnvironmentErrors]:
+    ) -> Result[SectionId]:
         if not isinstance(section.meta, WorkflowMeta):
             return Err([WorkflowSectionNotWorkflow(artifact_id=artifact.id, section_id=section.id)])
 
@@ -162,9 +162,7 @@ class Workflow(MarkdownSectionMixin, Primitive):
         return Err([StartOperationMissing(artifact_id=artifact.id, section_id=section.id)])
 
     @unwrap_to_error
-    def validate_section(  # noqa: CCR001, CFQ001
-        self, artifact: Artifact, section_id: SectionId
-    ) -> Result[None, EnvironmentErrors]:
+    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None]:  # noqa: CCR001, CFQ001
         section = artifact.get_section(section_id).unwrap()
         start_operation_id = self._resolve_start_operation_id(artifact, section).unwrap()
 

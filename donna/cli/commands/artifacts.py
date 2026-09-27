@@ -36,7 +36,7 @@ def render(
     mode: RenderModeOption,
 ) -> None:
     with command_context(typer_context) as command:
-        artifact_id = parse_artifact_id_argument(artifact_path, command.target_dir())
+        artifact_id = parse_artifact_id_argument(artifact_path, command.target_dir()).unwrap()
         _log_artifact_operation(f"Render artifact `{artifact_id}` in `{mode.value}` mode")
 
         content = fetch_artifact_bytes(artifact_id).unwrap().decode("utf-8")
@@ -68,7 +68,8 @@ def validate(  # noqa: CCR001
         else:
             assert artifact_paths is not None
             artifact_ids = [
-                parse_artifact_id_argument(artifact_path, command.target_dir()) for artifact_path in artifact_paths
+                parse_artifact_id_argument(artifact_path, command.target_dir()).unwrap()
+                for artifact_path in artifact_paths
             ]
             _log_artifact_operation(
                 f"Validate artifacts {', '.join(f'`{artifact_id}`' for artifact_id in artifact_ids)}"

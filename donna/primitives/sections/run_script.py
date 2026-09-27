@@ -110,7 +110,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
-    ) -> Result[ArtifactSectionMeta, EnvironmentErrors]:
+    ) -> Result[ArtifactSectionMeta]:
         run_config = cast(RunScriptConfig, section_config)
         script = source.script().unwrap()
         if script is None:
@@ -143,7 +143,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
     @unwrap_to_error
     def execute_section(
         self, task: "Task", unit: "WorkUnit", artifact: Artifact, section_id: SectionId
-    ) -> Result[list["Change"], EnvironmentErrors]:
+    ) -> Result[list["Change"]]:
         from donna.machine.changes import ChangeAddWorkUnit, ChangeSetTaskContext
 
         operation = artifact.get_section(section_id).unwrap()
@@ -186,9 +186,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         changes.append(ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id))
         return Ok(changes)
 
-    def validate_section(  # noqa: CCR001
-        self, artifact: Artifact, section_id: SectionId
-    ) -> Result[None, EnvironmentErrors]:
+    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None]:  # noqa: CCR001
         section = artifact.get_section(section_id).unwrap()
 
         meta = cast(RunScriptMeta, section.meta)

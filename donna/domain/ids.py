@@ -1,6 +1,5 @@
 from typing import TypeVar
 
-from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Ok, Result
 from pydantic_core import core_schema
 
@@ -38,7 +37,7 @@ class Identifier(str):
         return value.isidentifier()
 
     @classmethod
-    def parse(cls: type[TIdentifier], text: str) -> Result[TIdentifier, EnvironmentErrors]:
+    def parse(cls: type[TIdentifier], text: str) -> Result[TIdentifier]:
         if not isinstance(text, str) or not text:
             return _invalid_format(cls.__name__, text)
 

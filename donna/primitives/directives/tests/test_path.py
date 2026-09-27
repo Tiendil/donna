@@ -1,5 +1,6 @@
 import pathlib
 
+from llm_tool_cli.paths.errors import InvalidProjectPath
 from pytest_mock import MockerFixture
 
 from donna.domain.artifact_ids import ArtifactId
@@ -12,7 +13,6 @@ from donna.primitives.directives.path import (
     PathInvalidArguments,
     PathInvalidKeywordArguments,
     PathInvalidMode,
-    PathNotProjectPath,
     PathRenderMode,
 )
 from donna.primitives.tests import make
@@ -136,8 +136,8 @@ class TestPath:
 
         assert result.is_err()
         error = result.unwrap_err()[0]
-        assert isinstance(error, PathNotProjectPath)
-        assert error.path == "../../outside.md"
+        assert isinstance(error, InvalidProjectPath)
+        assert error.path == "@/../../outside.md"
 
     def test_render_analyze__renders_regular_path(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         mocker.patch.object(path.workspace_config, "project_dir", return_value=ProjectRootPath(tmp_path))

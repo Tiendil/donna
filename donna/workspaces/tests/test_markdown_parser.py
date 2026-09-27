@@ -1,6 +1,5 @@
 from typing import ClassVar
 
-from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Err, Ok, Result
 from pytest_mock import MockerFixture
 
@@ -33,7 +32,7 @@ class _FailingMarkdownPrimitive(_MarkdownPrimitive):
         source: SectionSource,
         config: dict[str, object],
         primary: bool = False,
-    ) -> Result[ArtifactSection, EnvironmentErrors]:
+    ) -> Result[ArtifactSection]:
         return Err([workspace_errors.MarkdownArtifactWithoutSections(artifact_id=artifact_id)])
 
 

@@ -1,7 +1,6 @@
 import enum
 
-from llm_tool_cli.core.errors import EnvironmentErrors
-from llm_tool_cli.core.result import Err, Ok, Result
+from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 
 from donna.core import errors as core_errors
 from donna.domain.artifact_ids import ArtifactId
@@ -50,13 +49,6 @@ class PathArtifactContextMissing(EnvironmentError):
     ways_to_fix: list[str] = ["Render the directive inside a workflow artifact."]
 
 
-class PathNotProjectPath(EnvironmentError):
-    code: str = "donna.directives.path.not_project_path"
-    message: str = "Path directive could not normalize `{error.path}` to a project path inside the project root."
-    ways_to_fix: list[str] = ["Use a root-anchored path or a path that resolves inside the Donna project root."]
-    path: str
-
-
 class Path(Directive):
     def _prepare_arguments(
         self,
@@ -82,26 +74,21 @@ class Path(Directive):
 
         return Ok((str(argv[0]), mode, ArtifactId(raw_artifact_id)))
 
-    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object, EnvironmentErrors]:
+    @unwrap_to_error
+    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object]:
         raw_path = str(argv[0])
         mode: PathRenderMode = argv[1]  # type: ignore[assignment]
         artifact_id: ArtifactId = argv[2]  # type: ignore[assignment]
         project_root = workspace_config.project_dir()
 
-        normalized = normalize_project_path(raw_path, project_root, relative_to=artifact_id)
-
-        if normalized is None:
-            return Err([PathNotProjectPath(path=raw_path)])
+        normalized = normalize_project_path(raw_path, project_root, relative_to=artifact_id).unwrap()
 
         if mode == PathRenderMode.project:
             return Ok(normalized)
 
-        absolute = resolve_project_path(normalized, project_root)
-
-        if absolute is None:
-            return Err([PathNotProjectPath(path=raw_path)])
+        absolute = resolve_project_path(normalized, project_root).unwrap()
 
         return Ok(str(absolute))
 
-    def render_analyze(self, context: DirectiveContext, *argv: object) -> Result[object, EnvironmentErrors]:
+    def render_analyze(self, context: DirectiveContext, *argv: object) -> Result[object]:
         return self.render_view(context, *argv)

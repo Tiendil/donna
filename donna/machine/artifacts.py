@@ -49,7 +49,7 @@ class Artifact(BaseEntity):
     def _primary_sections(self) -> list[ArtifactSection]:
         return [section for section in self.sections if section.primary]
 
-    def primary_section(self) -> Result[ArtifactSection, EnvironmentErrors]:
+    def primary_section(self) -> Result[ArtifactSection]:
         primary_sections = self._primary_sections()
         if len(primary_sections) == 0:
             return Err([ArtifactPrimarySectionMissing(artifact_id=self.id)])
@@ -64,7 +64,7 @@ class Artifact(BaseEntity):
             )
         return Ok(primary_sections[0])
 
-    def validate_artifact(self) -> Result[None, EnvironmentErrors]:  # noqa: CCR001
+    def validate_artifact(self) -> Result[None]:  # noqa: CCR001
         primary_sections = self._primary_sections()
 
         errors: EnvironmentErrors = []
@@ -98,7 +98,7 @@ class Artifact(BaseEntity):
 
         return Ok(None)
 
-    def get_section(self, section_id: SectionId | None) -> Result[ArtifactSection, EnvironmentErrors]:
+    def get_section(self, section_id: SectionId | None) -> Result[ArtifactSection]:
         if section_id is None:
             return self.primary_section()
         for section in self.sections:
@@ -117,7 +117,7 @@ class Artifact(BaseEntity):
         return ArtifactNode(self)
 
     @unwrap_to_error
-    def markdown_blocks(self) -> Result[list[str], EnvironmentErrors]:
+    def markdown_blocks(self) -> Result[list[str]]:
         primary_section = self.primary_section().unwrap()
         blocks = [f"# {primary_section.title}", primary_section.description]
 

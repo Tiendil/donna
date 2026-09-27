@@ -101,6 +101,8 @@ Shared result types, the common environment-error model, and the environment-err
 
 The common entity base MUST be provided by `llm_tool_cli.core.entities` and imported directly by higher-level modules.
 
+Lexical project-path normalization MUST be provided by `llm_tool_cli`. Filesystem resolution and artifact-specific path behavior MUST remain Donna-owned.
+
 ### Submodule nuances
 
 #### `errors`

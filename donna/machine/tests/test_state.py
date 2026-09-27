@@ -1,4 +1,3 @@
-from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Ok, Result
 
 from donna.domain.internal_ids import TaskId, WorkUnitId
@@ -19,7 +18,7 @@ class _StateOperation(OperationKind):
         unit: WorkUnit,
         artifact: object,
         section_id: object,
-    ) -> Result[list[Change], EnvironmentErrors]:
+    ) -> Result[list[Change]]:
         return Ok([ChangeSetTaskContext(task_id=task.id, key="status", value="done")])
 
 

@@ -1,6 +1,5 @@
 import pathlib
 
-from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Ok, Result
 
 from donna.machine.artifacts import Artifact
@@ -14,8 +13,6 @@ class FakeRawArtifact:
         self.artifact = artifact
         self.render_modes: list[RenderMode] = []
 
-    def render(
-        self, artifact_id: object, render_context: ArtifactRenderContext
-    ) -> Result[Artifact, EnvironmentErrors]:
+    def render(self, artifact_id: object, render_context: ArtifactRenderContext) -> Result[Artifact]:
         self.render_modes.append(render_context.primary_mode)
         return Ok(self.artifact)

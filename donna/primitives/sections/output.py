@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING, ClassVar, cast
 
-from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 
 from donna.context.context import context
@@ -44,7 +43,7 @@ class Output(MarkdownSectionMixin, OperationKind):
         section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
-    ) -> Result[ArtifactSectionMeta, EnvironmentErrors]:
+    ) -> Result[ArtifactSectionMeta]:
         output_config = cast(OutputConfig, section_config)
 
         allowed_transitions: set[SectionId] = set()
@@ -62,7 +61,7 @@ class Output(MarkdownSectionMixin, OperationKind):
     @unwrap_to_error
     def execute_section(
         self, task: "Task", unit: "WorkUnit", artifact: Artifact, section_id: SectionId
-    ) -> Result[list["Change"], EnvironmentErrors]:
+    ) -> Result[list["Change"]]:
         from donna.machine.changes import ChangeAddWorkUnit
 
         operation = artifact.get_section(section_id).unwrap()
@@ -79,7 +78,7 @@ class Output(MarkdownSectionMixin, OperationKind):
 
         return Ok([ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id)])
 
-    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None, EnvironmentErrors]:
+    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None]:
         section = artifact.get_section(section_id).unwrap()
         meta = cast(OutputMeta, section.meta)
 

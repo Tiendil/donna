@@ -18,7 +18,7 @@ class FakeArtifacts:
         self.viewed: list[ArtifactId] = []
         self.executed: list[tuple[ArtifactId, Task, WorkUnit]] = []
 
-    def load_for_view(self, artifact_id: ArtifactId) -> Result[Artifact, EnvironmentErrors]:
+    def load_for_view(self, artifact_id: ArtifactId) -> Result[Artifact]:
         self.viewed.append(artifact_id)
         if self.error is not None:
             return Err(self.error)
@@ -30,7 +30,7 @@ class FakeArtifacts:
         artifact_id: ArtifactId,
         task: Task,
         work_unit: WorkUnit,
-    ) -> Result[Artifact, EnvironmentErrors]:
+    ) -> Result[Artifact]:
         self.executed.append((artifact_id, task, work_unit))
         if self.error is not None:
             return Err(self.error)
@@ -44,7 +44,7 @@ class FakePrimitives:
         self.error = error
         self.resolved: list[PythonPath] = []
 
-    def resolve(self, primitive_id: PythonPath) -> Result[Primitive, EnvironmentErrors]:
+    def resolve(self, primitive_id: PythonPath) -> Result[Primitive]:
         self.resolved.append(primitive_id)
         if self.error is not None:
             return Err(self.error)

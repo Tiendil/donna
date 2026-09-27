@@ -78,7 +78,7 @@ class CommandContext:
             workspace_config.protocol.set(self.protocol)
 
     @unwrap_to_error
-    def load_workspace(self) -> Result[workspace_config.Workspace, EnvironmentErrors]:
+    def load_workspace(self) -> Result[workspace_config.Workspace]:
         config_path = ProjectConfigPath(
             locate_config(DONNA_CONFIG_NAME, path=self.global_options.config_path, cwd=pathlib.Path.cwd()).unwrap()
         )

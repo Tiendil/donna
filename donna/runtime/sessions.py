@@ -1,7 +1,6 @@
 import functools
 from typing import Callable, ParamSpec
 
-from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 
 from donna.context.context import context
@@ -17,7 +16,7 @@ from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
 
 
 @unwrap_to_error
-def load_state() -> Result[ConsistentState, EnvironmentErrors]:
+def load_state() -> Result[ConsistentState]:
     loaded = context().state.load()
 
     if loaded.is_ok():
@@ -33,13 +32,13 @@ def load_state() -> Result[ConsistentState, EnvironmentErrors]:
 
 
 @unwrap_to_error
-def _save_state(state: ConsistentState) -> Result[None, EnvironmentErrors]:
+def _save_state(state: ConsistentState) -> Result[None]:
     context().state.save(state).unwrap()
     return Ok(None)
 
 
 @unwrap_to_error
-def _state_run(mutator: MutableState) -> Result[None, EnvironmentErrors]:
+def _state_run(mutator: MutableState) -> Result[None]:
     while mutator.has_work():
         mutator.execute_next_work_unit().unwrap()
         _save_state(mutator.freeze()).unwrap()
@@ -48,12 +47,12 @@ def _state_run(mutator: MutableState) -> Result[None, EnvironmentErrors]:
 
 
 @unwrap_to_error
-def _state_cells() -> Result[list[Cell], EnvironmentErrors]:
+def _state_cells() -> Result[list[Cell]]:
     return Ok(load_state().unwrap().node().details())
 
 
 P = ParamSpec("P")
-CellsResult = Result[list[Cell], EnvironmentErrors]
+CellsResult = Result[list[Cell]]
 
 
 def _session_required(
@@ -71,7 +70,7 @@ def _session_required(
 
 
 @unwrap_to_error
-def new_session() -> Result[list[Cell], EnvironmentErrors]:
+def new_session() -> Result[list[Cell]]:
     _save_state(MutableState.build().freeze()).unwrap()
 
     context().journal.add(message="Created new session state.").unwrap()
@@ -80,14 +79,14 @@ def new_session() -> Result[list[Cell], EnvironmentErrors]:
 
 
 @unwrap_to_error
-def clear() -> Result[list[Cell], EnvironmentErrors]:
+def clear() -> Result[list[Cell]]:
     workspace_sessions.reset_dir()
     return Ok([operation_succeeded("Cleared session.")])
 
 
 @_session_required
 @unwrap_to_error
-def continue_() -> Result[list[Cell], EnvironmentErrors]:
+def continue_() -> Result[list[Cell]]:
     mutator = load_state().unwrap().mutator()
     _state_run(mutator).unwrap()
     return _state_cells()
@@ -95,19 +94,19 @@ def continue_() -> Result[list[Cell], EnvironmentErrors]:
 
 @_session_required
 @unwrap_to_error
-def status() -> Result[list[Cell], EnvironmentErrors]:
+def status() -> Result[list[Cell]]:
     return Ok([load_state().unwrap().node().info()])
 
 
 @_session_required
 @unwrap_to_error
-def details() -> Result[list[Cell], EnvironmentErrors]:
+def details() -> Result[list[Cell]]:
     return Ok(load_state().unwrap().node().details())
 
 
 @_session_required
 @unwrap_to_error
-def start_workflow(artifact_id: ArtifactId) -> Result[list[Cell], EnvironmentErrors]:  # noqa: CCR001
+def start_workflow(artifact_id: ArtifactId) -> Result[list[Cell]]:  # noqa: CCR001
     static_state = load_state().unwrap()
     workflow = context().artifacts.load(artifact_id, RENDER_CONTEXT_VIEW).unwrap()
     primary_section = workflow.primary_section().unwrap()
@@ -121,7 +120,7 @@ def start_workflow(artifact_id: ArtifactId) -> Result[list[Cell], EnvironmentErr
 @unwrap_to_error
 def _validate_operation_transition(
     state: MutableState, request_id: ActionRequestId, next_operation_id: ArtifactSectionId
-) -> Result[None, EnvironmentErrors]:
+) -> Result[None]:
     operation_id = state.get_action_request(request_id).unwrap().operation_id
     operation_parts = split_artifact_section_id(operation_id)
     assert operation_parts is not None
@@ -143,9 +142,7 @@ def _validate_operation_transition(
 
 @_session_required
 @unwrap_to_error
-def complete_action_request(
-    request_id: ActionRequestId, next_operation_id: ArtifactSectionId
-) -> Result[list[Cell], EnvironmentErrors]:
+def complete_action_request(request_id: ActionRequestId, next_operation_id: ArtifactSectionId) -> Result[list[Cell]]:
     mutator = load_state().unwrap().mutator()
     _validate_operation_transition(mutator, request_id, next_operation_id).unwrap()
     mutator.complete_action_request(request_id, next_operation_id).unwrap()

@@ -2,12 +2,13 @@ import pathlib
 from typing import TYPE_CHECKING, Iterator, Sequence
 
 from llm_tool_cli.core.entities import BaseEntity
-from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.paths import ProjectPathId
+from llm_tool_cli.paths.errors import InvalidProjectPath
 
 from donna.domain.artifact_ids import ArtifactId, artifact_path_parts, validate_artifact_id
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
-from donna.domain.paths import ProjectPathId, RelativeProjectPath, ResolvedProjectPath, UntrustedPath
+from donna.domain.paths import RelativeProjectPath, ResolvedProjectPath, UntrustedPath
 from donna.machine.tasks import Task, WorkUnit
 from donna.machine.templates import RenderMode
 from donna.workspaces import errors as world_errors
@@ -34,9 +35,7 @@ class FilesystemRawArtifact(BaseEntity):
         return pathlib.Path(self.path).read_bytes()
 
     @unwrap_to_error
-    def render(
-        self, artifact_id: ArtifactId, render_context: ArtifactRenderContext
-    ) -> Result["Artifact", EnvironmentErrors]:
+    def render(self, artifact_id: ArtifactId, render_context: ArtifactRenderContext) -> Result["Artifact"]:
         return Ok(render_markdown_artifact(artifact_id, self.get_bytes(), render_context).unwrap())
 
 
@@ -131,7 +130,7 @@ def list_artifact_ids() -> list[ArtifactId]:
     return artifacts
 
 
-def resolve_artifact_path(artifact_id: ArtifactId) -> Result[ResolvedProjectPath | None, EnvironmentErrors]:
+def resolve_artifact_path(artifact_id: ArtifactId) -> Result[ResolvedProjectPath | None]:
     from donna.workspaces.config import project_dir
 
     artifact_path = project_dir().joinpath(*artifact_path_parts(artifact_id))
@@ -141,20 +140,24 @@ def resolve_artifact_path(artifact_id: ArtifactId) -> Result[ResolvedProjectPath
     if not artifact_path.exists() or not artifact_path.is_file():
         return Ok(None)
 
-    if normalize_existing_path(UntrustedPath(artifact_path), UntrustedPath(project_dir())) is None:
+    normalized = normalize_existing_path(UntrustedPath(artifact_path), UntrustedPath(project_dir()))
+    if normalized.is_err(InvalidProjectPath):
         return Ok(None)
+
+    if normalized.is_err():
+        return normalized  # type: ignore[return-value]
 
     return Ok(ResolvedProjectPath(artifact_path))
 
 
 @unwrap_to_error
-def fetch_artifact_bytes(artifact_id: ArtifactId) -> Result[bytes, EnvironmentErrors]:
+def fetch_artifact_bytes(artifact_id: ArtifactId) -> Result[bytes]:
     raw_artifact = fetch_raw_artifact(artifact_id).unwrap()
     return Ok(raw_artifact.get_bytes())
 
 
 @unwrap_to_error
-def fetch_raw_artifact(artifact_id: ArtifactId) -> Result[FilesystemRawArtifact, EnvironmentErrors]:
+def fetch_raw_artifact(artifact_id: ArtifactId) -> Result[FilesystemRawArtifact]:
     if not _artifact_is_visible_in_workspace(artifact_id):
         return Err([world_errors.ArtifactNotFound(artifact_id=artifact_id)])
 
@@ -174,7 +177,7 @@ def render_markdown_artifact(
     artifact_id: ArtifactId,
     content: bytes,
     render_context: ArtifactRenderContext,
-) -> Result["Artifact", EnvironmentErrors]:
+) -> Result["Artifact"]:
     from donna.workspaces.config import config
     from donna.workspaces.markdown_parser import construct_artifact_from_bytes
 
@@ -193,7 +196,7 @@ def render_markdown_artifact(
 
 
 @unwrap_to_error
-def artifact_fingerprint(artifact_id: ArtifactId) -> Result[FileFingerprint | None, EnvironmentErrors]:
+def artifact_fingerprint(artifact_id: ArtifactId) -> Result[FileFingerprint | None]:
     artifact_path = resolve_artifact_path(artifact_id).unwrap()
 
     if artifact_path is None:

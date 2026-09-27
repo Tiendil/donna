@@ -2,7 +2,6 @@ import importlib.resources
 import pathlib
 
 from llm_tool_cli.config import create_config, load_config, locate_config, resolve_config_path
-from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 
 from donna.domain.constants import DONNA_CONFIG_NAME
@@ -18,7 +17,7 @@ BASE_CONFIG_FIXTURE = "base_config.toml"
 def initialize_runtime(
     config_path: PathInput | None = None,
     protocol: Mode | None = None,
-) -> Result[config.Workspace, EnvironmentErrors]:
+) -> Result[config.Workspace]:
     """Initialize the runtime environment for the application.
 
     This function MUST be called before any other operations.
@@ -37,7 +36,7 @@ def initialize_runtime(
 
 
 @unwrap_to_error
-def initialize_workspace(config_path: PathInput) -> Result[config.Workspace, EnvironmentErrors]:
+def initialize_workspace(config_path: PathInput) -> Result[config.Workspace]:
     """Initialize Donna project configuration."""
     config_path = ProjectConfigPath(resolve_config_path(pathlib.Path(config_path), pathlib.Path.cwd()).unwrap())
     try:

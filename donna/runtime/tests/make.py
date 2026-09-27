@@ -28,7 +28,7 @@ class FakeStateStore:
         self.loaded_count = 0
         self.saved: list[ConsistentState] = []
 
-    def load(self) -> Result[ConsistentState, EnvironmentErrors]:
+    def load(self) -> Result[ConsistentState]:
         self.loaded_count += 1
 
         if self.errors is not None:
@@ -37,7 +37,7 @@ class FakeStateStore:
         assert self.state is not None
         return Ok(self.state)
 
-    def save(self, state: ConsistentState) -> Result[None, EnvironmentErrors]:
+    def save(self, state: ConsistentState) -> Result[None]:
         self.saved.append(state)
         self.state = state
         self.errors = None
@@ -51,13 +51,11 @@ class FakeArtifacts:
         self.viewed: list[ArtifactId] = []
         self.executed: list[tuple[ArtifactId, Task, WorkUnit]] = []
 
-    def load(
-        self, artifact_id: ArtifactId, render_context: ArtifactRenderContext
-    ) -> Result[Artifact, EnvironmentErrors]:
+    def load(self, artifact_id: ArtifactId, render_context: ArtifactRenderContext) -> Result[Artifact]:
         self.loaded.append((artifact_id, render_context))
         return Ok(self.artifact)
 
-    def load_for_view(self, artifact_id: ArtifactId) -> Result[Artifact, EnvironmentErrors]:
+    def load_for_view(self, artifact_id: ArtifactId) -> Result[Artifact]:
         self.viewed.append(artifact_id)
         return Ok(self.artifact)
 
@@ -66,7 +64,7 @@ class FakeArtifacts:
         artifact_id: ArtifactId,
         task: Task,
         work_unit: WorkUnit,
-    ) -> Result[Artifact, EnvironmentErrors]:
+    ) -> Result[Artifact]:
         self.executed.append((artifact_id, task, work_unit))
         return Ok(self.artifact)
 
@@ -76,7 +74,7 @@ class FakePrimitives:
         self.primitive = primitive
         self.resolved: list[PythonPath] = []
 
-    def resolve(self, primitive_id: PythonPath) -> Result[Primitive, EnvironmentErrors]:
+    def resolve(self, primitive_id: PythonPath) -> Result[Primitive]:
         self.resolved.append(primitive_id)
         return Ok(self.primitive)
 

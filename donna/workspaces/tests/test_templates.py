@@ -1,6 +1,6 @@
 import pytest
 from llm_tool_cli.core import errors as llm_tool_errors
-from llm_tool_cli.core.errors import EnvironmentError, EnvironmentErrors, EnvironmentErrorsProxy
+from llm_tool_cli.core.errors import EnvironmentError, EnvironmentErrorsProxy
 from llm_tool_cli.core.result import Err, Ok, Result, UnwrapErrError, UnwrapError
 from pytest_mock import MockerFixture
 
@@ -16,28 +16,28 @@ from donna.workspaces.tests import make
 class _Directive(Directive):
     analyze_id: str = "sample"
 
-    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object, EnvironmentErrors]:
+    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object]:
         return Ok(f"{context['render_mode']}:{','.join(str(arg) for arg in argv)}")
 
 
 class _FailingDirective(Directive):
     analyze_id: str = "failing"
 
-    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object, EnvironmentErrors]:
+    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object]:
         return Err([workspace_errors.MarkdownArtifactWithoutSections(artifact_id=make.ARTIFACT_ID)])
 
 
 class _ExplodingDirective(Directive):
     analyze_id: str = "exploding"
 
-    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object, EnvironmentErrors]:
+    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object]:
         raise RuntimeError("boom")
 
 
 class _SharedFailureDirective(Directive):
     analyze_id: str = "shared_failure"
 
-    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object, EnvironmentErrors]:
+    def render_view(self, context: DirectiveContext, *argv: object) -> Result[object]:
         return Err([EnvironmentError(code="shared.unavailable", message="Service unavailable")])
 
 
@@ -58,7 +58,7 @@ class TestDirectivePathBuilder:
     @pytest.mark.parametrize(
         "failure",
         [
-            UnwrapError(error="unexpected error payload"),
+            UnwrapError(error=[EnvironmentError(code="unexpected", message="Unexpected error")]),
             UnwrapErrError(value="successful result"),
             workspace_errors.GlobalConfigNotSet(),
         ],
@@ -77,7 +77,7 @@ class TestDirectivePathBuilder:
     @pytest.mark.parametrize(
         "failure",
         [
-            UnwrapError(error="unexpected error payload"),
+            UnwrapError(error=[EnvironmentError(code="unexpected", message="Unexpected error")]),
             UnwrapErrError(value="successful result"),
             workspace_errors.GlobalConfigNotSet(),
         ],

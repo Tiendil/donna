@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Ok, Result, unwrap_to_error
 
 from donna.core.utils import now
@@ -40,7 +39,7 @@ class Journal:
         self,
         message: str,
         actor_id: str | None = None,
-    ) -> Result[protocol_journal.JournalRecord, EnvironmentErrors]:
+    ) -> Result[protocol_journal.JournalRecord]:
         if actor_id is None:
             actor_id = self.smart_actor_id()
 

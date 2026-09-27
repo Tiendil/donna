@@ -2,7 +2,6 @@ from collections.abc import Callable
 from functools import total_ordering
 from typing import Self, Sequence, TypeVar
 
-from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Err, Ok, Result
 from pydantic_core import PydanticCustomError, core_schema
 
@@ -34,7 +33,7 @@ def _pydantic_value_error(type_name: str, value: object) -> PydanticCustomError:
 TParsed = TypeVar("TParsed")
 
 
-def _invalid_format(id_type: str, value: object) -> Result[TParsed, EnvironmentErrors]:
+def _invalid_format(id_type: str, value: object) -> Result[TParsed]:
     return Err([domain_errors.InvalidIdFormat(id_type=id_type, value=_stringify_value(value))])
 
 
@@ -135,7 +134,7 @@ class IdPath:
         raise AttributeError(f"{type(self).__name__} is immutable")
 
     @classmethod
-    def parse(cls, text: object) -> Result[Self, EnvironmentErrors]:
+    def parse(cls, text: object) -> Result[Self]:
         normalized = cls.normalize_raw_value(text)
         if normalized is None:
             return _invalid_format(cls.__name__, text)

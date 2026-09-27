@@ -1,4 +1,3 @@
-from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Ok, Result
 
 from donna.protocol.cells import Cell
@@ -22,7 +21,7 @@ class FakeJournal:
         self.messages: list[tuple[str | None, str]] = []
         self.records: list[dict[str, object]] = []
 
-    def add(self, message: str, actor_id: str | None = None) -> Result[object, EnvironmentErrors]:
+    def add(self, message: str, actor_id: str | None = None) -> Result[object]:
         self.messages.append((actor_id, message))
         self.records.append({"message": message, "actor_id": actor_id})
         return Ok(None)

@@ -170,6 +170,22 @@ class TestListArtifactIds:
 
 
 class TestResolveArtifactPath:
+    def test_resolve_artifact_path__skips_symlink_outside_project(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
+        project = tmp_path / "project"
+        workflows = project / "workflows"
+        workflows.mkdir(parents=True)
+        outside = tmp_path / "outside.donna.md"
+        outside.write_text("", encoding="utf-8")
+        (workflows / "test.donna.md").symlink_to(outside)
+        mocker.patch("donna.workspaces.config.project_dir", return_value=project)
+
+        result = artifacts.resolve_artifact_path(make.ARTIFACT_ID)
+
+        assert result.is_ok()
+        assert result.unwrap() is None
+
     def test_resolve_artifact_path__returns_existing_visible_file(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:

@@ -123,7 +123,8 @@ class TestCommandContext:
         assert not result.stderr
 
     def test_unrecognized_unwrap_payload__is_not_silently_dropped(self, mocker: MockerFixture) -> None:
-        failure = UnwrapError(error=["unexpected payload"])
+        failure = UnwrapError(error=[])
+        failure.details["error"] = ["unexpected payload"]
         mocker.patch("donna.cli.utils.locate_config", side_effect=failure)
 
         result = helpers.invoke(["-p", "automation", "list"])

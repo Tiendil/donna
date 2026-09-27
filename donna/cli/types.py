@@ -1,29 +1,23 @@
 import pathlib
-from typing import Annotated, NoReturn
+from typing import Annotated
 
 import typer
-from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 
-from donna.cli.utils import output_cells
 from donna.domain import errors as domain_errors
 from donna.domain.artifact_ids import (
     ARTIFACT_SECTION_DELIMITER,
     ArtifactId,
     ArtifactSectionId,
+    validate_artifact_id,
 )
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 from donna.domain.internal_ids import ActionRequestId
 from donna.domain.paths import PathInput, UntrustedPath
 from donna.machine.templates import RenderMode
-from donna.protocol.errors import environment_error_node
 from donna.protocol.modes import Mode
 from donna.workspaces import paths as workspace_paths
 from donna.workspaces.artifacts import has_donna_artifact_extension
-
-
-def _exit_with_errors(errors: EnvironmentErrors) -> NoReturn:
-    output_cells([environment_error_node(error).info() for error in errors])
-    raise typer.Exit(code=0)
 
 
 def _parse_raw_artifact_path(value: str) -> str:
@@ -37,35 +31,27 @@ def _artifact_filename(value: str) -> str:
     return pathlib.PurePosixPath(value.split(ARTIFACT_SECTION_DELIMITER, maxsplit=1)[0]).name
 
 
-def parse_artifact_id_argument(value: str, project_root: PathInput) -> ArtifactId:
-    artifact_path = workspace_paths.normalize_artifact_path(
+@unwrap_to_error
+def parse_artifact_id_argument(value: str, project_root: PathInput) -> Result[ArtifactId]:
+    artifact_path = workspace_paths.normalize_project_path(
         value, UntrustedPath(project_root), cwd=UntrustedPath(pathlib.Path.cwd())
-    )
-    if artifact_path is None:
-        _exit_with_errors([domain_errors.InvalidIdFormat(id_type=ArtifactId.__name__, value=value)])
+    ).unwrap()
 
     if not has_donna_artifact_extension(_artifact_filename(artifact_path)):
         raise typer.BadParameter(
             f"Unsupported artifact extension for '{artifact_path}'. Use '*{DONNA_ARTIFACT_EXTENSION}'."
         )
 
-    artifact_id = workspace_paths.normalize_artifact_id(
+    if not validate_artifact_id(artifact_path):
+        return Err([domain_errors.InvalidIdFormat(id_type=ArtifactId.__name__, value=value)])
+
+    return Ok(ArtifactId(artifact_path))
+
+
+def parse_artifact_section_id_argument(value: str, project_root: PathInput) -> Result[ArtifactSectionId]:
+    return workspace_paths.normalize_artifact_section_id(
         value, UntrustedPath(project_root), cwd=UntrustedPath(pathlib.Path.cwd())
     )
-    if artifact_id is None:
-        _exit_with_errors([domain_errors.InvalidIdFormat(id_type=ArtifactId.__name__, value=value)])
-
-    return artifact_id
-
-
-def parse_artifact_section_id_argument(value: str, project_root: PathInput) -> ArtifactSectionId:
-    section_id = workspace_paths.normalize_artifact_section_id(
-        value, UntrustedPath(project_root), cwd=UntrustedPath(pathlib.Path.cwd())
-    )
-    if section_id is None:
-        _exit_with_errors([domain_errors.InvalidIdFormat(id_type=f"{ArtifactSectionId.__name__} format", value=value)])
-
-    return section_id
 
 
 def _parse_action_request_id(value: str) -> ActionRequestId:
