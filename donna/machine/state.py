@@ -5,6 +5,7 @@ from typing import Sequence, cast
 import pydantic
 from llm_tool_cli.core.entities import BaseEntity
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.protocol.cells import Cell
 
 from donna.domain.artifact_ids import ArtifactSectionId, split_artifact_section_id
 from donna.domain.internal_ids import ActionRequestId, InternalId, TaskId, WorkUnitId
@@ -20,7 +21,6 @@ from donna.machine.changes import (
 )
 from donna.machine.context import context
 from donna.machine.tasks import Task, WorkUnit
-from donna.protocol.cells import Cell
 from donna.protocol.nodes import Node
 
 

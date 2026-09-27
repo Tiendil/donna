@@ -11,12 +11,12 @@ from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Ok, Result, UnwrapError, unwrap_to_error
 from llm_tool_cli.paths import PathInput, ProjectConfigPath
 from llm_tool_cli.protocol import Protocol, write_output
+from llm_tool_cli.protocol.cells import Cell
 
 from donna.cli.entities import GLOBAL_OPTIONS_CONTEXT_KEY, GlobalOptions
 from donna.context.context import Context
 from donna.core.errors import EnvironmentError
 from donna.domain.constants import DONNA_CONFIG_NAME
-from donna.protocol.cells import Cell
 from donna.protocol.errors import environment_error_node
 from donna.protocol.formatters import Formatter
 from donna.protocol.journal import JournalRecord

@@ -3,13 +3,13 @@ from collections.abc import Mapping
 from llm_tool_cli.core.entities import BaseEntity
 from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.protocol.cells import Cell, MetaValue
 
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
 from donna.machine.context import context
 from donna.machine.errors import ArtifactPrimarySectionMissing, ArtifactSectionNotFound, MultiplePrimarySectionsError
-from donna.protocol.cells import Cell, MetaValue
 from donna.protocol.errors import environment_error_node
 from donna.protocol.nodes import Node
 

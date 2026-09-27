@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from donna.protocol.cells import Cell
+from llm_tool_cli.protocol.cells import Cell
 
 
 class Node(ABC):

@@ -1,10 +1,11 @@
 import datetime
 import uuid
 
+from llm_tool_cli.protocol.cells import Cell
+
 from donna.domain.artifact_ids import ArtifactId, artifact_section_id
 from donna.domain.ids import SectionId
 from donna.domain.internal_ids import TaskId, WorkUnitId
-from donna.protocol.cells import Cell
 from donna.protocol.journal import JournalRecord
 
 

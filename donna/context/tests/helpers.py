@@ -1,6 +1,6 @@
 from llm_tool_cli.core.result import Ok, Result
+from llm_tool_cli.protocol.cells import Cell
 
-from donna.protocol.cells import Cell
 from donna.protocol.journal import JournalRecord
 
 

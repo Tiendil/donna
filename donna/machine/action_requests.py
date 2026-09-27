@@ -1,10 +1,10 @@
 import textwrap
 
 from llm_tool_cli.core.entities import BaseEntity
+from llm_tool_cli.protocol.cells import Cell
 
 from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import ActionRequestId
-from donna.protocol.cells import Cell
 from donna.protocol.nodes import Node
 
 

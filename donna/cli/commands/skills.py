@@ -1,10 +1,10 @@
 from typing import Annotated
 
 import typer
+from llm_tool_cli.protocol.cells import Cell
 
 from donna.cli.application import app
 from donna.cli.utils import command_context
-from donna.protocol.cells import Cell
 from donna.skills.entities import SkillDocument
 from donna.skills.fixtures import load_skill_text
 

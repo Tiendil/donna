@@ -2,6 +2,7 @@ import functools
 from typing import Callable, ParamSpec
 
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.protocol.cells import Cell
 
 from donna.context.context import context
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId, artifact_section_id, split_artifact_section_id
@@ -10,7 +11,6 @@ from donna.machine import errors as machine_errors
 from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
 from donna.protocol.cell_shortcuts import operation_succeeded
-from donna.protocol.cells import Cell
 from donna.workspaces import sessions as workspace_sessions
 from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
 

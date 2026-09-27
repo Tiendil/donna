@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, ClassVar, cast
 
 from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.protocol.cells import MetaValue
 
 from donna.core import errors as core_errors
 from donna.domain.artifact_ids import ArtifactId, artifact_section_id
@@ -11,7 +12,6 @@ from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionCo
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import FsmMode, OperationMeta
 from donna.machine.primitives import Primitive
-from donna.protocol.cells import MetaValue
 from donna.workspaces import markdown
 from donna.workspaces.markdown_parser import MarkdownSectionMixin
 

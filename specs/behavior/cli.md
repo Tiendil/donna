@@ -172,19 +172,13 @@ Additional fields MAY be added in future versions. Consumers MUST ignore unknown
 
 A Donna cell is the protocol-level output unit used by most CLI commands.
 
-Each Donna cell MUST have:
+Donna MUST use the shared cell model provided by `llm_tool_cli`, which owns cell fields, identifier generation, construction, metadata conversion, and cell validation errors.
 
-- a generated `id`.
-- a `kind`.
-- optional `media_type`.
-- optional `content`.
-- metadata fields.
+Donna owns the projection of its results into cells and the human, LLM, and automation representations specified here.
 
-Cell ids MAY be generated at runtime. Consumers MUST NOT treat generated cell ids as deterministic identifiers.
+Consumers MUST NOT treat generated cell ids as deterministic identifiers.
 
 Cell metadata fields MUST be rendered in deterministic order by metadata key when the selected formatter emits ordered metadata.
-
-Cell content MUST have a media type when content is present.
 
 Commands MAY emit multiple cells for one invocation.
 

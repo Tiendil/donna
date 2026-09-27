@@ -1,7 +1,7 @@
 from llm_tool_cli.core.errors import EnvironmentError
 from llm_tool_cli.protocol import to_jsonl
+from llm_tool_cli.protocol.cells import Cell, MetaValue
 
-from donna.protocol.cells import Cell, MetaValue
 from donna.protocol.formatters.base import Formatter as BaseFormatter
 from donna.protocol.journal import JournalRecord
 

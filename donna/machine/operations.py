@@ -2,10 +2,11 @@ import enum
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
+from llm_tool_cli.protocol.cells import MetaValue
+
 from donna.domain.ids import SectionId
 from donna.machine.artifacts import ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.primitives import Primitive
-from donna.protocol.cells import MetaValue
 
 if TYPE_CHECKING:
     pass

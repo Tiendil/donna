@@ -1,6 +1,7 @@
 from typing import Protocol
 
-from donna.protocol.cells import Cell
+from llm_tool_cli.protocol.cells import Cell
+
 from donna.protocol.journal import JournalRecord
 
 

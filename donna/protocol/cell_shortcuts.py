@@ -1,4 +1,4 @@
-from donna.protocol.cells import Cell, MetaValue
+from llm_tool_cli.protocol.cells import Cell, MetaValue
 
 
 def operation_succeeded(message: str, **meta: MetaValue) -> Cell:

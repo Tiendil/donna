@@ -1,9 +1,9 @@
 from typing import ClassVar
 
 from llm_tool_cli.core.errors import EnvironmentError
+from llm_tool_cli.protocol.cells import Cell, MetaValue, to_meta_value
 
 from donna.core import errors as core_errors
-from donna.protocol.cells import Cell, MetaValue, to_meta_value
 from donna.protocol.nodes import Node
 
 
@@ -17,10 +17,6 @@ class ModeNotSet(InternalError):
 
 class UnsupportedFormatterMode(InternalError):
     message_template: ClassVar[str] = "Formatter for mode '{mode}' is not implemented."
-
-
-class ContentWithoutMediaType(InternalError):
-    message_template: ClassVar[str] = "Cannot set content when media_type is None."
 
 
 class EnvironmentErrorNode(Node):

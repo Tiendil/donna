@@ -56,7 +56,7 @@ The following topics are out of scope:
   - primitive-specific validation, rendering, and execution logic.
 - `./donna/lib/` — module responsible for stable public names of built-in primitive instances used by Donna artifact configuration.
 - `./donna/protocol/` — module responsible for Donna output boundary values and protocol formatting. Contains:
-  - protocol-neutral output value definitions used to communicate Donna results between modules.
+  - Donna-specific output value definitions and projections into shared cells used to communicate Donna results between modules.
   - generic helpers for projecting Donna-owned data and errors into output values.
   - protocol enums.
   - formatter selection.
@@ -100,6 +100,9 @@ The `errors`, `entities`, and `tests` submodules MUST follow the corresponding a
 Shared result types, the common environment-error model, and the environment-error callback proxy MUST be provided by `llm_tool_cli` and imported directly from their owning modules.
 
 The common entity base MUST be provided by `llm_tool_cli.core.entities` and imported directly by higher-level modules.
+
+The cell model, construction helpers, metadata conversion, and cell errors MUST be provided by `llm_tool_cli` and imported directly from their owning modules.
+Donna MUST retain ownership of its cell projections, formatters, journal records, and output routing.
 
 Lexical project-path normalization MUST be provided by `llm_tool_cli`. Filesystem resolution and artifact-specific path behavior MUST remain Donna-owned.
 

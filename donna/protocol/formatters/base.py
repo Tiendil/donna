@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 
 from llm_tool_cli.core.errors import EnvironmentError
+from llm_tool_cli.protocol.cells import Cell
 
-from donna.protocol.cells import Cell
 from donna.protocol.journal import JournalRecord
 
 
