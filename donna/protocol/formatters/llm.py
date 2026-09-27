@@ -42,4 +42,4 @@ class Formatter(BaseFormatter):
             f"[{current_operation_id}] "
             f"{record.message}"
         )
-        return output.encode()
+        return (output + "\n").encode("utf-8")

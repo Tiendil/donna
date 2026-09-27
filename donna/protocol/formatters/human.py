@@ -32,4 +32,4 @@ class Formatter(BaseFormatter):
         actor_id = record.actor_id or "-"
         current_task_id = record.current_task_id.short if record.current_task_id is not None else "-"
         output = f"{timestamp} [{current_task_id}] <{actor_id}> {record.message}"
-        return output.encode()
+        return (output + "\n").encode("utf-8")

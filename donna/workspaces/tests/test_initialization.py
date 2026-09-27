@@ -5,10 +5,10 @@ from llm_tool_cli.config import create_config
 from llm_tool_cli.config import errors as config_errors
 from llm_tool_cli.core.result import Err, Ok, Result
 from llm_tool_cli.paths import PathInput
+from llm_tool_cli.protocol import Protocol
 from pytest_mock import MockerFixture
 
 from donna.domain.constants import DONNA_CONFIG_NAME
-from donna.protocol.modes import Mode
 from donna.workspaces import config as workspace_config
 from donna.workspaces import errors as workspace_errors
 from donna.workspaces.config import GlobalConfig
@@ -220,18 +220,18 @@ class TestInitializeRuntime:
     def test_loads_workspace_installs_protocol_and_workspace(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
-        protocol = GlobalConfig[Mode]()
+        protocol = GlobalConfig[Protocol]()
         mocker.patch.object(workspace_config, "protocol", protocol)
         install_workspace = mocker.patch("donna.workspaces.config.install_workspace")
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text("version = 1", encoding="utf-8")
 
-        workspace = initialize_runtime(config_path=PathInput(config_path), protocol=Mode.llm).unwrap()
-        assert protocol.get() == Mode.llm
+        workspace = initialize_runtime(config_path=PathInput(config_path), protocol=Protocol.llm).unwrap()
+        assert protocol.get() == Protocol.llm
         install_workspace.assert_called_once_with(workspace)
 
     def test_loads_workspace_without_protocol_override(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
-        protocol = GlobalConfig[Mode]()
+        protocol = GlobalConfig[Protocol]()
         mocker.patch.object(workspace_config, "protocol", protocol)
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text("version = 1", encoding="utf-8")

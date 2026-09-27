@@ -14,7 +14,7 @@ from donna.domain.python_path import PythonPath
 from donna.workspaces import errors as world_errors
 
 if TYPE_CHECKING:
-    from donna.protocol.modes import Mode
+    from llm_tool_cli.protocol import Protocol
 
 
 class JournalRecordAttribute(str, enum.Enum):
@@ -159,7 +159,7 @@ class GlobalConfig[V]():
 project_dir = GlobalConfig[ProjectRootPath]()
 config_path = GlobalConfig[ProjectConfigPath]()
 config = GlobalConfig[Config]()
-protocol: GlobalConfig["Mode"] = GlobalConfig()
+protocol: GlobalConfig["Protocol"] = GlobalConfig()
 
 
 def install_workspace(workspace: Workspace) -> None:

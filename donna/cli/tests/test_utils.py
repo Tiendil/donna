@@ -1,16 +1,54 @@
+import io
 import pathlib
+import sys
 
 import pytest
 from llm_tool_cli.config import errors as config_errors
 from llm_tool_cli.core import errors as llm_tool_errors
 from llm_tool_cli.core.result import Err, Ok, UnwrapError
+from llm_tool_cli.protocol import Protocol
 from pytest_mock import MockerFixture
 
 from donna.cli.tests import helpers
+from donna.cli.utils import CliEmitter
 from donna.context import Context, context, reset_context, set_context
 from donna.domain.artifact_ids import ArtifactId
 from donna.machine import context as machine_context
+from donna.protocol.modes import get_cell_formatter
+from donna.protocol.tests.make import cell, journal_record
 from donna.workspaces import errors as workspace_errors
+
+
+class TestCliEmitter:
+    @pytest.mark.parametrize("mode", list(Protocol))
+    def test_emit_cell__supports_text_only_streams(self, mocker: MockerFixture, mode: Protocol) -> None:
+        stdout = io.StringIO()
+        mocker.patch.object(sys, "stdout", stdout)
+
+        CliEmitter(get_cell_formatter(mode)).emit_cell(cell(content="  日本語  "))
+
+        output = stdout.getvalue()
+        assert "日本語" in output
+        assert output.endswith("\n\n" if mode == Protocol.human else "\n")
+        if mode == Protocol.automation:
+            record = helpers.json_lines(output)[0]
+            assert record["content"] == "日本語"
+            assert record["id"] == "EjRWeBI0VniSNFZ4EjRWeA"
+
+    @pytest.mark.parametrize("mode", list(Protocol))
+    def test_emit_journal__keeps_consecutive_records_separate(self, mocker: MockerFixture, mode: Protocol) -> None:
+        stdout = io.StringIO()
+        mocker.patch.object(sys, "stdout", stdout)
+        emitter = CliEmitter(get_cell_formatter(mode))
+
+        emitter.emit_journal(journal_record(message="日本語"))
+        emitter.emit_journal(journal_record(message="Next step"))
+
+        lines = stdout.getvalue().splitlines()
+        assert len(lines) == 2
+        assert "日本語" in lines[0]
+        assert "Next step" in lines[1]
+        assert stdout.getvalue().endswith("\n")
 
 
 class TestCommandContext:

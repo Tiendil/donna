@@ -1,5 +1,6 @@
 ### Migration
 
+- Import `Protocol` from `llm_tool_cli.protocol` instead of `donna.protocol.modes.Mode`. Replace `instant_output` with `write_output` and supply decoded text with explicit terminators; writing no longer adds newlines, forces UTF-8 bytes, or flushes each write. Use `to_jsonl(record.model_dump(mode="json"))` instead of `serialize_record` when a journal JSON line is needed.
 - Import `UntrustedPath` directly from `llm_tool_cli.paths` instead of `donna.domain.paths`.
 - Import `resolve_project_path` directly from `llm_tool_cli.paths` instead of `donna.workspaces.paths`; home-expansion failures now return `path_resolution_failed` diagnostics.
 - Import `normalize_path` directly from `llm_tool_cli.paths` in Python integrations.
@@ -19,6 +20,7 @@
 
 ### Changes
 
+- Use shared output modes, compact JSON Lines serialization, and direct text writing while preserving Donna cells, diagnostic records, CLI defaults, and exit policies. Journal formatters now include their newline so emitted output remains unchanged.
 - Delegate empty project-path rejection to the shared normalizer, including artifact-relative inputs; root-resolution failures take precedence over empty-input diagnostics.
 - Use the shared `UntrustedPath` semantic type for filesystem inputs, preserving runtime path behavior.
 - Use the shared project-path resolver directly for absolute path directives, preserving project containment and resolution diagnostics.

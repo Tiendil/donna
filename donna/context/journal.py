@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from llm_tool_cli.core.result import Ok, Result, unwrap_to_error
+from llm_tool_cli.protocol import Protocol
 
 from donna.core.utils import now
 from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import TaskId, WorkUnitId
 from donna.protocol import errors as protocol_errors
 from donna.protocol import journal as protocol_journal
-from donna.protocol import modes as protocol_modes
 from donna.workspaces import journal as workspace_journal
 from donna.workspaces.config import protocol as protocol_mode
 
@@ -25,11 +25,11 @@ class Journal:
 
     def smart_actor_id(self) -> str:
         match protocol_mode():
-            case protocol_modes.Mode.human:
+            case Protocol.human:
                 return "human"
-            case protocol_modes.Mode.llm:
+            case Protocol.llm:
                 return "agent"
-            case protocol_modes.Mode.automation:
+            case Protocol.automation:
                 return "automation"
             case _:
                 raise protocol_errors.UnsupportedFormatterMode(details={"mode": protocol_mode()})

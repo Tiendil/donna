@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from llm_tool_cli.protocol import Protocol
 from pytest_mock import MockerFixture
 
 from donna.domain.artifact_ids import ArtifactSectionId
@@ -7,7 +8,6 @@ from donna.machine.tests import make as machine_make
 from donna.primitives.directives import goto
 from donna.primitives.directives.goto import GoTo, GoToInvalidArguments
 from donna.primitives.tests import make
-from donna.protocol.modes import Mode
 
 
 class TestGoTo:
@@ -30,7 +30,7 @@ class TestGoTo:
         assert result.unwrap() == (ArtifactSectionId("@/workflows/test.donna.md:next"),)
 
     def test_render_view__renders_complete_action_request_command(self, mocker: MockerFixture) -> None:
-        mocker.patch.object(goto.workspace_config, "protocol", return_value=Mode.llm)
+        mocker.patch.object(goto.workspace_config, "protocol", return_value=Protocol.llm)
         mocker.patch.object(goto.workspace_config, "config_path", return_value=Path("/project/donna.toml"))
 
         result = GoTo(analyze_id="goto").render_view(

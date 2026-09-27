@@ -1,21 +1,15 @@
-import json
-
 from llm_tool_cli.core.errors import EnvironmentError
+from llm_tool_cli.protocol import to_jsonl
 
 from donna.protocol.cells import Cell, MetaValue
 from donna.protocol.formatters.base import Formatter as BaseFormatter
-from donna.protocol.journal import JournalRecord, serialize_record
+from donna.protocol.journal import JournalRecord
 
 
 class Formatter(BaseFormatter):
 
     def format_error(self, error: EnvironmentError) -> bytes:
-        return self._json_line(error.as_record())
-
-    def _json_line(self, data: object) -> bytes:
-        return (
-            json.dumps(data, ensure_ascii=False, indent=None, separators=(",", ":"), sort_keys=True).encode() + b"\n"
-        )
+        return to_jsonl(error.as_record()).encode("utf-8")
 
     def format_cell(self, cell: Cell) -> bytes:
         data: dict[str, MetaValue] = {"id": cell.short_id}
@@ -25,7 +19,7 @@ class Formatter(BaseFormatter):
 
         data["content"] = cell.content.strip() if cell.content else None
 
-        return self._json_line(data)
+        return to_jsonl(data).encode("utf-8")
 
     def format_journal(self, record: JournalRecord) -> bytes:
-        return serialize_record(record) + b"\n"
+        return to_jsonl(record.model_dump(mode="json")).encode("utf-8")

@@ -4,6 +4,7 @@ from typing import Annotated
 import typer
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 from llm_tool_cli.paths import PathInput, UntrustedPath
+from llm_tool_cli.protocol import Protocol
 
 from donna.domain import errors as domain_errors
 from donna.domain.artifact_ids import (
@@ -15,7 +16,6 @@ from donna.domain.artifact_ids import (
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 from donna.domain.internal_ids import ActionRequestId
 from donna.machine.templates import RenderMode
-from donna.protocol.modes import Mode
 from donna.workspaces import paths as workspace_paths
 from donna.workspaces.artifacts import has_donna_artifact_extension
 
@@ -58,11 +58,11 @@ def _parse_action_request_id(value: str) -> ActionRequestId:
     return ActionRequestId(value)
 
 
-def _parse_protocol_mode(value: str) -> Mode:
+def _parse_protocol_mode(value: str) -> Protocol:
     try:
-        return Mode(value)
+        return Protocol(value)
     except ValueError as exc:
-        allowed = ", ".join(mode.value for mode in Mode)
+        allowed = ", ".join(mode.value for mode in Protocol)
         raise typer.BadParameter(f"Unsupported protocol mode '{value}'. Expected one of: {allowed}.") from exc
 
 
@@ -129,7 +129,7 @@ ArtifactSectionIdArgument = Annotated[
 
 
 ProtocolModeOption = Annotated[
-    Mode,
+    Protocol,
     typer.Option(
         "--protocol",
         "-p",

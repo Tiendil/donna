@@ -4,9 +4,9 @@ import pathlib
 from llm_tool_cli.config import create_config, load_config, locate_config, resolve_config_path
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 from llm_tool_cli.paths import PathInput
+from llm_tool_cli.protocol import Protocol
 
 from donna.domain.constants import DONNA_CONFIG_NAME
-from donna.protocol.modes import Mode
 from donna.workspaces import config
 from donna.workspaces import errors as world_errors
 
@@ -16,7 +16,7 @@ BASE_CONFIG_FIXTURE = "base_config.toml"
 @unwrap_to_error
 def initialize_runtime(
     config_path: PathInput | None = None,
-    protocol: Mode | None = None,
+    protocol: Protocol | None = None,
 ) -> Result[config.Workspace]:
     """Initialize the runtime environment for the application.
 

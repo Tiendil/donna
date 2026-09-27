@@ -1,5 +1,4 @@
 import datetime
-import json
 
 import pydantic
 from llm_tool_cli.core.entities import BaseEntity
@@ -27,12 +26,3 @@ class JournalRecord(BaseEntity):
             raise ValueError("Journal message must not contain newline characters.")
 
         return value
-
-
-def serialize_record(record: JournalRecord) -> bytes:
-    return json.dumps(
-        record.model_dump(mode="json"),
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=True,
-    ).encode("utf-8")

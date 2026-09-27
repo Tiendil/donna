@@ -1,8 +1,8 @@
-import sys
 from typing import Annotated
 
 import click
 import typer
+from llm_tool_cli.protocol import write_output
 
 from donna.cli.application import app
 from donna.cli.types import ArtifactIdArgument, ArtifactIdsArgument, RenderModeOption, parse_artifact_id_argument
@@ -43,7 +43,7 @@ def render(
         render_context = ArtifactRenderContext(primary_mode=mode)
         rendered = render_template(artifact_id, content, render_context).unwrap()
 
-        sys.stdout.write(rendered)
+        write_output(rendered)
 
 
 @app.command(help="Validate the given artifact ids, or validate every discovered artifact with --all.")

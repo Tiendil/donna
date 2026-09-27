@@ -1,22 +1,23 @@
 import pytest
+from llm_tool_cli.protocol import Protocol
 
 from donna.protocol.errors import UnsupportedFormatterMode
 from donna.protocol.formatters.automation import Formatter as AutomationFormatter
 from donna.protocol.formatters.human import Formatter as HumanFormatter
 from donna.protocol.formatters.llm import Formatter as LLMFormatter
-from donna.protocol.modes import Mode, get_cell_formatter
+from donna.protocol.modes import get_cell_formatter
 
 
 class TestGetCellFormatter:
     @pytest.mark.parametrize(
         ("mode", "formatter_class"),
         (
-            (Mode.human, HumanFormatter),
-            (Mode.llm, LLMFormatter),
-            (Mode.automation, AutomationFormatter),
+            (Protocol.human, HumanFormatter),
+            (Protocol.llm, LLMFormatter),
+            (Protocol.automation, AutomationFormatter),
         ),
     )
-    def test_returns_formatter_for_supported_mode(self, mode: Mode, formatter_class: type[object]) -> None:
+    def test_returns_formatter_for_supported_mode(self, mode: Protocol, formatter_class: type[object]) -> None:
         assert isinstance(get_cell_formatter(mode), formatter_class)
 
     def test_unsupported_mode_raises_internal_error(self) -> None:

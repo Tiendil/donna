@@ -1,5 +1,4 @@
 import pathlib
-import sys
 from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from contextvars import Token
@@ -11,6 +10,7 @@ from llm_tool_cli.core import errors as llm_tool_errors
 from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Ok, Result, UnwrapError, unwrap_to_error
 from llm_tool_cli.paths import PathInput, ProjectConfigPath
+from llm_tool_cli.protocol import Protocol, write_output
 
 from donna.cli.entities import GLOBAL_OPTIONS_CONTEXT_KEY, GlobalOptions
 from donna.context.context import Context
@@ -20,17 +20,8 @@ from donna.protocol.cells import Cell
 from donna.protocol.errors import environment_error_node
 from donna.protocol.formatters import Formatter
 from donna.protocol.journal import JournalRecord
-from donna.protocol.modes import Mode, get_cell_formatter
+from donna.protocol.modes import get_cell_formatter
 from donna.workspaces import config as workspace_config
-
-
-def instant_output(text: bytes, *, error: bool = False) -> None:
-    stream = sys.stderr if error else sys.stdout
-    if text.endswith(b"\n"):
-        stream.buffer.write(text)
-    else:
-        stream.buffer.write(text + b"\n")
-    stream.buffer.flush()
 
 
 class CliEmitter:
@@ -40,13 +31,13 @@ class CliEmitter:
         self._formatter = formatter
 
     def emit_cell(self, cell: Cell) -> None:
-        instant_output(self._formatter.format_cell(cell))
+        write_output(self._formatter.format_cell(cell).decode("utf-8"))
 
     def emit_journal(self, record: JournalRecord) -> None:
-        instant_output(self._formatter.format_journal(record))
+        write_output(self._formatter.format_journal(record).decode("utf-8"))
 
     def emit_error(self, error: llm_tool_errors.EnvironmentError, *, stderr: bool) -> None:
-        instant_output(self._formatter.format_error(error), error=stderr)
+        write_output(self._formatter.format_error(error).decode("utf-8"), error=stderr)
 
 
 def output_cells(cells: Iterable[Cell]) -> None:
@@ -62,7 +53,7 @@ def global_options(context: typer.Context) -> GlobalOptions:
     if isinstance(global_options, GlobalOptions):
         return global_options
 
-    return GlobalOptions(protocol=Mode.human)
+    return GlobalOptions(protocol=Protocol.human)
 
 
 class CommandContext:
@@ -112,7 +103,7 @@ class CommandContext:
             if isinstance(error, EnvironmentError):
                 self.emitter.emit_cell(environment_error_node(error).info())
             else:
-                self.emitter.emit_error(error, stderr=self.protocol != Mode.automation)
+                self.emitter.emit_error(error, stderr=self.protocol != Protocol.automation)
                 exit_code = max(exit_code, 2 if isinstance(error, config_errors.EnvironmentError) else 3)
         return exit_code
 

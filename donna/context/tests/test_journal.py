@@ -3,6 +3,7 @@ from typing import cast
 
 import pytest
 from llm_tool_cli.core.result import Ok
+from llm_tool_cli.protocol import Protocol
 from pytest_mock import MockerFixture
 
 from donna.context.context import Context
@@ -13,7 +14,6 @@ from donna.domain.internal_ids import WorkUnitId
 from donna.machine.context import ValueScope
 from donna.machine.tests import make as machine_make
 from donna.protocol import errors as protocol_errors
-from donna.protocol import modes as protocol_modes
 
 
 class _FakeStateCache:
@@ -36,13 +36,13 @@ class TestJournal:
     @pytest.mark.parametrize(
         ("mode", "actor_id"),
         [
-            (protocol_modes.Mode.human, "human"),
-            (protocol_modes.Mode.llm, "agent"),
-            (protocol_modes.Mode.automation, "automation"),
+            (Protocol.human, "human"),
+            (Protocol.llm, "agent"),
+            (Protocol.automation, "automation"),
         ],
     )
     def test_smart_actor_id__depends_on_selected_protocol(
-        self, mocker: MockerFixture, mode: protocol_modes.Mode, actor_id: str
+        self, mocker: MockerFixture, mode: Protocol, actor_id: str
     ) -> None:
         mocker.patch("donna.context.journal.protocol_mode", return_value=mode)
 
@@ -57,7 +57,7 @@ class TestJournal:
     def test_add__builds_writes_and_emits_journal_record(self, mocker: MockerFixture) -> None:
         now = datetime.datetime(2026, 5, 18, 8, 30, tzinfo=datetime.UTC)
         fake_context = _FakeContext()
-        mocker.patch("donna.context.journal.protocol_mode", return_value=protocol_modes.Mode.llm)
+        mocker.patch("donna.context.journal.protocol_mode", return_value=Protocol.llm)
         mocker.patch("donna.context.journal.now", return_value=now)
         write_record = mocker.patch("donna.context.journal.workspace_journal.write_record", return_value=Ok(None))
 

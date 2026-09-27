@@ -88,7 +88,7 @@ The root command MUST NOT start or continue workflow execution directly.
 
 ## Output behavior
 
-All output MUST use UTF-8.
+The CLI MUST use text writing provided by `llm_tool_cli.protocol`.
 
 Command output produced through Donna's protocol layer MUST be represented as Donna cells.
 
@@ -106,13 +106,13 @@ Output MUST NOT contain terminal color or styling escape sequences.
 
 ## Output protocols
 
-The CLI MUST support three output protocols:
+The CLI MUST support the output modes defined by `llm_tool_cli.protocol`.
+
+Donna interprets these modes as follows:
 
 - `human` — default protocol for terminal users.
 - `llm` — text protocol optimized for coding agents that invoke `donna` as a tool.
 - `automation` — protocol optimized for programs; output is serialized as JSON Lines.
-
-`human` and `llm` MUST be separate protocols.
 
 For commands that support output protocols, the output protocol MUST be selected with the global option:
 
@@ -120,12 +120,6 @@ For commands that support output protocols, the output protocol MUST be selected
 --protocol PROTOCOL
 -p PROTOCOL
 ```
-
-Allowed values MUST be:
-
-- `human`
-- `llm`
-- `automation`
 
 If no protocol is provided, the default protocol MUST be `human`.
 
@@ -158,9 +152,7 @@ LLM journal output SHOULD include the full timestamp, current task id, actor id,
 
 ### Automation output
 
-Automation output MUST be serialized as JSON Lines.
-
-Automation output MUST write one JSON object per line.
+Automation JSON Lines serialization MUST be provided by `llm_tool_cli.protocol`.
 
 Automation output MUST use stable field names.
 
@@ -172,9 +164,7 @@ Automation cell output MUST include:
 
 Automation cell output MUST include cell metadata as top-level JSON object fields.
 
-Automation output MUST sort JSON object keys.
-
-Automation journal output MUST serialize the journal record as one JSON object per line.
+Each journal record MUST produce one automation record.
 
 Additional fields MAY be added in future versions. Consumers MUST ignore unknown fields.
 
@@ -258,11 +248,7 @@ The selected protocol MUST be available to every subcommand.
 
 Subcommands that render Donna cells or journal records MUST use the selected protocol.
 
-Allowed values MUST be:
-
-- `human`
-- `llm`
-- `automation`
+Allowed values MUST be the shared output modes described under [Output protocols](#output-protocols).
 
 ### `--config PATH`
 

@@ -1,4 +1,4 @@
-import enum
+from llm_tool_cli.protocol import Protocol
 
 from donna.protocol.errors import UnsupportedFormatterMode
 from donna.protocol.formatters.automation import Formatter as AutomationFormatter
@@ -7,19 +7,13 @@ from donna.protocol.formatters.human import Formatter as HumanFormatter
 from donna.protocol.formatters.llm import Formatter as LLMFormatter
 
 
-class Mode(enum.StrEnum):
-    human = "human"
-    llm = "llm"
-    automation = "automation"
-
-
-def get_cell_formatter(mode: Mode) -> Formatter:
+def get_cell_formatter(mode: Protocol) -> Formatter:
     match mode:
-        case Mode.human:
+        case Protocol.human:
             return HumanFormatter()
-        case Mode.llm:
+        case Protocol.llm:
             return LLMFormatter()
-        case Mode.automation:
+        case Protocol.automation:
             return AutomationFormatter()
         case _:
             raise UnsupportedFormatterMode(details={"mode": mode})

@@ -1,9 +1,7 @@
-import json
-
 import pydantic
 import pytest
 
-from donna.protocol.journal import JournalRecord, message_has_newlines, serialize_record
+from donna.protocol.journal import JournalRecord, message_has_newlines
 from donna.protocol.tests.make import journal_record
 
 
@@ -26,24 +24,3 @@ class TestJournalRecord:
                     "message": message,
                 }
             )
-
-
-class TestSerializeRecord:
-    def test_serializes_record_as_sorted_compact_json(self) -> None:
-        record = journal_record()
-
-        serialized = serialize_record(record)
-
-        assert json.loads(serialized) == {
-            "actor_id": "agent",
-            "current_operation_id": "@/workflow.donna.md:operation",
-            "current_task_id": "task-42-Q",
-            "current_work_unit_id": "work-unit-7-h",
-            "message": "Completed step",
-            "timestamp": "2026-05-18T10:30:45Z",
-        }
-        assert serialized == (
-            b'{"actor_id":"agent","current_operation_id":"@/workflow.donna.md:operation",'
-            b'"current_task_id":"task-42-Q","current_work_unit_id":"work-unit-7-h",'
-            b'"message":"Completed step","timestamp":"2026-05-18T10:30:45Z"}'
-        )
