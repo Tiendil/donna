@@ -1,5 +1,6 @@
 ### Migration
 
+- Import `resolve_project_path` directly from `llm_tool_cli.paths` instead of `donna.workspaces.paths`; home-expansion failures now return `path_resolution_failed` diagnostics.
 - Import `normalize_path` directly from `llm_tool_cli.paths` in Python integrations.
 - Replace `donna.workspaces.paths.normalize_existing_path` with `llm_tool_cli.paths.project_path_id_from_filesystem` in Python integrations.
 - Import `ProjectRootPath` and `resolve_project_root` from `llm_tool_cli.paths`; root resolution now returns `Result[ProjectRootPath]`. Expected root-resolution failures use `path_resolution_failed` diagnostics and exit with status `3` instead of escaping as raw filesystem exceptions.
@@ -17,6 +18,7 @@
 
 ### Changes
 
+- Use the shared project-path resolver directly for absolute path directives, preserving project containment and resolution diagnostics.
 - Use shared mixed path normalization directly, preserving artifact-relative behavior and returning `path_resolution_failed` diagnostics for home expansion failures during normalization.
 - Share filesystem-to-identifier conversion through `llm-tool-cli`, preserving artifact lookup behavior and resolution diagnostics.
 - Convert resolved filesystem paths to canonical identifiers through `llm-tool-cli` directly, preserving public path results and diagnostics.

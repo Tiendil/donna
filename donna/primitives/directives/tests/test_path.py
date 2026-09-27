@@ -1,7 +1,7 @@
 import pathlib
 
 from llm_tool_cli.paths import ProjectRootPath
-from llm_tool_cli.paths.errors import InvalidProjectPath
+from llm_tool_cli.paths.errors import InvalidProjectPath, PathResolutionFailed
 from pytest_mock import MockerFixture
 
 from donna.domain.artifact_ids import ArtifactId
@@ -123,6 +123,42 @@ class TestPath:
 
         assert result.is_ok()
         assert result.unwrap() == "@/specs/design.md"
+
+    def test_render_view__absolute_mode_rejects_symlink_escape(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
+        mocker.patch.object(path.workspace_config, "project_dir", return_value=ProjectRootPath(tmp_path))
+        link = tmp_path / "outside"
+        link.symlink_to(tmp_path.parent, target_is_directory=True)
+
+        result = Path(analyze_id="path").render_view(
+            make.template_context(),
+            "@/outside/file.md",
+            PathRenderMode.absolute,
+            ArtifactId("@/workflow.donna.md"),
+        )
+
+        assert result.unwrap_err() == [InvalidProjectPath(path=str(link / "file.md"))]
+
+    def test_render_view__absolute_mode_preserves_resolution_failure(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
+        mocker.patch.object(path.workspace_config, "project_dir", return_value=ProjectRootPath(tmp_path))
+        link = tmp_path / "loop"
+        link.symlink_to(link)
+
+        result = Path(analyze_id="path").render_view(
+            make.template_context(),
+            "@/loop/file.md",
+            PathRenderMode.absolute,
+            ArtifactId("@/workflow.donna.md"),
+        )
+        failure = result.unwrap_err()[0]
+
+        assert isinstance(failure, PathResolutionFailed)
+        assert failure.code == "path_resolution_failed"
+        assert failure.path == str(link / "file.md")
+        assert isinstance(failure.cause, (OSError, RuntimeError))
 
     def test_render_view__rejects_paths_outside_project(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         mocker.patch.object(path.workspace_config, "project_dir", return_value=ProjectRootPath(tmp_path))

@@ -5,12 +5,8 @@ import pathlib
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 from llm_tool_cli.paths import (
     ProjectPathId,
-    ResolvedProjectPath,
     normalize_path,
     normalize_project_path_id,
-    resolve_inside_project,
-    resolve_project_root,
-    resolve_root_anchored_path,
 )
 from llm_tool_cli.paths.errors import InvalidProjectPath
 
@@ -28,22 +24,6 @@ from donna.domain.ids import SectionId
 from donna.domain.paths import PathInput
 
 PROJECT_ROOT_PREFIX = ARTIFACT_ID_PREFIX
-
-
-@unwrap_to_error
-def resolve_project_path(value: str, root: PathInput, *, allow_absolute: bool = True) -> Result[ResolvedProjectPath]:
-    project_root = resolve_project_root(root).unwrap()
-
-    if value.startswith("@"):
-        return resolve_root_anchored_path(value, project_root)
-
-    path = pathlib.Path(value).expanduser()
-
-    if path.is_absolute() and not allow_absolute:
-        return Err([InvalidProjectPath(path=value)])
-
-    candidate = path if path.is_absolute() else pathlib.Path(project_root) / path
-    return resolve_inside_project(candidate, project_root)
 
 
 def normalize_project_path(

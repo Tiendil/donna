@@ -1,13 +1,14 @@
 import enum
 
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.paths import resolve_project_path
 
 from donna.core import errors as core_errors
 from donna.domain.artifact_ids import ArtifactId
 from donna.machine.templates import Directive, PreparedDirectiveResult
 from donna.machine.templates_context import DirectiveContext
 from donna.workspaces import config as workspace_config
-from donna.workspaces.paths import normalize_project_path, resolve_project_path
+from donna.workspaces.paths import normalize_project_path
 
 
 class PathRenderMode(enum.StrEnum):

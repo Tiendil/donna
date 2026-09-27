@@ -10,64 +10,7 @@ from donna.workspaces.paths import (
     normalize_artifact_id,
     normalize_artifact_section_id,
     normalize_project_path,
-    resolve_project_path,
 )
-
-
-class TestResolveProjectPath:
-    @pytest.mark.parametrize("value", ["@/loop/file.donna.md", "loop/file.donna.md"])
-    def test_propagates_target_resolution_failure(self, tmp_path: pathlib.Path, value: str) -> None:
-        link = tmp_path / "loop"
-        link.symlink_to(link)
-
-        failure = resolve_project_path(value, tmp_path).unwrap_err()[0]
-
-        assert isinstance(failure, PathResolutionFailed)
-        assert failure.code == "path_resolution_failed"
-        assert failure.path == str(link / "file.donna.md")
-        assert isinstance(failure.cause, (OSError, RuntimeError))
-
-    def test_propagates_root_resolution_failure(self, tmp_path: pathlib.Path) -> None:
-        root = tmp_path / "loop"
-        root.symlink_to(root)
-
-        failure = resolve_project_path("@/workflow.donna.md", root).unwrap_err()[0]
-
-        assert isinstance(failure, PathResolutionFailed)
-        assert failure.path == str(root)
-        assert isinstance(failure.cause, (OSError, RuntimeError))
-
-    def test_resolves_root_anchored_path_inside_project(self, tmp_path: pathlib.Path) -> None:
-        project_file = tmp_path / "workflows" / "test.donna.md"
-        project_file.parent.mkdir()
-        project_file.write_text("", encoding="utf-8")
-
-        assert resolve_project_path("@/workflows/test.donna.md", tmp_path).unwrap() == project_file
-
-    def test_resolves_absolute_path_inside_project(self, tmp_path: pathlib.Path) -> None:
-        project_file = tmp_path / "workflows" / "test.donna.md"
-        project_file.parent.mkdir()
-        project_file.write_text("", encoding="utf-8")
-
-        assert resolve_project_path(str(project_file), tmp_path).unwrap() == project_file
-
-    @pytest.mark.parametrize("value", ["@/../outside.donna.md", "@/.", "@file", "@/a//b", "@/a/"])
-    def test_invalid_root_anchored_path_returns_shared_error(self, tmp_path: pathlib.Path, value: str) -> None:
-        assert resolve_project_path(value, tmp_path).unwrap_err() == [InvalidProjectPath(path=value)]
-
-    def test_root_anchored_symlink_outside_project_returns_shared_error(self, tmp_path: pathlib.Path) -> None:
-        link = tmp_path / "outside"
-        link.symlink_to(tmp_path.parent, target_is_directory=True)
-
-        assert resolve_project_path("@/outside/file.donna.md", tmp_path).unwrap_err() == [
-            InvalidProjectPath(path=str(link / "file.donna.md"))
-        ]
-
-    def test_rejects_absolute_path_when_not_allowed(self, tmp_path: pathlib.Path) -> None:
-        project_file = tmp_path / "workflow.donna.md"
-        project_file.write_text("", encoding="utf-8")
-
-        assert resolve_project_path(str(project_file), tmp_path, allow_absolute=False).is_err()
 
 
 class TestNormalizeProjectPath:
