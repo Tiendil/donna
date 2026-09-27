@@ -2,13 +2,13 @@ import pathlib
 
 import pytest
 from llm_tool_cli.paths.errors import InvalidProjectPath, PathResolutionFailed
+from pytest_mock import MockerFixture
 
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.errors import InvalidIdFormat
 from donna.workspaces.paths import (
     normalize_artifact_id,
     normalize_artifact_section_id,
-    normalize_path,
     normalize_project_path,
     resolve_project_path,
 )
@@ -70,70 +70,28 @@ class TestResolveProjectPath:
         assert resolve_project_path(str(project_file), tmp_path, allow_absolute=False).is_err()
 
 
-class TestNormalizePath:
-    def test_propagates_target_resolution_failure(self, tmp_path: pathlib.Path) -> None:
-        link = tmp_path / "loop"
-        link.symlink_to(link)
-
-        failure = normalize_path("loop/file.donna.md", tmp_path).unwrap_err()[0]
-
-        assert isinstance(failure, PathResolutionFailed)
-        assert failure.path == str(link / "file.donna.md")
-        assert isinstance(failure.cause, (OSError, RuntimeError))
-
-    def test_propagates_root_resolution_failure(self, tmp_path: pathlib.Path) -> None:
-        root = tmp_path / "loop"
-        root.symlink_to(root)
-
-        failure = normalize_path("@/workflow.donna.md", root).unwrap_err()[0]
-
-        assert isinstance(failure, PathResolutionFailed)
-        assert failure.path == str(root)
-        assert isinstance(failure.cause, (OSError, RuntimeError))
-
-    def test_propagates_shared_lexical_error(self, tmp_path: pathlib.Path) -> None:
-        value = "@/workflows//test.donna.md"
-        result = normalize_path(value, tmp_path)
-
-        assert result.is_err()
-        error = result.unwrap_err()[0]
-        assert isinstance(error, InvalidProjectPath)
-        assert error.path == value
-
-    def test_root_anchored_normalization_does_not_follow_symlinks(self, tmp_path: pathlib.Path) -> None:
-        (tmp_path / "outside").symlink_to(tmp_path.parent, target_is_directory=True)
-
-        assert normalize_path("@/outside/workflow.donna.md", tmp_path).unwrap() == "@/outside/workflow.donna.md"
-        assert resolve_project_path("@/outside/workflow.donna.md", tmp_path).is_err()
-
-    def test_normalizes_root_anchored_path(self, tmp_path: pathlib.Path) -> None:
-        assert (
-            normalize_path("@/workflows/./nested/../test.donna.md", tmp_path).unwrap() == "@/workflows/test.donna.md"
-        )
-        assert normalize_path("@/workflows", tmp_path).unwrap() == "@/workflows"
-        assert normalize_path("@/README", tmp_path).unwrap() == "@/README"
-
-    def test_normalizes_absolute_path_inside_project(self, tmp_path: pathlib.Path) -> None:
-        project_file = tmp_path / "workflows" / "test.donna.md"
-        project_file.parent.mkdir()
-        project_file.write_text("", encoding="utf-8")
-
-        assert normalize_path(str(project_file), tmp_path).unwrap() == "@/workflows/test.donna.md"
-
-    def test_normalizes_relative_path_from_cwd(self, tmp_path: pathlib.Path) -> None:
-        cwd = tmp_path / "workflows"
-        cwd.mkdir()
-
-        assert normalize_path("test.donna.md", tmp_path, cwd=cwd).unwrap() == "@/workflows/test.donna.md"
-
-    def test_rejects_path_outside_project(self, tmp_path: pathlib.Path) -> None:
-        outside = tmp_path.parent / "outside.donna.md"
-
-        assert normalize_path(str(outside), tmp_path).is_err()
-        assert normalize_path("../outside.donna.md", tmp_path, cwd=tmp_path).is_err()
-
-
 class TestNormalizeProjectPath:
+    @pytest.mark.parametrize("relative_to", [None, ArtifactId("@/workflows/source.donna.md")])
+    def test_home_path_uses_shared_normalization(
+        self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch, relative_to: ArtifactId | None
+    ) -> None:
+        monkeypatch.setenv("HOME", str(tmp_path))
+
+        assert normalize_project_path("~/target.md", tmp_path, relative_to=relative_to).unwrap() == "@/target.md"
+
+    @pytest.mark.parametrize("relative_to", [None, ArtifactId("@/workflows/source.donna.md")])
+    def test_home_failure_propagates_shared_diagnostic(
+        self, tmp_path: pathlib.Path, mocker: MockerFixture, relative_to: ArtifactId | None
+    ) -> None:
+        cause = RuntimeError("unknown home")
+        mocker.patch.object(pathlib.Path, "expanduser", side_effect=cause)
+
+        failure = normalize_project_path("~/target.md", tmp_path, relative_to=relative_to).unwrap_err()[0]
+
+        assert isinstance(failure, PathResolutionFailed)
+        assert failure.path == "~/target.md"
+        assert failure.cause == cause
+
     def test_normalizes_parent_relative_to_artifact_file(self, tmp_path: pathlib.Path) -> None:
         relative_to = ArtifactId("@/workflows/rfc/do.donna.md")
 

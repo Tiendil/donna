@@ -6,8 +6,8 @@ from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 from llm_tool_cli.paths import (
     ProjectPathId,
     ResolvedProjectPath,
+    normalize_path,
     normalize_project_path_id,
-    project_path_id_from_resolved,
     resolve_inside_project,
     resolve_project_root,
     resolve_root_anchored_path,
@@ -46,20 +46,6 @@ def resolve_project_path(value: str, root: PathInput, *, allow_absolute: bool = 
     return resolve_inside_project(candidate, project_root)
 
 
-@unwrap_to_error
-def normalize_path(value: str, root: PathInput, *, cwd: PathInput | None = None) -> Result[ProjectPathId]:
-    project_root = resolve_project_root(root).unwrap()
-
-    if value.startswith("@"):
-        return normalize_project_path_id(value)
-
-    path = pathlib.Path(value).expanduser()
-    candidate = path if path.is_absolute() else pathlib.Path(cwd or project_root) / path
-    resolved = resolve_inside_project(candidate, project_root).unwrap()
-
-    return Ok(project_path_id_from_resolved(resolved, project_root))
-
-
 def normalize_project_path(
     value: str,
     root: PathInput,
@@ -73,8 +59,8 @@ def normalize_project_path(
     if relative_to is None:
         return normalize_path(value, root, cwd=cwd)
 
-    path = pathlib.Path(value).expanduser()
-    if value.startswith(PROJECT_ROOT_PREFIX) or path.is_absolute():
+    path = pathlib.Path(value)
+    if value.startswith(PROJECT_ROOT_PREFIX) or path.is_absolute() or str(path).startswith("~"):
         return normalize_path(value, root, cwd=cwd)
 
     parent_parts = artifact_path_parts(relative_to)[:-1]

@@ -34,6 +34,18 @@ class TestList:
 
 
 class TestRender:
+    def test_home_relative_artifact_argument(self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        config_path = helpers.write_config(tmp_path)
+        helpers.write_workflow(tmp_path)
+        monkeypatch.setenv("HOME", str(tmp_path))
+
+        result = helpers.invoke(
+            ["--config", str(config_path), "render", "--mode", "view", "~/workflows/test.donna.md"]
+        )
+
+        assert result.exit_code == 0
+        assert "# Test Workflow" in result.stdout
+
     def test_config_home_marker__uses_resolved_project_for_artifact_paths(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
@@ -137,7 +149,7 @@ class TestParseArtifactIdArgument:
         root = tmp_path / "loop"
         root.symlink_to(root)
         failure = resolve_project_root(root)
-        mocker.patch("donna.workspaces.paths.resolve_project_root", return_value=failure)
+        mocker.patch("llm_tool_cli.paths.filesystem.resolve_project_root", return_value=failure)
 
         result = helpers.invoke(["--config", str(config_path), "-p", protocol, "validate", "@/workflow.donna.md"])
 
