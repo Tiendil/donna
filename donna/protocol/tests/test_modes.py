@@ -1,14 +1,14 @@
 import pytest
 from llm_tool_cli.protocol import Protocol
+from llm_tool_cli.protocol.errors import UnsupportedFormatterMode
 
-from donna.protocol.errors import UnsupportedFormatterMode
-from donna.protocol.formatters.automation import Formatter as AutomationFormatter
-from donna.protocol.formatters.human import Formatter as HumanFormatter
-from donna.protocol.formatters.llm import Formatter as LLMFormatter
-from donna.protocol.modes import get_cell_formatter
+from donna.protocol.journal_formatters.automation import Formatter as AutomationFormatter
+from donna.protocol.journal_formatters.human import Formatter as HumanFormatter
+from donna.protocol.journal_formatters.llm import Formatter as LLMFormatter
+from donna.protocol.modes import get_journal_formatter
 
 
-class TestGetCellFormatter:
+class TestGetJournalFormatter:
     @pytest.mark.parametrize(
         ("mode", "formatter_class"),
         (
@@ -18,10 +18,10 @@ class TestGetCellFormatter:
         ),
     )
     def test_returns_formatter_for_supported_mode(self, mode: Protocol, formatter_class: type[object]) -> None:
-        assert isinstance(get_cell_formatter(mode), formatter_class)
+        assert isinstance(get_journal_formatter(mode), formatter_class)
 
     def test_unsupported_mode_raises_internal_error(self) -> None:
         with pytest.raises(UnsupportedFormatterMode) as error_info:
-            get_cell_formatter("missing")  # type: ignore[arg-type]
+            get_journal_formatter("missing")  # type: ignore[arg-type]
 
         assert error_info.value.details == {"mode": "missing"}

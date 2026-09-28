@@ -12,36 +12,37 @@ from llm_tool_cli.core.result import Ok, Result, UnwrapError, unwrap_to_error
 from llm_tool_cli.paths import PathInput, ProjectConfigPath
 from llm_tool_cli.protocol import Protocol, write_output
 from llm_tool_cli.protocol.cells import Cell
+from llm_tool_cli.protocol.modes import get_cell_formatter
 
 from donna.cli.entities import GLOBAL_OPTIONS_CONTEXT_KEY, GlobalOptions
 from donna.context.context import Context
 from donna.core.errors import EnvironmentError
 from donna.domain.constants import DONNA_CONFIG_NAME
 from donna.protocol.errors import environment_error_node
-from donna.protocol.formatters import Formatter
 from donna.protocol.journal import JournalRecord
-from donna.protocol.modes import get_cell_formatter
+from donna.protocol.modes import get_journal_formatter
 from donna.workspaces import config as workspace_config
 
 
 class CliEmitter:
-    __slots__ = ("_formatter",)
+    __slots__ = ("_cell_formatter", "_journal_formatter")
 
-    def __init__(self, formatter: Formatter) -> None:
-        self._formatter = formatter
+    def __init__(self, protocol: Protocol) -> None:
+        self._cell_formatter = get_cell_formatter(protocol, tool_label="DONNA")
+        self._journal_formatter = get_journal_formatter(protocol)
 
     def emit_cell(self, cell: Cell) -> None:
-        write_output(self._formatter.format_cell(cell).decode("utf-8"))
+        write_output(self._cell_formatter.format_cell(cell).decode("utf-8"))
 
     def emit_journal(self, record: JournalRecord) -> None:
-        write_output(self._formatter.format_journal(record).decode("utf-8"))
+        write_output(self._journal_formatter.format_journal(record).decode("utf-8"))
 
     def emit_error(self, error: llm_tool_errors.EnvironmentError, *, stderr: bool) -> None:
-        write_output(self._formatter.format_error(error).decode("utf-8"), error=stderr)
+        write_output(self._cell_formatter.format_error(error).decode("utf-8"), error=stderr)
 
 
 def output_cells(cells: Iterable[Cell]) -> None:
-    emitter = CliEmitter(get_cell_formatter(workspace_config.protocol()))
+    emitter = CliEmitter(workspace_config.protocol())
 
     for cell in cells:
         emitter.emit_cell(cell)
@@ -62,7 +63,7 @@ class CommandContext:
     def __init__(self, context: typer.Context) -> None:
         self.global_options = global_options(context)
         self.protocol = self.global_options.protocol
-        self.emitter = CliEmitter(get_cell_formatter(self.protocol))
+        self.emitter = CliEmitter(self.protocol)
 
     def install_protocol(self) -> None:
         if not workspace_config.protocol.is_set():

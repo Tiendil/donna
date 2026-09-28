@@ -15,10 +15,6 @@ class ModeNotSet(InternalError):
     message_template: ClassVar[str] = "Mode is not set. Pass -p <mode> to the CLI."
 
 
-class UnsupportedFormatterMode(InternalError):
-    message_template: ClassVar[str] = "Formatter for mode '{mode}' is not implemented."
-
-
 class EnvironmentErrorNode(Node):
     __slots__ = ("_error",)
 

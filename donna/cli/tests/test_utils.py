@@ -14,18 +14,37 @@ from donna.cli.utils import CliEmitter
 from donna.context import Context, context, reset_context, set_context
 from donna.domain.artifact_ids import ArtifactId
 from donna.machine import context as machine_context
-from donna.protocol.modes import get_cell_formatter
 from donna.protocol.tests.make import cell, journal_record
 from donna.workspaces import errors as workspace_errors
 
 
 class TestCliEmitter:
+    @pytest.mark.parametrize(
+        ("mode", "expected"),
+        [
+            (Protocol.human, "----- DONNA CELL EjRWeBI0VniSNFZ4EjRWeA -----\nkind = sample_status\n\n"),
+            (
+                Protocol.llm,
+                "--DONNA-CELL EjRWeBI0VniSNFZ4EjRWeA BEGIN--\nkind=sample_status\n"
+                "--DONNA-CELL EjRWeBI0VniSNFZ4EjRWeA END--\n",
+            ),
+            (Protocol.automation, '{"content":null,"id":"EjRWeBI0VniSNFZ4EjRWeA"}\n'),
+        ],
+    )
+    def test_emit_cell__preserves_donna_framing(self, mocker: MockerFixture, mode: Protocol, expected: str) -> None:
+        stdout = io.StringIO()
+        mocker.patch.object(sys, "stdout", stdout)
+
+        CliEmitter(mode).emit_cell(cell(media_type=None, content=None, meta={}))
+
+        assert stdout.getvalue() == expected
+
     @pytest.mark.parametrize("mode", list(Protocol))
     def test_emit_cell__supports_text_only_streams(self, mocker: MockerFixture, mode: Protocol) -> None:
         stdout = io.StringIO()
         mocker.patch.object(sys, "stdout", stdout)
 
-        CliEmitter(get_cell_formatter(mode)).emit_cell(cell(content="  日本語  "))
+        CliEmitter(mode).emit_cell(cell(content="  日本語  "))
 
         output = stdout.getvalue()
         assert "日本語" in output
@@ -39,7 +58,7 @@ class TestCliEmitter:
     def test_emit_journal__keeps_consecutive_records_separate(self, mocker: MockerFixture, mode: Protocol) -> None:
         stdout = io.StringIO()
         mocker.patch.object(sys, "stdout", stdout)
-        emitter = CliEmitter(get_cell_formatter(mode))
+        emitter = CliEmitter(mode)
 
         emitter.emit_journal(journal_record(message="日本語"))
         emitter.emit_journal(journal_record(message="Next step"))

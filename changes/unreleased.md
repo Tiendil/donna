@@ -1,5 +1,6 @@
 ### Migration
 
+- Import cell/error formatters from `llm_tool_cli.protocol.formatters` and select them with `llm_tool_cli.protocol.modes.get_cell_formatter(protocol, tool_label="DONNA")`. Journal formatters now live in `donna.protocol.journal_formatters` and use `get_journal_formatter` in `donna.protocol.modes`. `CliEmitter` now takes a protocol; `UnsupportedFormatterMode` comes from `llm_tool_cli.protocol.errors`.
 - Import `cell_shortcuts` from `llm_tool_cli.protocol`, or its helpers directly from `llm_tool_cli.protocol.cell_shortcuts`, instead of `donna.protocol`.
 - Import `Cell`, `MetaValue`, and `to_meta_value` from `llm_tool_cli.protocol.cells`, and `ContentWithoutMediaType` from `llm_tool_cli.protocol.errors`, instead of their previous Donna modules. The construction exception now belongs to the shared protocol internal-error hierarchy.
 - Import `Protocol` from `llm_tool_cli.protocol` instead of `donna.protocol.modes.Mode`. Replace `instant_output` with `write_output` and supply decoded text with explicit terminators; writing no longer adds newlines, forces UTF-8 bytes, or flushes each write. Use `to_jsonl(record.model_dump(mode="json"))` instead of `serialize_record` when a journal JSON line is needed.
@@ -22,6 +23,7 @@
 
 ### Changes
 
+- Delegate cell and shared-error formatting to `llm_tool_cli` while keeping journal formatting in Donna, preserving output bytes, stream routing, and exit behavior.
 - Use shared message cell shortcuts, preserving existing cell kinds, content, and metadata behavior.
 - Use the complete shared cell implementation and metadata helpers while preserving all existing output formats and cell construction behavior.
 - Use shared output modes, compact JSON Lines serialization, and direct text writing while preserving Donna cells, diagnostic records, CLI defaults, and exit policies. Journal formatters now include their newline so emitted output remains unchanged.

@@ -127,24 +127,11 @@ If no protocol is provided, the default protocol MUST be `human`.
 
 Human output SHOULD be compact terminal text.
 
-Human cell output MUST include a visible cell boundary header with the generated cell id.
-
-Human cell output MUST render cell metadata as `key = value` lines.
-
 Human journal output SHOULD include the time, current task id when present, actor id, and message.
 
 ### LLM output
 
 The `llm` protocol MUST be used when a coding agent invokes `donna` as a tool.
-
-LLM cell output MUST use explicit machine-readable boundary lines:
-
-```text
---DONNA-CELL <id> BEGIN--
---DONNA-CELL <id> END--
-```
-
-LLM cell output MUST render cell metadata as `key=value` lines.
 
 LLM output SHOULD be stable and self-contained for coding agents that receive the output as a tool result.
 
@@ -156,14 +143,6 @@ Automation JSON Lines serialization MUST be provided by `llm_tool_cli.protocol`.
 
 Automation output MUST use stable field names.
 
-Automation cell output MUST include:
-
-```json
-{"id":"generated cell id","content":"cell content or null"}
-```
-
-Automation cell output MUST include cell metadata as top-level JSON object fields.
-
 Each journal record MUST produce one automation record.
 
 Additional fields MAY be added in future versions. Consumers MUST ignore unknown fields.
@@ -172,13 +151,13 @@ Additional fields MAY be added in future versions. Consumers MUST ignore unknown
 
 A Donna cell is the protocol-level output unit used by most CLI commands.
 
-Donna MUST use the shared cell model provided by `llm_tool_cli`, which owns cell fields, identifier generation, construction, metadata conversion, and cell validation errors.
+Donna MUST use the cell model, construction helpers, and cell formatting provided by `llm_tool_cli`.
+Donna MUST select the shared formatter for the active protocol and supply the tool label `DONNA`.
+The library owns cell layouts, metadata ordering, and automation cell records.
 
-Donna owns the projection of its results into cells and the human, LLM, and automation representations specified here.
+Donna owns the projection of its results into cells, journal formatting, and output routing.
 
 Consumers MUST NOT treat generated cell ids as deterministic identifiers.
-
-Cell metadata fields MUST be rendered in deterministic order by metadata key when the selected formatter emits ordered metadata.
 
 Commands MAY emit multiple cells for one invocation.
 
@@ -542,9 +521,8 @@ Workspace, artifact, validation, and environment errors SHOULD be rendered as Do
 
 Environment-error values from `llm_tool_cli` MUST retain their shared codes, messages, and record fields. They MUST NOT be renamed or wrapped in Donna-specific error records.
 
-For automation output, shared errors MUST be written to stdout as one JSON Lines object preserving their shared diagnostic record, without added cell fields. This includes `type`, `code`, and `message`, and configuration errors also include `path` and `reason`.
-
-For human and LLM output, the shared error message MUST be written to stderr followed by a newline. The message for a shared configuration error includes its path and reason.
+Shared error formatting MUST be provided by `llm_tool_cli`.
+Donna MUST write that output to stdout for automation and stderr for human and LLM protocols.
 
 Shared configuration errors MUST exit with status `2`. Other expected shared errors MUST exit with status `3`. When a result contains several errors, the CLI MUST render each error in order using its applicable representation and exit with the highest applicable status. Unexpected exceptions MUST propagate rather than being presented as expected failures.
 

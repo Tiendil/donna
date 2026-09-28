@@ -58,10 +58,9 @@ The following topics are out of scope:
 - `./donna/protocol/` — module responsible for Donna output boundary values and protocol formatting. Contains:
   - Donna-specific output value definitions and projections into shared cells used to communicate Donna results between modules.
   - generic helpers for projecting Donna-owned data and errors into output values.
-  - protocol enums.
-  - formatter selection.
-  - protocol-specific formatters that serialize output values for human, llm, and automation output.
-  - serialized record construction for external output protocols.
+  - journal formatter selection.
+  - protocol-specific journal formatters for human, llm, and automation output.
+  - Donna-specific serialized record construction for external output protocols.
   - low-level output boundary infrastructure that MAY be used by any top-level module.
 - `./donna/skills/` — module responsible for built-in skill text loaded by the CLI and renderers.
 - `./donna/workspaces/` — module responsible for workspace management, including:
@@ -102,7 +101,10 @@ Shared result types, the common environment-error model, and the environment-err
 The common entity base MUST be provided by `llm_tool_cli.core.entities` and imported directly by higher-level modules.
 
 The cell model, construction helpers, metadata conversion, and cell errors MUST be provided by `llm_tool_cli` and imported directly from their owning modules.
-Donna MUST retain ownership of its cell projections, formatters, journal records, and output routing.
+Cell and shared-error formatters and cell formatter selection MUST also be provided by `llm_tool_cli` and imported directly.
+Donna MUST retain ownership of its cell projections, journal records, journal formatting, and output routing.
+The public `donna.protocol.journal_formatters` package MUST own journal formatters independently of the shared cell formatters.
+The CLI emitter MUST select both formatter families from the same protocol and supply Donna's tool label to the shared cell formatter.
 
 Lexical project-path normalization MUST be provided by `llm_tool_cli`. Filesystem resolution and artifact-specific path behavior MUST remain Donna-owned.
 

@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING
 
 from llm_tool_cli.core.result import Ok, Result, unwrap_to_error
 from llm_tool_cli.protocol import Protocol
+from llm_tool_cli.protocol import errors as protocol_errors
 
 from donna.core.utils import now
 from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import TaskId, WorkUnitId
-from donna.protocol import errors as protocol_errors
 from donna.protocol import journal as protocol_journal
 from donna.workspaces import journal as workspace_journal
 from donna.workspaces.config import protocol as protocol_mode

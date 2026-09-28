@@ -4,6 +4,7 @@ from typing import cast
 import pytest
 from llm_tool_cli.core.result import Ok
 from llm_tool_cli.protocol import Protocol
+from llm_tool_cli.protocol import errors as protocol_errors
 from pytest_mock import MockerFixture
 
 from donna.context.context import Context
@@ -13,7 +14,6 @@ from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import WorkUnitId
 from donna.machine.context import ValueScope
 from donna.machine.tests import make as machine_make
-from donna.protocol import errors as protocol_errors
 
 
 class _FakeStateCache:
