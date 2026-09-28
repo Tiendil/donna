@@ -3,12 +3,12 @@ from typing import Annotated
 import click
 import typer
 from llm_tool_cli.protocol import write_output
+from llm_tool_cli.protocol.cell_shortcuts import operation_succeeded
 
 from donna.cli.application import app
 from donna.cli.types import ArtifactIdArgument, ArtifactIdsArgument, RenderModeOption, parse_artifact_id_argument
 from donna.cli.utils import command_context
 from donna.context.context import context
-from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW, ArtifactRenderContext, fetch_artifact_bytes
 from donna.workspaces.templates import render as render_template
 

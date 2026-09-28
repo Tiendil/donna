@@ -1,13 +1,13 @@
 from typing import TYPE_CHECKING, ClassVar, Literal, cast
 
 from llm_tool_cli.core.result import Ok, Result, unwrap_to_error
+from llm_tool_cli.protocol import cell_shortcuts
 
 from donna.context.context import context
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
 from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.operations import FsmMode, OperationConfig, OperationKind, OperationMeta
-from donna.protocol import cell_shortcuts
 from donna.workspaces import markdown
 from donna.workspaces.markdown_parser import MarkdownSectionMixin
 

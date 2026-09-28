@@ -1,9 +1,9 @@
 import typer
 from llm_tool_cli.paths import PathInput
+from llm_tool_cli.protocol.cell_shortcuts import operation_succeeded
 
 from donna.cli.application import app
 from donna.cli.utils import command_context
-from donna.protocol.cell_shortcuts import operation_succeeded
 from donna.workspaces.initialization import initialize_workspace
 
 
