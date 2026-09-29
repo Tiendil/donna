@@ -23,6 +23,7 @@ from donna.workspaces import errors as workspace_errors
 
 
 class TestCliEmitter:
+    @pytest.mark.parametrize("stderr", [False, True])
     @pytest.mark.parametrize(
         ("mode", "expected"),
         [
@@ -34,13 +35,19 @@ class TestCliEmitter:
             (Protocol.automation, '{"content":null,"id":"<cell-id>"}\n'),
         ],
     )
-    def test_emit_cells__preserves_donna_framing(self, mocker: MockerFixture, mode: Protocol, expected: str) -> None:
+    def test_emit_cells__preserves_donna_framing(
+        self, mocker: MockerFixture, mode: Protocol, expected: str, stderr: bool
+    ) -> None:
         stdout = io.StringIO()
+        error_stream = io.StringIO()
         mocker.patch.object(sys, "stdout", stdout)
+        mocker.patch.object(sys, "stderr", error_stream)
 
-        CliEmitter(mode).emit_cells([cell(media_type=None, content=None, meta={})])
+        CliEmitter(mode).emit_cells([cell(media_type=None, content=None, meta={})], stderr=stderr)
 
-        assert re.sub(r"[A-Za-z0-9_-]{22}", "<cell-id>", stdout.getvalue()) == expected
+        output = error_stream.getvalue() if stderr else stdout.getvalue()
+        assert re.sub(r"[A-Za-z0-9_-]{22}", "<cell-id>", output) == expected
+        assert (stdout.getvalue() if stderr else error_stream.getvalue()) == ""
 
     @pytest.mark.parametrize("mode", list(Protocol))
     def test_emit_cells__supports_text_only_streams(self, mocker: MockerFixture, mode: Protocol) -> None:

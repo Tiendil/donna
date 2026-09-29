@@ -30,6 +30,8 @@
 
 ### Changes
 
+- Delegate cell emission to the shared writer, preserving cell framing, batch context, Unicode, stream routing, and separate journal formatting.
+
 - Include shared `type = operation_succeeded` metadata in initialization, validation, and session success cells across all output protocols.
 
 - Use the shared skill-document cell shortcut. Skill output now includes `type = skill` metadata in every protocol, including a `type` field in automation JSON Lines.
