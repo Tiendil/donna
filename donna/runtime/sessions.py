@@ -3,7 +3,8 @@ from typing import Callable, ParamSpec
 
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 from llm_tool_cli.protocol.cell_shortcuts import operation_succeeded
-from llm_tool_cli.protocol.cells import Cell
+from llm_tool_cli.protocol.logic_cells import ContentCell
+from llm_tool_cli.protocol.logic_cells.base import LogicCell
 
 from donna.context.context import context
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId, artifact_section_id, split_artifact_section_id
@@ -47,12 +48,12 @@ def _state_run(mutator: MutableState) -> Result[None]:
 
 
 @unwrap_to_error
-def _state_cells() -> Result[list[Cell]]:
+def _state_cells() -> Result[list[LogicCell]]:
     return Ok(load_state().unwrap().node().details())
 
 
 P = ParamSpec("P")
-CellsResult = Result[list[Cell]]
+CellsResult = Result[list[LogicCell]]
 
 
 def _session_required(
@@ -70,7 +71,7 @@ def _session_required(
 
 
 @unwrap_to_error
-def new_session() -> Result[list[Cell]]:
+def new_session() -> Result[list[ContentCell]]:
     _save_state(MutableState.build().freeze()).unwrap()
 
     context().journal.add(message="Created new session state.").unwrap()
@@ -79,14 +80,14 @@ def new_session() -> Result[list[Cell]]:
 
 
 @unwrap_to_error
-def clear() -> Result[list[Cell]]:
+def clear() -> Result[list[ContentCell]]:
     workspace_sessions.reset_dir()
     return Ok([operation_succeeded("Cleared session.")])
 
 
 @_session_required
 @unwrap_to_error
-def continue_() -> Result[list[Cell]]:
+def continue_() -> Result[list[LogicCell]]:
     mutator = load_state().unwrap().mutator()
     _state_run(mutator).unwrap()
     return _state_cells()
@@ -94,19 +95,19 @@ def continue_() -> Result[list[Cell]]:
 
 @_session_required
 @unwrap_to_error
-def status() -> Result[list[Cell]]:
+def status() -> Result[list[LogicCell]]:
     return Ok([load_state().unwrap().node().info()])
 
 
 @_session_required
 @unwrap_to_error
-def details() -> Result[list[Cell]]:
+def details() -> Result[list[LogicCell]]:
     return Ok(load_state().unwrap().node().details())
 
 
 @_session_required
 @unwrap_to_error
-def start_workflow(artifact_id: ArtifactId) -> Result[list[Cell]]:  # noqa: CCR001
+def start_workflow(artifact_id: ArtifactId) -> Result[list[LogicCell]]:  # noqa: CCR001
     static_state = load_state().unwrap()
     workflow = context().artifacts.load(artifact_id, RENDER_CONTEXT_VIEW).unwrap()
     primary_section = workflow.primary_section().unwrap()
@@ -142,7 +143,9 @@ def _validate_operation_transition(
 
 @_session_required
 @unwrap_to_error
-def complete_action_request(request_id: ActionRequestId, next_operation_id: ArtifactSectionId) -> Result[list[Cell]]:
+def complete_action_request(
+    request_id: ActionRequestId, next_operation_id: ArtifactSectionId
+) -> Result[list[LogicCell]]:
     mutator = load_state().unwrap().mutator()
     _validate_operation_transition(mutator, request_id, next_operation_id).unwrap()
     mutator.complete_action_request(request_id, next_operation_id).unwrap()

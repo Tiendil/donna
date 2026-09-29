@@ -1,10 +1,8 @@
-import textwrap
-
 from llm_tool_cli.core.entities import BaseEntity
-from llm_tool_cli.protocol.cells import Cell
 
 from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import ActionRequestId
+from donna.protocol import ActionRequestCell
 from donna.protocol.nodes import Node
 
 
@@ -33,17 +31,5 @@ class ActionRequestNode(Node):
     def __init__(self, action_request: ActionRequest) -> None:
         self._action_request = action_request
 
-    def status(self) -> Cell:
-        message = textwrap.dedent(
-            """
-        **This is an action request for the agent. You MUST follow the instructions below.**
-
-        {request}
-        """
-        ).format(request=self._action_request.request)
-
-        return Cell.build_markdown(
-            kind="action_request",
-            content=message,
-            action_request_id=str(self._action_request.id),
-        )
+    def status(self) -> ActionRequestCell:
+        return ActionRequestCell(action_request_id=self._action_request.id, request=self._action_request.request)

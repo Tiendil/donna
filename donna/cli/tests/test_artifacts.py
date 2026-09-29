@@ -157,12 +157,12 @@ class TestParseArtifactIdArgument:
         error = failure.unwrap_err()[0]
         if protocol == "automation":
             records = helpers.json_lines(result.stdout)
-            assert [record for record in records if record.get("code") == "path_resolution_failed"] == [
-                error.as_record()
-            ]
+            helpers.assert_error_cells(
+                [record for record in records if record.get("code") == "path_resolution_failed"], [error]
+            )
             assert not result.stderr
         else:
-            assert result.stderr == error.format_message() + "\n"
+            assert error.format_message() in result.stderr
 
     @pytest.mark.parametrize("command", [["render", "--mode", "view"], ["validate"], ["run"]])
     def test_invalid_path_uses_shared_automation_diagnostic(self, tmp_path: pathlib.Path, command: list[str]) -> None:
@@ -174,7 +174,7 @@ class TestParseArtifactIdArgument:
         assert result.exit_code == 3
         records = helpers.json_lines(result.stdout)
         diagnostic = [record for record in records if record.get("code") == "invalid_project_path"]
-        assert diagnostic == [InvalidProjectPath(path=value).as_record()]
+        helpers.assert_error_cells(diagnostic, [InvalidProjectPath(path=value)])
         assert result.stderr == ""
 
     @pytest.mark.parametrize("protocol", ["human", "llm"])
@@ -185,7 +185,7 @@ class TestParseArtifactIdArgument:
         result = helpers.invoke(["--config", str(config_path), "-p", protocol, "validate", value])
 
         assert result.exit_code == 3
-        assert result.stderr == InvalidProjectPath(path=value).format_message() + "\n"
+        assert InvalidProjectPath(path=value).format_message() in result.stderr
         assert "kind=domain_error" not in result.stdout
 
     def test_rejects_unsupported_artifact_extension(self, tmp_path: pathlib.Path) -> None:
@@ -218,9 +218,10 @@ class TestParseArtifactSectionIdArgument:
 
         assert result.exit_code == 3
         records = helpers.json_lines(result.stdout)
-        assert [record for record in records if record.get("code") == "invalid_project_path"] == [
-            InvalidProjectPath(path=value).as_record()
-        ]
+        helpers.assert_error_cells(
+            [record for record in records if record.get("code") == "invalid_project_path"],
+            [InvalidProjectPath(path=value)],
+        )
 
     def test_invalid_section_retains_domain_diagnostic(self, tmp_path: pathlib.Path) -> None:
         config_path = helpers.write_config(tmp_path)
@@ -239,4 +240,4 @@ class TestParseArtifactSectionIdArgument:
 
         assert result.exit_code == 0
         records = helpers.json_lines(result.stdout)
-        assert any(record.get("error_code") == "donna.domain.invalid_id_format" for record in records)
+        assert any(record.get("code") == "donna.domain.invalid_id_format" for record in records)

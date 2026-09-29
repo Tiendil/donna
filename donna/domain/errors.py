@@ -10,8 +10,6 @@ class InternalError(core_errors.InternalError):
 class EnvironmentError(core_errors.EnvironmentError):
     """Base class for environment errors in donna.domain."""
 
-    cell_kind: str = "domain_error"
-
 
 class InvalidInternalId(InternalError):
     message_template: ClassVar[str] = "Invalid InternalId: '{value}'."

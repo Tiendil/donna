@@ -11,8 +11,9 @@ from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Ok, Result, UnwrapError, unwrap_to_error
 from llm_tool_cli.paths import PathInput, ProjectConfigPath
 from llm_tool_cli.protocol import Protocol, write_output
-from llm_tool_cli.protocol.cells import Cell
-from llm_tool_cli.protocol.modes import get_cell_formatter
+from llm_tool_cli.protocol.cell_shortcuts import environment_error
+from llm_tool_cli.protocol.logic_cells.base import LogicCell
+from llm_tool_cli.protocol.rendering import render_cells
 
 from donna.cli.entities import GLOBAL_OPTIONS_CONTEXT_KEY, GlobalOptions
 from donna.context.context import Context
@@ -25,27 +26,24 @@ from donna.workspaces import config as workspace_config
 
 
 class CliEmitter:
-    __slots__ = ("_cell_formatter", "_journal_formatter")
+    __slots__ = ("_protocol", "_journal_formatter")
 
     def __init__(self, protocol: Protocol) -> None:
-        self._cell_formatter = get_cell_formatter(protocol, tool_label="DONNA")
+        self._protocol = protocol
+
         self._journal_formatter = get_journal_formatter(protocol)
 
-    def emit_cell(self, cell: Cell) -> None:
-        write_output(self._cell_formatter.format_cell(cell).decode("utf-8"))
+    def emit_cells(self, cells: Iterable[LogicCell], *, stderr: bool = False) -> None:
+        write_output(render_cells(cells, protocol=self._protocol, tool_label="DONNA").decode("utf-8"), error=stderr)
 
     def emit_journal(self, record: JournalRecord) -> None:
         write_output(self._journal_formatter.format_journal(record).decode("utf-8"))
 
-    def emit_error(self, error: llm_tool_errors.EnvironmentError, *, stderr: bool) -> None:
-        write_output(self._cell_formatter.format_error(error).decode("utf-8"), error=stderr)
 
-
-def output_cells(cells: Iterable[Cell]) -> None:
+def output_cells(cells: Iterable[LogicCell]) -> None:
     emitter = CliEmitter(workspace_config.protocol())
 
-    for cell in cells:
-        emitter.emit_cell(cell)
+    emitter.emit_cells(cells)
 
 
 def global_options(context: typer.Context) -> GlobalOptions:
@@ -94,17 +92,17 @@ class CommandContext:
 
         return PathInput(pathlib.Path.cwd())
 
-    def write_cells(self, cells: Iterable[Cell]) -> None:
-        for cell in cells:
-            self.emitter.emit_cell(cell)
+    def write_cells(self, cells: Iterable[LogicCell]) -> None:
+        self.emitter.emit_cells(cells)
 
     def write_errors(self, errors: EnvironmentErrors) -> int:
         exit_code = 0
         for error in errors:
-            if isinstance(error, EnvironmentError):
-                self.emitter.emit_cell(environment_error_node(error).info())
-            else:
-                self.emitter.emit_error(error, stderr=self.protocol != Protocol.automation)
+            local_error = isinstance(error, EnvironmentError)
+            self.emitter.emit_cells(
+                [environment_error(error)], stderr=not local_error and self.protocol != Protocol.automation
+            )
+            if not local_error:
                 exit_code = max(exit_code, 2 if isinstance(error, config_errors.EnvironmentError) else 3)
         return exit_code
 

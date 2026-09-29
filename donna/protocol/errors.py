@@ -1,7 +1,7 @@
 from typing import ClassVar
 
 from llm_tool_cli.core.errors import EnvironmentError
-from llm_tool_cli.protocol.cells import Cell, MetaValue, to_meta_value
+from llm_tool_cli.protocol.logic_cells import EnvironmentErrorCell
 
 from donna.core import errors as core_errors
 from donna.protocol.nodes import Node
@@ -21,54 +21,8 @@ class EnvironmentErrorNode(Node):
     def __init__(self, environment_error: EnvironmentError) -> None:
         self._error = environment_error
 
-    def meta(self) -> dict[str, MetaValue]:
-        meta: dict[str, MetaValue] = {
-            "error_code": self._error.code,
-        }
-
-        for field_name, _field in type(self._error).model_fields.items():
-            if field_name in ("code", "message", "cell_kind", "cell_media_type", "ways_to_fix"):
-                continue
-
-            value = getattr(self._error, field_name)
-
-            if value is None:
-                continue
-
-            meta[field_name] = to_meta_value(value)
-
-        return meta
-
-    def content(self) -> str:
-        intro = self._error.content_intro() if isinstance(self._error, core_errors.EnvironmentError) else "Error"
-
-        message = self._error.format_message().strip()
-
-        ways_to_fix = [fix.format(error=self._error).strip() for fix in self._error.ways_to_fix]
-
-        if "\n" in self._error.message:
-            content = f"{intro}:\n\n{message}"
-        else:
-            content = f"{intro}: {message}"
-
-        if not ways_to_fix:
-            return content
-
-        if len(ways_to_fix) == 1:
-            return f"{content}\nWay to fix: {ways_to_fix[0]}"
-
-        fixes = "\n".join(f"- {fix}" for fix in ways_to_fix)
-
-        return f"{content}\n\nWays to fix:\n\n{fixes}"
-
-    def status(self) -> Cell:
-        local_error = self._error if isinstance(self._error, core_errors.EnvironmentError) else None
-        return Cell.build(
-            kind=local_error.cell_kind if local_error else "environment_error",
-            media_type=local_error.cell_media_type if local_error else "text/markdown",
-            content=self.content(),
-            **self.meta(),
-        )
+    def status(self) -> EnvironmentErrorCell:
+        return EnvironmentErrorCell(error=self._error)
 
     def journal_message(self) -> str:
         return self._error.format_message().replace("\n", " ").strip()

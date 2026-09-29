@@ -1,7 +1,7 @@
 from typing import Annotated
 
 import typer
-from llm_tool_cli.protocol.cells import Cell
+from llm_tool_cli.protocol.logic_cells import ContentCell
 
 from donna.cli.application import app
 from donna.cli.utils import command_context
@@ -14,10 +14,11 @@ def skill(context: typer.Context, document: Annotated[SkillDocument, typer.Argum
     with command_context(context, load_environment=False) as command:
         command.write_cells(
             [
-                Cell.build_markdown(
+                ContentCell(
                     kind="skill",
                     content=load_skill_text(document),
-                    document=document.value,
+                    media_type="text/markdown",
+                    meta={"document": document.value},
                 )
             ]
         )

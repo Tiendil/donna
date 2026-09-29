@@ -29,7 +29,7 @@ class FinishWorkflow(MarkdownSectionMixin, OperationKind):
 
         operation = artifact.get_section(section_id).unwrap()
         info = cell_shortcuts.info(operation.description)
-        context().output.emit_cell(info)
+        context().output.emit_cells([info])
 
         return Ok([ChangeFinishTask(task_id=task.id)])
 

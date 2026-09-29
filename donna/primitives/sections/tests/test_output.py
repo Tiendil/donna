@@ -1,3 +1,4 @@
+from llm_tool_cli.protocol.logic_cells import ContentCell
 from pytest_mock import MockerFixture
 
 from donna.machine.changes import ChangeAddWorkUnit
@@ -88,6 +89,7 @@ class TestOutput:
 
         assert result.is_ok()
         cell = runtime_context.output.cells[0]
+        assert isinstance(cell, ContentCell)
         assert cell.kind == "info"
         assert cell.content == "Agent message"
         change = result.unwrap()[0]

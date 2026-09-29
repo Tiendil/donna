@@ -1,110 +1,50 @@
-from decimal import Decimal
-
+import pytest
 from llm_tool_cli.core.errors import EnvironmentError
+from llm_tool_cli.protocol import Protocol
+from llm_tool_cli.protocol.logic_cells import EnvironmentErrorCell
 
-from donna.core import errors as core_errors
+from donna.domain.artifact_ids import ArtifactId
+from donna.machine.errors import ArtifactPrimarySectionMissing
 from donna.protocol.errors import EnvironmentErrorNode, environment_error_node
 
 
-class _SingleFixError(core_errors.EnvironmentError):
-    cell_kind: str = "sample_error"
-    code: str = "sample.single"
-    message: str = "Problem with {error.item}."
-    ways_to_fix: list[str] = ["Fix {error.item}."]
-    item: str
-    count: int
-    active: bool
-    optional: str | None = None
-    decimal_value: Decimal
-
-    def content_intro(self) -> str:
-        return "Sample"
-
-
-class _MultipleFixesError(core_errors.EnvironmentError):
-    cell_kind: str = "sample_error"
-    code: str = "sample.multiple"
-    message: str = "Problem with {error.item}."
-    ways_to_fix: list[str] = ["Fix {error.item}.", "Retry."]
-    item: str
-
-
-class _MultilineError(core_errors.EnvironmentError):
-    cell_kind: str = "sample_error"
-    code: str = "sample.multiline"
-    message: str = "First line.\nSecond line."
-
-
 class TestEnvironmentErrorNode:
-    def test_status__renders_shared_error_without_presentation_fields(self) -> None:
-        error = EnvironmentError(code="service_unavailable", message="Service unavailable", ways_to_fix=["Retry."])
+    @pytest.mark.parametrize("protocol", list(Protocol))
+    def test_status__uses_shared_projection_for_artifact_errors(self, protocol: Protocol) -> None:
+        error = ArtifactPrimarySectionMissing(artifact_id=ArtifactId("@/workflow.donna.md"))
+
+        cell = EnvironmentErrorNode(error).status().render(protocol)[0]
+
+        assert cell.kind == "error"
+        assert cell.meta == {
+            "type": "error",
+            "code": error.code,
+            "artifact_id": "@/workflow.donna.md",
+            "section_id": None,
+        }
+        assert cell.content is not None
+        assert cell.content.startswith(error.format_message())
+        assert "Way to fix:" in cell.content
+
+    def test_status__retains_typed_error(self) -> None:
+        error = EnvironmentError(code="sample", message="First line.\nSecond line.")
 
         cell = EnvironmentErrorNode(error).status()
 
-        assert cell.kind == "environment_error"
-        assert cell.media_type == "text/markdown"
-        assert cell.meta == {"error_code": "service_unavailable"}
-        assert cell.content == "Error: Service unavailable\nWay to fix: Retry."
-
-    def test_meta__includes_code_and_scalar_context_fields(self) -> None:
-        node = EnvironmentErrorNode(
-            _SingleFixError(item="artifact", count=3, active=True, decimal_value=Decimal("1.5"))
-        )
-
-        assert node.meta() == {
-            "error_code": "sample.single",
-            "item": "artifact",
-            "count": 3,
-            "active": True,
-            "decimal_value": "1.5",
-        }
-
-    def test_content__renders_single_fix(self) -> None:
-        node = EnvironmentErrorNode(
-            _SingleFixError(item="artifact", count=3, active=True, decimal_value=Decimal("1.5"))
-        )
-
-        assert node.content() == "Sample: Problem with artifact.\nWay to fix: Fix artifact."
-
-    def test_content__renders_multiple_fixes_as_list(self) -> None:
-        node = EnvironmentErrorNode(_MultipleFixesError(item="artifact"))
-
-        assert node.content() == "Error: Problem with artifact.\n\nWays to fix:\n\n- Fix artifact.\n- Retry."
-
-    def test_content__renders_multiline_message_as_block(self) -> None:
-        node = EnvironmentErrorNode(_MultilineError())
-
-        assert node.content() == "Error:\n\nFirst line.\nSecond line."
-
-    def test_status__builds_error_cell(self) -> None:
-        node = EnvironmentErrorNode(
-            _SingleFixError(item="artifact", count=3, active=True, decimal_value=Decimal("1.5"))
-        )
-
-        cell = node.status()
-
-        assert cell.kind == "sample_error"
-        assert cell.media_type == "text/markdown"
-        assert cell.content == "Sample: Problem with artifact.\nWay to fix: Fix artifact."
-        assert cell.meta == {
-            "error_code": "sample.single",
-            "item": "artifact",
-            "count": 3,
-            "active": True,
-            "decimal_value": "1.5",
-        }
+        assert isinstance(cell, EnvironmentErrorCell)
+        assert cell.error == error
 
     def test_journal_message__renders_single_line_message(self) -> None:
-        node = EnvironmentErrorNode(_MultilineError())
+        error = EnvironmentError(code="sample", message="First line.\nSecond line.")
 
-        assert node.journal_message() == "First line. Second line."
+        assert EnvironmentErrorNode(error).journal_message() == "First line. Second line."
 
 
 class TestEnvironmentErrorNodeShortcut:
     def test_returns_environment_error_node(self) -> None:
-        error = _MultipleFixesError(item="artifact")
+        error = EnvironmentError(code="sample", message="Problem")
 
         node = environment_error_node(error)
 
         assert isinstance(node, EnvironmentErrorNode)
-        assert node.status().meta["error_code"] == "sample.multiple"
+        assert node.status().error == error

@@ -17,7 +17,7 @@ class PathRenderMode(enum.StrEnum):
 
 
 class EnvironmentError(core_errors.EnvironmentError):
-    cell_kind: str = "directive_error"
+    """Base class for directive environment errors."""
 
 
 class PathInvalidArguments(EnvironmentError):

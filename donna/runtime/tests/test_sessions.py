@@ -1,4 +1,5 @@
 from llm_tool_cli.core.result import Ok, Result
+from llm_tool_cli.protocol import Protocol
 from pytest_mock import MockerFixture
 
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
@@ -163,7 +164,7 @@ class TestNewSession:
         assert result.is_ok()
         assert runtime_context.state.saved == [MutableState.build().freeze()]
         assert runtime_context.journal.records == [{"message": "Created new session state.", "actor_id": None}]
-        assert result.unwrap()[0].kind == "operation_succeeded"
+        assert result.unwrap()[0].render(Protocol.human)[0].kind == "operation_succeeded"
 
 
 class TestClear:
@@ -174,7 +175,7 @@ class TestClear:
 
         assert result.is_ok()
         reset_dir.assert_called_once_with()
-        assert result.unwrap()[0].kind == "operation_succeeded"
+        assert result.unwrap()[0].render(Protocol.human)[0].kind == "operation_succeeded"
 
 
 class TestContinue:
@@ -197,7 +198,10 @@ class TestContinue:
         assert final_state.work_units == []
         assert len(final_state.action_requests) == 1
         assert runtime_context.state.saved[-1] == final_state
-        assert [cell.kind for cell in result.unwrap()] == ["session_state_status", "action_request"]
+        assert [cell.render(Protocol.human)[0].kind for cell in result.unwrap()] == [
+            "session_state_status",
+            "action_request",
+        ]
 
 
 class TestStatus:
@@ -208,7 +212,7 @@ class TestStatus:
             result = sessions.status()
 
         assert result.is_ok()
-        assert [cell.kind for cell in result.unwrap()] == ["session_state_status"]
+        assert [cell.render(Protocol.human)[0].kind for cell in result.unwrap()] == ["session_state_status"]
 
 
 class TestDetails:
@@ -226,7 +230,10 @@ class TestDetails:
             result = sessions.details()
 
         assert result.is_ok()
-        assert [cell.kind for cell in result.unwrap()] == ["session_state_status", "action_request"]
+        assert [cell.render(Protocol.human)[0].kind for cell in result.unwrap()] == [
+            "session_state_status",
+            "action_request",
+        ]
 
 
 class TestStartWorkflow:
@@ -245,7 +252,10 @@ class TestStartWorkflow:
         assert len(final_state.action_requests) == 1
         assert runtime_context.artifacts.loaded[0][0] == ARTIFACT_ID
         assert runtime_context.artifacts.viewed == [ARTIFACT_ID]
-        assert [cell.kind for cell in result.unwrap()] == ["session_state_status", "action_request"]
+        assert [cell.render(Protocol.human)[0].kind for cell in result.unwrap()] == [
+            "session_state_status",
+            "action_request",
+        ]
 
 
 class TestValidateOperationTransition:
@@ -305,7 +315,7 @@ class TestCompleteActionRequest:
         assert final_state.work_units == []
         assert len(runtime_context.state.saved) == 2
         assert runtime_context.artifacts.executed[0][0] == ARTIFACT_ID
-        assert [cell.kind for cell in result.unwrap()] == ["session_state_status"]
+        assert [cell.render(Protocol.human)[0].kind for cell in result.unwrap()] == ["session_state_status"]
 
     def test_returns_error_for_disallowed_transition_without_saving(self) -> None:
         state = MutableState(

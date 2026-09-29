@@ -10,7 +10,7 @@ from donna.workspaces import config as workspace_config
 
 
 class EnvironmentError(core_errors.EnvironmentError):
-    cell_kind: str = "directive_error"
+    """Base class for directive environment errors."""
 
 
 class GoToInvalidArguments(EnvironmentError):

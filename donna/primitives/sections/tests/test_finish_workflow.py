@@ -1,3 +1,4 @@
+from llm_tool_cli.protocol.logic_cells import ContentCell
 from pytest_mock import MockerFixture
 
 from donna.machine.changes import ChangeFinishTask
@@ -46,6 +47,7 @@ class TestFinishWorkflow:
 
         assert result.is_ok()
         cell = runtime_context.output.cells[0]
+        assert isinstance(cell, ContentCell)
         assert cell.kind == "info"
         assert cell.content == "Finished"
         change = result.unwrap()[0]

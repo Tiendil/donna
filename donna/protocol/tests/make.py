@@ -1,7 +1,6 @@
 import datetime
-import uuid
 
-from llm_tool_cli.protocol.cells import Cell
+from llm_tool_cli.protocol.logic_cells import ContentCell
 
 from donna.domain.artifact_ids import ArtifactId, artifact_section_id
 from donna.domain.ids import SectionId
@@ -9,16 +8,15 @@ from donna.domain.internal_ids import TaskId, WorkUnitId
 from donna.protocol.journal import JournalRecord
 
 
-def cell(**kwargs: object) -> Cell:
-    values = {
-        "id": uuid.UUID("12345678-1234-5678-9234-567812345678"),
+def cell(**kwargs: object) -> ContentCell:
+    values: dict[str, object] = {
         "kind": "sample_status",
         "media_type": "text/markdown",
         "content": "  Sample content.  ",
         "meta": {"zeta": 2, "alpha": "first", "enabled": True, "missing": None},
     }
     values.update(kwargs)
-    return Cell.model_validate(values)
+    return ContentCell.model_validate(values)
 
 
 def journal_record(**kwargs: object) -> JournalRecord:

@@ -2,7 +2,7 @@ import enum
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
-from llm_tool_cli.protocol.cells import MetaValue
+from llm_tool_cli.protocol.output_cells.base import MetaValue
 
 from donna.domain.ids import SectionId
 from donna.machine.artifacts import ArtifactSectionConfig, ArtifactSectionMeta

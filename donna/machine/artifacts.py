@@ -2,14 +2,16 @@ from collections.abc import Mapping
 
 from llm_tool_cli.core.entities import BaseEntity
 from llm_tool_cli.core.errors import EnvironmentErrors
-from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
-from llm_tool_cli.protocol.cells import Cell, MetaValue
+from llm_tool_cli.core.result import Err, Ok, Result
+from llm_tool_cli.protocol.logic_cells import EnvironmentErrorCell
+from llm_tool_cli.protocol.output_cells.base import MetaValue
 
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
 from donna.machine.context import context
 from donna.machine.errors import ArtifactPrimarySectionMissing, ArtifactSectionNotFound, MultiplePrimarySectionsError
+from donna.protocol import ArtifactInfoCell, ArtifactSectionStatusCell, ArtifactStatusCell
 from donna.protocol.errors import environment_error_node
 from donna.protocol.nodes import Node
 
@@ -36,9 +38,6 @@ class ArtifactSection(BaseEntity):
 
     def node(self) -> "ArtifactSectionNode":
         return ArtifactSectionNode(self)
-
-    def markdown_blocks(self) -> list[str]:
-        return [f"## {self.title}", self.description]
 
 
 class Artifact(BaseEntity):
@@ -116,18 +115,6 @@ class Artifact(BaseEntity):
     def node(self) -> "ArtifactNode":
         return ArtifactNode(self)
 
-    @unwrap_to_error
-    def markdown_blocks(self) -> Result[list[str]]:
-        primary_section = self.primary_section().unwrap()
-        blocks = [f"# {primary_section.title}", primary_section.description]
-
-        for section in self.sections:
-            if section.primary:
-                continue
-            blocks.extend(section.markdown_blocks())
-
-        return Ok(blocks)
-
 
 class ArtifactNode(Node):
     __slots__ = ("_artifact",)
@@ -135,35 +122,40 @@ class ArtifactNode(Node):
     def __init__(self, artifact: Artifact) -> None:
         self._artifact = artifact
 
-    def status(self) -> Cell:
+    def status(self) -> ArtifactStatusCell | EnvironmentErrorCell:
         primary_section_result = self._artifact.primary_section()
         if primary_section_result.is_err():
-            return environment_error_node(primary_section_result.unwrap_err()[0]).info()
-
+            return environment_error_node(primary_section_result.unwrap_err()[0]).status()
         primary_section = primary_section_result.unwrap()
-        return Cell.build_markdown(
-            kind="artifact_status",
-            artifact_id=str(self._artifact.id),
-            artifact_kind=str(primary_section.kind),
+        return ArtifactStatusCell(
+            artifact_id=self._artifact.id,
+            artifact_kind=primary_section.kind,
             artifact_title=primary_section.title,
-            content=primary_section.description,
+            description=primary_section.description,
         )
 
-    def info(self) -> Cell:
+    def info(self) -> ArtifactInfoCell | EnvironmentErrorCell:
         primary_section_result = self._artifact.primary_section()
         if primary_section_result.is_err():
-            return environment_error_node(primary_section_result.unwrap_err()[0]).info()
-
+            return environment_error_node(primary_section_result.unwrap_err()[0]).status()
         primary_section = primary_section_result.unwrap()
-        blocks_result = self._artifact.markdown_blocks()
-        if blocks_result.is_err():
-            return environment_error_node(blocks_result.unwrap_err()[0]).info()
-
-        return Cell.build_markdown(
-            kind="artifact_info",
-            content="\n".join(blocks_result.unwrap()),
-            artifact_id=str(self._artifact.id),
-            artifact_kind=str(primary_section.kind),
+        return ArtifactInfoCell(
+            artifact_id=self._artifact.id,
+            artifact_kind=primary_section.kind,
+            title=primary_section.title,
+            description=primary_section.description,
+            sections=tuple(
+                ArtifactSectionStatusCell(
+                    artifact_id=section.artifact_id,
+                    section_id=section.id,
+                    section_kind=section.kind,
+                    section_primary=section.primary,
+                    title=section.title,
+                    description=section.description,
+                )
+                for section in self._artifact.sections
+                if not section.primary
+            ),
         )
 
     def components(self) -> list["Node"]:
@@ -176,13 +168,13 @@ class ArtifactSectionNode(Node):
     def __init__(self, section: ArtifactSection) -> None:
         self._section = section
 
-    def status(self) -> Cell:
-        return Cell.build_markdown(
-            kind="artifact_section_status",
-            content="\n".join(self._section.markdown_blocks()),
-            artifact_id=str(self._section.artifact_id),
-            section_id=str(self._section.id),
-            section_kind=str(self._section.kind),
+    def status(self) -> ArtifactSectionStatusCell:
+        return ArtifactSectionStatusCell(
+            artifact_id=self._section.artifact_id,
+            section_id=self._section.id,
+            section_kind=self._section.kind,
             section_primary=self._section.primary,
-            **self._section.meta.cells_meta(),
+            title=self._section.title,
+            description=self._section.description,
+            extra_meta=dict(self._section.meta.cells_meta()),
         )

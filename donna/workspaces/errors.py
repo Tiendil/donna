@@ -11,15 +11,11 @@ class InternalError(core_errors.InternalError):
 
 
 class WorkspaceError(core_errors.EnvironmentError):
-    cell_kind: str = "workspace_error"
+    """Base class for workspace environment errors."""
 
 
 class WorkspaceConfigError(WorkspaceError):
-    cell_kind: str = "workspace_config_error"
     config_path: ProjectConfigPath
-
-    def content_intro(self) -> str:
-        return f"Error in Donna config file '{self.config_path}'"
 
 
 class ConfigCreateFailed(WorkspaceConfigError):
@@ -54,11 +50,7 @@ class JournalCommandFailed(WorkspaceError):
 
 
 class ArtifactError(WorkspaceError):
-    cell_kind: str = "artifact_error"
     artifact_id: ArtifactId
-
-    def content_intro(self) -> str:
-        return f"Error for artifact '{self.artifact_id}'"
 
 
 class ArtifactNotFound(ArtifactError):
@@ -79,25 +71,11 @@ class ArtifactMultipleFiles(ArtifactError):
 
 
 class MarkdownError(WorkspaceError):
-    cell_kind: str = "markdown_error"
     artifact_id: ArtifactId | None = None
-
-    def content_intro(self) -> str:
-        if self.artifact_id is None:
-            return "Error in markdown source"
-
-        return f"Error in markdown artifact '{self.artifact_id}'"
 
 
 class TemplateDirectiveError(WorkspaceError):
-    cell_kind: str = "template_directive_error"
     artifact_id: ArtifactId | None = None
-
-    def content_intro(self) -> str:
-        if self.artifact_id is None:
-            return "Error in template directive"
-
-        return f"Error in template directive for artifact '{self.artifact_id}'"
 
 
 class DirectivePathIncomplete(TemplateDirectiveError):

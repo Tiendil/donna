@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from llm_tool_cli.protocol.cells import Cell
+from llm_tool_cli.protocol.logic_cells.base import LogicCell
 
 
 class Node(ABC):
@@ -25,15 +25,15 @@ class Node(ABC):
     __slots__ = ()
 
     @abstractmethod
-    def status(self) -> Cell:
+    def status(self) -> LogicCell:
         """Returns short info about only this node."""
         ...
 
-    def info(self) -> Cell:
+    def info(self) -> LogicCell:
         """Returns full info about only this node."""
         return self.status()
 
-    def details(self) -> list[Cell]:
+    def details(self) -> list[LogicCell]:
         """Returns info about the node and its children.
 
         The node decides itself which children to include with what level of detail.
@@ -43,7 +43,7 @@ class Node(ABC):
 
         return cells
 
-    def index(self) -> list[Cell]:
+    def index(self) -> list[LogicCell]:
         """Returns status of itself and all its children."""
         cells = [self.status()]
         cells.extend(child.status() for child in self.references())

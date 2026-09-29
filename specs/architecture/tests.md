@@ -257,12 +257,11 @@ Error class unit tests SHOULD be added only when the error class owns behavior b
 Error class unit tests MAY cover:
 
 - custom constructor logic.
-- custom `content_intro()` behavior.
 - custom validation or normalization.
 - non-trivial structured metadata derivation.
 - behavior added by an intermediate error class.
 
-Leaf error tests MUST NOT assert only that class-level `code`, `message`, `ways_to_fix`, `cell_kind`, or constructor fields are present unchanged.
+Leaf error tests MUST NOT assert only that class-level `code`, `message`, `ways_to_fix`, or constructor fields are present unchanged.
 
 Exact production error message text MUST NOT be asserted in ordinary unit tests unless a behavior specification declares the text as a stable external contract.
 
@@ -288,7 +287,8 @@ Tests that verify produced environment errors SHOULD assert the expected error t
 
 Internal error tests MAY assert raised `InternalError` subclasses when the tested behavior is an internal invariant.
 
-CLI tests SHOULD verify that rendered environment errors use the expected Donna cell shape when command execution has entered Donna's protocol layer.
+CLI tests SHOULD verify shared error-cell integration and Donna's stream, exit, and journal policies.
+Generic error-cell projection tests MUST belong to the shared library.
 
 ## Behavior coverage
 

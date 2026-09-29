@@ -1,4 +1,6 @@
+import pytest
 from llm_tool_cli.core.result import Err, Result
+from llm_tool_cli.protocol.logic_cells import EnvironmentErrorCell
 
 from donna.domain.ids import SectionId
 from donna.machine import errors as machine_errors
@@ -7,6 +9,7 @@ from donna.machine.context import reset_context, set_context
 from donna.machine.primitives import Primitive
 from donna.machine.tests import make
 from donna.machine.tests.helpers import FakeMachineContext
+from donna.protocol import ArtifactInfoCell, ArtifactSectionStatusCell, ArtifactStatusCell
 
 
 class _Meta(ArtifactSectionMeta):
@@ -25,10 +28,6 @@ class TestArtifactSectionMeta:
 
 
 class TestArtifactSection:
-    def test_markdown_blocks__uses_h2_title_and_description(self) -> None:
-        section = make.artifact_section(title="Step", description="Description")
-
-        assert section.markdown_blocks() == ["## Step", "Description"]
 
     def test_node__returns_artifact_section_node(self) -> None:
         section = make.artifact_section()
@@ -103,25 +102,6 @@ class TestArtifact:
         assert artifact.get_section_number(make.SECONDARY_SECTION_ID) == 1
         assert artifact.get_section_number(SectionId("missing")) is None
 
-    def test_markdown_blocks__uses_primary_as_h1_and_other_sections_as_h2(self) -> None:
-        artifact = make.artifact(
-            [
-                make.artifact_section(primary=True, title="Workflow", description="Intro"),
-                make.artifact_section(id=make.SECONDARY_SECTION_ID, title="Next", description="Body"),
-            ]
-        )
-
-        result = artifact.markdown_blocks()
-
-        assert result.is_ok()
-        assert result.unwrap() == ["# Workflow", "Intro", "## Next", "Body"]
-
-    def test_markdown_blocks__returns_primary_section_error(self) -> None:
-        result = make.artifact([make.artifact_section(primary=False)]).markdown_blocks()
-
-        assert result.is_err()
-        assert isinstance(result.unwrap_err()[0], machine_errors.ArtifactPrimarySectionMissing)
-
     def test_validate_artifact__accepts_valid_artifact(self) -> None:
         artifact = make.artifact()
         machine_context = FakeMachineContext(primitive=Primitive())
@@ -160,32 +140,36 @@ class TestArtifactNode:
     def test_status__returns_primary_section_summary(self) -> None:
         cell = make.artifact().node().status()
 
-        assert cell.kind == "artifact_status"
-        assert cell.content == "Workflow description"
-        assert cell.meta == {
-            "artifact_id": str(make.ARTIFACT_ID),
-            "artifact_kind": str(make.PRIMITIVE_PATH),
-            "artifact_title": "Workflow",
-        }
+        assert isinstance(cell, ArtifactStatusCell)
+        assert cell.artifact_id == make.ARTIFACT_ID
+        assert cell.artifact_kind == make.PRIMITIVE_PATH
+        assert cell.artifact_title == "Workflow"
+        assert cell.description == "Workflow description"
 
-    def test_info__returns_artifact_markdown(self) -> None:
-        cell = (
-            make.artifact(
-                [
-                    make.artifact_section(primary=True),
-                    make.artifact_section(id=make.SECONDARY_SECTION_ID, title="Next", description="Body"),
-                ]
-            )
-            .node()
-            .info()
-        )
+    def test_info__returns_typed_artifact_sections(self) -> None:
+        primary = make.artifact_section(primary=True)
+        secondary = make.artifact_section(id=make.SECONDARY_SECTION_ID, title="Next", description="Body")
+        cell = make.artifact([primary, secondary]).node().info()
 
-        assert cell.kind == "artifact_info"
-        assert cell.content == "# Workflow\nWorkflow description\n## Next\nBody"
-        assert cell.meta == {
-            "artifact_id": str(make.ARTIFACT_ID),
-            "artifact_kind": str(make.PRIMITIVE_PATH),
-        }
+        assert isinstance(cell, ArtifactInfoCell)
+        assert cell.artifact_id == make.ARTIFACT_ID
+        assert cell.artifact_kind == make.PRIMITIVE_PATH
+        assert cell.title == primary.title
+        assert cell.description == primary.description
+        assert [(section.section_id, section.title, section.description) for section in cell.sections] == [
+            (secondary.id, secondary.title, secondary.description),
+        ]
+
+    @pytest.mark.parametrize("view", ["status", "info"])
+    @pytest.mark.parametrize("count", [0, 2])
+    def test_views__return_typed_error_for_invalid_primary_sections(self, view: str, count: int) -> None:
+        sections = [make.artifact_section(id=SectionId(f"section_{index}"), primary=True) for index in range(count)]
+        artifact = make.artifact(sections)
+
+        cell = getattr(artifact.node(), view)()
+
+        assert isinstance(cell, EnvironmentErrorCell)
+        assert cell.error == artifact.primary_section().unwrap_err()[0]
 
     def test_components__returns_section_nodes(self) -> None:
         components = make.artifact().node().components()
@@ -200,13 +184,11 @@ class TestArtifactSectionNode:
 
         cell = ArtifactSectionNode(section).status()
 
-        assert cell.kind == "artifact_section_status"
-        assert cell.media_type == "text/markdown"
-        assert cell.content == "## Workflow\nWorkflow description"
-        assert cell.meta == {
-            "artifact_id": str(make.ARTIFACT_ID),
-            "section_id": str(make.PRIMARY_SECTION_ID),
-            "section_kind": str(make.PRIMITIVE_PATH),
-            "section_primary": True,
-            "custom": "value",
-        }
+        assert isinstance(cell, ArtifactSectionStatusCell)
+        assert cell.artifact_id == section.artifact_id
+        assert cell.section_id == section.id
+        assert cell.section_kind == section.kind
+        assert cell.section_primary
+        assert cell.title == section.title
+        assert cell.description == section.description
+        assert cell.extra_meta == {"custom": "value"}

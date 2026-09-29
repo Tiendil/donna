@@ -38,7 +38,7 @@ The following topics are out of scope:
   - state changes.
   - operation and primitive interfaces.
   - workflow execution orchestration that is independent of CLI argument parsing and protocol-specific formatting.
-  - protocol-facing views of machine-owned concepts expressed as protocol-neutral output values from `./donna/protocol/`.
+  - protocol-facing views of machine-owned concepts that prepare protocol-independent logic cells through `./donna/protocol/`.
 - `./donna/runtime/` — module responsible for command-independent runtime orchestration. Contains:
   - session lifecycle use cases.
   - workflow execution loop coordination.
@@ -57,7 +57,7 @@ The following topics are out of scope:
 - `./donna/lib/` — module responsible for stable public names of built-in primitive instances used by Donna artifact configuration.
 - `./donna/protocol/` — module responsible for Donna output boundary values and protocol formatting. Contains:
   - Donna-specific output value definitions and projections into shared cells used to communicate Donna results between modules.
-  - generic helpers for projecting Donna-owned data and errors into output values.
+  - generic helpers for projecting Donna-owned data into output values and error nodes using shared error cells.
   - journal formatter selection.
   - protocol-specific journal formatters for human, llm, and automation output.
   - Donna-specific serialized record construction for external output protocols.
@@ -100,11 +100,20 @@ Shared result types, the common environment-error model, and the environment-err
 
 The common entity base MUST be provided by `llm_tool_cli.core.entities` and imported directly by higher-level modules.
 
-The cell model, construction helpers, metadata conversion, and cell errors MUST be provided by `llm_tool_cli` and imported directly from their owning modules.
-Cell and shared-error formatters and cell formatter selection MUST also be provided by `llm_tool_cli` and imported directly.
+The `OutputCell` model, construction helpers, metadata conversion, and cell errors MUST be provided by `llm_tool_cli` and imported directly from their owning modules.
+Donna's node views MUST produce logic cells with typed domain fields without accepting an output-cell type; their view selection remains Donna-owned.
+Error views MUST use the shared environment-error logic cell directly.
+The `donna.protocol.logic_cells` package MUST own domain-result cells and their projections into shared output cells.
+Its public cell entities MUST be exported from `donna.protocol` for use by other top-level modules.
+Artifact and section Markdown, action-request instructions, and session-status messages MUST be constructed by those cells during projection.
+Generic messages and already prepared documents MAY use shared content logic cells.
+Logic-cell protocol dispatch, protocol-specific output-cell types, rendering contexts, sequence rendering, and shared-error cell construction MUST be provided by `llm_tool_cli` and used directly.
 Donna MUST retain ownership of its cell projections, journal records, journal formatting, and output routing.
-The public `donna.protocol.journal_formatters` package MUST own journal formatters independently of the shared cell formatters.
-The CLI emitter MUST select both formatter families from the same protocol and supply Donna's tool label to the shared cell formatter.
+The public `donna.protocol.journal_formatters` package MUST own journal formatters independently of shared output cells.
+The runtime output boundary MUST accept iterables of logic cells through `emit_cells` without exposing an output-cell class.
+Single-cell callers MUST pass a one-item iterable through the same method.
+The CLI emitter MUST retain the selected protocol for shared cell rendering and select its journal formatter from the same protocol.
+The CLI MUST pass complete emitted logic-cell batches to shared sequence rendering with the selected protocol and Donna's tool label.
 
 Lexical project-path normalization MUST be provided by `llm_tool_cli`. Filesystem resolution and artifact-specific path behavior MUST remain Donna-owned.
 
@@ -197,7 +206,7 @@ The `utils` submodule is not a public import boundary unless a top-level module 
 
 Top-level modules MAY import protocol-owned boundary values and generic projection helpers from `donna.protocol` when they need to expose their owned concepts as Donna output units.
 
-Constructing protocol-neutral output values is not protocol-specific rendering and MUST NOT be treated as a module-boundary violation.
+Constructing logic cells from typed domain data is not protocol-specific rendering and MUST NOT be treated as a module-boundary violation.
 
 Top-level modules outside `./donna/protocol/` and `./donna/cli/` MUST NOT depend on protocol-specific formatter implementation submodules.
 
@@ -205,7 +214,7 @@ Top-level modules outside `./donna/protocol/` SHOULD NOT own protocol-specific s
 
 Protocol-specific rendering means selecting or implementing concrete external serialization for a protocol, such as terminal text framing, LLM-oriented boundary syntax, automation JSON Lines records, byte output, or formatter-specific ordering rules.
 
-Constructing protocol-neutral output values with kind, content, media type, and metadata is not protocol-specific rendering.
+Constructing logic cells with typed domain fields is not protocol-specific rendering.
 
 ## Data structures
 

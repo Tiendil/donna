@@ -108,18 +108,17 @@ Internal errors SHOULD be used for:
 
 ## Environment errors
 
-Donna's environment-error extension MUST inherit entity behavior through the shared environment-error model. The extension MUST own Donna presentation metadata, while the shared model MUST remain independent of cells and CLI output.
+Donna's environment-error extension MUST inherit entity behavior through the shared environment-error model and identify Donna-owned failures for application policy.
+Error models MUST remain independent of cell presentation; `llm_tool_cli` MUST own environment-error cells and their rendering.
 
 Environment errors MUST NOT inherit from `Exception`.
 
-Environment errors MUST define `code` and `message`. Donna-owned environment errors MUST also define `cell_kind`.
+Environment errors MUST define `code` and `message`.
 
 Environment errors MAY define:
 
-- `cell_media_type`.
 - `ways_to_fix`.
 - structured fields with context needed for rendering, logging, or tests.
-- `content_intro()` when the default intro is not specific enough.
 
 Environment error messages and ways to fix MAY use `{error.<field>}` formatting.
 
@@ -127,15 +126,12 @@ Leaf environment errors SHOULD define their message and fix guidance in the clas
 
 Construction sites SHOULD pass only the structured fields that vary for that error instance.
 
-Environment errors MUST be rendered through the protocol module when converted to cells. Shared environment errors embedded in artifact output MAY use a generic Donna error cell without requiring presentation metadata in their shared model.
+All environment errors, including errors embedded in artifact views, MUST use the shared typed environment-error cell and its common presentation contract.
+Donna's error nodes MUST retain graph and journal responsibilities while delegating cell construction to the shared library.
 
 The core error base classes MUST NOT depend on protocol cells, protocol nodes, protocol formatters, or CLI output.
 
-Protocol conversion code MUST preserve the error code as cell metadata.
-
-Rendered environment error cells MUST include the error code as metadata.
-
-Rendered environment error cell metadata SHOULD include structured context fields when those fields are scalar and deterministic.
+The shared library MUST manage error content, corrective guidance, native codes, and diagnostic context in cell output.
 
 ## Results
 
@@ -207,17 +203,16 @@ Typer command line parsing errors MAY use Typer's standard invalid-argument beha
 
 CLI argument parsing MAY raise `typer.BadParameter`, `click.UsageError`, or `typer.Exit` before command execution has fully entered Donna's result-based flow.
 
-After the selected protocol is installed, environment errors SHOULD be rendered as Donna error cells.
-
-Shared environment errors reaching the CLI directly MUST instead use the shared diagnostic contract: automation renders the unchanged shared diagnostic record as JSON Lines on stdout, and human and LLM protocols render its message on stderr.
+After the selected protocol is installed, all environment errors MUST use the same shared cell construction and rendering.
+Automation error cells MUST use stdout; human and LLM cells for errors outside Donna's environment-error hierarchy MUST use stderr.
 
 Shared configuration errors MUST exit with status `2`. Other shared environment errors MUST exit with status `3`. A result containing both Donna and shared environment errors MUST render every error and use the highest applicable exit status. Unexpected exceptions MUST NOT be caught by this expected-error handling.
 
-Human and LLM environment error cells SHOULD be written to stdout like other Donna cells.
+Human and LLM Donna-owned environment error cells SHOULD be written to stdout like other Donna cells.
 
 Automation environment error cells SHOULD be written to stdout as JSON Lines cell records.
 
-Environment errors rendered through Donna error cells currently exit with status `0`.
+Donna-owned environment errors currently exit with status `0`, independently of shared cell presentation.
 
 The CLI SHOULD write environment error journal records when workspace configuration is loaded and journal forwarding is available.
 

@@ -1,12 +1,13 @@
+from collections.abc import Iterable
 from typing import Protocol
 
-from llm_tool_cli.protocol.cells import Cell
+from llm_tool_cli.protocol.logic_cells.base import LogicCell
 
 from donna.protocol.journal import JournalRecord
 
 
 class OutputEmitter(Protocol):
-    def emit_cell(self, cell: Cell) -> None:
+    def emit_cells(self, cells: Iterable[LogicCell]) -> None:
         pass
 
     def emit_journal(self, record: JournalRecord) -> None:
@@ -16,7 +17,7 @@ class OutputEmitter(Protocol):
 class NoopEmitter:
     __slots__ = ()
 
-    def emit_cell(self, cell: Cell) -> None:
+    def emit_cells(self, cells: Iterable[LogicCell]) -> None:
         pass
 
     def emit_journal(self, record: JournalRecord) -> None:

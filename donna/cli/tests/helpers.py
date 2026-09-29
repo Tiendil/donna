@@ -1,8 +1,11 @@
+import base64
 import importlib
 import json
 import pathlib
+import uuid
 
 from click.testing import Result as CliResult
+from llm_tool_cli.core.errors import EnvironmentErrors
 from typer.testing import CliRunner
 
 from donna.cli.application import app
@@ -74,3 +77,15 @@ Done.
         encoding="utf-8",
     )
     return artifact_path
+
+
+def assert_error_cells(records: list[dict[str, object]], errors: EnvironmentErrors) -> None:
+    assert len(records) == len(errors)
+    for record, error in zip(records, errors):
+        actual = dict(record)
+        cell_id = actual.pop("id")
+        assert isinstance(cell_id, str)
+        assert uuid.UUID(bytes=base64.urlsafe_b64decode(cell_id + "==")).version == 4
+        expected = error.as_record()
+        expected["content"] = expected.pop("message")
+        assert actual == expected

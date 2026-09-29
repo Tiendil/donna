@@ -8,14 +8,8 @@ class InternalError(llm_tool_errors.InternalError):
 
 
 class EnvironmentError(llm_tool_errors.EnvironmentError):
-    cell_kind: str
-    cell_media_type: str = "text/markdown"
-
-    def content_intro(self) -> str:
-        return "Error"
+    """Base class for Donna-owned operational failures."""
 
 
 class CoreEnvironmentError(EnvironmentError):
     """Base class for environment errors in donna.core."""
-
-    cell_kind: str = "core_environment_error"

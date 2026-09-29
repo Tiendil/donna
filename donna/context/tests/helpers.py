@@ -1,16 +1,18 @@
+from collections.abc import Iterable
+
 from llm_tool_cli.core.result import Ok, Result
-from llm_tool_cli.protocol.cells import Cell
+from llm_tool_cli.protocol.logic_cells.base import LogicCell
 
 from donna.protocol.journal import JournalRecord
 
 
 class FakeOutputEmitter:
     def __init__(self) -> None:
-        self.cells: list[Cell] = []
+        self.cells: list[LogicCell] = []
         self.journal_records: list[JournalRecord] = []
 
-    def emit_cell(self, cell: Cell) -> None:
-        self.cells.append(cell)
+    def emit_cells(self, cells: Iterable[LogicCell]) -> None:
+        self.cells.extend(cells)
 
     def emit_journal(self, record: JournalRecord) -> None:
         self.journal_records.append(record)

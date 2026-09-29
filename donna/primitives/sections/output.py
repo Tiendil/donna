@@ -68,7 +68,7 @@ class Output(MarkdownSectionMixin, OperationKind):
         meta = cast(OutputMeta, operation.meta)
 
         info = cell_shortcuts.info(operation.description)
-        context().output.emit_cell(info)
+        context().output.emit_cells([info])
 
         next_operation_id = meta.next_operation_id
         assert next_operation_id is not None

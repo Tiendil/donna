@@ -1,11 +1,9 @@
 import copy
-import textwrap
 from typing import Sequence, cast
 
 import pydantic
 from llm_tool_cli.core.entities import BaseEntity
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
-from llm_tool_cli.protocol.cells import Cell
 
 from donna.domain.artifact_ids import ArtifactSectionId, split_artifact_section_id
 from donna.domain.internal_ids import ActionRequestId, InternalId, TaskId, WorkUnitId
@@ -21,6 +19,7 @@ from donna.machine.changes import (
 )
 from donna.machine.context import context
 from donna.machine.tasks import Task, WorkUnit
+from donna.protocol import SessionStateCell
 from donna.protocol.nodes import Node
 
 
@@ -221,64 +220,9 @@ class StateNode(Node):
     def __init__(self, state: BaseState) -> None:
         self._state = state
 
-    def status(self) -> Cell:
-        if not self._state.started:
-            message = textwrap.dedent(
-                """
-            This is a new session; no tasks were performed. You can safely run a workflow.
-                """
-            )
-
-        elif not self._state.tasks:
-            message = textwrap.dedent(
-                """
-            The session is IDLE. There are no active tasks.
-
-            - If the developer asked you to start working on a new task, you can do so by running a new workflow.
-            - If you have been working on a task, consider it completed and REPORT THE RESULTS TO THE DEVELOPER.
-                """
-            )
-
-        elif self._state.work_units:
-            message = textwrap.dedent(
-                """
-            The session has PENDING WORK UNITS. Donna has work to complete.
-
-            - If the developer asked you to start working on a new task, you MUST warn that there are pending work
-              units and ask if you should start a new session or continue working on the current work units.
-            - If you have been working on a task, you can continue session.
-                """
-            )
-
-        elif self._state.action_requests:
-            message = textwrap.dedent(
-                """
-            The session is AWAITING YOUR ACTION. You have pending action requests to address.
-
-            - If the developer asked you to start working on a new task, you MUST ask if you should start a new session
-              or continue working on the current action requests.
-            - Otherwise, you MUST address the pending action requests before proceeding.
-                """
-            )
-
-        elif self._state.tasks:
-            message = textwrap.dedent(
-                """
-            The session has unfinished TASKS but no pending work units or action requests.
-
-            - If the developer asked you to start working on a new task , you MUST ask if you should start a new
-              session or run a new workflow in the current one.
-            - If you have been working on a task, you can consider it completed and output the results to the
-              developer.
-                """
-            )
-
-        else:
-            raise machine_errors.SessionStateStatusInvalid()
-
-        return Cell.build_markdown(
-            kind="session_state_status",
-            content=message,
+    def status(self) -> SessionStateCell:
+        return SessionStateCell(
+            started=self._state.started,
             tasks=len(self._state.tasks),
             queued_work_units=len(self._state.work_units),
             pending_action_requests=len(self._state.action_requests),

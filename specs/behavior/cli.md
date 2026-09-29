@@ -51,7 +51,7 @@ donna [GLOBAL_OPTIONS] COMMAND [COMMAND_OPTIONS]
 
 The CLI MUST write requested command output to stdout.
 
-Donna-owned diagnostics that are not part of the requested output SHOULD be represented as Donna error cells when the selected protocol has already been installed. Adopted shared errors follow the diagnostic contract defined below.
+Environment-error diagnostics MUST use the shared error-cell presentation when the selected protocol has already been installed, with Donna-owned routing and exit behavior as defined below.
 
 For `automation` output, stdout MUST contain only JSON Lines records when command output is produced through Donna cells or journal records.
 
@@ -92,7 +92,7 @@ The CLI MUST use text writing provided by `llm_tool_cli.protocol`.
 
 Command output produced through Donna's protocol layer MUST be represented as Donna cells.
 
-Adopted shared error diagnostics are an exception and MUST use the shared error representation instead of a Donna cell envelope.
+All environment errors MUST use the typed environment-error logic cell and ordinary output cells provided by `llm_tool_cli`.
 
 The `render` command MUST write rendered Markdown directly.
 
@@ -152,8 +152,8 @@ Additional fields MAY be added in future versions. Consumers MUST ignore unknown
 A Donna cell is the protocol-level output unit used by most CLI commands.
 
 Donna MUST use the cell model, construction helpers, and cell formatting provided by `llm_tool_cli`.
-Donna MUST select the shared formatter for the active protocol and supply the tool label `DONNA`.
-The library owns cell layouts, metadata ordering, and automation cell records.
+Donna MUST construct protocol-independent logic cells and supply the active protocol and tool label `DONNA` when rendering each emitted sequence.
+The library owns logic-cell protocol dispatch, cell layouts, sequence rendering contexts, metadata ordering, and automation cell records.
 
 Donna owns the projection of its results into cells, journal formatting, and output routing.
 
@@ -519,18 +519,21 @@ Typer command line parsing errors SHOULD use Typer's standard invalid-arguments 
 
 Workspace, artifact, validation, and environment errors SHOULD be rendered as Donna error cells when possible.
 
-Environment-error values from `llm_tool_cli` MUST retain their shared codes, messages, and record fields. They MUST NOT be renamed or wrapped in Donna-specific error records.
+Donna-owned and shared environment-error values MUST use the common error-cell contract provided by `llm_tool_cli`, including corrective guidance and native diagnostic context.
+This replaces Donna's custom error-cell kinds and `error_code` field with the shared `error` kind, `type = error`, and `code` metadata.
+Custom introductory prefixes MUST be removed; artifact, section, and configuration context MUST remain available through shared metadata conversion, including optional null fields.
 
-Shared error formatting MUST be provided by `llm_tool_cli`.
-Donna MUST write that output to stdout for automation and stderr for human and LLM protocols.
+Shared error-cell construction and rendering MUST be provided by `llm_tool_cli`.
+Donna MUST write all automation error cells to stdout.
+Human and LLM cells for shared error values outside Donna's environment-error hierarchy MUST use stderr.
 
-Shared configuration errors MUST exit with status `2`. Other expected shared errors MUST exit with status `3`. When a result contains several errors, the CLI MUST render each error in order using its applicable representation and exit with the highest applicable status. Unexpected exceptions MUST propagate rather than being presented as expected failures.
+Shared configuration errors MUST exit with status `2`. Other expected shared errors MUST exit with status `3`. When a result contains several errors, the CLI MUST render each error in order using the common representation and its applicable stream and exit with the highest applicable status. Unexpected exceptions MUST propagate rather than being presented as expected failures.
 
-These shared diagnostics replace the previous Donna config parse, validation, read, discovery, and file-creation adapters. An unreadable explicit config path and an existing initialization target MUST likewise use the shared `config_unreadable` and `config_already_exists` errors. When no configuration can be discovered, the CLI MUST use the shared `config_not_found` diagnostic and exit with status `2`. Donna-owned starter-template failures retain their Donna error cells.
+These shared diagnostics replace the previous Donna config parse, validation, read, discovery, and file-creation adapters. An unreadable explicit config path and an existing initialization target MUST likewise use the shared `config_unreadable` and `config_already_exists` errors. When no configuration can be discovered, the CLI MUST use the shared `config_not_found` diagnostic and exit with status `2`. Donna-owned starter-template failures retain their Donna error classification.
 
-Environment errors rendered through Donna error cells currently exit with status `0`.
+Donna-owned environment errors currently exit with status `0`, independently of shared cell presentation.
 
-Human and LLM error cells SHOULD be written to stdout like other Donna cells.
+Human and LLM cells for Donna-owned errors SHOULD be written to stdout like other Donna cells; cells for errors outside Donna's environment-error hierarchy MUST use stderr.
 
 For automation output, rendered fatal errors SHOULD be written to stdout as JSON Lines cell records when possible.
 

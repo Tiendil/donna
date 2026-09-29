@@ -8,7 +8,7 @@ from donna.machine.templates_context import DirectiveContext
 
 
 class EnvironmentError(core_errors.EnvironmentError):
-    cell_kind: str = "directive_error"
+    """Base class for directive environment errors."""
 
 
 class TaskVariableInvalidArguments(EnvironmentError):

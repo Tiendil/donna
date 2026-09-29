@@ -29,8 +29,6 @@ class UnsupportedFormatterMode(InternalError):
 class EnvironmentError(core_errors.EnvironmentError):
     """Base class for environment errors in donna.machine."""
 
-    cell_kind: str = "machine_error"
-
 
 class SessionStateNotInitialized(EnvironmentError):
     code: str = "donna.machine.session_state_not_initialized"
@@ -120,15 +118,8 @@ class PrimitiveNotPrimitive(EnvironmentError):
 
 
 class ArtifactValidationError(EnvironmentError):
-    cell_kind: str = "artifact_validation_error"
     artifact_id: ArtifactId
     section_id: SectionId | None = None
-
-    def content_intro(self) -> str:
-        if self.section_id:
-            return f"Error in artifact '{self.artifact_id}', section '{self.section_id}'"
-
-        return f"Error in artifact '{self.artifact_id}'"
 
 
 class MultiplePrimarySectionsError(ArtifactValidationError):

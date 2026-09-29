@@ -9,6 +9,7 @@ from donna.machine.state import MutableState
 from donna.machine.tasks import Task, WorkUnit
 from donna.machine.tests import make
 from donna.machine.tests.helpers import FakeMachineContext
+from donna.protocol import ActionRequestCell, SessionStateCell
 
 
 class _StateOperation(OperationKind):
@@ -193,44 +194,30 @@ class TestMutableState:
 
 
 class TestStateNode:
-    def test_status__reports_new_session(self) -> None:
+    def test_status__captures_counts_and_started_flag(self) -> None:
+        state = make.mutable_state(
+            tasks=[make.task()], work_units=[make.work_unit()], action_requests=[make.action_request()], started=True
+        )
+
+        cell = state.node().status()
+
+        assert isinstance(cell, SessionStateCell)
+        assert cell.started
+        assert cell.tasks == 1
+        assert cell.queued_work_units == 1
+        assert cell.pending_action_requests == 1
+
+    def test_status__captures_new_session(self) -> None:
         cell = MutableState.build().node().status()
 
-        assert cell.kind == "session_state_status"
-        assert cell.content is not None
-        assert "new session" in cell.content
-        assert cell.meta == {"tasks": 0, "queued_work_units": 0, "pending_action_requests": 0}
-
-    def test_status__reports_idle_session(self) -> None:
-        cell = make.mutable_state(tasks=[], work_units=[], action_requests=[], started=True).node().status()
-
-        assert cell.content is not None
-        assert "IDLE" in cell.content
-        assert cell.meta["tasks"] == 0
-
-    def test_status__reports_pending_work_units(self) -> None:
-        cell = make.mutable_state(tasks=[make.task()], work_units=[make.work_unit()]).node().status()
-
-        assert cell.content is not None
-        assert "PENDING WORK UNITS" in cell.content
-        assert cell.meta["queued_work_units"] == 1
-
-    def test_status__reports_pending_action_requests(self) -> None:
-        cell = make.mutable_state(tasks=[make.task()], action_requests=[make.action_request()]).node().status()
-
-        assert cell.content is not None
-        assert "AWAITING YOUR ACTION" in cell.content
-        assert cell.meta["pending_action_requests"] == 1
-
-    def test_status__reports_unfinished_tasks(self) -> None:
-        cell = make.mutable_state(tasks=[make.task()]).node().status()
-
-        assert cell.content is not None
-        assert "unfinished TASKS" in cell.content
-        assert cell.meta["tasks"] == 1
+        assert not cell.started
+        assert cell.tasks == cell.queued_work_units == cell.pending_action_requests == 0
 
     def test_references__returns_action_request_nodes(self) -> None:
-        references = make.mutable_state(action_requests=[make.action_request()]).node().references()
+        request = make.action_request()
+        references = make.mutable_state(action_requests=[request]).node().references()
 
         assert len(references) == 1
-        assert references[0].status().kind == "action_request"
+        cell = references[0].status()
+        assert isinstance(cell, ActionRequestCell)
+        assert cell.action_request_id == request.id
