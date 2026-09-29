@@ -1,5 +1,7 @@
 ### Migration
 
+- `donna version` now emits a version cell in the selected protocol instead of a bare version line. Scripts should use `donna -p automation version` and read the JSON record's `version` field; `id` is generated and `content` is null.
+
 - All environment errors now use the shared `EnvironmentErrorCell` from `llm_tool_cli.protocol.logic_cells`. Donna-specific error kinds become `error`; metadata uses `code` instead of `error_code` and includes `type = error`. Custom introductory prefixes disappear; typed diagnostic context is serialized through the shared contract, including optional null fields. Corrective guidance remains in content and is now also included for shared errors. Stream routing, exit categories, and journal behavior are unchanged.
 - Remove `cell_kind`, `cell_media_type`, and `content_intro()` from custom Donna error classes. Error classes retain codes, messages, corrective guidance, and typed context. Use shared cell projection instead of the removed error-node and local error-cell `content` and `meta` helpers.
 
@@ -29,6 +31,8 @@
 - Python callers must use shared `load_config` followed by `construct_workspace` instead of `load_workspace`; `initialize_runtime` and shared configuration operations return `Result` values.
 
 ### Changes
+
+- Use the shared version-cell shortcut for every output protocol, preserving configuration-free execution and exit status zero on success.
 
 - Delegate cell emission to the shared writer, preserving cell framing, batch context, Unicode, stream routing, and separate journal formatting.
 
