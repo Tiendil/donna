@@ -50,12 +50,18 @@ class TestInit:
         assert (tmp_path / "donna.toml").is_file()
         records = helpers.json_lines(result.output)
         assert records[0]["content"] == "Donna project initialized successfully"
+        assert records[0]["type"] == "operation_succeeded"
+        assert not result.stderr
 
-    def test_config_option_selects_target_file(self, tmp_path: pathlib.Path) -> None:
+    @pytest.mark.parametrize("protocol", ["human", "llm"])
+    def test_config_option_selects_target_file(self, tmp_path: pathlib.Path, protocol: str) -> None:
         config_path = tmp_path / "custom.toml"
 
-        result = helpers.invoke(["--config", str(config_path), "-p", "llm", "init"])
+        result = helpers.invoke(["--config", str(config_path), "-p", protocol, "init"])
 
         assert result.exit_code == 0
         assert config_path.is_file()
-        assert "kind=operation_succeeded" in result.output
+        separator = " = " if protocol == "human" else "="
+        assert f"kind{separator}operation_succeeded" in result.stdout
+        assert f"type{separator}operation_succeeded" in result.stdout
+        assert not result.stderr

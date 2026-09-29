@@ -30,6 +30,8 @@
 
 ### Changes
 
+- Include shared `type = operation_succeeded` metadata in initialization, validation, and session success cells across all output protocols.
+
 - Use the shared skill-document cell shortcut. Skill output now includes `type = skill` metadata in every protocol, including a `type` field in automation JSON Lines.
 
 - Standardize runtime, CLI, and test emitters on `emit_cells` and remove the single-cell convenience method while preserving output batches and routing.

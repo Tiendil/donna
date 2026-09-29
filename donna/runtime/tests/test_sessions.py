@@ -176,6 +176,9 @@ class TestClear:
         assert result.is_ok()
         reset_dir.assert_called_once_with()
         assert result.unwrap()[0].render(Protocol.human)[0].kind == "operation_succeeded"
+        output = result.unwrap()[0].render(Protocol.automation)[0]
+        assert output.meta == {"type": "operation_succeeded"}
+        assert output.content == "Cleared session."
 
 
 class TestContinue:

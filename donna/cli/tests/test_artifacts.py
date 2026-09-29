@@ -82,6 +82,7 @@ class TestValidate:
         assert result.exit_code == 0
         records = helpers.json_lines(result.output)
         assert records[0]["content"] == "All artifacts are valid"
+        assert records[0]["type"] == "operation_succeeded"
 
     def test_explicit_artifact_argument_is_normalized(self, tmp_path: pathlib.Path) -> None:
         config_path = helpers.write_config(tmp_path)
@@ -100,6 +101,7 @@ class TestValidate:
 
         assert result.exit_code == 0
         assert "kind=operation_succeeded" in result.output
+        assert "type=operation_succeeded" in result.output
 
     def test_rejects_all_option_combined_with_artifact_argument(self, tmp_path: pathlib.Path) -> None:
         config_path = helpers.write_config(tmp_path)
