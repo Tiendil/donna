@@ -26,9 +26,8 @@ Built-in skill documentation fixtures MUST live under:
 ./donna/skills/fixtures/
 ```
 
-Each fixture MUST be a UTF-8 Markdown file.
-
-Each fixture SHOULD be loaded through `./donna/skills/fixtures.py` instead of direct filesystem reads from CLI or renderer code.
+`llm_tool_cli` provides packaged UTF-8 Markdown loading and read-failure diagnostics.
+Donna MUST use this shared behavior for its own fixture set; document selection and contents remain Donna-owned.
 
 ## Fixture set
 

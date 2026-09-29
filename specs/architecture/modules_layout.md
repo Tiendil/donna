@@ -62,7 +62,7 @@ The following topics are out of scope:
   - protocol-specific journal formatters for human, llm, and automation output.
   - Donna-specific serialized record construction for external output protocols.
   - low-level output boundary infrastructure that MAY be used by any top-level module.
-- `./donna/skills/` — module responsible for built-in skill text loaded by the CLI and renderers.
+- `./donna/skills/` — module responsible for built-in skill document definitions and packaged Markdown resources.
 - `./donna/workspaces/` — module responsible for workspace management, including:
   - finding and parsing config.
   - detecting current project root.
@@ -71,6 +71,8 @@ The following topics are out of scope:
   - session state storage.
   - journal forwarding.
 - `./donna/cli/` — module responsible for the CLI interface of the `donna` tool.
+
+The CLI MUST use `llm_tool_cli.skills` directly for skill-document loading and propagate its returned errors without local adapters.
 
 ## Submodules
 
