@@ -1,5 +1,9 @@
 ### Migration
 
+- Python integrations that bypass CLI `main()` must initialize `llm_tool_cli.core.settings` with `ToolLabel("DONNA")` before cell output or argument parsing. Tests can request `isolated_settings` from `llm_tool_cli.core.tests.fixtures` before initializing the label; pytest-mock restores prior settings afterward. Remove `tool_label` arguments from shared sequence rendering and writing.
+
+- Invalid `--protocol` values now produce an LLM `invalid_arguments` error cell on stderr and exit with status `1`, replacing Typer text and exit status `2`. Update scripts that depend on the previous diagnostic or exit status.
+
 - Replace `donna.cli.utils.global_options` with `llm_tool_cli.cli.context.get_global_options`. Store options through `set_global_options` instead of the removed `GLOBAL_OPTIONS_CONTEXT_KEY`.
 
 - Pass `llm_tool_cli.paths.ProjectConfigPath` to `initialize_workspace` in Python integrations. Omitting the path now selects `donna.toml` in the current working directory.
@@ -19,7 +23,7 @@
 
 - Shared errors now use ordinary cell framing in human and LLM output. Automation gains a generated `id` and moves formatted diagnostic text from `message` to `content`. Codes, diagnostic context, stderr/stdout routing, and exit categories remain unchanged.
 
-- Construct Donna domain-result logic cells or shared content logic cells for generic messages, and pass them to `CliEmitter` or shared `protocol.rendering.render_cells(cells, protocol=..., tool_label=...)`. All environment errors use the shared `protocol.cell_shortcuts.environment_error(error)` or `EnvironmentErrorCell(error=error)`. The separate `render_error` and `CliEmitter.emit_error` paths are removed; cell emission accepts `stderr=True` when needed. Journal formatters remain in `donna.protocol.journal_formatters` and use `get_journal_formatter` in `donna.protocol.modes`.
+- Construct Donna domain-result logic cells or shared content logic cells for generic messages, and pass them to `CliEmitter` or shared `protocol.rendering.render_cells(cells, protocol=...)`. All environment errors use the shared `protocol.cell_shortcuts.environment_error(error)` or `EnvironmentErrorCell(error=error)`. The separate `render_error` and `CliEmitter.emit_error` paths are removed; cell emission accepts `stderr=True` when needed. Journal formatters remain in `donna.protocol.journal_formatters` and use `get_journal_formatter` in `donna.protocol.modes`.
 - Node views and runtime session operations return logic cells. Read domain fields such as `artifact_id` directly; obtain output content and metadata through `cell.render(protocol)` or shared sequence rendering. Import Donna's domain cell types from `donna.protocol`. Call node views, message shortcuts, and `runtime.sessions.clear` without `cell_type`. Emitters accept `Iterable[LogicCell]` through `emit_cells`; replace `emit_cell(cell)` with `emit_cells([cell])` in callers and custom emitters. Emitters no longer expose a `cell_type` property. `CliEmitter` retains the selected protocol for shared rendering.
 - Artifact Markdown construction now belongs to artifact and section logic cells; use node views and cell projection instead of the removed machine `markdown_blocks` methods.
 - Import `cell_shortcuts` from `llm_tool_cli.protocol`, or its helpers directly from `llm_tool_cli.protocol.cell_shortcuts`, instead of `donna.protocol`.
@@ -43,6 +47,12 @@
 - Python callers must use shared `load_config` followed by `construct_workspace` instead of `load_workspace`; `initialize_runtime` and shared configuration operations return `Result` values.
 
 ### Changes
+
+- Use the shared `core.tests.fixtures.isolated_settings` pytest fixture for test isolation; production settings no longer provide a scoped override.
+
+- Initialize the shared `DONNA` tool label once at CLI startup and use it for all cell output, including early argument diagnostics. Use the shared `ProtocolOption` annotation without repeating labels.
+
+- Delegate protocol option parsing and help to `llm_tool_cli`, preserving shared defaults and accepted values.
 
 - Use shared `--config` parsing from `llm_tool_cli`. Directory and unreadable paths now reach configuration operations and their shared error cells; `skill` and `version` ignore unusable configuration paths.
 

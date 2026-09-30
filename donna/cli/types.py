@@ -4,7 +4,6 @@ from typing import Annotated
 import typer
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 from llm_tool_cli.paths import PathInput, UntrustedPath
-from llm_tool_cli.protocol import Protocol
 
 from donna.domain import errors as domain_errors
 from donna.domain.artifact_ids import (
@@ -56,14 +55,6 @@ def _parse_action_request_id(value: str) -> ActionRequestId:
     if not ActionRequestId.validate(value):
         raise typer.BadParameter("Invalid action request ID format (expected '<prefix>-<number>-<crc>').")
     return ActionRequestId(value)
-
-
-def _parse_protocol_mode(value: str) -> Protocol:
-    try:
-        return Protocol(value)
-    except ValueError as exc:
-        allowed = ", ".join(mode.value for mode in Protocol)
-        raise typer.BadParameter(f"Unsupported protocol mode '{value}'. Expected one of: {allowed}.") from exc
 
 
 def _parse_input_path(value: str) -> UntrustedPath:
@@ -127,16 +118,6 @@ ArtifactSectionIdArgument = Annotated[
     ),
 ]
 
-
-ProtocolModeOption = Annotated[
-    Protocol | None,
-    typer.Option(
-        "--protocol",
-        "-p",
-        parser=_parse_protocol_mode,
-        help="Output protocol. Defaults to llm for skill and human for other commands.",
-    ),
-]
 
 RenderModeOption = Annotated[
     RenderMode,

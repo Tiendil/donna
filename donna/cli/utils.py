@@ -33,7 +33,7 @@ class CliEmitter:
         self._journal_formatter = get_journal_formatter(protocol)
 
     def emit_cells(self, cells: Iterable[LogicCell], *, stderr: bool = False) -> None:
-        write_cells(cells, protocol=self._protocol, tool_label="DONNA", stderr=stderr)
+        write_cells(cells, protocol=self._protocol, stderr=stderr)
 
     def emit_journal(self, record: JournalRecord) -> None:
         write_output(self._journal_formatter.format_journal(record).decode("utf-8"))

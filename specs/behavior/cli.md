@@ -86,6 +86,11 @@ The CLI MUST support these commands and command forms:
 
 The root command MUST NOT start or continue workflow execution directly.
 
+## Application identity
+
+The CLI MUST initialize the tool label `DONNA` through `llm_tool_cli` at application startup before command-line parsing.
+Label storage, initialization checks, and label selection for cell rendering MUST be managed by `llm_tool_cli`.
+
 ## Output behavior
 
 The CLI MUST use text writing provided by `llm_tool_cli.protocol`.
@@ -143,7 +148,7 @@ Additional fields MAY be added in future versions. Consumers MUST ignore unknown
 A Donna cell is the protocol-level output unit used by most CLI commands.
 
 Donna MUST use the cell model, construction helpers, and cell formatting provided by `llm_tool_cli`.
-Donna MUST construct protocol-independent logic cells and supply the active protocol and tool label `DONNA` when rendering each emitted sequence.
+Donna MUST construct protocol-independent logic cells and supply the active protocol when rendering each emitted sequence.
 The library owns logic-cell protocol dispatch, cell layouts, sequence rendering contexts, metadata ordering, and automation cell records.
 
 Donna owns the projection of its results into cells, journal formatting, and output routing.
@@ -210,11 +215,9 @@ donna --help
 
 ### `-p`, `--protocol PROTOCOL`
 
-`-p` and `--protocol PROTOCOL` MUST be global options accepted before the subcommand.
+The CLI MUST use protocol-option parsing and invalid-value diagnostics managed by `llm_tool_cli`.
 
 Subcommands that render Donna cells or journal records MUST use the selected protocol.
-
-Allowed values MUST be the shared output modes described under [Output protocols](#output-protocols).
 
 ### `--config PATH`
 
@@ -505,7 +508,7 @@ Shared error-cell construction and rendering MUST be provided by `llm_tool_cli`.
 Donna MUST write all automation error cells to stdout.
 Human and LLM cells for shared error values outside Donna's environment-error hierarchy MUST use stderr.
 
-Shared configuration errors MUST exit with status `2`. Other expected shared errors MUST exit with status `3`. When a result contains several errors, the CLI MUST render each error in order using the common representation and its applicable stream and exit with the highest applicable status. Unexpected exceptions MUST propagate rather than being presented as expected failures.
+During command execution, shared configuration errors MUST exit with status `2`. Other expected shared errors MUST exit with status `3`. When a result contains several errors, the CLI MUST render each error in order using the common representation and its applicable stream and exit with the highest applicable status. Unexpected exceptions MUST propagate rather than being presented as expected failures.
 
 Configuration selection, loading, and creation MUST propagate the diagnostics provided by `llm_tool_cli` without local translation.
 
