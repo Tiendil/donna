@@ -95,6 +95,21 @@ class TestCliEmitter:
 
 
 class TestCommandContext:
+    def test_protocol_defaults__are_selected_for_each_invocation(self) -> None:
+        invocations = [
+            (["skill"], "--DONNA-CELL ", "kind=skill\n"),
+            (["version"], "----- DONNA CELL ", "kind = version\n"),
+            (["-p", "human", "skill"], "----- DONNA CELL ", "kind = skill\n"),
+            (["skill"], "--DONNA-CELL ", "kind=skill\n"),
+        ]
+        for arguments, prefix, kind in invocations:
+            result = helpers.invoke(arguments)
+
+            assert result.exit_code == 0
+            assert not result.stderr
+            assert result.stdout.startswith(prefix)
+            assert kind in result.stdout
+
     @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
     def test_local_errors__use_shared_cells_and_keep_stdout_and_exit_policy(
         self, mocker: MockerFixture, protocol: str

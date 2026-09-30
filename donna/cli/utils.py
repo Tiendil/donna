@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from contextvars import Token
 
 import typer
+from llm_tool_cli.cli.entities import GlobalOptions
 from llm_tool_cli.config import errors as config_errors
 from llm_tool_cli.config import load_config, locate_config
 from llm_tool_cli.core.errors import EnvironmentErrors
@@ -14,7 +15,7 @@ from llm_tool_cli.protocol.cell_shortcuts import environment_error
 from llm_tool_cli.protocol.logic_cells.base import LogicCell
 from llm_tool_cli.protocol.rendering import write_cells
 
-from donna.cli.entities import GLOBAL_OPTIONS_CONTEXT_KEY, GlobalOptions
+from donna.cli.application import GLOBAL_OPTIONS_CONTEXT_KEY
 from donna.context.context import Context
 from donna.core.errors import EnvironmentError
 from donna.domain.constants import DONNA_CONFIG_NAME
@@ -51,7 +52,7 @@ def global_options(context: typer.Context) -> GlobalOptions:
     if isinstance(global_options, GlobalOptions):
         return global_options
 
-    return GlobalOptions(protocol=Protocol.human)
+    return GlobalOptions()
 
 
 class CommandContext:
@@ -59,7 +60,7 @@ class CommandContext:
 
     def __init__(self, context: typer.Context) -> None:
         self.global_options = global_options(context)
-        self.protocol = self.global_options.protocol
+        self.protocol = self.global_options.protocol_for(context.info_name or "")
         self.emitter = CliEmitter(self.protocol)
 
     def install_protocol(self) -> None:
@@ -78,7 +79,7 @@ class CommandContext:
 
     def target_config_path(self) -> ProjectConfigPath:
         if self.global_options.config_path is not None:
-            return ProjectConfigPath(self.global_options.config_path)
+            return self.global_options.config_path
 
         return ProjectConfigPath(pathlib.Path.cwd() / DONNA_CONFIG_NAME)
 

@@ -8,6 +8,15 @@ from donna.skills.entities import SkillDocument
 
 
 class TestSkill:
+    def test_default_protocol_with_explicit_document_and_missing_config(self, tmp_path: Path) -> None:
+        result = helpers.invoke(["--config", str(tmp_path / "missing.toml"), "skill", "configuration"])
+
+        assert result.exit_code == 0
+        assert not result.stderr
+        assert result.stdout.startswith("--DONNA-CELL ")
+        assert "document=configuration\n" in result.stdout
+        assert "# `donna` Configuration" in result.stdout
+
     @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
     @pytest.mark.parametrize("content", [None, b"\xff"])
     def test_unreadable_document_reports_shared_error(
@@ -44,7 +53,7 @@ class TestSkill:
 
         assert result.exit_code == 0
         assert result.stderr == ""
-        separator = "=" if protocol == "llm" else " = "
+        separator = " = " if protocol == "human" else "="
         assert f"kind{separator}skill\n" in result.output
         assert f"type{separator}skill\n" in result.output
         assert f"document{separator}usage\n" in result.output

@@ -129,12 +129,12 @@ ArtifactSectionIdArgument = Annotated[
 
 
 ProtocolModeOption = Annotated[
-    Protocol,
+    Protocol | None,
     typer.Option(
         "--protocol",
         "-p",
         parser=_parse_protocol_mode,
-        help="Protocol mode to use (required). Examples: --protocol=llm, -p llm.",
+        help="Output protocol. Defaults to llm for skill and human for other commands.",
     ),
 ]
 
