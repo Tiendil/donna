@@ -234,15 +234,26 @@ class TestCommandContext:
         helpers.assert_error_cells(records[1:], [config_failure, shared])
         assert not result.stderr
 
-    def test_unrecognized_unwrap_payload__is_not_silently_dropped(self, mocker: MockerFixture) -> None:
+    @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            config_errors.Unreadable(path=pathlib.Path("/config.toml"), reason="denied"),
+            (config_errors.Unreadable(path=pathlib.Path("/config.toml"), reason="denied"),),
+            [config_errors.Unreadable(path=pathlib.Path("/config.toml"), reason="denied"), "unexpected payload"],
+        ],
+    )
+    def test_unrecognized_unwrap_payload__is_not_silently_dropped(
+        self, mocker: MockerFixture, protocol: str, payload: object
+    ) -> None:
         failure = UnwrapError(error=[])
-        failure.details["error"] = ["unexpected payload"]
+        failure.details["error"] = payload
         mocker.patch("donna.cli.utils.locate_config", side_effect=failure)
 
-        result = helpers.invoke(["-p", "automation", "list"])
+        result = helpers.invoke(["-p", protocol, "list"])
 
-        assert isinstance(result.exception, UnwrapError)
-        assert result.exception.details == failure.details
+        assert result.exception == failure
+        assert result.exit_code != 0
         assert not result.stdout
         assert not result.stderr
 

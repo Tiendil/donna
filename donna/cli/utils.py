@@ -6,7 +6,6 @@ from contextvars import Token
 import typer
 from llm_tool_cli.config import errors as config_errors
 from llm_tool_cli.config import load_config, locate_config
-from llm_tool_cli.core import errors as llm_tool_errors
 from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Ok, Result, UnwrapError, unwrap_to_error
 from llm_tool_cli.paths import PathInput, ProjectConfigPath
@@ -127,7 +126,7 @@ def command_context(context: typer.Context, *, load_environment: bool = True) ->
 
         yield command
     except UnwrapError as error:
-        errors = _errors_from_unwrap(error)
+        errors = error.errors
         if context_token is not None:
             _write_errors_to_journal(errors)
         raise typer.Exit(code=command.write_errors(errors)) from error
@@ -149,18 +148,3 @@ def _write_errors_to_journal(errors: EnvironmentErrors) -> None:
             message=message,
             actor_id="donna",
         )
-
-
-def _errors_from_unwrap(error: UnwrapError) -> EnvironmentErrors:
-    unwrapped = error.details["error"]
-
-    if isinstance(unwrapped, llm_tool_errors.EnvironmentError):
-        return [unwrapped]
-
-    if isinstance(unwrapped, Iterable):
-        items = list(unwrapped)
-        errors = [item for item in items if isinstance(item, llm_tool_errors.EnvironmentError)]
-        if len(errors) == len(items):
-            return errors
-
-    raise error
