@@ -3,7 +3,7 @@ from typing import Annotated
 
 import typer
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
-from llm_tool_cli.paths import PathInput, UntrustedPath
+from llm_tool_cli.paths import PathInput
 
 from donna.domain import errors as domain_errors
 from donna.domain.artifact_ids import (
@@ -57,10 +57,10 @@ def _parse_action_request_id(value: str) -> ActionRequestId:
     return ActionRequestId(value)
 
 
-def _parse_input_path(value: str) -> UntrustedPath:
+def _parse_input_path(value: str) -> PathInput:
     normalized = value.strip()
     if normalized == "-":
-        return UntrustedPath(pathlib.Path("-"))
+        return PathInput(pathlib.Path("-"))
 
     path = pathlib.Path(normalized).expanduser()
     if not path.exists():
@@ -71,7 +71,7 @@ def _parse_input_path(value: str) -> UntrustedPath:
     if not path.is_absolute():
         path = path.resolve()
 
-    return UntrustedPath(path)
+    return PathInput(path)
 
 
 ActionRequestIdArgument = Annotated[
@@ -129,7 +129,7 @@ RenderModeOption = Annotated[
 
 
 InputPathArgument = Annotated[
-    UntrustedPath,
+    PathInput,
     typer.Argument(
         parser=_parse_input_path,
         help="Path to an existing local file used as input, or '-' to read from stdin.",

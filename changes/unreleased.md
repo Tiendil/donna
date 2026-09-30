@@ -43,7 +43,7 @@
 - Import `cell_shortcuts` from `llm_tool_cli.protocol`, or its helpers directly from `llm_tool_cli.protocol.cell_shortcuts`, instead of `donna.protocol`.
 - Import `ContentCell` from `llm_tool_cli.protocol.logic_cells` and `LogicCell` from `llm_tool_cli.protocol.logic_cells.base` for application construction and emission. Metadata helpers and low-level `OutputCell` and `RenderContext` types live in `llm_tool_cli.protocol.output_cells.base`; `ContentWithoutMediaType` belongs to the shared protocol internal-error hierarchy in `llm_tool_cli.protocol.errors`.
 - Import `Protocol` from `llm_tool_cli.protocol` instead of `donna.protocol.modes.Mode`. Replace `instant_output` with `write_output` and supply decoded text with explicit terminators; writing no longer adds newlines, forces UTF-8 bytes, or flushes each write. Use `to_jsonl(record.model_dump(mode="json"))` instead of `serialize_record` when a journal JSON line is needed.
-- Import `UntrustedPath` directly from `llm_tool_cli.paths` instead of `donna.domain.paths`.
+- Replace `UntrustedPath` from `donna.domain.paths` or `llm_tool_cli.paths` with `llm_tool_cli.paths.PathInput` in imports, annotations, and constructor calls.
 - Import `resolve_project_path` directly from `llm_tool_cli.paths` instead of `donna.workspaces.paths`; home-expansion failures now return `path_resolution_failed` diagnostics.
 - Import `normalize_path` directly from `llm_tool_cli.paths` in Python integrations.
 - Replace `donna.workspaces.paths.normalize_existing_path` with `llm_tool_cli.paths.project_path_id_from_filesystem` in Python integrations.
@@ -128,7 +128,7 @@
 - Use the complete shared cell implementation and metadata helpers while preserving all existing output formats and cell construction behavior.
 - Use shared output modes, compact JSON Lines serialization, and direct text writing while preserving Donna cells, diagnostic records, CLI defaults, and exit policies. Journal formatters now include their newline so emitted output remains unchanged.
 - Delegate empty project-path rejection to the shared normalizer, including artifact-relative inputs; root-resolution failures take precedence over empty-input diagnostics.
-- Use the shared `UntrustedPath` semantic type for filesystem inputs, preserving runtime path behavior.
+- Use the shared `PathInput` semantic type for all filesystem inputs without established guarantees, preserving runtime path behavior.
 - Use the shared project-path resolver directly for absolute path directives, preserving project containment and resolution diagnostics.
 - Use shared mixed path normalization directly, preserving artifact-relative behavior and returning `path_resolution_failed` diagnostics for home expansion failures during normalization.
 - Share filesystem-to-identifier conversion through `llm-tool-cli`, preserving artifact lookup behavior and resolution diagnostics.

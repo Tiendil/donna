@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING, Iterator, Sequence
 from llm_tool_cli.core.entities import BaseEntity
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 from llm_tool_cli.paths import (
+    PathInput,
     ProjectPathId,
     RelativeProjectPath,
     ResolvedProjectPath,
-    UntrustedPath,
     project_path_id_from_filesystem,
 )
 from llm_tool_cli.paths.errors import InvalidProjectPath
@@ -144,7 +144,7 @@ def resolve_artifact_path(artifact_id: ArtifactId) -> Result[ResolvedProjectPath
     if not artifact_path.exists() or not artifact_path.is_file():
         return Ok(None)
 
-    normalized = project_path_id_from_filesystem(UntrustedPath(artifact_path), UntrustedPath(project_dir()))
+    normalized = project_path_id_from_filesystem(PathInput(artifact_path), PathInput(project_dir()))
     if normalized.is_err(InvalidProjectPath):
         return Ok(None)
 
