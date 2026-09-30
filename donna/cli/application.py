@@ -1,9 +1,9 @@
 import typer
 from llm_tool_cli.cli.context import set_global_options
 from llm_tool_cli.cli.entities import GlobalOptions
-from llm_tool_cli.paths import ProjectConfigPath
+from llm_tool_cli.cli.options import ConfigOption
 
-from donna.cli.types import ConfigOption, ProtocolModeOption
+from donna.cli.types import ProtocolModeOption
 
 app = typer.Typer(help="Donna CLI: manage hierarchical state machines to guide your AI agents.")
 
@@ -16,7 +16,7 @@ def initialize(
 ) -> None:
     set_global_options(
         context,
-        GlobalOptions(protocol=protocol, config_path=None if config_path is None else ProjectConfigPath(config_path)),
+        GlobalOptions(protocol=protocol, config_path=config_path),
     )
 
 

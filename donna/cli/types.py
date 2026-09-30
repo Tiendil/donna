@@ -147,17 +147,6 @@ RenderModeOption = Annotated[
 ]
 
 
-ConfigOption = Annotated[
-    pathlib.Path | None,
-    typer.Option(
-        "--config",
-        file_okay=True,
-        dir_okay=False,
-        exists=False,
-        help="Optional project config file. If omitted, Donna discovers donna.toml by searching parent directories.",
-    ),
-]
-
 InputPathArgument = Annotated[
     UntrustedPath,
     typer.Argument(

@@ -44,6 +44,8 @@
 
 ### Changes
 
+- Use shared `--config` parsing from `llm_tool_cli`. Directory and unreadable paths now reach configuration operations and their shared error cells; `skill` and `version` ignore unusable configuration paths.
+
 - Obtain Typer through `llm_tool_cli` and upgrade the locked version from 0.20.1 to the shared 0.25.1 version.
 
 - Delegate Typer context storage and retrieval of global options to `llm_tool_cli`, preserving CLI behavior and invocation isolation.

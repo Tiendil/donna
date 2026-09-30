@@ -95,6 +95,43 @@ class TestCliEmitter:
 
 
 class TestCommandContext:
+    @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
+    @pytest.mark.parametrize("command, code", [("list", "config_unreadable"), ("init", "config_already_exists")])
+    def test_config_path__directory_is_checked_by_configuration_operation(
+        self, tmp_path: pathlib.Path, protocol: str, command: str, code: str
+    ) -> None:
+        result = helpers.invoke(["--config", str(tmp_path), "-p", protocol, command])
+
+        assert result.exit_code == 2
+        assert tmp_path.is_dir()
+        assert not list(tmp_path.iterdir())
+        if protocol == "automation":
+            assert not result.stderr
+            records = helpers.json_lines(result.stdout)
+            assert len(records) == 1
+            assert records[0]["type"] == "error"
+            assert records[0]["code"] == code
+            assert records[0]["path"] == str(tmp_path)
+        else:
+            assert not result.stdout
+            separator = " = " if protocol == "human" else "="
+            assert f"kind{separator}error\n" in result.stderr
+            assert f"code{separator}{code}\n" in result.stderr
+            assert f"path{separator}{tmp_path}\n" in result.stderr
+
+    @pytest.mark.parametrize("command", ["skill", "version"])
+    def test_config_path__unused_directory_does_not_prevent_execution(
+        self, tmp_path: pathlib.Path, command: str
+    ) -> None:
+        result = helpers.invoke(["--config", str(tmp_path), "-p", "automation", command])
+
+        assert result.exit_code == 0
+        assert not result.stderr
+        records = helpers.json_lines(result.stdout)
+        assert len(records) == 1
+        assert records[0]["type"] == command
+        assert not list(tmp_path.iterdir())
+
     def test_config_path__does_not_leak_between_invocations(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
