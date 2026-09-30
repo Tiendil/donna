@@ -259,7 +259,7 @@ Donna owns the starter contents and subsequent workspace loading described in `s
 
 The generated configuration MUST be valid TOML and use schema version `1`.
 
-The command MUST render a success cell when initialization succeeds.
+After workspace initialization succeeds, the command MUST emit the configuration-creation success cell managed by `llm_tool_cli`, supplying the created workspace's configuration path.
 
 The command MUST NOT accept artifact arguments, session arguments, or skill document arguments.
 

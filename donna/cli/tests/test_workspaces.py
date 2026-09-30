@@ -22,6 +22,7 @@ class TestInit:
         assert (project / "donna.toml").is_file()
         assert parent_config.read_text(encoding="utf-8") == "version = 2"
         assert helpers.json_lines(result.stdout)[0]["type"] == "operation_succeeded"
+        assert helpers.json_lines(result.stdout)[0]["path"] == str(project / "donna.toml")
         assert not result.stderr
 
     @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
@@ -66,6 +67,7 @@ class TestInit:
 
         assert result.exit_code == 0
         assert (tmp_path / "custom.toml").is_file()
+        assert helpers.json_lines(result.stdout)[0]["path"] == str(tmp_path / "custom.toml")
 
     def test_existing_config__uses_shared_error_without_overwriting(self, tmp_path: pathlib.Path) -> None:
         config_path = tmp_path / "donna.toml"
@@ -101,8 +103,10 @@ class TestInit:
         assert result.exit_code == 0
         assert (tmp_path / "donna.toml").is_file()
         records = helpers.json_lines(result.output)
-        assert records[0]["content"] == "Donna project initialized successfully"
+        assert len(records) == 1
+        assert records[0]["content"] == "Configuration created."
         assert records[0]["type"] == "operation_succeeded"
+        assert records[0]["path"] == str(tmp_path / "donna.toml")
         assert not result.stderr
 
     @pytest.mark.parametrize("protocol", ["human", "llm"])
@@ -116,4 +120,6 @@ class TestInit:
         separator = " = " if protocol == "human" else "="
         assert f"kind{separator}operation_succeeded" in result.stdout
         assert f"type{separator}operation_succeeded" in result.stdout
+        assert f"path{separator}{config_path}\n" in result.stdout
+        assert "Configuration created.\n" in result.stdout
         assert not result.stderr

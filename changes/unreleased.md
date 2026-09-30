@@ -1,5 +1,7 @@
 ### Migration
 
+- Successful `donna init` output now uses `Configuration created.` and includes the resolved configuration file path in `path` metadata in every protocol. Update integrations that match the previous success text; automation consumers can read `path` directly.
+
 - Python integrations must register version commands through `llm_tool_cli.cli.commands.version.register_version_command`; `donna.cli.commands.version` is removed. Application setup registers Donna's version command directly.
 
 - Python integrations must register skill commands through `llm_tool_cli.cli.commands.skills.register_skill_command`; `donna.cli.commands.skills` is removed. Application setup registers Donna's skill command directly.
@@ -51,6 +53,8 @@
 - Python callers must use shared `load_config` followed by `construct_workspace` instead of `load_workspace`; `initialize_runtime` and shared configuration operations return `Result` values.
 
 ### Changes
+
+- Emit the shared configuration-creation success cell after workspace initialization completes.
 
 - Delegate complete configuration-file initialization to `llm_tool_cli`, preserving starter contents, subsequent workspace loading and installation, and CLI output and failures.
 
