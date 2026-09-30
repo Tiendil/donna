@@ -1,9 +1,8 @@
 import pathlib
 
 import pytest
-from llm_tool_cli.config import create_config
 from llm_tool_cli.config import errors as config_errors
-from llm_tool_cli.core.result import Err, Ok, Result
+from llm_tool_cli.core.result import Err, Ok
 from llm_tool_cli.paths import PathInput, ProjectConfigPath
 from llm_tool_cli.protocol import Protocol
 from pytest_mock import MockerFixture
@@ -245,7 +244,6 @@ class TestInitializeWorkspace:
     def test_creates_starter_config_and_loads_workspace(
         self, mocker: MockerFixture, tmp_path: pathlib.Path, explicit: bool
     ) -> None:
-        install_workspace = mocker.patch("donna.workspaces.config.install_workspace")
         mocker.patch("pathlib.Path.cwd", return_value=tmp_path)
         config_path = tmp_path / DONNA_CONFIG_NAME
 
@@ -263,67 +261,51 @@ class TestInitializeWorkspace:
         assert "# cmd = [" in config_text
         workspace = result.unwrap()
         assert workspace.root == tmp_path
-        install_workspace.assert_called_once_with(workspace)
+        assert workspace.config_path == config_path
+        assert workspace_config.project_dir.get() == workspace.root
+        assert workspace_config.config_path.get() == config_path
+        assert workspace_config.config.get() == workspace.config
 
-    def test_rejects_missing_config_directory(self, tmp_path: pathlib.Path) -> None:
-        config_path = tmp_path / "missing" / DONNA_CONFIG_NAME
-        error = initialize_workspace(ProjectConfigPath(config_path)).unwrap_err()[0]
-        assert isinstance(error, config_errors.Unwritable)
-
-        assert error.path == config_path
-        assert not config_path.parent.exists()
-
-    def test_rejects_existing_config(self, tmp_path: pathlib.Path) -> None:
-        config_path = tmp_path / DONNA_CONFIG_NAME
-        config_path.write_text("version = 1", encoding="utf-8")
-
-        error = initialize_workspace(ProjectConfigPath(config_path)).unwrap_err()[0]
-        assert isinstance(error, config_errors.AlreadyExists)
-
-        assert error.path == config_path
-        assert config_path.read_text(encoding="utf-8") == "version = 1"
-
-    def test_concurrent_creation__preserves_existing_config(
+    def test_initialization_failure_does_not_load_or_install_workspace(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
-        config_path = tmp_path / DONNA_CONFIG_NAME
-
-        def create_concurrently(path: ProjectConfigPath, text: str) -> Result[None]:
-            path.write_text("version = 1", encoding="utf-8")
-            return create_config(path, text)
-
-        mocker.patch("llm_tool_cli.config.files.create_config", side_effect=create_concurrently)
-
-        error = initialize_workspace(ProjectConfigPath(config_path)).unwrap_err()[0]
-        assert isinstance(error, config_errors.AlreadyExists)
-
-        assert error.path == config_path
-        assert config_path.read_text(encoding="utf-8") == "version = 1"
-
-    def test_write_failure__propagates_shared_error(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
         failure = config_errors.Unwritable(path=config_path, reason="read-only filesystem")
-        mocker.patch(
-            "llm_tool_cli.config.files.create_config",
-            return_value=Err([failure]),
-        )
+        mocker.patch("donna.workspaces.initialization.initialize_config", return_value=Err([failure]))
+        load_config = mocker.patch("donna.workspaces.initialization.load_config")
+        install_workspace = mocker.patch("donna.workspaces.config.install_workspace")
 
-        error = initialize_workspace(ProjectConfigPath(config_path)).unwrap_err()[0]
-        assert isinstance(error, config_errors.Unwritable)
+        result = initialize_workspace(ProjectConfigPath(config_path))
 
-        assert error == failure
+        assert result.unwrap_err() == [failure]
+        load_config.assert_not_called()
+        install_workspace.assert_not_called()
 
-    def test_path_resolution_failure__propagates_shared_error(
-        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    @pytest.mark.parametrize(
+        ("text", "error_type"),
+        [("version = ", config_errors.InvalidToml), ("version = 2", config_errors.ValidationFailed)],
+    )
+    def test_invalid_starter_is_created_but_workspace_is_not_installed(
+        self,
+        mocker: MockerFixture,
+        tmp_path: pathlib.Path,
+        text: str,
+        error_type: type[config_errors.EnvironmentError],
     ) -> None:
+        package = tmp_path / "package"
+        fixtures = package / "fixtures"
+        fixtures.mkdir(parents=True)
+        (fixtures / "base_config.toml").write_text(text, encoding="utf-8")
+        mocker.patch("llm_tool_cli.config.files.importlib.resources.files", return_value=package)
         config_path = tmp_path / DONNA_CONFIG_NAME
-        failure = config_errors.PathResolutionFailed(path=config_path, reason="symlink loop")
-        mocker.patch("donna.workspaces.initialization.resolve_init_config_path", return_value=Err([failure]))
 
-        error = initialize_workspace(ProjectConfigPath(config_path)).unwrap_err()[0]
-        assert isinstance(error, config_errors.PathResolutionFailed)
+        result = initialize_workspace(ProjectConfigPath(config_path))
 
-        assert error == failure
+        assert isinstance(result.unwrap_err()[0], error_type)
+        assert config_path.read_text(encoding="utf-8") == text
+        assert not workspace_config.project_dir.is_set()
+        assert not workspace_config.config_path.is_set()
+        assert not workspace_config.config.is_set()
 
     @pytest.mark.parametrize(
         "failure",

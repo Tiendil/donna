@@ -229,7 +229,7 @@ Donna MUST still print newly created journal records through the selected output
 ## Starter configuration
 
 The `donna init` command MUST create a starter configuration based on the packaged base config fixture.
-Donna MUST delegate initialization target selection, template reading, and exclusive file creation to `llm_tool_cli`.
+Donna MUST delegate complete configuration-file initialization to `llm_tool_cli`, supplying its default filename, invocation working directory, optional configuration path, and packaged starter template.
 After creation, Donna MUST load the generated configuration and construct and install its workspace.
 
 The starter configuration MUST:

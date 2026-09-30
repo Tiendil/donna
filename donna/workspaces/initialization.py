@@ -1,6 +1,6 @@
 import pathlib
 
-from llm_tool_cli.config import create_config_from_template, load_config, locate_config, resolve_init_config_path
+from llm_tool_cli.config import initialize_config, load_config, locate_config
 from llm_tool_cli.core.result import Ok, Result, unwrap_to_error
 from llm_tool_cli.paths import PathInput, ProjectConfigPath
 from llm_tool_cli.protocol import Protocol
@@ -34,10 +34,13 @@ def initialize_runtime(
 @unwrap_to_error
 def initialize_workspace(config_path: ProjectConfigPath | None = None) -> Result[config.Workspace]:
     """Initialize Donna project configuration."""
-    selected_path = resolve_init_config_path(
-        DONNA_CONFIG_NAME, path=config_path, cwd=PathInput(pathlib.Path.cwd())
+    selected_path = initialize_config(
+        DONNA_CONFIG_NAME,
+        package=__package__,
+        template=BASE_CONFIG_FIXTURE,
+        cwd=PathInput(pathlib.Path.cwd()),
+        path=config_path,
     ).unwrap()
-    create_config_from_template(selected_path, package=__package__, template=BASE_CONFIG_FIXTURE).unwrap()
 
     loaded_config = load_config(selected_path, config.Config).unwrap()
     workspace = config.construct_workspace(loaded_config, config_path=selected_path)

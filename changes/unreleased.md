@@ -52,6 +52,8 @@
 
 ### Changes
 
+- Delegate complete configuration-file initialization to `llm_tool_cli`, preserving starter contents, subsequent workspace loading and installation, and CLI output and failures.
+
 - Adopt the shared `InvalidArguments` diagnostic through protocol-option parsing, preserving LLM error cells, diagnostic fields, stderr routing, and exit status `1`.
 
 - Delegate the complete version command to `llm_tool_cli`, preserving installed package lookup, output protocols, configuration independence, and exit behavior. Use common version help text.
