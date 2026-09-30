@@ -34,8 +34,6 @@ class TestApp:
         assert result.stdout.splitlines() == ["workflows"]
         assert not result.stderr
 
-
-class TestInitialize:
     @pytest.mark.parametrize("option", ["-p", "--protocol"])
     @pytest.mark.parametrize("value", ["invalid", "{protocol}", "{"])
     def test_invalid_protocol_uses_shared_llm_diagnostic(self, option: str, value: str) -> None:

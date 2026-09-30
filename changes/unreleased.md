@@ -60,6 +60,8 @@
 
 ### Changes
 
+- Delegate root global-option registration and storage to `llm_tool_cli.cli.application.create_app`, removing the local callback while preserving application startup, CLI options, defaults, help, and completions.
+
 - Inherit invocation-option retrieval, protocol selection, and command cell writing from `llm_tool_cli.cli.context.CommandContext`, retaining Donna's workspace setup, runtime emitter, journaling, and cleanup.
 
 - Route collected artifact validation errors through the command context so every diagnostic follows its journal policy before shared reporting and termination.

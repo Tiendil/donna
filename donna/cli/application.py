@@ -1,10 +1,6 @@
-import typer
 from llm_tool_cli.cli.application import create_app
 from llm_tool_cli.cli.commands.skills import register_skill_command
 from llm_tool_cli.cli.commands.version import register_version_command
-from llm_tool_cli.cli.context import set_global_options
-from llm_tool_cli.cli.entities import GlobalOptions
-from llm_tool_cli.cli.options import ConfigOption, ProtocolOption
 from llm_tool_cli.core import settings
 
 from donna.skills import SkillDocument
@@ -12,18 +8,6 @@ from donna.skills import SkillDocument
 app = create_app(help="Donna CLI: manage hierarchical state machines to guide your AI agents.")
 register_skill_command(app, package="donna.skills", documents=SkillDocument)
 register_version_command(app, distribution="donna")
-
-
-@app.callback()
-def initialize(
-    context: typer.Context,
-    protocol: ProtocolOption = None,
-    config_path: ConfigOption = None,
-) -> None:
-    set_global_options(
-        context,
-        GlobalOptions(protocol=protocol, config_path=config_path),
-    )
 
 
 def main() -> None:
