@@ -101,8 +101,6 @@ All environment errors MUST use the typed environment-error logic cell and ordin
 
 The `render` command MUST write rendered Markdown directly.
 
-The `version` command MUST print a plain version line.
-
 Help and command line parsing output MAY use Typer's standard rendering.
 
 Commands MAY emit Donna journal records while executing. Journal records are command output when they are printed by the selected protocol formatter.
@@ -443,21 +441,12 @@ Donna MUST provide these documents:
 
 ## `donna version` command
 
-The `version` command MUST print the installed Donna package version and exit with status `0`.
-
-Version output MUST be a single line containing only the version number.
-
-```bash
-donna version
-```
-
-The `version` command MUST NOT load workspace configuration.
-
-The `version` command MAY ignore global options that do not affect version output.
+The CLI MUST register the version command managed by `llm_tool_cli`, supplying the distribution name `donna`.
+The library owns installed version lookup, help, configuration independence, protocol selection, version-cell output, and exit and failure behavior.
 
 ## Errors and exit codes
 
-Skill-command failure handling MUST be managed by `llm_tool_cli`.
+Skill- and version-command failure handling MUST be managed by `llm_tool_cli`.
 The remaining execution policies apply to tool-owned commands.
 
 Typer command line parsing errors SHOULD use Typer's standard invalid-arguments behavior.

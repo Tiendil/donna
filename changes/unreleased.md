@@ -1,5 +1,7 @@
 ### Migration
 
+- Python integrations must register version commands through `llm_tool_cli.cli.commands.version.register_version_command`; `donna.cli.commands.version` is removed. Application setup registers Donna's version command directly.
+
 - Python integrations must register skill commands through `llm_tool_cli.cli.commands.skills.register_skill_command`; `donna.cli.commands.skills` is removed. Application setup registers Donna's skill command directly.
 
 - Python integrations that bypass CLI `main()` must initialize `llm_tool_cli.core.settings` with `ToolLabel("DONNA")` before cell output or argument parsing. Tests can request `isolated_settings` from `llm_tool_cli.core.tests.fixtures` before initializing the label; pytest-mock restores prior settings afterward. Remove `tool_label` arguments from shared sequence rendering and writing.
@@ -49,6 +51,8 @@
 - Python callers must use shared `load_config` followed by `construct_workspace` instead of `load_workspace`; `initialize_runtime` and shared configuration operations return `Result` values.
 
 ### Changes
+
+- Delegate the complete version command to `llm_tool_cli`, preserving installed package lookup, output protocols, configuration independence, and exit behavior. Use common version help text.
 
 - Use shared application construction with `-h` and `--help` at the root and subcommand levels, retaining shell completion options. Delegate the entire skill command to `llm_tool_cli`, preserving Donna's documents, output protocols, and read-failure behavior.
 
