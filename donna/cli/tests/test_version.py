@@ -3,6 +3,7 @@ import re
 from importlib import metadata
 
 import pytest
+from llm_tool_cli.protocol.tests.helpers import cell_payloads
 
 from donna.cli.tests import helpers
 
@@ -24,8 +25,7 @@ class TestVersion:
         if protocol == "automation":
             records = helpers.json_lines(result.stdout)
             assert len(records) == 1
-            assert records[0].pop("id")
-            assert records == [{"type": "version", "version": version, "content": None}]
+            assert cell_payloads(records) == [{"type": "version", "version": version, "content": None}]
             assert len(result.stdout.splitlines()) == 1
         else:
             output = re.sub(r"[A-Za-z0-9_-]{22}", "<id>", result.stdout)

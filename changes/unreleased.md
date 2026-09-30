@@ -60,6 +60,8 @@
 
 ### Changes
 
+- Use shared automation payload extraction in the version test, validating generated UUID4 cell IDs and preserving parsed records.
+
 - Use the shared automation error-cell assertion in CLI tests, retaining local output parsing, journal filtering, and application-specific checks.
 
 - Delegate root global-option registration and storage to `llm_tool_cli.cli.application.create_app`, removing the local callback while preserving application startup, CLI options, defaults, help, and completions.
