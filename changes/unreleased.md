@@ -60,6 +60,8 @@
 
 ### Changes
 
+- Inherit invocation-option retrieval, protocol selection, and command cell writing from `llm_tool_cli.cli.context.CommandContext`, retaining Donna's workspace setup, runtime emitter, journaling, and cleanup.
+
 - Route collected artifact validation errors through the command context so every diagnostic follows its journal policy before shared reporting and termination.
 
 - Use the shared command error context manager and explicit reporter, retaining local workspace setup, error journaling, and runtime cleanup while unifying diagnostic streams.

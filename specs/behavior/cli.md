@@ -197,9 +197,9 @@ Automation protocol cell output SHOULD follow this shape:
 
 ## Global options
 
-The CLI MUST use the parsed global options, invocation-context storage and retrieval, and command protocol selection provided by `llm_tool_cli`.
-The library owns option availability across subcommands, invocation isolation, and protocol selection.
-Donna MUST combine shared and Donna-owned option parsing, pass the parsed options to shared context storage, and supply the invoked command name to shared protocol selection.
+The CLI MUST use parsed global options, invocation storage, and command-context option retrieval, protocol selection, and cell writing managed by `llm_tool_cli`.
+Donna MUST combine shared and Donna-owned option parsing and pass the parsed options to shared context storage.
+Workspace loading, protocol installation for Donna's runtime, journal emission, and runtime cleanup MUST remain Donna-owned.
 
 ### Help and completion
 

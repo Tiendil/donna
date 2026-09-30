@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from contextvars import Token
 
 import typer
-from llm_tool_cli.cli.context import get_global_options
+from llm_tool_cli.cli.context import CommandContext as BaseCommandContext
 from llm_tool_cli.cli.handling import handle_command_errors
 from llm_tool_cli.config import load_config, locate_config
 from llm_tool_cli.core.errors import EnvironmentErrors
@@ -43,12 +43,11 @@ def output_cells(cells: Iterable[LogicCell]) -> None:
     emitter.emit_cells(cells)
 
 
-class CommandContext:
-    __slots__ = ("emitter", "global_options", "protocol")
+class CommandContext(BaseCommandContext):
+    __slots__ = ("emitter",)
 
     def __init__(self, context: typer.Context) -> None:
-        self.global_options = get_global_options(context)
-        self.protocol = self.global_options.protocol_for(context.info_name or "")
+        super().__init__(context)
         self.emitter = CliEmitter(self.protocol)
 
     def install_protocol(self) -> None:
@@ -73,9 +72,6 @@ class CommandContext:
             return PathInput(self.global_options.config_path.parent)
 
         return PathInput(pathlib.Path.cwd())
-
-    def write_cells(self, cells: Iterable[LogicCell]) -> None:
-        self.emitter.emit_cells(cells)
 
 
 @contextmanager
