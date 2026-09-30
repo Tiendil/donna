@@ -38,35 +38,12 @@ This specification defines configuration semantics that the implementation MUST 
 
 The canonical configuration file name MUST be `donna.toml`.
 
-When a workspace-loading command is invoked without `--config`, `donna` MUST discover the configuration file by searching from the current working directory toward the filesystem root.
-
-Discovery MUST stop at the first directory that contains `donna.toml`.
-
-The directory containing the discovered file MUST be the project root.
-
-When `--config PATH` is provided to a workspace-loading command, `donna` MUST use that file as the configuration file and MUST NOT perform upward discovery.
-
-An explicit configuration path MUST expand a leading `~` or `~user` home-directory marker before path resolution. This rule also applies to the target path used by `donna init`.
-
-If `PATH` is relative, it MUST be resolved relative to the current working directory.
-
-When `--config PATH` is provided, the directory containing the resolved file MUST be the project root.
-
-When `--config PATH` is provided to a workspace-loading command, the resolved file MUST exist.
-
-If no configuration file can be found or the configured path cannot be loaded, workspace loading MUST fail.
-
-When upward discovery finds no configuration file, Donna MUST report the shared `config_not_found` error with the search starting directory and configuration filename in its diagnostic context.
-
-Configuration loading MUST be deterministic for the same:
-
-- configuration file content.
-- current working directory.
-- filesystem state.
+Donna MUST delegate configuration discovery, path resolution, TOML reading, and schema-validation mechanics to `llm_tool_cli`.
+Workspace-loading commands MUST supply `donna.toml`, the invocation's working directory, and the optional `--config` path to shared configuration selection.
+The directory containing the selected configuration path MUST be the project root.
+Donna MUST supply the application schema defined below and propagate the library's configuration diagnostics without local translation.
 
 ## TOML structure
-
-The configuration file MUST be valid TOML.
 
 The top-level configuration MAY contain these fields:
 
@@ -252,6 +229,8 @@ Donna MUST still print newly created journal records through the selected output
 ## Starter configuration
 
 The `donna init` command MUST create a starter configuration based on the packaged base config fixture.
+Donna MUST delegate initialization target selection, template reading, and exclusive file creation to `llm_tool_cli`.
+After creation, Donna MUST load the generated configuration and construct and install its workspace.
 
 The starter configuration MUST:
 
@@ -267,7 +246,6 @@ The starter configuration MUST be valid TOML after comments are ignored.
 
 Configuration loading MUST fail for:
 
-- invalid TOML.
 - unsupported schema version.
 - unknown top-level fields.
 - unknown fields in known nested tables.

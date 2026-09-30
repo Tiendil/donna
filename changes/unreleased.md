@@ -1,5 +1,7 @@
 ### Migration
 
+- Pass `llm_tool_cli.paths.ProjectConfigPath` to `initialize_workspace` in Python integrations. Omitting the path now selects `donna.toml` in the current working directory.
+
 - `donna skill` now defaults to LLM cell output. Use `donna -p human skill` for human output. Python callers must import `GlobalOptions` from `llm_tool_cli.cli.entities`, use `ProjectConfigPath` for its `config_path`, and call `protocol_for(command_name)` to resolve an unspecified protocol.
 
 - Result-unwrapping payloads must be lists of environment errors. Standalone errors and non-list iterables are no longer normalized by the CLI; malformed payloads propagate as the original `UnwrapError` without diagnostic output.
@@ -39,6 +41,8 @@
 - Python callers must use shared `load_config` followed by `construct_workspace` instead of `load_workspace`; `initialize_runtime` and shared configuration operations return `Result` values.
 
 ### Changes
+
+- Delegate initialization target selection and resolution to `llm_tool_cli`, preserving explicit paths, current-directory defaults, and the rule against upward discovery.
 
 - Delegate global CLI options and protocol-default selection to `llm_tool_cli`, preserving explicit protocol overrides and configuration path handling.
 

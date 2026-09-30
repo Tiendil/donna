@@ -9,7 +9,7 @@ from llm_tool_cli.config import errors as config_errors
 from llm_tool_cli.config import load_config, locate_config
 from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Ok, Result, UnwrapError, unwrap_to_error
-from llm_tool_cli.paths import PathInput, ProjectConfigPath
+from llm_tool_cli.paths import PathInput
 from llm_tool_cli.protocol import Protocol, write_output
 from llm_tool_cli.protocol.cell_shortcuts import environment_error
 from llm_tool_cli.protocol.logic_cells.base import LogicCell
@@ -76,12 +76,6 @@ class CommandContext:
         workspace = workspace_config.construct_workspace(loaded_config, config_path=config_path)
         workspace_config.install_workspace(workspace)
         return Ok(workspace)
-
-    def target_config_path(self) -> ProjectConfigPath:
-        if self.global_options.config_path is not None:
-            return self.global_options.config_path
-
-        return ProjectConfigPath(pathlib.Path.cwd() / DONNA_CONFIG_NAME)
 
     def target_dir(self) -> PathInput:
         if workspace_config.project_dir.is_set():

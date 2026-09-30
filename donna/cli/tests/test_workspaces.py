@@ -7,6 +7,23 @@ from donna.cli.tests import helpers
 
 
 class TestInit:
+    def test_parent_config__creates_in_current_directory(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path
+    ) -> None:
+        parent_config = tmp_path / "donna.toml"
+        parent_config.write_text("version = 2", encoding="utf-8")
+        project = tmp_path / "project"
+        project.mkdir()
+        monkeypatch.chdir(project)
+
+        result = helpers.invoke(["-p", "automation", "init"])
+
+        assert result.exit_code == 0
+        assert (project / "donna.toml").is_file()
+        assert parent_config.read_text(encoding="utf-8") == "version = 2"
+        assert helpers.json_lines(result.stdout)[0]["type"] == "operation_succeeded"
+        assert not result.stderr
+
     @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
     @pytest.mark.parametrize("content", [None, b"\xff"])
     def test_template_failure__uses_shared_configuration_error(

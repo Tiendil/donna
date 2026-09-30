@@ -241,11 +241,15 @@ class TestInitializeRuntime:
 
 
 class TestInitializeWorkspace:
-    def test_creates_starter_config_and_loads_workspace(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
+    @pytest.mark.parametrize("explicit", [False, True])
+    def test_creates_starter_config_and_loads_workspace(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path, explicit: bool
+    ) -> None:
         install_workspace = mocker.patch("donna.workspaces.config.install_workspace")
+        mocker.patch("pathlib.Path.cwd", return_value=tmp_path)
         config_path = tmp_path / DONNA_CONFIG_NAME
 
-        result = initialize_workspace(PathInput(config_path))
+        result = initialize_workspace(ProjectConfigPath(config_path) if explicit else None)
 
         assert result.is_ok()
         assert config_path.is_file()
@@ -263,7 +267,7 @@ class TestInitializeWorkspace:
 
     def test_rejects_missing_config_directory(self, tmp_path: pathlib.Path) -> None:
         config_path = tmp_path / "missing" / DONNA_CONFIG_NAME
-        error = initialize_workspace(PathInput(config_path)).unwrap_err()[0]
+        error = initialize_workspace(ProjectConfigPath(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.Unwritable)
 
         assert error.path == config_path
@@ -273,7 +277,7 @@ class TestInitializeWorkspace:
         config_path = tmp_path / DONNA_CONFIG_NAME
         config_path.write_text("version = 1", encoding="utf-8")
 
-        error = initialize_workspace(PathInput(config_path)).unwrap_err()[0]
+        error = initialize_workspace(ProjectConfigPath(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.AlreadyExists)
 
         assert error.path == config_path
@@ -290,7 +294,7 @@ class TestInitializeWorkspace:
 
         mocker.patch("llm_tool_cli.config.files.create_config", side_effect=create_concurrently)
 
-        error = initialize_workspace(PathInput(config_path)).unwrap_err()[0]
+        error = initialize_workspace(ProjectConfigPath(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.AlreadyExists)
 
         assert error.path == config_path
@@ -304,7 +308,7 @@ class TestInitializeWorkspace:
             return_value=Err([failure]),
         )
 
-        error = initialize_workspace(PathInput(config_path)).unwrap_err()[0]
+        error = initialize_workspace(ProjectConfigPath(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.Unwritable)
 
         assert error == failure
@@ -314,9 +318,9 @@ class TestInitializeWorkspace:
     ) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
         failure = config_errors.PathResolutionFailed(path=config_path, reason="symlink loop")
-        mocker.patch("donna.workspaces.initialization.resolve_config_path", return_value=Err([failure]))
+        mocker.patch("donna.workspaces.initialization.resolve_init_config_path", return_value=Err([failure]))
 
-        error = initialize_workspace(PathInput(config_path)).unwrap_err()[0]
+        error = initialize_workspace(ProjectConfigPath(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.PathResolutionFailed)
 
         assert error == failure
@@ -332,7 +336,7 @@ class TestInitializeWorkspace:
         mocker.patch("llm_tool_cli.config.files.importlib.resources.files", side_effect=failure)
         install_workspace = mocker.patch("donna.workspaces.config.install_workspace")
 
-        result = initialize_workspace(PathInput(config_path))
+        result = initialize_workspace(ProjectConfigPath(config_path))
 
         error = result.unwrap_err()[0]
         assert isinstance(error, config_errors.TemplateUnreadable)

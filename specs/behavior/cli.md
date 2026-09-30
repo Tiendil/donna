@@ -224,13 +224,8 @@ Allowed values MUST be the shared output modes described under [Output protocols
 
 The config path MUST identify a local TOML configuration file for commands that load a workspace.
 
-When provided to a command that loads a workspace, `PATH` MUST be used as the active Donna configuration file and Donna MUST NOT perform upward discovery.
-
-When `PATH` is relative, it MUST be resolved relative to the current working directory.
-
-The project root MUST be the directory containing the active configuration file.
-
-When omitted, commands that load a workspace MUST discover `donna.toml` by searching from the current working directory toward the filesystem root.
+Workspace-loading commands MUST pass this option to the configuration selection managed by `llm_tool_cli`.
+Donna's configuration filename, schema, and project-root rules are defined in `specs/behavior/config.md`.
 
 Subcommands that do not load workspace configuration MAY use `PATH` to derive their target directory or target configuration file.
 
@@ -269,15 +264,9 @@ donna init
 donna --config /path/to/project/donna.toml init
 ```
 
-When no `--config` path is provided, the command MUST create `donna.toml` in the current working directory.
-
-When `--config PATH` is provided, the command MUST create the configuration file at that path and use the directory containing the file as the project root.
-
-When `--config PATH` is provided, the directory containing `PATH` MUST exist.
-
-The command MUST NOT discover an existing configuration file in parent directories.
-
-The command MUST NOT overwrite an existing configuration file.
+The command MUST use the initialization behavior managed by `llm_tool_cli`, supplying Donna's default configuration filename, the invocation's working directory, and the optional `--config` path.
+The library owns target selection and resolution, template reading, exclusive creation, and their diagnostics.
+Donna owns the starter contents and subsequent workspace loading described in `specs/behavior/config.md`.
 
 The generated configuration MUST be valid TOML and use schema version `1`.
 
@@ -524,7 +513,7 @@ Human and LLM cells for shared error values outside Donna's environment-error hi
 
 Shared configuration errors MUST exit with status `2`. Other expected shared errors MUST exit with status `3`. When a result contains several errors, the CLI MUST render each error in order using the common representation and its applicable stream and exit with the highest applicable status. Unexpected exceptions MUST propagate rather than being presented as expected failures.
 
-These shared diagnostics replace the previous Donna config parse, validation, read, discovery, and file-creation adapters. An unreadable explicit config path and an existing initialization target MUST likewise use the shared `config_unreadable` and `config_already_exists` errors. When no configuration can be discovered, the CLI MUST use the shared `config_not_found` diagnostic and exit with status `2`. Donna-owned starter-template failures retain their Donna error classification.
+Configuration selection, loading, and creation MUST propagate the diagnostics provided by `llm_tool_cli` without local translation.
 
 Donna-owned environment errors currently exit with status `0`, independently of shared cell presentation.
 
