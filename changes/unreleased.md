@@ -1,5 +1,7 @@
 ### Migration
 
+- Replace imports of the removed `donna.protocol.logic_cells.base.DonnaCell` with `llm_tool_cli.protocol.logic_cells.uniform.UniformCell`; `_render(cell_type)` still returns one output cell.
+
 - Donna-owned command error cells now use stderr for human and LLM output; automation error cells remain on stdout. Error batches preserve diagnostic order and use shared batch framing. Python callers inside `command_context` must replace `CommandContext.write_errors` with `Err(errors).unwrap()` for nonempty error lists, allowing the context to journal, report, and terminate through the shared handler.
 
 - Donna-owned environment errors now exit with the shared default status `3` instead of `0`, including artifact and workflow validation failures. Update scripts that previously treated these error cells as successful commands; diagnostic content and stream routing are unchanged.
@@ -59,6 +61,8 @@
 - Python callers must use shared `load_config` followed by `construct_workspace` instead of `load_workspace`; `initialize_runtime` and shared configuration operations return `Result` values.
 
 ### Changes
+
+- Use the shared uniform cell base for all five domain-result cells, removing local protocol dispatch while preserving payloads, generated identifiers, and output formatting.
 
 - Use shared automation payload extraction in the version test, validating generated UUID4 cell IDs and preserving parsed records.
 

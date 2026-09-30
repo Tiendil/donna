@@ -1,13 +1,13 @@
 import pydantic
+from llm_tool_cli.protocol.logic_cells.uniform import UniformCell
 from llm_tool_cli.protocol.output_cells.base import MetaValue, OutputCell
 
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
-from donna.protocol.logic_cells.base import DonnaCell
 
 
-class ArtifactSectionStatusCell(DonnaCell):
+class ArtifactSectionStatusCell(UniformCell):
     artifact_id: ArtifactId
     section_id: SectionId
     section_kind: PythonPath

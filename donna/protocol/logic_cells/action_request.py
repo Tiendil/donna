@@ -1,12 +1,12 @@
 import textwrap
 
+from llm_tool_cli.protocol.logic_cells.uniform import UniformCell
 from llm_tool_cli.protocol.output_cells.base import OutputCell
 
 from donna.domain.internal_ids import ActionRequestId
-from donna.protocol.logic_cells.base import DonnaCell
 
 
-class ActionRequestCell(DonnaCell):
+class ActionRequestCell(UniformCell):
     action_request_id: ActionRequestId | None
     request: str
 

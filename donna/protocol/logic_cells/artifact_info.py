@@ -1,12 +1,12 @@
+from llm_tool_cli.protocol.logic_cells.uniform import UniformCell
 from llm_tool_cli.protocol.output_cells.base import OutputCell
 
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.python_path import PythonPath
 from donna.protocol.logic_cells.artifact_section_status import ArtifactSectionStatusCell
-from donna.protocol.logic_cells.base import DonnaCell
 
 
-class ArtifactInfoCell(DonnaCell):
+class ArtifactInfoCell(UniformCell):
     artifact_id: ArtifactId
     artifact_kind: PythonPath
     title: str
