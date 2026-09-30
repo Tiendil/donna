@@ -200,6 +200,7 @@ When converting an exception, details SHOULD preserve enough information for dia
 ## CLI mapping
 
 Skill-command failure handling MUST be managed by `llm_tool_cli`.
+Protocol-option validation and its shared invalid-argument diagnostic MUST also be managed by `llm_tool_cli`.
 The remaining mapping rules apply to Donna-owned command execution.
 
 Typer command line parsing errors MAY use Typer's standard invalid-argument behavior.
