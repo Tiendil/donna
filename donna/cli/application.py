@@ -1,10 +1,15 @@
 import typer
+from llm_tool_cli.cli.application import create_app
+from llm_tool_cli.cli.commands.skills import register_skill_command
 from llm_tool_cli.cli.context import set_global_options
 from llm_tool_cli.cli.entities import GlobalOptions
 from llm_tool_cli.cli.options import ConfigOption, ProtocolOption
 from llm_tool_cli.core import settings
 
-app = typer.Typer(help="Donna CLI: manage hierarchical state machines to guide your AI agents.")
+from donna.skills import SkillDocument
+
+app = create_app(help="Donna CLI: manage hierarchical state machines to guide your AI agents.")
+register_skill_command(app, package="donna.skills", documents=SkillDocument)
 
 
 @app.callback()
@@ -24,7 +29,6 @@ def main() -> None:
 
     from donna.cli.commands import artifacts  # noqa: F401
     from donna.cli.commands import sessions  # noqa: F401
-    from donna.cli.commands import skills  # noqa: F401
     from donna.cli.commands import version  # noqa: F401
     from donna.cli.commands import workspaces  # noqa: F401
 

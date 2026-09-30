@@ -27,7 +27,7 @@ Built-in skill documentation fixtures MUST live under:
 ```
 
 `llm_tool_cli` provides packaged UTF-8 Markdown loading and read-failure diagnostics.
-Donna MUST use this shared behavior for its own fixture set; document selection and contents remain Donna-owned.
+Donna MUST supply its fixture set to the skill command managed by `llm_tool_cli`; available document names and contents remain Donna-owned.
 
 ## Fixture set
 

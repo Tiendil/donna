@@ -3,8 +3,36 @@ import sys
 import pytest
 from pytest_mock import MockerFixture
 
-from donna.cli.application import main
+from donna.cli.application import app, main
 from donna.cli.tests import helpers
+
+
+class TestApp:
+    @pytest.mark.parametrize("option", ["-h", "--help"])
+    @pytest.mark.parametrize("command", [[], ["skill"]])
+    def test_shared_help(self, option: str, command: list[str]) -> None:
+        result = helpers.invoke([*command, option])
+
+        assert result.exit_code == 0
+        assert not result.stderr
+        if command:
+            assert "workflows" in result.stdout
+            assert "usage" in result.stdout
+        else:
+            assert "--show-completion" in result.stdout
+            assert "--install-completion" in result.stdout
+
+    def test_skill_completion_uses_local_documents(self) -> None:
+        result = helpers.make_runner().invoke(
+            app,
+            [],
+            prog_name="donna",
+            env={"_DONNA_COMPLETE": "complete_bash", "COMP_WORDS": "donna skill w", "COMP_CWORD": "2"},
+        )
+
+        assert result.exit_code == 0
+        assert result.stdout.splitlines() == ["workflows"]
+        assert not result.stderr
 
 
 class TestInitialize:
