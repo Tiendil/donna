@@ -51,7 +51,7 @@ donna [GLOBAL_OPTIONS] COMMAND [COMMAND_OPTIONS]
 
 The CLI MUST write requested command output to stdout.
 
-Environment-error diagnostics MUST use the shared error-cell presentation when the selected protocol has already been installed, with Donna-owned routing and exit behavior as defined below.
+Environment-error diagnostics MUST use the command error handling managed by `llm_tool_cli` when the selected protocol has already been installed.
 
 For `automation` output, stdout MUST contain only JSON Lines records when command output is produced through Donna cells or journal records.
 
@@ -326,6 +326,7 @@ When artifact arguments are provided, the command MUST normalize and validate ea
 When `--all` is provided, the command MUST validate every discovered workflow artifact.
 
 If validation finds errors, the command MUST render error cells.
+Collected validation errors MUST pass through the command context's error handling, including its journal policy, before shared reporting and termination.
 
 If validation succeeds, the command MUST render a success cell.
 
@@ -457,19 +458,12 @@ Donna-owned and shared environment-error values MUST use the common error-cell c
 This replaces Donna's custom error-cell kinds and `error_code` field with the shared `error` kind, `type = error`, and `code` metadata.
 Custom introductory prefixes MUST be removed; artifact, section, and configuration context MUST remain available through shared metadata conversion, including optional null fields.
 
-Shared error-cell construction and rendering MUST be provided by `llm_tool_cli`.
-Donna MUST write all automation error cells to stdout.
-Human and LLM cells for shared error values outside Donna's environment-error hierarchy MUST use stderr.
-
-During command execution, shared configuration errors MUST exit with status `2`. Other expected shared errors MUST exit with status `3`. When a result contains several errors, the CLI MUST render each error in order using the common representation and its applicable stream and exit with the highest applicable status. Unexpected exceptions MUST propagate rather than being presented as expected failures.
+The CLI MUST use command error handling and explicit error reporting managed by `llm_tool_cli`, including error cells, stream selection, diagnostic ordering, exit statuses, and exception propagation.
+Donna MUST retain workspace setup, error journaling, and runtime context cleanup.
 
 Configuration selection, loading, and creation MUST propagate the diagnostics provided by `llm_tool_cli` without local translation.
 
-Donna-owned environment errors currently exit with status `0`, independently of shared cell presentation.
-
-Human and LLM cells for Donna-owned errors SHOULD be written to stdout like other Donna cells; cells for errors outside Donna's environment-error hierarchy MUST use stderr.
-
-For automation output, rendered fatal errors SHOULD be written to stdout as JSON Lines cell records when possible.
+Donna-owned environment errors MUST use the shared default environment-error exit status, including artifact validation failures.
 
 If command line parsing fails before Donna installs an output protocol, diagnostics MAY be written by Typer using its standard behavior.
 

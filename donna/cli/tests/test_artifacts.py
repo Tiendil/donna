@@ -73,6 +73,68 @@ class TestRender:
 
 
 class TestValidate:
+    @pytest.mark.parametrize("all_artifacts", [False, True])
+    def test_collected_errors__are_journaled_and_reported(self, tmp_path: pathlib.Path, all_artifacts: bool) -> None:
+        config_path = helpers.write_config(tmp_path)
+        artifact_ids = ["@/workflows/first.donna.md", "@/workflows/second.donna.md"]
+        for artifact_id in artifact_ids:
+            workflow_path = helpers.write_workflow(tmp_path, path=artifact_id.removeprefix("@/"))
+            workflow_path.write_text(
+                workflow_path.read_text(encoding="utf-8").replace(
+                    'start_operation_id = "finish"', 'start_operation_id = "missing"'
+                ),
+                encoding="utf-8",
+            )
+        initialized = helpers.invoke(["--config", str(config_path), "-p", "automation", "new-session"])
+        assert initialized.exit_code == 0
+        selection = ["--all"] if all_artifacts else artifact_ids
+
+        result = helpers.invoke(["--config", str(config_path), "-p", "automation", "validate", *selection])
+
+        assert result.exit_code == 3
+        assert not result.stderr
+        records = helpers.json_lines(result.stdout)
+        diagnostics = [record for record in records if record.get("type") == "error"]
+        journal = [record for record in records if record.get("actor_id") == "donna"]
+        assert [
+            record["artifact_id"]
+            for record in diagnostics
+            if record["code"] == "donna.workflows.wrong_start_operation"
+        ] == artifact_ids
+        assert len(journal) == len(diagnostics)
+        for entry, diagnostic in zip(journal, diagnostics, strict=True):
+            assert str(entry["message"]).startswith("Error: ")
+            assert str(entry["message"]).endswith(f"[{diagnostic['code']}]")
+        assert not any(record.get("type") == "operation_succeeded" for record in records)
+
+    @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
+    @pytest.mark.parametrize("selection", [["--all"], ["@/workflows/test.donna.md"]])
+    def test_invalid_workflow__uses_shared_error_exit_code(
+        self, tmp_path: pathlib.Path, protocol: str, selection: list[str]
+    ) -> None:
+        config_path = helpers.write_config(tmp_path)
+        workflow_path = helpers.write_workflow(tmp_path)
+        workflow_path.write_text(
+            workflow_path.read_text(encoding="utf-8").replace(
+                'start_operation_id = "finish"', 'start_operation_id = "missing"'
+            ),
+            encoding="utf-8",
+        )
+
+        result = helpers.invoke(["--config", str(config_path), "-p", protocol, "validate", *selection])
+
+        assert result.exit_code == 3
+        if protocol == "automation":
+            assert not result.stderr
+            records = helpers.json_lines(result.stdout)
+            assert any(record.get("type") == "error" for record in records)
+            assert not any(record.get("type") == "operation_succeeded" for record in records)
+        else:
+            separator = " = " if protocol == "human" else "="
+            assert f"kind{separator}error\n" in result.stderr
+            assert f"kind{separator}error\n" not in result.stdout
+            assert f"kind{separator}operation_succeeded\n" not in result.stdout
+
     def test_all_option_validates_every_discovered_artifact(self, tmp_path: pathlib.Path) -> None:
         config_path = helpers.write_config(tmp_path)
         helpers.write_workflow(tmp_path)
@@ -240,6 +302,6 @@ class TestParseArtifactSectionIdArgument:
             ]
         )
 
-        assert result.exit_code == 0
+        assert result.exit_code == 3
         records = helpers.json_lines(result.stdout)
         assert any(record.get("code") == "donna.domain.invalid_id_format" for record in records)

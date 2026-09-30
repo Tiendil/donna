@@ -1,5 +1,11 @@
 ### Migration
 
+- Donna-owned command error cells now use stderr for human and LLM output; automation error cells remain on stdout. Error batches preserve diagnostic order and use shared batch framing. Python callers inside `command_context` must replace `CommandContext.write_errors` with `Err(errors).unwrap()` for nonempty error lists, allowing the context to journal, report, and terminate through the shared handler.
+
+- Donna-owned environment errors now exit with the shared default status `3` instead of `0`, including artifact and workflow validation failures. Update scripts that previously treated these error cells as successful commands; diagnostic content and stream routing are unchanged.
+
+- Shared `InvalidArguments` errors returned during command execution now exit with status `1` instead of the generic shared-error status `3`. Exit status comes from each error class; lists use the highest declared code.
+
 - Successful `donna init` output now uses `Configuration created.` and includes the resolved configuration file path in `path` metadata in every protocol. Update integrations that match the previous success text; automation consumers can read `path` directly.
 
 - Python integrations must register version commands through `llm_tool_cli.cli.commands.version.register_version_command`; `donna.cli.commands.version` is removed. Application setup registers Donna's version command directly.
@@ -53,6 +59,12 @@
 - Python callers must use shared `load_config` followed by `construct_workspace` instead of `load_workspace`; `initialize_runtime` and shared configuration operations return `Result` values.
 
 ### Changes
+
+- Route collected artifact validation errors through the command context so every diagnostic follows its journal policy before shared reporting and termination.
+
+- Use the shared command error context manager and explicit reporter, retaining local workspace setup, error journaling, and runtime cleanup while unifying diagnostic streams.
+
+- Delegate error exit-code selection to `llm_tool_cli` and inherit its default on Donna's environment-error root, preserving diagnostic order, streams, journaling, and cleanup.
 
 - Emit the shared configuration-creation success cell after workspace initialization completes.
 

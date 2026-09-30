@@ -5,18 +5,16 @@ from contextvars import Token
 
 import typer
 from llm_tool_cli.cli.context import get_global_options
-from llm_tool_cli.config import errors as config_errors
+from llm_tool_cli.cli.handling import handle_command_errors
 from llm_tool_cli.config import load_config, locate_config
 from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Ok, Result, UnwrapError, unwrap_to_error
 from llm_tool_cli.paths import PathInput
 from llm_tool_cli.protocol import Protocol, write_output
-from llm_tool_cli.protocol.cell_shortcuts import environment_error
 from llm_tool_cli.protocol.logic_cells.base import LogicCell
 from llm_tool_cli.protocol.rendering import write_cells
 
 from donna.context.context import Context
-from donna.core.errors import EnvironmentError
 from donna.domain.constants import DONNA_CONFIG_NAME
 from donna.protocol.errors import environment_error_node
 from donna.protocol.journal import JournalRecord
@@ -79,17 +77,6 @@ class CommandContext:
     def write_cells(self, cells: Iterable[LogicCell]) -> None:
         self.emitter.emit_cells(cells)
 
-    def write_errors(self, errors: EnvironmentErrors) -> int:
-        exit_code = 0
-        for error in errors:
-            local_error = isinstance(error, EnvironmentError)
-            self.emitter.emit_cells(
-                [environment_error(error)], stderr=not local_error and self.protocol != Protocol.automation
-            )
-            if not local_error:
-                exit_code = max(exit_code, 2 if isinstance(error, config_errors.EnvironmentError) else 3)
-        return exit_code
-
 
 @contextmanager
 def command_context(context: typer.Context, *, load_environment: bool = True) -> Iterator[CommandContext]:
@@ -101,20 +88,21 @@ def command_context(context: typer.Context, *, load_environment: bool = True) ->
     machine_context_token: Token[machine_context.MachineContext | None] | None = None
 
     try:
-        command.install_protocol()
+        with handle_command_errors(protocol=command.protocol):
+            try:
+                command.install_protocol()
 
-        if load_environment:
-            command.load_workspace().unwrap()
-            runtime_context = Context(output=command.emitter)
-            context_token = set_context(runtime_context)
-            machine_context_token = machine_context.set_context(runtime_context)
+                if load_environment:
+                    command.load_workspace().unwrap()
+                    runtime_context = Context(output=command.emitter)
+                    context_token = set_context(runtime_context)
+                    machine_context_token = machine_context.set_context(runtime_context)
 
-        yield command
-    except UnwrapError as error:
-        errors = error.errors
-        if context_token is not None:
-            _write_errors_to_journal(errors)
-        raise typer.Exit(code=command.write_errors(errors)) from error
+                yield command
+            except UnwrapError as error:
+                if context_token is not None:
+                    _write_errors_to_journal(error.errors)
+                raise
     finally:
         if machine_context_token is not None:
             machine_context.reset_context(machine_context_token)

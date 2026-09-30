@@ -39,7 +39,7 @@ Package ownership alone MUST NOT require translating an environment error into a
 
 Lower-level modules MUST NOT print errors, write protocol records, or terminate the process.
 
-The CLI layer MUST be responsible for rendering environment errors and selecting command exit behavior.
+The CLI layer MUST delegate environment-error reporting and process termination to `llm_tool_cli`.
 
 Environment error codes MUST be stable enough for automation and tests.
 
@@ -109,6 +109,7 @@ Internal errors SHOULD be used for:
 ## Environment errors
 
 Donna's environment-error extension MUST inherit entity behavior through the shared environment-error model and identify Donna-owned failures for application policy.
+Its root MUST inherit the default environment-error exit status managed by `llm_tool_cli` without overriding it.
 Error models MUST remain independent of cell presentation; `llm_tool_cli` MUST own environment-error cells and their rendering.
 
 Environment errors MUST NOT inherit from `Exception`.
@@ -207,20 +208,13 @@ Typer command line parsing errors MAY use Typer's standard invalid-argument beha
 
 CLI argument parsing MAY raise `typer.BadParameter`, `click.UsageError`, or `typer.Exit` before command execution has fully entered Donna's result-based flow.
 
-After the selected protocol is installed, all environment errors MUST use the same shared cell construction and rendering.
-Automation error cells MUST use stdout; human and LLM cells for errors outside Donna's environment-error hierarchy MUST use stderr.
-
-Shared configuration errors MUST exit with status `2`. Other shared environment errors MUST exit with status `3`. A result containing both Donna and shared environment errors MUST render every error and use the highest applicable exit status. Unexpected exceptions MUST NOT be caught by this expected-error handling.
-
-Human and LLM Donna-owned environment error cells SHOULD be written to stdout like other Donna cells.
-
-Automation environment error cells SHOULD be written to stdout as JSON Lines cell records.
-
-Donna-owned environment errors currently exit with status `0`, independently of shared cell presentation.
+After the selected protocol is installed, the CLI MUST use command error handling and explicit error reporting managed by `llm_tool_cli`, including its diagnostic order, cell presentation, stream routing, and exit behavior for all environment errors.
+Donna MUST NOT maintain a separate rendering or exit path for errors owned by Donna.
+The local command context MUST retain workspace and runtime setup, observe and re-raise unwrapped errors for journaling, and restore runtime contexts after success or failure.
 
 The CLI SHOULD write environment error journal records when workspace configuration is loaded and journal forwarding is available.
 
-Modules outside the CLI module MUST NOT know about CLI exit codes.
+Error classes outside the CLI module MAY declare exit-code overrides through the shared core contract; process termination MUST be delegated to the shared CLI boundary.
 
 ## Warnings
 

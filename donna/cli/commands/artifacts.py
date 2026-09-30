@@ -2,6 +2,7 @@ from typing import Annotated
 
 import click
 import typer
+from llm_tool_cli.core.result import Err
 from llm_tool_cli.protocol import write_output
 from llm_tool_cli.protocol.cell_shortcuts import operation_succeeded
 
@@ -86,6 +87,6 @@ def validate(  # noqa: CCR001
                 errors.extend(result.unwrap_err())
 
         if errors:
-            raise typer.Exit(code=command.write_errors(errors))
+            Err(errors).unwrap()
 
         command.write_cells([operation_succeeded("All artifacts are valid")])
