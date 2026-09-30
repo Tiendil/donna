@@ -12,6 +12,7 @@ from llm_tool_cli.protocol import Protocol
 from llm_tool_cli.protocol.logic_cells import ContentCell
 from llm_tool_cli.protocol.output_cells import HumanOutputCell
 from llm_tool_cli.protocol.output_cells.base import RenderContext
+from llm_tool_cli.protocol.tests.helpers import assert_error_cells
 from pytest_mock import MockerFixture
 
 from donna.cli.tests import helpers
@@ -252,7 +253,7 @@ class TestCommandContext:
         result = helpers.invoke(["-p", "automation", "list"])
 
         assert result.exit_code == 3
-        helpers.assert_error_cells(helpers.json_lines(result.stdout), [failure])
+        assert_error_cells(helpers.json_lines(result.stdout), [failure])
         assert not result.stderr
 
     @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
@@ -264,7 +265,7 @@ class TestCommandContext:
 
         assert result.exit_code == 1
         if protocol == "automation":
-            helpers.assert_error_cells(helpers.json_lines(result.stdout), [failure])
+            assert_error_cells(helpers.json_lines(result.stdout), [failure])
             assert not result.stderr
         else:
             assert not result.stdout
@@ -288,7 +289,7 @@ class TestCommandContext:
 
             assert result.exit_code == 3
             records = helpers.json_lines(result.stdout)
-            helpers.assert_error_cells([record for record in records if record.get("type") == "error"], [failure])
+            assert_error_cells([record for record in records if record.get("type") == "error"], [failure])
             journal.assert_called_once()
             journal_entry = journal.call_args.args[0]
             assert journal_entry.actor_id == "donna"

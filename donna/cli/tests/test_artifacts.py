@@ -3,6 +3,7 @@ import pathlib
 import pytest
 from llm_tool_cli.paths import resolve_project_root
 from llm_tool_cli.paths.errors import InvalidProjectPath
+from llm_tool_cli.protocol.tests.helpers import assert_error_cells
 from pytest_mock import MockerFixture
 
 from donna.cli.tests import helpers
@@ -221,7 +222,7 @@ class TestParseArtifactIdArgument:
         error = failure.unwrap_err()[0]
         if protocol == "automation":
             records = helpers.json_lines(result.stdout)
-            helpers.assert_error_cells(
+            assert_error_cells(
                 [record for record in records if record.get("code") == "path_resolution_failed"], [error]
             )
             assert not result.stderr
@@ -238,7 +239,7 @@ class TestParseArtifactIdArgument:
         assert result.exit_code == 3
         records = helpers.json_lines(result.stdout)
         diagnostic = [record for record in records if record.get("code") == "invalid_project_path"]
-        helpers.assert_error_cells(diagnostic, [InvalidProjectPath(path=value)])
+        assert_error_cells(diagnostic, [InvalidProjectPath(path=value)])
         assert result.stderr == ""
 
     @pytest.mark.parametrize("protocol", ["human", "llm"])
@@ -282,7 +283,7 @@ class TestParseArtifactSectionIdArgument:
 
         assert result.exit_code == 3
         records = helpers.json_lines(result.stdout)
-        helpers.assert_error_cells(
+        assert_error_cells(
             [record for record in records if record.get("code") == "invalid_project_path"],
             [InvalidProjectPath(path=value)],
         )

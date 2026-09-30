@@ -288,6 +288,7 @@ Tests that verify produced environment errors SHOULD assert the expected error t
 Internal error tests MAY assert raised `InternalError` subclasses when the tested behavior is an internal invariant.
 
 CLI tests SHOULD verify shared error-cell integration and Donna's stream, exit, and journal policies.
+Common automation error-cell assertions are managed by `llm_tool_cli`; tests SHOULD use its shared assertion helper, keeping JSON Lines parsing and journal-record filtering local.
 Generic error-cell projection tests MUST belong to the shared library.
 
 ## Behavior coverage
