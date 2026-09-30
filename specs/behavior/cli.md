@@ -194,9 +194,9 @@ Automation protocol cell output SHOULD follow this shape:
 
 ## Global options
 
-The CLI MUST use the parsed global options and command protocol selection provided by `llm_tool_cli`.
-The library owns optional protocol and configuration-path values, command defaults, and explicit-protocol precedence.
-Donna MUST parse its CLI options, retain them for the invocation, and supply the invoked command name to shared protocol selection.
+The CLI MUST use the parsed global options, invocation-context storage and retrieval, and command protocol selection provided by `llm_tool_cli`.
+The library owns option availability across subcommands, invocation isolation, and protocol selection.
+Donna MUST parse its CLI options, pass them to shared context storage, and supply the invoked command name to shared protocol selection.
 
 ### `-h`, `--help`
 
@@ -211,8 +211,6 @@ donna --help
 ### `-p`, `--protocol PROTOCOL`
 
 `-p` and `--protocol PROTOCOL` MUST be global options accepted before the subcommand.
-
-The selected protocol MUST be available to every subcommand.
 
 Subcommands that render Donna cells or journal records MUST use the selected protocol.
 

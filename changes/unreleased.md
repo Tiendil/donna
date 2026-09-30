@@ -1,5 +1,7 @@
 ### Migration
 
+- Replace `donna.cli.utils.global_options` with `llm_tool_cli.cli.context.get_global_options`. Store options through `set_global_options` instead of the removed `GLOBAL_OPTIONS_CONTEXT_KEY`.
+
 - Pass `llm_tool_cli.paths.ProjectConfigPath` to `initialize_workspace` in Python integrations. Omitting the path now selects `donna.toml` in the current working directory.
 
 - `donna skill` now defaults to LLM cell output. Use `donna -p human skill` for human output. Python callers must import `GlobalOptions` from `llm_tool_cli.cli.entities`, use `ProjectConfigPath` for its `config_path`, and call `protocol_for(command_name)` to resolve an unspecified protocol.
@@ -41,6 +43,10 @@
 - Python callers must use shared `load_config` followed by `construct_workspace` instead of `load_workspace`; `initialize_runtime` and shared configuration operations return `Result` values.
 
 ### Changes
+
+- Obtain Typer through `llm_tool_cli` and upgrade the locked version from 0.20.1 to the shared 0.25.1 version.
+
+- Delegate Typer context storage and retrieval of global options to `llm_tool_cli`, preserving CLI behavior and invocation isolation.
 
 - Delegate initialization target selection and resolution to `llm_tool_cli`, preserving explicit paths, current-directory defaults, and the rule against upward discovery.
 

@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from contextvars import Token
 
 import typer
-from llm_tool_cli.cli.entities import GlobalOptions
+from llm_tool_cli.cli.context import get_global_options
 from llm_tool_cli.config import errors as config_errors
 from llm_tool_cli.config import load_config, locate_config
 from llm_tool_cli.core.errors import EnvironmentErrors
@@ -15,7 +15,6 @@ from llm_tool_cli.protocol.cell_shortcuts import environment_error
 from llm_tool_cli.protocol.logic_cells.base import LogicCell
 from llm_tool_cli.protocol.rendering import write_cells
 
-from donna.cli.application import GLOBAL_OPTIONS_CONTEXT_KEY
 from donna.context.context import Context
 from donna.core.errors import EnvironmentError
 from donna.domain.constants import DONNA_CONFIG_NAME
@@ -46,20 +45,11 @@ def output_cells(cells: Iterable[LogicCell]) -> None:
     emitter.emit_cells(cells)
 
 
-def global_options(context: typer.Context) -> GlobalOptions:
-    global_options = context.find_root().meta.get(GLOBAL_OPTIONS_CONTEXT_KEY)
-
-    if isinstance(global_options, GlobalOptions):
-        return global_options
-
-    return GlobalOptions()
-
-
 class CommandContext:
     __slots__ = ("emitter", "global_options", "protocol")
 
     def __init__(self, context: typer.Context) -> None:
-        self.global_options = global_options(context)
+        self.global_options = get_global_options(context)
         self.protocol = self.global_options.protocol_for(context.info_name or "")
         self.emitter = CliEmitter(self.protocol)
 
