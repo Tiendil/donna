@@ -1,7 +1,5 @@
 from typing import ClassVar
 
-from llm_tool_cli.paths import ProjectConfigPath
-
 from donna.core import errors as core_errors
 from donna.domain.artifact_ids import ArtifactId
 
@@ -12,16 +10,6 @@ class InternalError(core_errors.InternalError):
 
 class WorkspaceError(core_errors.EnvironmentError):
     """Base class for workspace environment errors."""
-
-
-class WorkspaceConfigError(WorkspaceError):
-    config_path: ProjectConfigPath
-
-
-class ConfigCreateFailed(WorkspaceConfigError):
-    code: str = "donna.workspaces.config_create_failed"
-    message: str = "Failed to create config file: {error.details}"
-    details: str
 
 
 class JournalCommandConfigInvalid(WorkspaceError):

@@ -7,6 +7,41 @@ from donna.cli.tests import helpers
 
 
 class TestInit:
+    @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
+    @pytest.mark.parametrize("content", [None, b"\xff"])
+    def test_template_failure__uses_shared_configuration_error(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path, protocol: str, content: bytes | None
+    ) -> None:
+        fixtures = tmp_path / "fixtures"
+        fixtures.mkdir()
+        if content is not None:
+            (fixtures / "base_config.toml").write_bytes(content)
+        mocker.patch("llm_tool_cli.config.files.importlib.resources.files", return_value=tmp_path)
+        config_path = tmp_path / "donna.toml"
+
+        result = helpers.invoke(["--config", str(config_path), "-p", protocol, "init"])
+
+        assert result.exit_code == 2
+        assert not config_path.exists()
+        if protocol == "automation":
+            assert not result.stderr
+            records = helpers.json_lines(result.stdout)
+            assert len(records) == 1
+            record = records[0]
+            assert record["type"] == "error"
+            assert record["code"] == "config_template_unreadable"
+            assert record["path"] == str(config_path)
+            assert record["template"] == "base_config.toml"
+            assert record["reason"]
+            assert record["content"]
+        else:
+            assert not result.stdout
+            separator = " = " if protocol == "human" else "="
+            assert f"kind{separator}error\n" in result.stderr
+            assert f"code{separator}config_template_unreadable\n" in result.stderr
+            assert f"path{separator}{config_path}\n" in result.stderr
+            assert f"template{separator}base_config.toml\n" in result.stderr
+
     def test_config_home_marker__selects_target_in_home(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         mocker.patch.dict("os.environ", {"HOME": str(tmp_path)})
 

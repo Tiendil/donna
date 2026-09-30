@@ -1,14 +1,12 @@
-import importlib.resources
 import pathlib
 
-from llm_tool_cli.config import create_config, load_config, locate_config, resolve_config_path
-from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.config import create_config_from_template, load_config, locate_config, resolve_config_path
+from llm_tool_cli.core.result import Ok, Result, unwrap_to_error
 from llm_tool_cli.paths import PathInput
 from llm_tool_cli.protocol import Protocol
 
 from donna.domain.constants import DONNA_CONFIG_NAME
 from donna.workspaces import config
-from donna.workspaces import errors as world_errors
 
 BASE_CONFIG_FIXTURE = "base_config.toml"
 
@@ -37,16 +35,7 @@ def initialize_runtime(
 def initialize_workspace(config_path: PathInput) -> Result[config.Workspace]:
     """Initialize Donna project configuration."""
     selected_path = resolve_config_path(config_path, pathlib.Path.cwd()).unwrap()
-    try:
-        config_text = (
-            importlib.resources.files(__package__)
-            .joinpath("fixtures", BASE_CONFIG_FIXTURE)
-            .read_text(encoding="utf-8")
-        )
-    except (OSError, UnicodeDecodeError) as e:
-        return Err([world_errors.ConfigCreateFailed(config_path=selected_path, details=str(e))])
-
-    create_config(selected_path, config_text).unwrap()
+    create_config_from_template(selected_path, package=__package__, template=BASE_CONFIG_FIXTURE).unwrap()
 
     loaded_config = load_config(selected_path, config.Config).unwrap()
     workspace = config.construct_workspace(loaded_config, config_path=selected_path)

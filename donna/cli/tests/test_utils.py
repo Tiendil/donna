@@ -246,21 +246,6 @@ class TestCommandContext:
         assert not result.stdout
         assert not result.stderr
 
-    def test_local_errors__retain_donna_result_and_cell_behavior(
-        self, mocker: MockerFixture, tmp_path: pathlib.Path
-    ) -> None:
-        mocker.patch(
-            "donna.workspaces.initialization.importlib.resources.files", side_effect=OSError("missing template")
-        )
-
-        result = helpers.invoke(["--config", str(tmp_path / "donna.toml"), "-p", "automation", "init"])
-
-        assert result.exit_code == 0
-        record = helpers.json_lines(result.stdout)[0]
-        assert record["code"] == "donna.workspaces.config_create_failed"
-        assert "content" in record
-        assert "id" in record
-
     @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
     def test_missing_discovered_config__uses_shared_diagnostic(
         self, mocker: MockerFixture, tmp_path: pathlib.Path, protocol: str

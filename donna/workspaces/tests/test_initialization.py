@@ -4,13 +4,12 @@ import pytest
 from llm_tool_cli.config import create_config
 from llm_tool_cli.config import errors as config_errors
 from llm_tool_cli.core.result import Err, Ok, Result
-from llm_tool_cli.paths import PathInput
+from llm_tool_cli.paths import PathInput, ProjectConfigPath
 from llm_tool_cli.protocol import Protocol
 from pytest_mock import MockerFixture
 
 from donna.domain.constants import DONNA_CONFIG_NAME
 from donna.workspaces import config as workspace_config
-from donna.workspaces import errors as workspace_errors
 from donna.workspaces.config import GlobalConfig
 from donna.workspaces.initialization import initialize_runtime, initialize_workspace
 
@@ -285,11 +284,11 @@ class TestInitializeWorkspace:
     ) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
 
-        def create_concurrently(path: pathlib.Path, text: str) -> Result[None]:
+        def create_concurrently(path: ProjectConfigPath, text: str) -> Result[None]:
             path.write_text("version = 1", encoding="utf-8")
             return create_config(path, text)
 
-        mocker.patch("donna.workspaces.initialization.create_config", side_effect=create_concurrently)
+        mocker.patch("llm_tool_cli.config.files.create_config", side_effect=create_concurrently)
 
         error = initialize_workspace(PathInput(config_path)).unwrap_err()[0]
         assert isinstance(error, config_errors.AlreadyExists)
@@ -301,7 +300,7 @@ class TestInitializeWorkspace:
         config_path = tmp_path / DONNA_CONFIG_NAME
         failure = config_errors.Unwritable(path=config_path, reason="read-only filesystem")
         mocker.patch(
-            "donna.workspaces.initialization.create_config",
+            "llm_tool_cli.config.files.create_config",
             return_value=Err([failure]),
         )
 
@@ -322,23 +321,24 @@ class TestInitializeWorkspace:
 
         assert error == failure
 
-
-class TestConfigCreateFailed:
-
     @pytest.mark.parametrize(
         "failure",
         [OSError("missing template"), UnicodeDecodeError("utf-8", b"\xff", 0, 1, "invalid byte")],
     )
-    def test_template_read_failure__returns_create_error(
+    def test_template_read_failure__returns_shared_error_without_installing_workspace(
         self, mocker: MockerFixture, tmp_path: pathlib.Path, failure: OSError | UnicodeDecodeError
     ) -> None:
         config_path = tmp_path / DONNA_CONFIG_NAME
-        mocker.patch("donna.workspaces.initialization.importlib.resources.files", side_effect=failure)
+        mocker.patch("llm_tool_cli.config.files.importlib.resources.files", side_effect=failure)
+        install_workspace = mocker.patch("donna.workspaces.config.install_workspace")
 
         result = initialize_workspace(PathInput(config_path))
 
         error = result.unwrap_err()[0]
-        assert isinstance(error, workspace_errors.ConfigCreateFailed)
-        assert error.config_path == config_path
-        assert error.details == str(failure)
+        assert isinstance(error, config_errors.TemplateUnreadable)
+        assert error.path == config_path
+        assert error.template == "base_config.toml"
+        assert error.reason == str(failure)
+        assert error.cause == failure
         assert not config_path.exists()
+        install_workspace.assert_not_called()
