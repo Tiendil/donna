@@ -132,7 +132,7 @@ class ArtifactsCache:
         artifacts: list[Artifact] = []
         errors: EnvironmentErrors = []
 
-        for artifact_id in list_artifact_ids():
+        for artifact_id in list_artifact_ids().unwrap():
             artifact_result = self.load(artifact_id, render_context)
 
             if artifact_result.is_err():

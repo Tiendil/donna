@@ -7,7 +7,6 @@ from llm_tool_cli.paths import (
     PathInput,
     ProjectPathId,
     normalize_path,
-    normalize_project_path_id,
 )
 from llm_tool_cli.paths.errors import InvalidProjectPath
 
@@ -44,7 +43,7 @@ def normalize_project_path(
         return normalize_path(value, root, cwd=cwd)
 
     parent_parts = artifact_path_parts(relative_to)[:-1]
-    return normalize_project_path_id(PROJECT_ROOT_PREFIX + "/".join((*parent_parts, value)))
+    return normalize_path(PROJECT_ROOT_PREFIX + "/".join((*parent_parts, value)), root)
 
 
 @unwrap_to_error

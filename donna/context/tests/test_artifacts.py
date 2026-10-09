@@ -1,6 +1,7 @@
 import pathlib
 
-from llm_tool_cli.core.result import Ok
+from llm_tool_cli.core.result import Err, Ok
+from llm_tool_cli.paths.errors import FilesUnreadable
 from pytest_mock import MockerFixture
 
 from donna.context.artifacts import ArtifactsCache
@@ -112,7 +113,7 @@ class TestArtifactsCache:
         second_path = _write_artifact_file(tmp_path, "second.donna.md", "# Second")
         first_artifact = machine_make.artifact()
         second_artifact = machine_make.artifact().replace(id=second_id)
-        mocker.patch("donna.workspaces.artifacts.list_artifact_ids", return_value=[first_id, second_id])
+        mocker.patch("donna.workspaces.artifacts.list_artifact_ids", return_value=Ok([first_id, second_id]))
         mocker.patch(
             "donna.workspaces.artifacts.fetch_raw_artifact",
             side_effect=[
@@ -130,7 +131,7 @@ class TestArtifactsCache:
         missing_id = ArtifactId("@/workflows/missing.donna.md")
         path = _write_artifact_file(tmp_path, "workflow.donna.md", "# Workflow")
         mocker.patch(
-            "donna.workspaces.artifacts.list_artifact_ids", return_value=[machine_make.ARTIFACT_ID, missing_id]
+            "donna.workspaces.artifacts.list_artifact_ids", return_value=Ok([machine_make.ARTIFACT_ID, missing_id])
         )
         mocker.patch(
             "donna.workspaces.artifacts.fetch_raw_artifact",
@@ -146,3 +147,9 @@ class TestArtifactsCache:
         error = result.unwrap_err()[0]
         assert isinstance(error, workspace_errors.ArtifactNotFound)
         assert error.artifact_id == missing_id
+
+    def test_list__propagates_discovery_failure(self, mocker: MockerFixture) -> None:
+        failure = FilesUnreadable(path="/project", reason="cannot list directory")
+        mocker.patch("donna.workspaces.artifacts.list_artifact_ids", return_value=Err([failure]))
+
+        assert ArtifactsCache().list(workspace_artifacts.RENDER_CONTEXT_VIEW).unwrap_err() == [failure]

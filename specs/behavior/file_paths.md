@@ -50,11 +50,14 @@ Relative paths MUST be accepted only by contexts that explicitly define a base p
 
 Absolute host filesystem paths MAY be accepted only by contexts that explicitly support them. Accepted relative and absolute inputs MUST normalize to canonical root-anchored paths inside the project root. Absolute host paths MUST NOT be canonical project identifiers.
 
-Filesystem resolution MUST enforce project-root containment after resolving symlinks and MUST reject the project root itself.
+Filesystem resolution MUST enforce project-root containment and MUST reject the project root itself.
+Project file and artifact paths MUST NOT traverse symbolic links below the resolved project root, including links to internal targets, broken links, and loops.
+This rule MUST apply to explicit CLI inputs, artifact lookup, artifact-relative references, and both template path directive modes.
+Project-root selection MAY resolve symlinks to the root or its ancestors.
 
 A project path MAY refer to a file, directory, or not-yet-existing location. Existence and suffix requirements MUST be enforced only by contexts that require them. Existing-file contexts MUST reject or skip paths that do not identify existing regular files, according to the context's behavior; reference contexts MAY accept locations that do not yet exist.
 
-Invalid project paths MUST use the `invalid_project_path` diagnostic rather than a Donna-specific path or identifier diagnostic. Artifact lookup MAY treat a candidate rejected for project-root containment as unavailable.
+Invalid project paths MUST use the `invalid_project_path` diagnostic rather than a Donna-specific path or identifier diagnostic. Artifact lookup MAY treat a candidate rejected for project-root containment or symbolic-link traversal as unavailable.
 
 ## Artifact ids
 

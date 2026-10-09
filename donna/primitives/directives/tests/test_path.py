@@ -1,7 +1,8 @@
 import pathlib
 
+import pytest
 from llm_tool_cli.paths import ProjectRootPath
-from llm_tool_cli.paths.errors import InvalidProjectPath, PathResolutionFailed
+from llm_tool_cli.paths.errors import InvalidProjectPath
 from pytest_mock import MockerFixture
 
 from donna.domain.artifact_ids import ArtifactId
@@ -19,6 +20,20 @@ from donna.primitives.tests import make
 
 
 class TestPath:
+    @pytest.mark.parametrize("mode", [PathRenderMode.project, PathRenderMode.absolute])
+    def test_render_view__rejects_artifact_relative_internal_link(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path, mode: PathRenderMode
+    ) -> None:
+        (tmp_path / "workflows").mkdir()
+        (tmp_path / "workflows/link").symlink_to(tmp_path)
+        mocker.patch.object(path.workspace_config, "project_dir", return_value=ProjectRootPath(tmp_path))
+
+        result = Path(analyze_id="path").render_view(
+            make.template_context(), "link/file", mode, ArtifactId("@/workflows/test.donna.md")
+        )
+
+        assert result.unwrap_err() == [InvalidProjectPath(path=str(tmp_path / "workflows/link/file"))]
+
     def test_prepare_arguments__defaults_to_project_mode(self) -> None:
         result = Path(analyze_id="path")._prepare_arguments(
             make.template_context(artifact_id=machine_make.ARTIFACT_ID),
@@ -140,7 +155,7 @@ class TestPath:
 
         assert result.unwrap_err() == [InvalidProjectPath(path=str(link / "file.md"))]
 
-    def test_render_view__absolute_mode_preserves_resolution_failure(
+    def test_render_view__absolute_mode_rejects_symlink_loop(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
         mocker.patch.object(path.workspace_config, "project_dir", return_value=ProjectRootPath(tmp_path))
@@ -155,10 +170,7 @@ class TestPath:
         )
         failure = result.unwrap_err()[0]
 
-        assert isinstance(failure, PathResolutionFailed)
-        assert failure.code == "path_resolution_failed"
-        assert failure.path == str(link / "file.md")
-        assert isinstance(failure.cause, (OSError, RuntimeError))
+        assert failure == InvalidProjectPath(path=str(link / "file.md"))
 
     def test_render_view__rejects_paths_outside_project(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         mocker.patch.object(path.workspace_config, "project_dir", return_value=ProjectRootPath(tmp_path))

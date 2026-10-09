@@ -128,12 +128,15 @@ Duplicate workflow directory entries MUST be removed while preserving the first 
 Workflow directory paths MUST be resolved from the Donna project root.
 
 Missing workflow directories MUST be ignored during artifact discovery.
+Configured workflow directories MUST be rejected if any component below the resolved project root is a symbolic link.
 
 Donna MUST recursively scan workflow directories for files ending with `.donna.md`.
 
 Donna MUST ignore files without the `.donna.md` suffix when discovering workflow artifacts.
 
 Artifact discovery MUST be deterministic for the same `workflow_dirs` order and filesystem state.
+Discovery MUST use shared file enumeration, include hidden entries, and skip all encountered symbolic links without following them.
+Shared enumeration errors MUST propagate without being treated as successful empty discovery.
 
 ## Defaults
 

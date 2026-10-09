@@ -1,14 +1,16 @@
+import glob
 import pathlib
-from typing import TYPE_CHECKING, Iterator, Sequence
+from typing import TYPE_CHECKING, Sequence
 
 from llm_tool_cli.core.entities import BaseEntity
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 from llm_tool_cli.paths import (
-    PathInput,
+    FileGlobPattern,
     ProjectPathId,
     RelativeProjectPath,
     ResolvedProjectPath,
-    project_path_id_from_filesystem,
+    enumerate_files,
+    resolve_project_path,
 )
 from llm_tool_cli.paths.errors import InvalidProjectPath
 
@@ -47,14 +49,6 @@ def has_donna_artifact_extension(path: ProjectPathId | RelativeProjectPath | Res
     return pathlib.PurePath(path).name.lower().endswith(DONNA_ARTIFACT_EXTENSION)
 
 
-def _artifact_id_from_parts(parts: Sequence[str]) -> ArtifactId | None:
-    artifact_name = "@/" + "/".join(parts)
-    if not validate_artifact_id(artifact_name):
-        return None
-
-    return ArtifactId(artifact_name)
-
-
 def _workflow_dir_parts(path: RelativeProjectPath) -> tuple[str, ...]:
     return pathlib.PurePosixPath(path.as_posix()).parts
 
@@ -79,79 +73,51 @@ def _artifact_is_visible_in_workspace(artifact_id: ArtifactId) -> bool:
     return _artifact_is_in_workflow_dirs(artifact_id, workspace_config.config().workflow_dirs)
 
 
-def _artifact_id_from_filesystem_entry(entry: ResolvedProjectPath, parts: list[str]) -> ArtifactId | None:
-    if not entry.is_file():
-        return None
-
-    if not has_donna_artifact_extension(entry):
-        return None
-
-    artifact_parts = parts + [entry.name]
-    return _artifact_id_from_parts(artifact_parts)
-
-
-def _walk_workflow_dir(node: ResolvedProjectPath, parts: list[str]) -> Iterator[ArtifactId]:
-    for raw_entry in sorted(pathlib.Path(node).iterdir(), key=lambda item: item.name):
-        entry = ResolvedProjectPath(raw_entry)
-        if entry.is_dir():
-            yield from _walk_workflow_dir(entry, parts + [entry.name])
-            continue
-
-        artifact_id = _artifact_id_from_filesystem_entry(entry, parts)
-        if artifact_id is not None:
-            yield artifact_id
-
-
-def walk_filesystem(workflow_dirs: Sequence[RelativeProjectPath]) -> Iterator[ArtifactId]:
+@unwrap_to_error
+def walk_filesystem(workflow_dirs: Sequence[RelativeProjectPath]) -> Result[list[ArtifactId]]:
     from donna.workspaces.config import project_dir
 
     root = project_dir()
-    if not root.exists() or not root.is_dir():
-        return
-
+    artifacts: list[ArtifactId] = []
     for workflow_dir in workflow_dirs:
-        workflow_parts = _workflow_dir_parts(workflow_dir)
-        workflow_path = root.joinpath(*workflow_parts)
-        if not workflow_path.exists() or not workflow_path.is_dir():
-            continue
+        if workflow_dir.parts:
+            resolve_project_path("@/" + workflow_dir.as_posix(), root).unwrap()
+        pattern = FileGlobPattern("@/" + glob.escape(workflow_dir.as_posix()) + "/**/*")
+        artifacts.extend(
+            ArtifactId(path) for path in enumerate_files(root, pattern).unwrap() if validate_artifact_id(path)
+        )
+    return Ok(artifacts)
 
-        yield from _walk_workflow_dir(ResolvedProjectPath(workflow_path), list(workflow_parts))
 
-
-def list_artifact_ids() -> list[ArtifactId]:
+@unwrap_to_error
+def list_artifact_ids() -> Result[list[ArtifactId]]:
     from donna.workspaces import config as workspace_config
 
     artifacts: list[ArtifactId] = []
     seen: set[ArtifactId] = set()
 
-    for artifact_id in walk_filesystem(workspace_config.config().workflow_dirs):
+    for artifact_id in walk_filesystem(workspace_config.config().workflow_dirs).unwrap():
         if artifact_id in seen:
             continue
 
         artifacts.append(artifact_id)
         seen.add(artifact_id)
 
-    return artifacts
+    return Ok(artifacts)
 
 
 def resolve_artifact_path(artifact_id: ArtifactId) -> Result[ResolvedProjectPath | None]:
     from donna.workspaces.config import project_dir
 
-    artifact_path = project_dir().joinpath(*artifact_path_parts(artifact_id))
-    if not artifact_path.parent.exists():
+    resolved = resolve_project_path(artifact_id, project_dir())
+    if resolved.is_err(InvalidProjectPath):
         return Ok(None)
-
-    if not artifact_path.exists() or not artifact_path.is_file():
+    if resolved.is_err():
+        return resolved
+    artifact_path = resolved.unwrap()
+    if not artifact_path.is_file():
         return Ok(None)
-
-    normalized = project_path_id_from_filesystem(PathInput(artifact_path), PathInput(project_dir()))
-    if normalized.is_err(InvalidProjectPath):
-        return Ok(None)
-
-    if normalized.is_err():
-        return normalized  # type: ignore[return-value]
-
-    return Ok(ResolvedProjectPath(artifact_path))
+    return Ok(artifact_path)
 
 
 @unwrap_to_error

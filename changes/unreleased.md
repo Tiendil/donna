@@ -1,5 +1,7 @@
 ### Migration
 
+- Project file paths no longer follow symbolic links below the resolved project root, including links to internal targets. Use ordinary project paths and directories instead; discovery skips links and explicit inputs reject them.
+
 - Replace imports of the removed `donna.protocol.logic_cells.base.DonnaCell` with `llm_tool_cli.protocol.logic_cells.uniform.UniformCell`; `_render(cell_type)` still returns one output cell.
 
 - Donna-owned command error cells now use stderr for human and LLM output; automation error cells remain on stdout. Error batches preserve diagnostic order and use shared batch framing. Python callers inside `command_context` must replace `CommandContext.write_errors` with `Err(errors).unwrap()` for nonempty error lists, allowing the context to journal, report, and terminate through the shared handler.
@@ -61,6 +63,8 @@
 - Python callers must use shared `load_config` followed by `construct_workspace` instead of `load_workspace`; `initialize_runtime` and shared configuration operations return `Result` values.
 
 ### Changes
+
+- Use shared file enumeration for workflow discovery, preserve configured directory order and extension filtering, reject linked workflow directories, and propagate discovery failures through artifact listing.
 
 - Use the shared uniform cell base for all five domain-result cells, removing local protocol dispatch while preserving payloads, generated identifiers, and output formatting.
 

@@ -1,8 +1,9 @@
 import pathlib
 
+import pytest
 from llm_tool_cli.core.result import Err, Ok
 from llm_tool_cli.paths import RelativeProjectPath, ResolvedProjectPath
-from llm_tool_cli.paths.errors import PathResolutionFailed
+from llm_tool_cli.paths.errors import FilesUnreadable, InvalidProjectPath, PathResolutionFailed
 from pytest_mock import MockerFixture
 
 from donna.domain.artifact_ids import ArtifactId
@@ -28,14 +29,6 @@ class TestArtifactRenderContext:
         assert context.primary_mode == artifacts.RenderMode.view
         assert context.current_task is None
         assert context.current_work_unit is None
-
-
-class TestArtifactIdFromParts:
-    def test_returns_artifact_id_for_valid_parts(self) -> None:
-        assert artifacts._artifact_id_from_parts(["workflows", "test.donna.md"]) == make.ARTIFACT_ID
-
-    def test_returns_none_for_invalid_parts(self) -> None:
-        assert artifacts._artifact_id_from_parts(["..", "test.donna.md"]) is None
 
 
 class TestWorkflowDirParts:
@@ -73,40 +66,6 @@ class TestArtifactIsVisibleInWorkspace:
         assert artifacts._artifact_is_visible_in_workspace(make.ARTIFACT_ID)
 
 
-class TestArtifactIdFromFilesystemEntry:
-    def test_returns_artifact_id_for_regular_donna_file(self, tmp_path: pathlib.Path) -> None:
-        path = tmp_path / "test.donna.md"
-        path.write_text("", encoding="utf-8")
-
-        assert (
-            artifacts._artifact_id_from_filesystem_entry(ResolvedProjectPath(path), ["workflows"]) == make.ARTIFACT_ID
-        )
-
-    def test_returns_none_for_dirs_and_non_artifacts(self, tmp_path: pathlib.Path) -> None:
-        directory = tmp_path / "directory"
-        directory.mkdir()
-        ordinary_markdown = tmp_path / "ordinary.md"
-        ordinary_markdown.write_text("", encoding="utf-8")
-
-        assert artifacts._artifact_id_from_filesystem_entry(ResolvedProjectPath(directory), ["workflows"]) is None
-        assert (
-            artifacts._artifact_id_from_filesystem_entry(ResolvedProjectPath(ordinary_markdown), ["workflows"]) is None
-        )
-
-
-class TestWalkWorkflowDir:
-    def test_walks_directory_recursively_in_name_order(self, tmp_path: pathlib.Path) -> None:
-        nested = tmp_path / "nested"
-        nested.mkdir()
-        (tmp_path / "b.donna.md").write_text("", encoding="utf-8")
-        (nested / "a.donna.md").write_text("", encoding="utf-8")
-
-        assert list(artifacts._walk_workflow_dir(ResolvedProjectPath(tmp_path), ["workflows"])) == [
-            ArtifactId("@/workflows/b.donna.md"),
-            ArtifactId("@/workflows/nested/a.donna.md"),
-        ]
-
-
 class TestWalkFilesystem:
     def test_walk_filesystem__lists_artifacts_in_workflow_dirs(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
@@ -120,7 +79,7 @@ class TestWalkFilesystem:
         (nested / "a.donna.md").write_text("", encoding="utf-8")
         mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
 
-        assert list(artifacts.walk_filesystem([RelativeProjectPath(pathlib.Path("workflows"))])) == [
+        assert artifacts.walk_filesystem([RelativeProjectPath(pathlib.Path("workflows"))]).unwrap() == [
             ArtifactId("@/workflows/b.donna.md"),
             ArtifactId("@/workflows/nested/a.donna.md"),
             ArtifactId("@/workflows/spaced name.donna.md"),
@@ -137,14 +96,12 @@ class TestWalkFilesystem:
         (second / "a.donna.md").write_text("", encoding="utf-8")
         mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
 
-        assert list(
-            artifacts.walk_filesystem(
-                [
-                    RelativeProjectPath(pathlib.Path("second")),
-                    RelativeProjectPath(pathlib.Path("first")),
-                ]
-            )
-        ) == [
+        assert artifacts.walk_filesystem(
+            [
+                RelativeProjectPath(pathlib.Path("second")),
+                RelativeProjectPath(pathlib.Path("first")),
+            ]
+        ).unwrap() == [
             ArtifactId("@/second/a.donna.md"),
             ArtifactId("@/first/b.donna.md"),
         ]
@@ -154,7 +111,44 @@ class TestWalkFilesystem:
     ) -> None:
         mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
 
-        assert list(artifacts.walk_filesystem([RelativeProjectPath(pathlib.Path("missing"))])) == []
+        assert artifacts.walk_filesystem([RelativeProjectPath(pathlib.Path("missing"))]).unwrap() == []
+
+    def test_skips_discovered_links_and_preserves_hidden_uppercase_artifacts(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
+        directory = tmp_path / "workflows"
+        directory.mkdir()
+        (directory / ".hidden.DONNA.MD").touch()
+        (directory / "file.donna.md").symlink_to(directory / ".hidden.DONNA.MD")
+        (directory / "cycle").symlink_to(directory)
+        (directory / "external").symlink_to(tmp_path.parent)
+        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
+
+        assert artifacts.walk_filesystem([RelativeProjectPath(pathlib.Path("workflows"))]).unwrap() == [
+            ArtifactId("@/workflows/.hidden.DONNA.MD")
+        ]
+
+    @pytest.mark.parametrize("name", ["link", "link/nested"])
+    def test_rejects_configured_directory_through_link(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path, name: str
+    ) -> None:
+        (tmp_path / "link").symlink_to(tmp_path)
+        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
+
+        assert artifacts.walk_filesystem([RelativeProjectPath(pathlib.Path(name))]).is_err(InvalidProjectPath)
+
+    @pytest.mark.parametrize("name", [".", "[work]*?", "~", "@literal"])
+    def test_preserves_literal_workflow_directory_names(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path, name: str
+    ) -> None:
+        directory = tmp_path / name
+        directory.mkdir(exist_ok=True)
+        (directory / "test.donna.md").touch()
+        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
+
+        assert artifacts.walk_filesystem([RelativeProjectPath(pathlib.Path(name))]).unwrap() == [
+            ArtifactId("@/" + (directory / "test.donna.md").relative_to(tmp_path).as_posix())
+        ]
 
 
 class TestListArtifactIds:
@@ -164,13 +158,36 @@ class TestListArtifactIds:
         mocker.patch.object(
             artifacts,
             "walk_filesystem",
-            return_value=iter([make.ARTIFACT_ID, make.ARTIFACT_ID, ArtifactId("@/workflows/other.donna.md")]),
+            return_value=Ok([make.ARTIFACT_ID, make.ARTIFACT_ID, ArtifactId("@/workflows/other.donna.md")]),
         )
 
-        assert artifacts.list_artifact_ids() == [make.ARTIFACT_ID, ArtifactId("@/workflows/other.donna.md")]
+        assert artifacts.list_artifact_ids().unwrap() == [make.ARTIFACT_ID, ArtifactId("@/workflows/other.donna.md")]
+
+    def test_propagates_directory_read_failure(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
+        (tmp_path / "workflows").mkdir()
+        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
+        mocker.patch("donna.workspaces.config.config", return_value=Config())
+        cause = PermissionError("cannot list directory")
+        mocker.patch.object(pathlib.Path, "iterdir", side_effect=cause)
+
+        failure = artifacts.list_artifact_ids().unwrap_err()[0]
+
+        assert isinstance(failure, FilesUnreadable)
+        assert failure.cause == cause
 
 
 class TestResolveArtifactPath:
+    @pytest.mark.parametrize("suffix", ["file.donna.md", "directory/file.donna.md"])
+    def test_skips_internal_symlinks(self, mocker: MockerFixture, tmp_path: pathlib.Path, suffix: str) -> None:
+        target = tmp_path / "real"
+        target.mkdir()
+        (target / "file.donna.md").touch()
+        (tmp_path / "file.donna.md").symlink_to(target / "file.donna.md")
+        (tmp_path / "directory").symlink_to(target)
+        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
+
+        assert artifacts.resolve_artifact_path(ArtifactId("@/" + suffix)).unwrap() is None
+
     def test_resolve_artifact_path__preserves_resolution_failure(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:

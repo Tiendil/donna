@@ -117,7 +117,9 @@ Single-cell callers MUST pass a one-item iterable through the same method.
 The CLI emitter MUST retain the selected protocol for shared cell rendering and select its journal formatter from the same protocol.
 The CLI MUST pass complete emitted logic-cell batches to shared sequence rendering with the selected protocol and Donna's tool label.
 
-Lexical project-path normalization MUST be provided by `llm_tool_cli`. Filesystem resolution and artifact-specific path behavior MUST remain Donna-owned.
+Lexical project-path normalization, filesystem resolution and containment, symlink rejection, and file enumeration MUST be provided by `llm_tool_cli` and used directly.
+Donna MUST retain artifact-specific path behavior, workflow-directory selection and ordering, and artifact-extension filtering.
+Fallible artifact discovery MUST return shared results and propagate enumeration failures through the artifact cache.
 
 ### Submodule nuances
 

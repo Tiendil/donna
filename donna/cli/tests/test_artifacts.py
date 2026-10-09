@@ -11,6 +11,28 @@ from donna.domain.internal_ids import ActionRequestId
 
 
 class TestList:
+    def test_skips_linked_workflows(self, tmp_path: pathlib.Path) -> None:
+        config_path = helpers.write_config(tmp_path)
+        helpers.write_workflow(tmp_path)
+        (tmp_path / "workflows/linked.donna.md").symlink_to(tmp_path / "workflows/test.donna.md")
+        (tmp_path / "workflows/cycle").symlink_to(tmp_path / "workflows")
+
+        result = helpers.invoke(["--config", str(config_path), "-p", "automation", "list"])
+
+        assert result.exit_code == 0
+        assert [r["artifact_id"] for r in helpers.json_lines(result.stdout) if "artifact_id" in r] == [
+            "@/workflows/test.donna.md"
+        ]
+
+    def test_rejects_linked_workflow_directory(self, tmp_path: pathlib.Path) -> None:
+        config_path = helpers.write_config(tmp_path)
+        (tmp_path / "workflows").symlink_to(tmp_path)
+
+        result = helpers.invoke(["--config", str(config_path), "-p", "automation", "list"])
+
+        assert result.exit_code == 3
+        assert any(r.get("code") == "invalid_project_path" for r in helpers.json_lines(result.stdout))
+
     def test_config_home_marker__loads_project_in_home(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         helpers.write_config(tmp_path)
         helpers.write_workflow(tmp_path)
@@ -185,8 +207,31 @@ class TestValidate:
 
 
 class TestParseArtifactIdArgument:
+    @pytest.mark.parametrize("spelling", ["identifier", "absolute", "relative"])
+    def test_rejects_internal_link_for_all_input_spellings(
+        self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch, spelling: str
+    ) -> None:
+        config_path = helpers.write_config(tmp_path)
+        helpers.write_workflow(tmp_path)
+        link = tmp_path / "workflows/linked.donna.md"
+        link.symlink_to(tmp_path / "workflows/test.donna.md")
+        monkeypatch.chdir(tmp_path)
+        value = {
+            "identifier": "@/workflows/linked.donna.md",
+            "relative": "workflows/linked.donna.md",
+            "absolute": str(link),
+        }[spelling]
+
+        result = helpers.invoke(["--config", str(config_path), "-p", "automation", "validate", value])
+
+        assert result.exit_code == 3
+        assert_error_cells(
+            [r for r in helpers.json_lines(result.stdout) if r.get("type") == "error"],
+            [InvalidProjectPath(path=str(link))],
+        )
+
     @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
-    def test_target_resolution_failure_uses_shared_diagnostic(self, tmp_path: pathlib.Path, protocol: str) -> None:
+    def test_target_symlink_loop_uses_invalid_path_diagnostic(self, tmp_path: pathlib.Path, protocol: str) -> None:
         config_path = helpers.write_config(tmp_path)
         link = tmp_path / "loop"
         link.symlink_to(link)
@@ -197,10 +242,9 @@ class TestParseArtifactIdArgument:
         assert result.exit_code == 3
         if protocol == "automation":
             records = helpers.json_lines(result.stdout)
-            diagnostics = [record for record in records if record.get("code") == "path_resolution_failed"]
+            diagnostics = [record for record in records if record.get("code") == "invalid_project_path"]
             assert len(diagnostics) == 1
             assert diagnostics[0]["path"] == str(target)
-            assert diagnostics[0]["reason"]
             assert "cause" not in diagnostics[0]
             assert not result.stderr
         else:
