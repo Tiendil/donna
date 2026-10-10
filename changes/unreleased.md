@@ -64,6 +64,8 @@
 
 ### Changes
 
+- Establish logic cells and their ordered collections as the primary domain-to-CLI result interface, with domain views and runtime operations constructing results and the CLI selecting protocols and writing cells.
+
 - Use shared file enumeration for workflow discovery, preserve configured directory order and extension filtering, reject linked workflow directories, and propagate discovery failures through artifact listing.
 
 - Use the shared uniform cell base for all five domain-result cells, removing local protocol dispatch while preserving payloads, generated identifiers, and output formatting.

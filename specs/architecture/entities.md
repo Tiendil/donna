@@ -215,6 +215,16 @@ CLI entities SHOULD use domain semantic primitive types for parsed ids and paths
 
 ## Protocol and serialization entities
 
+Logic cells MUST be the primary interface for successful domain results passed to the CLI layer.
+Command-facing domain views and runtime operations MUST return `LogicCell` subclasses or ordered collections of logic cells, wrapped in `Result` when the operation can fail.
+Cells MAY retain typed domain entities needed for projection; the CLI MUST NOT inspect those entities or assemble domain output payloads from internal results.
+Internal domain operations MAY continue to exchange ordinary typed entities.
+
+Cells MUST carry the information needed for their projections without reading runtime state or writing output.
+The CLI MUST select the protocol and stream and pass complete cell batches to shared rendering.
+Expected failures MUST remain structured errors in failed results until the CLI error-handling boundary.
+Generic CLI acknowledgements, journal events, and the explicitly specified raw Markdown output of `render` retain their existing contracts.
+
 Serialized representations MUST be created at protocol boundaries and SHOULD be treated as write-only output data.
 
 Serialized representations SHOULD be produced from entities through explicit boundary code, not by leaking Pydantic dump shapes into domain behavior.

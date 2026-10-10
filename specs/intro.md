@@ -22,7 +22,7 @@ Detailed requirements for individual specifications are out of scope except for 
 
 - `./specs/intro.md` — this file, contains a list of all specifications and their brief descriptions.
 - `./specs/dictionary.md` — shared project-specific terminology used by multiple specifications.
-- `./specs/architecture/entities.md` — specification of project entity and data structure architecture, including typed domain fields in logic cells.
+- `./specs/architecture/entities.md` — specification of project entity and data structure architecture, including typed domain fields in logic cells and logic-cell collections as the primary domain-to-CLI result interface; runtime and CLI ownership of this boundary is defined in `./specs/architecture/modules_layout.md`.
 - `./specs/architecture/errors.md` — specification of project error handling architecture, including shared typed environment-error cells for all expected failures with Donna-owned stream and exit policies and shared internal-error template formatting.
 - `./specs/architecture/modules_layout.md` — specification of the intended project module structure and ownership boundaries, including shared logic-cell emission through the iterable `emit_cells` interface, batch projection and rendering contexts, and Donna-owned typed domain logic cells, shared error logic cells, and node views supplying domain data without selecting an output-cell type; shared file enumeration and rejection of symbolic links below the resolved project root are included.
 - `./specs/architecture/naming.md` — specification of project code naming conventions.

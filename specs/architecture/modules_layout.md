@@ -43,6 +43,7 @@ The following topics are out of scope:
   - session lifecycle use cases.
   - workflow execution loop coordination.
   - invocation-local wiring between context, machine, workspaces, and protocol-facing results.
+  - command-facing domain results returned as logic cells or ordered collections of their subclasses.
   - journal event forwarding orchestration.
   - no CLI argument parsing.
 - `./donna/context/` — module responsible for invocation-local runtime context. Contains:
@@ -70,7 +71,11 @@ The following topics are out of scope:
   - artifact discovery and loading.
   - session state storage.
   - journal forwarding.
-- `./donna/cli/` — module responsible for the CLI interface of the `donna` tool.
+- `./donna/cli/` — module responsible for argument parsing, runtime invocation, protocol and stream selection, error handling, and writing returned or emitted logic cells through shared rendering.
+
+Domain views and runtime operations MUST assemble domain-result cells before returning them to the CLI.
+The CLI MUST NOT build domain-result payloads from internal domain objects.
+Internal domain and machine APIs MAY retain their own typed results; the logic-cell contract applies at the boundary used to present domain results to the CLI.
 
 The CLI MUST use `llm_tool_cli.skills` directly for skill-document loading and propagate its returned errors without local adapters.
 
