@@ -2,10 +2,12 @@ import enum
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, ClassVar, TypeAlias
 
+from llm_tool_cli.core.entities import BaseEntity
 from llm_tool_cli.core.result import Ok, Result
 
 from donna.machine import errors as machine_errors
 from donna.machine.primitives import Primitive
+from donna.machine.tasks import Task, WorkUnit
 from donna.machine.templates_context import DirectiveContext
 
 if TYPE_CHECKING:
@@ -33,6 +35,15 @@ class RenderMode(enum.StrEnum):
     view = "view"
     execute = "execute"
     analysis = "analysis"
+
+
+class ArtifactRenderContext(BaseEntity):
+    primary_mode: RenderMode
+    current_task: Task | None = None
+    current_work_unit: WorkUnit | None = None
+
+
+RENDER_CONTEXT_VIEW = ArtifactRenderContext(primary_mode=RenderMode.view)
 
 
 class DirectiveUnsupportedRenderMode(machine_errors.InternalError):

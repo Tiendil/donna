@@ -4,11 +4,11 @@ from llm_tool_cli.core.errors import EnvironmentError, EnvironmentErrorsProxy
 from llm_tool_cli.core.result import Err, Ok, Result, UnwrapErrError, UnwrapError
 from pytest_mock import MockerFixture
 
+from donna.machine import ArtifactRenderContext
 from donna.machine.templates import Directive, RenderMode
 from donna.machine.templates_context import DirectiveContext
 from donna.workspaces import errors as workspace_errors
 from donna.workspaces import templates
-from donna.workspaces.artifacts import ArtifactRenderContext
 from donna.workspaces.templates import DirectivePathBuilder, render
 from donna.workspaces.tests import make
 

@@ -10,15 +10,16 @@ from donna.context.context import context
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId, artifact_section_id, split_artifact_section_id
 from donna.domain.internal_ids import ActionRequestId
 from donna.machine import errors as machine_errors
+from donna.machine.caches import caches
 from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
+from donna.machine.templates import RENDER_CONTEXT_VIEW
 from donna.workspaces import sessions as workspace_sessions
-from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
 
 
 @unwrap_to_error
 def load_state() -> Result[ConsistentState]:
-    loaded = context().state.load()
+    loaded = caches.get().state.load()
 
     if loaded.is_ok():
         return Ok(loaded.unwrap())
@@ -28,13 +29,13 @@ def load_state() -> Result[ConsistentState]:
         return Err(errors)
 
     state = MutableState.build().freeze()
-    context().state.save(state).unwrap()
+    caches.get().state.save(state).unwrap()
     return Ok(state)
 
 
 @unwrap_to_error
 def _save_state(state: ConsistentState) -> Result[None]:
-    context().state.save(state).unwrap()
+    caches.get().state.save(state).unwrap()
     return Ok(None)
 
 
@@ -109,7 +110,7 @@ def details() -> Result[list[LogicCell]]:
 @unwrap_to_error
 def start_workflow(artifact_id: ArtifactId) -> Result[list[LogicCell]]:  # noqa: CCR001
     static_state = load_state().unwrap()
-    workflow = context().artifacts.load(artifact_id, RENDER_CONTEXT_VIEW).unwrap()
+    workflow = caches.get().artifacts.load(artifact_id, RENDER_CONTEXT_VIEW).unwrap()
     primary_section = workflow.primary_section().unwrap()
     mutator = static_state.mutator()
     mutator.start_workflow(artifact_section_id(workflow.id, primary_section.id)).unwrap()
@@ -128,7 +129,7 @@ def _validate_operation_transition(
     next_operation_parts = split_artifact_section_id(next_operation_id)
     assert next_operation_parts is not None
 
-    workflow = context().artifacts.load(operation_parts.artifact_id, RENDER_CONTEXT_VIEW).unwrap()
+    workflow = caches.get().artifacts.load(operation_parts.artifact_id, RENDER_CONTEXT_VIEW).unwrap()
     operation = workflow.get_section(operation_parts.section_id).unwrap()
 
     assert isinstance(operation.meta, OperationMeta)

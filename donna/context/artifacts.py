@@ -4,13 +4,14 @@ from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 
 from donna.domain.artifact_ids import ArtifactId
+from donna.machine import ArtifactRenderContext
 from donna.machine.artifacts import Artifact
 from donna.machine.tasks import Task, WorkUnit
-from donna.machine.templates import RenderMode
+from donna.machine.templates import RENDER_CONTEXT_VIEW, RenderMode
 from donna.workspaces import errors as workspace_errors
 
 if TYPE_CHECKING:
-    from donna.workspaces.artifacts import ArtifactRenderContext, FilesystemRawArtifact
+    from donna.workspaces.artifacts import FilesystemRawArtifact
     from donna.workspaces.files import FileFingerprint
 
 
@@ -81,8 +82,6 @@ class ArtifactsCache:
         self._cache.pop(artifact_id, None)
 
     def load_for_view(self, artifact_id: ArtifactId) -> Result[Artifact]:
-        from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
-
         return self.load(artifact_id, RENDER_CONTEXT_VIEW)
 
     def load_for_execution(
@@ -91,8 +90,6 @@ class ArtifactsCache:
         task: Task,
         work_unit: WorkUnit,
     ) -> Result[Artifact]:
-        from donna.workspaces.artifacts import ArtifactRenderContext
-
         return self.load(
             artifact_id,
             ArtifactRenderContext(

@@ -5,10 +5,9 @@ from llm_tool_cli.protocol.logic_cells import EnvironmentErrorCell
 from donna.domain.ids import SectionId
 from donna.machine import errors as machine_errors
 from donna.machine.artifacts import Artifact, ArtifactNode, ArtifactSectionMeta, ArtifactSectionNode
-from donna.machine.context import reset_context, set_context
 from donna.machine.primitives import Primitive
 from donna.machine.tests import make
-from donna.machine.tests.helpers import FakeMachineContext
+from donna.machine.tests.helpers import FakeMachineContext, installed_context
 from donna.protocol import ArtifactInfoCell, ArtifactSectionStatusCell, ArtifactStatusCell
 
 
@@ -105,12 +104,9 @@ class TestArtifact:
     def test_validate_artifact__accepts_valid_artifact(self) -> None:
         artifact = make.artifact()
         machine_context = FakeMachineContext(primitive=Primitive())
-        token = set_context(machine_context)
 
-        try:
+        with installed_context(machine_context):
             result = artifact.validate_artifact()
-        finally:
-            reset_context(token)
 
         assert result.is_ok()
         assert machine_context.primitives.resolved == [make.PRIMITIVE_PATH]
@@ -118,12 +114,9 @@ class TestArtifact:
     def test_validate_artifact__collects_primary_and_section_errors(self) -> None:
         artifact = make.artifact([make.artifact_section(primary=False)])
         machine_context = FakeMachineContext(primitive=_RejectingPrimitive())
-        token = set_context(machine_context)
 
-        try:
+        with installed_context(machine_context):
             result = artifact.validate_artifact()
-        finally:
-            reset_context(token)
 
         assert result.is_err()
         errors = result.unwrap_err()

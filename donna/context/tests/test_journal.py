@@ -4,16 +4,19 @@ from typing import cast
 import pytest
 from llm_tool_cli.config.runtime import RuntimeConfig, runtime_config
 from llm_tool_cli.config.tests.fixtures import runtime_settings
-from llm_tool_cli.core.result import Ok
+from llm_tool_cli.core.result import Ok, Result
 from llm_tool_cli.protocol import Protocol
 from llm_tool_cli.protocol import errors as protocol_errors
 from pytest_mock import MockerFixture
 
 from donna.context.context import Context
 from donna.context.journal import Journal
+from donna.context.tests import make
 from donna.context.tests.helpers import FakeOutputEmitter
 from donna.machine import ExecutionContext
+from donna.machine.caches import caches
 from donna.machine.context import execution_context
+from donna.machine.state import ConsistentState
 from donna.machine.tests import make as machine_make
 
 
@@ -21,13 +24,18 @@ class _FakeStateCache:
     def __init__(self) -> None:
         self.state = machine_make.mutable_state(tasks=[machine_make.task()]).freeze()
 
-    def load(self) -> object:
+    def load(self) -> Result[ConsistentState]:
         return Ok(self.state)
+
+    def save(self, state: ConsistentState) -> Result[None]:
+        self.state = state
+        return Ok(None)
 
 
 class _FakeContext:
     def __init__(self) -> None:
-        self.state = _FakeStateCache()
+        self.caches = make.caches()
+        self.caches.state = _FakeStateCache()
         self.output = FakeOutputEmitter()
 
 
@@ -61,6 +69,7 @@ class TestJournal:
 
         with (
             runtime_config.scope(RuntimeConfig(protocol=Protocol.llm)),
+            caches.scope(fake_context.caches),
             execution_context.scope(ExecutionContext(current_work_unit_id=machine_make.WORK_UNIT_ID)),
         ):
             with execution_context.scope(
@@ -85,7 +94,7 @@ class TestJournal:
         mocker.patch("donna.context.journal.workspace_journal.write_record", return_value=Ok(None))
         smart_actor = mocker.patch.object(Journal, "smart_actor_id")
 
-        with execution_context.scope(ExecutionContext()):
+        with caches.scope(fake_context.caches), execution_context.scope(ExecutionContext()):
             result = Journal(cast(Context, fake_context)).add("message", actor_id="donna")
 
         assert result.is_ok()

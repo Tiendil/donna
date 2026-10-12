@@ -1,5 +1,8 @@
 ### Migration
 
+- Replace `context().artifacts`, `.primitives`, and `.state` with `donna.machine.caches.caches.get()` and the corresponding member. Python integrations must construct `donna.machine.Caches` with artifact, primitive, and state cache instances and scope it around cache use and journaling; CLI commands manage this automatically. The standard implementations are `ArtifactsCache`, `PrimitivesCache`, and `StateCache` in the corresponding `donna.context` submodules; custom implementations can also be supplied.
+- Import `ArtifactRenderContext` from `donna.machine` and `RENDER_CONTEXT_VIEW` from `donna.machine.templates`. Cache interfaces now live in `donna.machine.caches`; the remaining machine context provides journal access.
+
 - Python integrations must bind `donna.machine.ExecutionContext` through `donna.machine.context.execution_context.scope(...)` around execution and journaling. Read current IDs through `execution_context.get()` and enter nested scopes with an updated value from `.replace(...)`. The application `Context` and machine service interface no longer expose ID scopes; `ValueScope` is removed. CLI commands manage the execution binding automatically.
 
 - Replace workspace GlobalConfig access with shared `runtime_config.get()` for protocol, `project_config.get()` for paths, and `workspaces.config.config.get()` for loaded Donna settings. The local `workspaces.initialization` module is removed: enter shared `load_project(Config, ...)` or `initialize_project(Config, ...)`, unwrap the yielded result, and scope loaded Donna settings for execution. Retain the shared project context through execution and output.
@@ -68,6 +71,8 @@
 - Missing configuration during upward discovery now reports `config_not_found` and exits with status `2` instead of returning a Donna error cell with status `0`.
 
 ### Changes
+
+- Give artifact, primitive, and session-state caches one independent scoped binding, preserving their algorithms and lifetime through command execution and error journaling. Move artifact-rendering context data to the machine layer to keep cache interfaces independent of workspace implementations.
 
 - Separate work-unit and operation identifiers into a frozen machine execution context managed by shared `ContextValue`, preserving nested scope restoration, journal identifiers, and cleanup after failures.
 

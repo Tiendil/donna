@@ -9,8 +9,10 @@ from llm_tool_cli.paths import ProjectConfigPath, RelativeProjectPath
 from pytest_mock import MockerFixture
 
 from donna.context.state import StateCache
+from donna.context.tests import make
 from donna.domain.constants import STATE_FILE_NAME
 from donna.machine import errors as machine_errors
+from donna.machine.caches import caches
 from donna.machine.tests import make as machine_make
 from donna.workspaces import config as workspace_config
 from donna.workspaces import sessions as workspace_sessions
@@ -27,6 +29,28 @@ def _session_globals(tmp_path: pathlib.Path) -> Iterator[None]:
 
 
 class TestStateCache:
+    def test_load__restores_outer_cache_and_detects_nested_scope_writes(self, tmp_path: pathlib.Path) -> None:
+        initial = machine_make.mutable_state().freeze()
+        changed = initial.replace(last_id=12)
+        outer = make.caches()
+        with _session_globals(tmp_path), caches.scope(outer):
+            caches.get().state.save(initial).unwrap()
+            with pytest.raises(ValueError):
+                with caches.scope(make.caches()):
+                    assert caches.get().state.load().unwrap() == initial
+                    caches.get().state.save(changed).unwrap()
+                    raise ValueError("leave nested scope")
+
+            assert caches.get() == outer
+            assert isinstance(caches.get().state.load().unwrap_err()[0], machine_errors.SessionStateChangedExternally)
+            assert isinstance(
+                caches.get().state.save(initial).unwrap_err()[0], machine_errors.SessionStateChangedExternally
+            )
+            with caches.scope(make.caches()):
+                assert caches.get().state.load().unwrap() == changed
+
+        assert not caches.is_set()
+
     def test_load__reports_not_initialized_without_state_file(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:

@@ -5,11 +5,11 @@ from pytest_mock import MockerFixture
 
 from donna.domain.internal_ids import TaskId, WorkUnitId
 from donna.machine.changes import Change, ChangeSetTaskContext
-from donna.machine.context import ExecutionContext, execution_context, reset_context, set_context
+from donna.machine.context import ExecutionContext, execution_context
 from donna.machine.operations import OperationKind
 from donna.machine.tasks import Task, WorkUnit
 from donna.machine.tests import make
-from donna.machine.tests.helpers import FakeMachineContext
+from donna.machine.tests.helpers import FakeMachineContext, installed_context
 
 
 class _ContextSettingOperation(OperationKind):
@@ -80,14 +80,11 @@ class TestWorkUnit:
         artifact = make.artifact()
         primitive = _ContextSettingOperation()
         machine_context = FakeMachineContext(artifact=artifact, primitive=primitive)
-        token = set_context(machine_context)
 
-        try:
+        with installed_context(machine_context):
             with execution_context.scope(outer):
                 result = unit.run(task)
                 assert execution_context.get() == outer
-        finally:
-            reset_context(token)
 
         assert result.is_ok()
         changes = result.unwrap()
@@ -121,14 +118,12 @@ class TestWorkUnit:
         outer = ExecutionContext(
             current_work_unit_id=make.WORK_UNIT_ID, current_operation_id=make.SECONDARY_OPERATION_ID
         )
-        token = set_context(machine_context)
-        try:
+
+        with installed_context(machine_context):
             with execution_context.scope(outer):
                 result = make.work_unit().run(make.task())
                 assert result.unwrap_err() == [failure]
                 assert execution_context.get() == outer
-        finally:
-            reset_context(token)
 
         assert not execution_context.is_set()
 
@@ -139,14 +134,12 @@ class TestWorkUnit:
         outer = ExecutionContext(
             current_work_unit_id=make.WORK_UNIT_ID, current_operation_id=make.SECONDARY_OPERATION_ID
         )
-        token = set_context(machine_context)
-        try:
+
+        with installed_context(machine_context):
             with execution_context.scope(outer):
                 with pytest.raises(ValueError) as caught:
                     make.work_unit().run(make.task())
                 assert caught.value == failure
                 assert execution_context.get() == outer
-        finally:
-            reset_context(token)
 
         assert not execution_context.is_set()

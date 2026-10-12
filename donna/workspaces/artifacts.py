@@ -17,22 +17,12 @@ from llm_tool_cli.paths.errors import InvalidProjectPath
 
 from donna.domain.artifact_ids import ArtifactId, artifact_path_parts, validate_artifact_id
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
-from donna.machine.tasks import Task, WorkUnit
-from donna.machine.templates import RenderMode
+from donna.machine import ArtifactRenderContext
 from donna.workspaces import errors as world_errors
 from donna.workspaces.files import FileFingerprint
 
 if TYPE_CHECKING:
     from donna.machine.artifacts import Artifact
-
-
-class ArtifactRenderContext(BaseEntity):
-    primary_mode: RenderMode
-    current_task: Task | None = None
-    current_work_unit: WorkUnit | None = None
-
-
-RENDER_CONTEXT_VIEW = ArtifactRenderContext(primary_mode=RenderMode.view)
 
 
 class FilesystemRawArtifact(BaseEntity):

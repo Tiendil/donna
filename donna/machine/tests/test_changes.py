@@ -13,7 +13,7 @@ from donna.machine.changes import (
 )
 from donna.machine.context import reset_context, set_context
 from donna.machine.tests import make
-from donna.machine.tests.helpers import FakeMachineContext
+from donna.machine.tests.helpers import FakeMachineContext, installed_context
 
 
 class TestChangeAddTask:
@@ -36,12 +36,9 @@ class TestChangeFinishTask:
         task = make.task()
         state = make.mutable_state(tasks=[task])
         machine_context = FakeMachineContext(artifact=make.artifact())
-        token = set_context(machine_context)
 
-        try:
+        with installed_context(machine_context):
             ChangeFinishTask(task_id=task.id).apply_to(state)
-        finally:
-            reset_context(token)
 
         assert state.tasks == []
         assert machine_context.journal.records == [{"message": "Finish workflow `Workflow`", "actor_id": None}]

@@ -9,7 +9,9 @@ from llm_tool_cli.paths.errors import FilesUnreadable, InvalidProjectPath, PathR
 from pytest_mock import MockerFixture
 
 from donna.domain.artifact_ids import ArtifactId
+from donna.machine import ArtifactRenderContext
 from donna.machine.artifacts import Artifact
+from donna.machine.templates import RENDER_CONTEXT_VIEW, RenderMode
 from donna.workspaces import artifacts
 from donna.workspaces import config as workspace_config
 from donna.workspaces import errors as workspace_errors
@@ -27,9 +29,9 @@ class TestHasDonnaArtifactExtension:
 
 class TestArtifactRenderContext:
     def test_defaults__omit_current_work(self) -> None:
-        context = artifacts.ArtifactRenderContext(primary_mode=artifacts.RenderMode.view)
+        context = ArtifactRenderContext(primary_mode=RenderMode.view)
 
-        assert context.primary_mode == artifacts.RenderMode.view
+        assert context.primary_mode == RenderMode.view
         assert context.current_task is None
         assert context.current_work_unit is None
 
@@ -264,14 +266,14 @@ class TestFilesystemRawArtifact:
         )
         raw_artifact = artifacts.FilesystemRawArtifact(path=ResolvedProjectPath(path))
 
-        result = raw_artifact.render(make.ARTIFACT_ID, artifacts.RENDER_CONTEXT_VIEW)
+        result = raw_artifact.render(make.ARTIFACT_ID, RENDER_CONTEXT_VIEW)
 
         assert result.is_ok()
         assert result.unwrap() == expected_artifact
         render_markdown_artifact.assert_called_once_with(
             make.ARTIFACT_ID,
             b"# Workflow",
-            artifacts.RENDER_CONTEXT_VIEW,
+            RENDER_CONTEXT_VIEW,
         )
 
     def test_render__returns_markdown_render_errors(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
@@ -281,7 +283,7 @@ class TestFilesystemRawArtifact:
         mocker.patch.object(artifacts, "render_markdown_artifact", return_value=Err([error]))
         raw_artifact = artifacts.FilesystemRawArtifact(path=ResolvedProjectPath(path))
 
-        result = raw_artifact.render(make.ARTIFACT_ID, artifacts.RENDER_CONTEXT_VIEW)
+        result = raw_artifact.render(make.ARTIFACT_ID, RENDER_CONTEXT_VIEW)
 
         assert result.is_err()
         assert result.unwrap_err() == [error]
@@ -333,14 +335,14 @@ class TestRenderMarkdownArtifact:
                 return_value=Ok(expected_artifact),
             )
 
-            result = artifacts.render_markdown_artifact(make.ARTIFACT_ID, b"# Workflow", artifacts.RENDER_CONTEXT_VIEW)
+            result = artifacts.render_markdown_artifact(make.ARTIFACT_ID, b"# Workflow", RENDER_CONTEXT_VIEW)
 
             assert result.is_ok()
             assert result.unwrap() == expected_artifact
             construct.assert_called_once_with(
                 make.ARTIFACT_ID,
                 b"# Workflow",
-                artifacts.RENDER_CONTEXT_VIEW,
+                RENDER_CONTEXT_VIEW,
                 default_section_kind=Config().defaults.tail_section_kind,
                 default_primary_section_kind=Config().defaults.primary_section_kind,
                 default_primary_section_id=Config().defaults.primary_section_id,

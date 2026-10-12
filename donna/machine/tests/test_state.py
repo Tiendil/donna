@@ -6,12 +6,12 @@ from pytest_mock import MockerFixture
 from donna.domain.internal_ids import TaskId, WorkUnitId
 from donna.machine import errors as machine_errors
 from donna.machine.changes import Change, ChangeSetTaskContext
-from donna.machine.context import ExecutionContext, execution_context, reset_context, set_context
+from donna.machine.context import ExecutionContext, execution_context
 from donna.machine.operations import OperationKind
 from donna.machine.state import MutableState
 from donna.machine.tasks import Task, WorkUnit
 from donna.machine.tests import make
-from donna.machine.tests.helpers import FakeMachineContext
+from donna.machine.tests.helpers import FakeMachineContext, installed_context
 from donna.protocol import ActionRequestCell, SessionStateCell
 
 
@@ -101,12 +101,9 @@ class TestMutableState:
         state = make.mutable_state(last_id=2)
         request = make.action_request(id=None)
         machine_context = FakeMachineContext()
-        token = set_context(machine_context)
 
-        try:
+        with installed_context(machine_context):
             state.add_action_request(request)
-        finally:
-            reset_context(token)
 
         assert state.action_requests == [request.replace(id=make.ACTION_REQUEST_ID)]
         assert machine_context.journal.records == [
@@ -125,12 +122,9 @@ class TestMutableState:
         request = make.action_request()
         state = make.mutable_state(tasks=[task], action_requests=[request], last_id=2)
         machine_context = FakeMachineContext()
-        token = set_context(machine_context)
 
-        try:
+        with installed_context(machine_context):
             result = state.complete_action_request(make.ACTION_REQUEST_ID, make.SECONDARY_OPERATION_ID)
-        finally:
-            reset_context(token)
 
         assert result.is_ok()
         assert state.action_requests == []
@@ -146,12 +140,9 @@ class TestMutableState:
         state = MutableState.build()
         artifact = make.artifact()
         machine_context = FakeMachineContext(artifact=artifact)
-        token = set_context(machine_context)
 
-        try:
+        with installed_context(machine_context):
             result = state.start_workflow(make.PRIMARY_OPERATION_ID)
-        finally:
-            reset_context(token)
 
         assert result.is_ok()
         assert state.started
@@ -168,12 +159,9 @@ class TestMutableState:
         task = make.task()
         state = make.mutable_state(tasks=[task])
         machine_context = FakeMachineContext(artifact=make.artifact())
-        token = set_context(machine_context)
 
-        try:
+        with installed_context(machine_context):
             state.finish_workflow(task.id)
-        finally:
-            reset_context(token)
 
         assert state.tasks == []
         assert machine_context.journal.records == [{"message": "Finish workflow `Workflow`", "actor_id": None}]
@@ -186,14 +174,11 @@ class TestMutableState:
         outer = ExecutionContext(
             current_work_unit_id=WorkUnitId("WU-9-j"), current_operation_id=make.SECONDARY_OPERATION_ID
         )
-        token = set_context(machine_context)
 
-        try:
+        with installed_context(machine_context):
             with execution_context.scope(outer):
                 result = state.execute_next_work_unit()
                 assert execution_context.get() == outer
-        finally:
-            reset_context(token)
 
         assert result.is_ok()
         assert state.work_units == []
@@ -217,8 +202,8 @@ class TestMutableState:
         outer = ExecutionContext(
             current_work_unit_id=WorkUnitId("WU-9-j"), current_operation_id=make.SECONDARY_OPERATION_ID
         )
-        token = set_context(machine_context)
-        try:
+
+        with installed_context(machine_context):
             with execution_context.scope(outer):
                 if unexpected:
                     with pytest.raises(ValueError):
@@ -226,8 +211,6 @@ class TestMutableState:
                 else:
                     assert state.execute_next_work_unit().unwrap_err() == [failure]
                 assert execution_context.get() == outer
-        finally:
-            reset_context(token)
 
         assert state.work_units == [unit]
         assert state.tasks[0].context == {}

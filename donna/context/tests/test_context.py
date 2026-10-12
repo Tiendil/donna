@@ -1,11 +1,8 @@
 import pytest
 
-from donna.context.artifacts import ArtifactsCache
 from donna.context.context import Context, context, reset_context, set_context
 from donna.context.journal import Journal
 from donna.context.output import NoopEmitter
-from donna.context.primitives import PrimitivesCache
-from donna.context.state import StateCache
 from donna.context.tests.helpers import FakeOutputEmitter
 
 
@@ -13,9 +10,6 @@ class TestContext:
     def test_init__creates_invocation_local_services(self) -> None:
         runtime_context = Context()
 
-        assert isinstance(runtime_context.artifacts, ArtifactsCache)
-        assert isinstance(runtime_context.state, StateCache)
-        assert isinstance(runtime_context.primitives, PrimitivesCache)
         assert isinstance(runtime_context.journal, Journal)
         assert isinstance(runtime_context.output, NoopEmitter)
 

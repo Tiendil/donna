@@ -7,12 +7,12 @@ from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
+from donna.machine import ArtifactRenderContext
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.primitives import Primitive, resolve_primitive
 from donna.machine.templates import RenderMode
 from donna.workspaces import errors as world_errors
 from donna.workspaces import markdown
-from donna.workspaces.artifacts import ArtifactRenderContext
 from donna.workspaces.templates import render
 
 

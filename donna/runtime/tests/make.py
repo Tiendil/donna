@@ -11,15 +11,15 @@ from donna.context.context import set_context as set_runtime_context
 from donna.context.tests.helpers import FakeJournal, FakeOutputEmitter
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.python_path import PythonPath
-from donna.machine import ExecutionContext
+from donna.machine import ArtifactRenderContext, Caches, ExecutionContext
 from donna.machine.artifacts import Artifact
+from donna.machine.caches import caches
 from donna.machine.context import MachineContext, execution_context
 from donna.machine.context import reset_context as reset_machine_context
 from donna.machine.context import set_context as set_machine_context
 from donna.machine.primitives import Primitive
 from donna.machine.state import ConsistentState
 from donna.machine.tasks import Task, WorkUnit
-from donna.workspaces.artifacts import ArtifactRenderContext
 
 
 class FakeStateStore:
@@ -56,6 +56,9 @@ class FakeArtifacts:
         self.loaded.append((artifact_id, render_context))
         return Ok(self.artifact)
 
+    def list(self, render_context: ArtifactRenderContext) -> Result[list[Artifact]]:
+        return Ok([self.artifact])
+
     def load_for_view(self, artifact_id: ArtifactId) -> Result[Artifact]:
         self.viewed.append(artifact_id)
         return Ok(self.artifact)
@@ -85,6 +88,7 @@ class FakeRuntimeContext:
         self.state = FakeStateStore(state=state)
         self.artifacts = FakeArtifacts(artifact)
         self.primitives = FakePrimitives(primitive)
+        self.caches = Caches(artifacts=self.artifacts, primitives=self.primitives, state=self.state)
         self.journal = FakeJournal()
         self.output = FakeOutputEmitter()
 
@@ -97,6 +101,7 @@ class InstalledContext:
         self._resources = ExitStack()
 
     def __enter__(self) -> FakeRuntimeContext:
+        self._resources.enter_context(caches.scope(self.context.caches))
         self._resources.enter_context(execution_context.scope(ExecutionContext()))
         self._runtime_token = set_runtime_context(cast(Context, self.context))
         self._machine_token = set_machine_context(self.context)

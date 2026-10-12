@@ -9,6 +9,7 @@ from donna.domain.artifact_ids import ArtifactSectionId, split_artifact_section_
 from donna.domain.internal_ids import ActionRequestId, InternalId, TaskId, WorkUnitId
 from donna.machine import errors as machine_errors
 from donna.machine.action_requests import ActionRequest
+from donna.machine.caches import caches
 from donna.machine.changes import (
     Change,
     ChangeAddTask,
@@ -173,7 +174,7 @@ class MutableState(BaseState):
     def start_workflow(self, full_operation_id: ArtifactSectionId) -> Result[None]:
         operation_parts = split_artifact_section_id(full_operation_id)
         assert operation_parts is not None
-        artifact = context().artifacts.load_for_view(operation_parts.artifact_id).unwrap()
+        artifact = caches.get().artifacts.load_for_view(operation_parts.artifact_id).unwrap()
         workflow = artifact.get_section(operation_parts.section_id).unwrap()
 
         context().journal.add(
@@ -189,7 +190,7 @@ class MutableState(BaseState):
         assert task is not None
         workflow_parts = split_artifact_section_id(task.workflow_id)
         assert workflow_parts is not None
-        artifact = context().artifacts.load_for_view(workflow_parts.artifact_id).unwrap()
+        artifact = caches.get().artifacts.load_for_view(workflow_parts.artifact_id).unwrap()
         workflow = artifact.get_section(workflow_parts.section_id).unwrap()
 
         context().journal.add(

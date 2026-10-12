@@ -1,21 +1,15 @@
 from __future__ import annotations
 
 import contextvars
-from typing import TYPE_CHECKING, Protocol
+from typing import Protocol
 
 from llm_tool_cli.core.context import ContextValue
 from llm_tool_cli.core.entities import BaseEntity
 from llm_tool_cli.core.result import Result
 
-from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
+from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import WorkUnitId
-from donna.domain.python_path import PythonPath
 from donna.machine import errors as machine_errors
-
-if TYPE_CHECKING:
-    from donna.machine.artifacts import Artifact
-    from donna.machine.primitives import Primitive
-    from donna.machine.tasks import Task, WorkUnit
 
 
 class ExecutionContext(BaseEntity):
@@ -26,38 +20,12 @@ class ExecutionContext(BaseEntity):
 execution_context = ContextValue[ExecutionContext]("donna_execution_context")
 
 
-class MachineArtifacts(Protocol):
-    def load_for_view(self, artifact_id: ArtifactId) -> Result["Artifact"]:
-        pass
-
-    def load_for_execution(
-        self,
-        artifact_id: ArtifactId,
-        task: "Task",
-        work_unit: "WorkUnit",
-    ) -> Result["Artifact"]:
-        pass
-
-
-class MachinePrimitives(Protocol):
-    def resolve(self, primitive_id: PythonPath) -> Result["Primitive"]:
-        pass
-
-
 class MachineJournal(Protocol):
     def add(self, message: str, actor_id: str | None = None) -> Result[object]:
         pass
 
 
 class MachineContext(Protocol):
-    @property
-    def artifacts(self) -> MachineArtifacts:
-        pass
-
-    @property
-    def primitives(self) -> MachinePrimitives:
-        pass
-
     @property
     def journal(self) -> MachineJournal:
         pass

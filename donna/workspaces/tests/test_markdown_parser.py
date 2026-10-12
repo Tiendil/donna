@@ -9,10 +9,10 @@ from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig
 from donna.machine.primitives import Primitive
+from donna.machine.templates import RENDER_CONTEXT_VIEW
 from donna.primitives.sections.text import Text
 from donna.workspaces import errors as workspace_errors
 from donna.workspaces import markdown_parser
-from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
 from donna.workspaces.markdown import CodeSource, SectionLevel, SectionSource
 from donna.workspaces.markdown_parser import MarkdownSectionMixin, construct_sections_from_markdown
 from donna.workspaces.tests import make

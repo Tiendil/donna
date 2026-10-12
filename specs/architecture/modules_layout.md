@@ -39,6 +39,7 @@ The following topics are out of scope:
   - operation and primitive interfaces.
   - workflow execution orchestration that is independent of CLI argument parsing and protocol-specific formatting.
   - immutable invocation-local execution identifiers for the current work unit and operation, scoped through shared context management.
+  - cache interfaces, the collection of active caches and its independent binding, and artifact-rendering context data shared with workspace implementations.
   - protocol-facing views of machine-owned concepts that prepare protocol-independent logic cells through `./donna/protocol/`.
 - `./donna/runtime/` — module responsible for command-independent runtime orchestration. Contains:
   - session lifecycle use cases.
@@ -48,7 +49,7 @@ The following topics are out of scope:
   - journal event forwarding orchestration.
   - no CLI argument parsing.
 - `./donna/context/` — module responsible for invocation-local runtime context. Contains:
-  - context-local caches.
+  - artifact, primitive, and session-state cache implementations.
   - glue that gives machine and primitive logic access to loaded artifacts, primitive registries, and session state.
 - `./donna/primitives/` — module responsible for built-in primitive implementations. Contains:
   - artifact primitives.
@@ -93,6 +94,14 @@ The application context and the machine's service interface MUST NOT store dupli
 The CLI MUST bind an empty execution context for successfully prepared workspace commands, retaining it through command execution and error journaling and restoring the previous binding on exit.
 Work-unit and operation execution MUST use nested scopes that replace their respective identifier, preserve the other identifier, and restore the previous value after success or failure.
 Journaling MUST read execution identifiers from this binding; the current task identifier MUST remain derived from session state.
+
+The machine's public cache boundary MUST expose one collection of artifact, primitive, and session-state caches through a shared `ContextValue` binding.
+Cache implementations MUST remain owned by the context module; machine code MUST access them through typed interfaces without importing context or workspace implementations.
+Artifact-rendering context data used in cache interfaces MUST belong to the machine module.
+The CLI MUST directly construct and bind fresh caches after successful workspace preparation, retain them through command execution and error journaling, and restore the previous collection on exit.
+Commands that do not load a workspace MUST NOT require cache construction.
+The application context and machine service context MUST NOT own caches or duplicate the cache binding.
+Cache construction MUST NOT require a workspace argument or perform workspace I/O; artifact refresh and render-mode behavior, primitive lookup caching, and session-state external-change detection MUST be preserved.
 
 ## Submodules
 

@@ -16,8 +16,12 @@ from llm_tool_cli.protocol import write_output
 from llm_tool_cli.protocol.logic_cells.base import LogicCell
 from llm_tool_cli.protocol.rendering import write_cells
 
+from donna.context.artifacts import ArtifactsCache
 from donna.context.context import Context
-from donna.machine import ExecutionContext
+from donna.context.primitives import PrimitivesCache
+from donna.context.state import StateCache
+from donna.machine import Caches, ExecutionContext
+from donna.machine.caches import caches
 from donna.protocol.errors import environment_error_node
 from donna.protocol.journal import JournalRecord
 from donna.protocol.modes import get_journal_formatter
@@ -67,6 +71,11 @@ def command_context(context: typer.Context, *, load_environment: bool = True) ->
                         load_project(workspace_config.Config, cwd=PathInput(Path.cwd()), path=command.config_input)
                     ).unwrap()
                     resources.enter_context(workspace_config.config.scope(loaded_config))
+                    resources.enter_context(
+                        caches.scope(
+                            Caches(artifacts=ArtifactsCache(), primitives=PrimitivesCache(), state=StateCache())
+                        )
+                    )
                     resources.enter_context(machine_context.execution_context.scope(ExecutionContext()))
                     runtime_context = Context(output=command.emitter)
                     context_token = set_context(runtime_context)

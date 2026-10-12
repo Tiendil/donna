@@ -10,7 +10,10 @@ from donna.cli.application import app
 from donna.cli.types import ArtifactIdArgument, ArtifactIdsArgument, RenderModeOption, parse_artifact_id_argument
 from donna.cli.utils import command_context
 from donna.context.context import context
-from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW, ArtifactRenderContext, fetch_artifact_bytes
+from donna.machine import ArtifactRenderContext
+from donna.machine.caches import caches
+from donna.machine.templates import RENDER_CONTEXT_VIEW
+from donna.workspaces.artifacts import fetch_artifact_bytes
 from donna.workspaces.templates import render as render_template
 
 
@@ -25,7 +28,7 @@ def list_(
     with command_context(typer_context) as command:
         _log_artifact_operation("List artifacts")
 
-        artifacts = context().artifacts.list(RENDER_CONTEXT_VIEW).unwrap()
+        artifacts = caches.get().artifacts.list(RENDER_CONTEXT_VIEW).unwrap()
 
         command.write_cells(artifact.node().status() for artifact in artifacts)
 
@@ -65,7 +68,7 @@ def validate(  # noqa: CCR001
 
         if all_artifacts:
             _log_artifact_operation("Validate all artifacts")
-            artifacts = context().artifacts.list(RENDER_CONTEXT_VIEW).unwrap()
+            artifacts = caches.get().artifacts.list(RENDER_CONTEXT_VIEW).unwrap()
         else:
             assert artifact_paths is not None
             artifact_ids = [
@@ -76,7 +79,7 @@ def validate(  # noqa: CCR001
                 f"Validate artifacts {', '.join(f'`{artifact_id}`' for artifact_id in artifact_ids)}"
             )
             artifacts = [
-                context().artifacts.load(artifact_id, RENDER_CONTEXT_VIEW).unwrap() for artifact_id in artifact_ids
+                caches.get().artifacts.load(artifact_id, RENDER_CONTEXT_VIEW).unwrap() for artifact_id in artifact_ids
             ]
 
         errors = []

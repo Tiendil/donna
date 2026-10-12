@@ -19,13 +19,16 @@ from llm_tool_cli.protocol.output_cells.base import RenderContext
 from llm_tool_cli.protocol.tests.helpers import assert_error_cells
 from pytest_mock import MockerFixture
 
+from donna.cli import utils as cli_utils
 from donna.cli.tests import helpers
 from donna.cli.utils import CliEmitter
 from donna.context import Context, context, reset_context, set_context
+from donna.context.tests import make as context_make
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
-from donna.machine import ExecutionContext
+from donna.machine import Caches, ExecutionContext
 from donna.machine import context as machine_context
+from donna.machine.caches import caches
 from donna.machine.context import execution_context
 from donna.machine.tests import make as machine_make
 from donna.primitives.sections.run_script import RunScriptInvalidExitCode
@@ -122,19 +125,20 @@ class TestCliEmitter:
 
 class TestCommandContext:
     @pytest.mark.parametrize("outcome", ["success", "environment_error", "exception"])
-    def test_execution_scope__starts_empty_and_restores_previous_binding(
+    def test_runtime_scopes__start_fresh_and_restore_previous_bindings(
         self, mocker: MockerFixture, tmp_path: pathlib.Path, outcome: str
     ) -> None:
         config_path = helpers.write_config(tmp_path)
         initialized = helpers.invoke(["--config", str(config_path), "-p", "automation", "new-session"])
         assert initialized.exit_code == 0
         assert not execution_context.is_set()
-        observed: list[ExecutionContext] = []
+        assert not caches.is_set()
+        observed: list[tuple[ExecutionContext, Caches]] = []
         failure = llm_tool_errors.EnvironmentError(code="command_failed", message="Command failed")
         defect = ValueError("unexpected defect")
 
         def observe(message: str) -> None:
-            observed.append(execution_context.get())
+            observed.append((execution_context.get(), caches.get()))
             if outcome == "environment_error":
                 Err([failure]).unwrap()
             if outcome == "exception":
@@ -145,12 +149,17 @@ class TestCommandContext:
             current_work_unit_id=machine_make.WORK_UNIT_ID,
             current_operation_id=machine_make.PRIMARY_OPERATION_ID,
         )
-        with execution_context.scope(outer):
+        previous_caches = context_make.caches()
+        with execution_context.scope(outer), caches.scope(previous_caches):
             result = helpers.invoke(["--config", str(config_path), "-p", "automation", "list"])
             assert execution_context.get() == outer
+            assert caches.get() == previous_caches
 
-        assert observed == [ExecutionContext()]
+        assert len(observed) == 1
+        assert observed[0][0] == ExecutionContext()
+        assert observed[0][1] != previous_caches
         assert not execution_context.is_set()
+        assert not caches.is_set()
         if outcome == "success":
             assert result.exit_code == 0, result.exception
         elif outcome == "environment_error":
@@ -165,6 +174,28 @@ class TestCommandContext:
             assert result.exception == defect
             assert not result.stdout
             assert not result.stderr
+
+    def test_failed_preparation__does_not_create_caches(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
+        construct = mocker.spy(cli_utils, "Caches")
+        previous = context_make.caches()
+        with caches.scope(previous):
+            result = helpers.invoke(["--config", str(tmp_path / "missing.toml"), "-p", "automation", "list"])
+            assert caches.get() == previous
+
+        assert result.exit_code == 2
+        construct.assert_not_called()
+        assert not caches.is_set()
+
+    @pytest.mark.parametrize("command", ["init", "skill", "version"])
+    def test_project_independent_commands__do_not_create_caches(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path, command: str
+    ) -> None:
+        construct = mocker.spy(cli_utils, "Caches")
+        result = helpers.invoke(["--config", str(tmp_path / "donna.toml"), "-p", "automation", command])
+
+        assert result.exit_code == 0, result.exception
+        construct.assert_not_called()
+        assert not caches.is_set()
 
     def test_workspace_setup__keeps_runtime_and_loaded_settings_together(
         self, mocker: MockerFixture, tmp_path: pathlib.Path

@@ -2,9 +2,16 @@ import pathlib
 
 from llm_tool_cli.core.result import Ok, Result
 
+from donna.context.artifacts import ArtifactsCache
+from donna.context.primitives import PrimitivesCache
+from donna.context.state import StateCache
+from donna.machine import ArtifactRenderContext, Caches
 from donna.machine.artifacts import Artifact
 from donna.machine.templates import RenderMode
-from donna.workspaces.artifacts import ArtifactRenderContext
+
+
+def caches() -> Caches:
+    return Caches(artifacts=ArtifactsCache(), primitives=PrimitivesCache(), state=StateCache())
 
 
 class FakeRawArtifact:

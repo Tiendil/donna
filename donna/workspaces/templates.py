@@ -15,7 +15,7 @@ from donna.machine.templates_context import DirectiveContext
 from donna.workspaces import errors as world_errors
 
 if TYPE_CHECKING:
-    from donna.workspaces.artifacts import ArtifactRenderContext
+    from donna.machine import ArtifactRenderContext
 
 
 _ENVIRONMENT = None

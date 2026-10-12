@@ -9,6 +9,7 @@ from llm_tool_cli.protocol import errors as protocol_errors
 
 from donna.core.utils import now
 from donna.domain.internal_ids import TaskId
+from donna.machine.caches import caches
 from donna.machine.context import execution_context
 from donna.protocol import journal as protocol_journal
 from donna.workspaces import journal as workspace_journal
@@ -43,7 +44,7 @@ class Journal:
         if actor_id is None:
             actor_id = self.smart_actor_id()
 
-        state = self._context.state.load().unwrap()
+        state = caches.get().state.load().unwrap()
         parsed_task_id: TaskId | None = state.current_task.id if state.current_task else None
         execution = execution_context.get()
 

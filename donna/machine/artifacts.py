@@ -9,7 +9,7 @@ from llm_tool_cli.protocol.output_cells.base import MetaValue
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
-from donna.machine.context import context
+from donna.machine.caches import caches
 from donna.machine.errors import ArtifactPrimarySectionMissing, ArtifactSectionNotFound, MultiplePrimarySectionsError
 from donna.protocol import ArtifactInfoCell, ArtifactSectionStatusCell, ArtifactStatusCell
 from donna.protocol.errors import environment_error_node
@@ -79,7 +79,7 @@ class Artifact(BaseEntity):
             )
 
         for section in self.sections:
-            primitive_result = context().primitives.resolve(section.kind)
+            primitive_result = caches.get().primitives.resolve(section.kind)
             if primitive_result.is_err():
                 errors.extend(primitive_result.unwrap_err())
                 continue

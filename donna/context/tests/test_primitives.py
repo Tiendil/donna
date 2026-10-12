@@ -1,3 +1,5 @@
+import importlib
+
 from pytest_mock import MockerFixture
 
 from donna.context.primitives import PrimitivesCache
@@ -14,6 +16,17 @@ def _python_path(value: str) -> PythonPath:
 
 
 class TestPrimitivesCache:
+    def test_resolve__keeps_separate_caches_independent(self, mocker: MockerFixture) -> None:
+        first = PrimitivesCache()
+        second = PrimitivesCache()
+        load_module = mocker.spy(importlib, "import_module")
+
+        assert first.resolve(machine_make.PRIMITIVE_PATH).is_ok()
+        assert first.resolve(machine_make.PRIMITIVE_PATH).is_ok()
+        assert second.resolve(machine_make.PRIMITIVE_PATH).is_ok()
+
+        assert load_module.call_count == 2
+
     def test_resolve__returns_primitive_from_python_path(self) -> None:
         cache = PrimitivesCache()
 
