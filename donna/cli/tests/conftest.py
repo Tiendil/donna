@@ -10,7 +10,7 @@ __all__ = ["isolated_settings"]
 
 @pytest.fixture(autouse=True)
 def initialized_settings(isolated_settings: None) -> None:
-    initialize(tool_label=ToolLabel("DONNA"))
+    initialize(label=ToolLabel("DONNA"))
 
 
 @pytest.fixture(autouse=True)
