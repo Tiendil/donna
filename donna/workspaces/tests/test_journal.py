@@ -7,6 +7,7 @@ from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import TaskId, WorkUnitId
 from donna.protocol.journal import JournalRecord
 from donna.protocol.tests import make as protocol_make
+from donna.workspaces import config as workspace_config
 from donna.workspaces import errors as workspace_errors
 from donna.workspaces import journal
 from donna.workspaces.config import Config, JournalConfig, JournalRecordAttribute
@@ -149,62 +150,50 @@ class TestBuildCommandArgs:
 
 class TestWriteRecord:
     def test_no_configured_command_is_noop(self, mocker: MockerFixture) -> None:
-        mocker.patch(
-            "donna.workspaces.config.config",
-            return_value=Config(journal=JournalConfig(cmd=None)),
-        )
-        run = mocker.patch("subprocess.run")
+        with workspace_config.config.scope(Config(journal=JournalConfig(cmd=None))):
+            run = mocker.patch("subprocess.run")
 
-        result = journal.write_record(_journal_record())
+            result = journal.write_record(_journal_record())
 
-        assert result.is_ok()
-        run.assert_not_called()
+            assert result.is_ok()
+            run.assert_not_called()
 
     def test_runs_configured_command(self, mocker: MockerFixture) -> None:
-        mocker.patch(
-            "donna.workspaces.config.config",
-            return_value=Config(journal=JournalConfig(cmd=["tool", "{message}"])),
-        )
-        run = mocker.patch(
-            "subprocess.run",
-            return_value=subprocess.CompletedProcess(args=["tool", "message"], returncode=0, stdout="", stderr=""),
-        )
+        with workspace_config.config.scope(Config(journal=JournalConfig(cmd=["tool", "{message}"]))):
+            run = mocker.patch(
+                "subprocess.run",
+                return_value=subprocess.CompletedProcess(args=["tool", "message"], returncode=0, stdout="", stderr=""),
+            )
 
-        result = journal.write_record(_journal_record())
+            result = journal.write_record(_journal_record())
 
-        assert result.is_ok()
-        run.assert_called_once_with(["tool", "message"], check=False, capture_output=True, text=True)
+            assert result.is_ok()
+            run.assert_called_once_with(["tool", "message"], check=False, capture_output=True, text=True)
 
     def test_reports_command_os_error(self, mocker: MockerFixture) -> None:
-        mocker.patch(
-            "donna.workspaces.config.config",
-            return_value=Config(journal=JournalConfig(cmd=["tool"])),
-        )
-        mocker.patch("subprocess.run", side_effect=OSError("missing"))
+        with workspace_config.config.scope(Config(journal=JournalConfig(cmd=["tool"]))):
+            mocker.patch("subprocess.run", side_effect=OSError("missing"))
 
-        result = journal.write_record(_journal_record())
+            result = journal.write_record(_journal_record())
 
-        assert result.is_err()
-        error = result.unwrap_err()[0]
-        assert isinstance(error, workspace_errors.JournalCommandFailed)
-        assert error.command == ["tool"]
-        assert error.returncode is None
+            assert result.is_err()
+            error = result.unwrap_err()[0]
+            assert isinstance(error, workspace_errors.JournalCommandFailed)
+            assert error.command == ["tool"]
+            assert error.returncode is None
 
     def test_reports_nonzero_command_exit(self, mocker: MockerFixture) -> None:
-        mocker.patch(
-            "donna.workspaces.config.config",
-            return_value=Config(journal=JournalConfig(cmd=["tool"])),
-        )
-        mocker.patch(
-            "subprocess.run",
-            return_value=subprocess.CompletedProcess(args=["tool"], returncode=2, stdout="", stderr="bad"),
-        )
+        with workspace_config.config.scope(Config(journal=JournalConfig(cmd=["tool"]))):
+            mocker.patch(
+                "subprocess.run",
+                return_value=subprocess.CompletedProcess(args=["tool"], returncode=2, stdout="", stderr="bad"),
+            )
 
-        result = journal.write_record(_journal_record())
+            result = journal.write_record(_journal_record())
 
-        assert result.is_err()
-        error = result.unwrap_err()[0]
-        assert isinstance(error, workspace_errors.JournalCommandFailed)
-        assert error.command == ["tool"]
-        assert error.returncode == 2
-        assert error.details == "exit code 2; stderr: bad"
+            assert result.is_err()
+            error = result.unwrap_err()[0]
+            assert isinstance(error, workspace_errors.JournalCommandFailed)
+            assert error.command == ["tool"]
+            assert error.returncode == 2
+            assert error.details == "exit code 2; stderr: bad"

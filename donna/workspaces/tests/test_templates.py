@@ -60,7 +60,7 @@ class TestDirectivePathBuilder:
         [
             UnwrapError(error=[EnvironmentError(code="unexpected", message="Unexpected error")]),
             UnwrapErrError(value="successful result"),
-            workspace_errors.GlobalConfigNotSet(),
+            llm_tool_errors.ContextValueNotSet(details={"name": "donna_config"}),
         ],
     )
     def test_call__does_not_convert_internal_exceptions(
@@ -79,7 +79,7 @@ class TestDirectivePathBuilder:
         [
             UnwrapError(error=[EnvironmentError(code="unexpected", message="Unexpected error")]),
             UnwrapErrError(value="successful result"),
-            workspace_errors.GlobalConfigNotSet(),
+            llm_tool_errors.ContextValueNotSet(details={"name": "donna_config"}),
         ],
     )
     def test_call__does_not_convert_internal_import_exceptions(

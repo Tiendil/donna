@@ -1,13 +1,12 @@
 import pathlib
 
 import pytest
-from llm_tool_cli.paths import ProjectRootPath
+from llm_tool_cli.config.tests.fixtures import project_settings
 from llm_tool_cli.paths.errors import InvalidProjectPath
 from pytest_mock import MockerFixture
 
 from donna.domain.artifact_ids import ArtifactId
 from donna.machine.tests import make as machine_make
-from donna.primitives.directives import path
 from donna.primitives.directives.path import (
     Path,
     PathArtifactContextMissing,
@@ -26,7 +25,6 @@ class TestPath:
     ) -> None:
         (tmp_path / "workflows").mkdir()
         (tmp_path / "workflows/link").symlink_to(tmp_path)
-        mocker.patch.object(path.workspace_config, "project_dir", return_value=ProjectRootPath(tmp_path))
 
         result = Path(analyze_id="path").render_view(
             make.template_context(), "link/file", mode, ArtifactId("@/workflows/test.donna.md")
@@ -100,7 +98,6 @@ class TestPath:
     def test_render_view__renders_project_root_anchored_path(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
-        mocker.patch.object(path.workspace_config, "project_dir", return_value=ProjectRootPath(tmp_path))
 
         result = Path(analyze_id="path").render_view(
             make.template_context(),
@@ -113,7 +110,6 @@ class TestPath:
         assert result.unwrap() == "@/workflows/specs/design.md"
 
     def test_render_view__renders_absolute_path(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
-        mocker.patch.object(path.workspace_config, "project_dir", return_value=ProjectRootPath(tmp_path))
 
         result = Path(analyze_id="path").render_view(
             make.template_context(),
@@ -126,7 +122,6 @@ class TestPath:
         assert result.unwrap() == str(tmp_path / "README.md")
 
     def test_render_view__accepts_absolute_input(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
-        mocker.patch.object(path.workspace_config, "project_dir", return_value=ProjectRootPath(tmp_path))
         absolute = tmp_path / "specs" / "design.md"
 
         result = Path(analyze_id="path").render_view(
@@ -142,7 +137,6 @@ class TestPath:
     def test_render_view__absolute_mode_rejects_symlink_escape(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
-        mocker.patch.object(path.workspace_config, "project_dir", return_value=ProjectRootPath(tmp_path))
         link = tmp_path / "outside"
         link.symlink_to(tmp_path.parent, target_is_directory=True)
 
@@ -158,7 +152,6 @@ class TestPath:
     def test_render_view__absolute_mode_rejects_symlink_loop(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
-        mocker.patch.object(path.workspace_config, "project_dir", return_value=ProjectRootPath(tmp_path))
         link = tmp_path / "loop"
         link.symlink_to(link)
 
@@ -173,7 +166,6 @@ class TestPath:
         assert failure == InvalidProjectPath(path=str(link / "file.md"))
 
     def test_render_view__rejects_paths_outside_project(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
-        mocker.patch.object(path.workspace_config, "project_dir", return_value=ProjectRootPath(tmp_path))
 
         result = Path(analyze_id="path").render_view(
             make.template_context(),
@@ -188,7 +180,6 @@ class TestPath:
         assert error.path == "@/../../outside.md"
 
     def test_render_analyze__renders_regular_path(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
-        mocker.patch.object(path.workspace_config, "project_dir", return_value=ProjectRootPath(tmp_path))
 
         result = Path(analyze_id="path").render_analyze(
             make.template_context(),
@@ -199,3 +190,8 @@ class TestPath:
 
         assert result.is_ok()
         assert result.unwrap() == "@/specs/design.md"
+
+
+__all__ = ["project_settings"]
+
+pytestmark = pytest.mark.usefixtures("project_settings")

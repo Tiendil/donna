@@ -39,9 +39,19 @@ This specification defines configuration semantics that the implementation MUST 
 The canonical configuration file name MUST be `donna.toml`.
 
 Donna MUST delegate configuration discovery, path resolution, TOML reading, and schema-validation mechanics to `llm_tool_cli`.
-Workspace-loading commands MUST supply `donna.toml`, the invocation's working directory, and the optional `--config` path to shared configuration selection.
+Static application settings MUST declare `donna.toml` as the default configuration filename.
+Workspace-loading commands MUST enter shared project loading with Donna's schema, the invocation's working directory, and the optional `--config` path.
 The directory containing the selected configuration path MUST be the project root.
 Donna MUST supply the application schema defined below and propagate the library's configuration diagnostics without local translation.
+
+## Active configuration
+
+Shared immutable static configuration MUST own application identity and the default configuration filename, runtime configuration MUST own the effective protocol, and project configuration MUST own the active configuration path and project directory.
+The project directory MUST be derived from the active configuration path's parent.
+Shared project preparation MUST construct and bind project configuration only after configuration validation succeeds, retaining it through execution and output and restoring the preceding binding on exit.
+A failed load MUST preserve the preceding project binding.
+Application-specific configuration data MUST remain separate from shared settings.
+Configuration-independent commands MUST NOT load workspace data or establish a project binding.
 
 ## TOML structure
 
@@ -232,8 +242,9 @@ Donna MUST still print newly created journal records through the selected output
 ## Starter configuration
 
 The `donna init` command MUST create a starter configuration based on the packaged base config fixture.
-Donna MUST delegate complete configuration-file initialization to `llm_tool_cli`, supplying its default filename, invocation working directory, optional configuration path, and packaged starter template.
-After creation, Donna MUST load the generated configuration and construct and install its workspace.
+Donna MUST delegate project initialization to `llm_tool_cli`, supplying its schema, invocation working directory, optional configuration path, and packaged starter template; the default filename MUST come from static settings.
+The shared initializer MUST load and validate the generated configuration before constructing and binding project settings.
+Commands that use loaded Donna settings MUST scope those settings for their execution, keeping the settings and active path from the same workspace.
 
 The starter configuration MUST:
 

@@ -88,7 +88,7 @@ The root command MUST NOT start or continue workflow execution directly.
 
 ## Application identity
 
-The CLI MUST initialize the tool label `DONNA` through `llm_tool_cli` at application startup before command-line parsing.
+The CLI MUST initialize static settings with the tool label `DONNA` and default configuration filename `donna.toml` through `llm_tool_cli` at application startup before command-line parsing.
 Label storage, initialization checks, and label selection for cell rendering MUST be managed by `llm_tool_cli`.
 
 ## Output behavior
@@ -197,9 +197,12 @@ Automation protocol cell output SHOULD follow this shape:
 
 ## Global options
 
-The CLI MUST use global-option registration and parsing, invocation storage, and command-context option retrieval, protocol selection, and cell writing managed by `llm_tool_cli`.
+The CLI MUST use global-option registration and parsing, context-scoped runtime configuration, and command-context protocol selection and cell writing managed by `llm_tool_cli`.
 Donna MUST register its commands on the application provided by `llm_tool_cli`.
-Workspace loading, protocol installation for Donna's runtime, journal emission, and runtime cleanup MUST remain Donna-owned.
+Application-specific runtime setup, journal emission, and runtime cleanup MUST remain Donna-owned; project loading and its scope MUST be shared.
+The effective protocol MUST be read from shared runtime configuration; the active config path and derived project directory MUST be read from independent shared project configuration.
+These configurations and the static application identity MUST be immutable and complete when bound.
+Donna MUST NOT retain separate protocol or workspace-path globals.
 
 ### Help and completion
 
@@ -253,13 +256,13 @@ donna init
 donna --config /path/to/project/donna.toml init
 ```
 
-The command MUST use the initialization behavior managed by `llm_tool_cli`, supplying Donna's default configuration filename, the invocation's working directory, and the optional `--config` path.
-The library owns target selection and resolution, template reading, exclusive creation, and their diagnostics.
-Donna owns the starter contents and subsequent workspace loading described in `specs/behavior/config.md`.
+The command MUST use shared project initialization, supplying Donna's schema, packaged starter location, invocation working directory, and optional `--config` path; the default filename MUST come from static settings.
+The library owns target selection and resolution, template reading, exclusive creation, subsequent loading and validation, project scope management, and their diagnostics.
+Donna owns the starter contents and schema described in `specs/behavior/config.md`.
 
 The generated configuration MUST be valid TOML and use schema version `1`.
 
-After workspace initialization succeeds, the command MUST emit the configuration-creation success cell managed by `llm_tool_cli`, supplying the created workspace's configuration path.
+After project initialization succeeds, the command MUST emit the configuration-creation success cell managed by `llm_tool_cli` within the shared project scope, supplying the active configuration path from its settings.
 
 The command MUST NOT accept artifact arguments, session arguments, or skill document arguments.
 
@@ -459,7 +462,7 @@ This replaces Donna's custom error-cell kinds and `error_code` field with the sh
 Custom introductory prefixes MUST be removed; artifact, section, and configuration context MUST remain available through shared metadata conversion, including optional null fields.
 
 The CLI MUST use command error handling and explicit error reporting managed by `llm_tool_cli`, including error cells, stream selection, diagnostic ordering, exit statuses, and exception propagation.
-Donna MUST retain workspace setup, error journaling, and runtime context cleanup.
+Donna MUST retain application-specific runtime setup, error journaling, and runtime context cleanup.
 
 Configuration selection, loading, and creation MUST propagate the diagnostics provided by `llm_tool_cli` without local translation.
 

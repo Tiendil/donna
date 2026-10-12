@@ -1,5 +1,9 @@
 ### Migration
 
+- Replace workspace GlobalConfig access with shared `runtime_config.get()` for protocol, `project_config.get()` for paths, and `workspaces.config.config.get()` for loaded Donna settings. The local `workspaces.initialization` module is removed: enter shared `load_project(Config, ...)` or `initialize_project(Config, ...)`, unwrap the yielded result, and scope loaded Donna settings for execution. Retain the shared project context through execution and output.
+
+- Declare the default `donna.toml` filename in shared static settings alongside the tool label; the separate `DONNA_CONFIG_NAME` constant is removed.
+
 - Project file paths no longer follow symbolic links below the resolved project root, including links to internal targets. Use ordinary project paths and directories instead; discovery skips links and explicit inputs reject them.
 
 - Replace imports of the removed `donna.protocol.logic_cells.base.DonnaCell` with `llm_tool_cli.protocol.logic_cells.uniform.UniformCell`; `_render(cell_type)` still returns one output cell.
@@ -20,11 +24,11 @@
 
 - Invalid `--protocol` values now produce an LLM `invalid_arguments` error cell on stderr and exit with status `1`, replacing Typer text and exit status `2`. Update scripts that depend on the previous diagnostic or exit status.
 
-- Replace `donna.cli.utils.global_options` with `llm_tool_cli.cli.context.get_global_options`. Store options through `set_global_options` instead of the removed `GLOBAL_OPTIONS_CONTEXT_KEY`.
+- Replace `donna.cli.utils.global_options` and the removed `GLOBAL_OPTIONS_CONTEXT_KEY` with `llm_tool_cli.config.runtime.runtime_config` for effective settings and `CommandContext.config_input` for unresolved CLI input.
 
-- Pass `llm_tool_cli.paths.ProjectConfigPath` to `initialize_workspace` in Python integrations. Omitting the path now selects `donna.toml` in the current working directory.
+- Pass `llm_tool_cli.paths.ProjectConfigPath` as `path=` to shared project contexts in Python integrations. Initialization uses the `donna.workspaces` package, `base_config.toml` template, and Donna's `Config` schema; omitting the path selects the static filename in the supplied working directory.
 
-- `donna skill` now defaults to LLM cell output. Use `donna -p human skill` for human output. Python callers must import `GlobalOptions` from `llm_tool_cli.cli.entities`, use `ProjectConfigPath` for its `config_path`, and call `protocol_for(command_name)` to resolve an unspecified protocol.
+- `donna skill` now defaults to LLM cell output. Use `donna -p human skill` for human output. Shared command contexts select defaults and publish the effective protocol in runtime settings.
 
 - Result-unwrapping payloads must be lists of environment errors. Standalone errors and non-list iterables are no longer normalized by the CLI; malformed payloads propagate as the original `UnwrapError` without diagnostic output.
 
@@ -60,9 +64,10 @@
 
 - Configuration failures now use shared `llm-tool-cli` diagnostic codes and exit with status `2`; other expected shared errors exit with status `3`. Automation consumers must read `id`, `content`, `type`, `code`, `path`, and `reason` from shared error cells instead of Donna-specific error metadata. Human and LLM shared diagnostics now go to stderr. Donna-owned errors retain their existing result, stream, and exit behavior while adopting the shared error-cell payload.
 - Missing configuration during upward discovery now reports `config_not_found` and exits with status `2` instead of returning a Donna error cell with status `0`.
-- Python callers must use shared `load_config` followed by `construct_workspace` instead of `load_workspace`; `initialize_runtime` and shared configuration operations return `Result` values.
 
 ### Changes
+
+- Use independent frozen shared configurations for static application identity and default filename, runtime protocol, and project paths. Delegate project preparation and scope management to the library and scope loaded Donna settings during command execution; remove duplicate global storage and local preparation wrappers.
 
 - Establish logic cells and their ordered collections as the primary domain-to-CLI result interface, with domain views and runtime operations constructing results and the CLI selecting protocols and writing cells.
 

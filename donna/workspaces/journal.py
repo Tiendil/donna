@@ -71,7 +71,7 @@ def _build_command_args(command: list[str], record: JournalRecord) -> Result[lis
 def write_record(record: JournalRecord) -> Result[None]:
     from donna.workspaces import config as workspace_config
 
-    command = workspace_config.config().journal.cmd
+    command = workspace_config.config.get().journal.cmd
     if command is None:
         return Ok(None)
 

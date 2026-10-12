@@ -1,21 +1,22 @@
-import pathlib
 from collections.abc import Iterable, Iterator
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from contextvars import Token
+from pathlib import Path
 
 import typer
 from llm_tool_cli.cli.context import CommandContext as BaseCommandContext
 from llm_tool_cli.cli.handling import handle_command_errors
-from llm_tool_cli.config import load_config, locate_config
+from llm_tool_cli.config import load_project
+from llm_tool_cli.config.project import project_config
+from llm_tool_cli.config.runtime import runtime_config
 from llm_tool_cli.core.errors import EnvironmentErrors
-from llm_tool_cli.core.result import Ok, Result, UnwrapError, unwrap_to_error
+from llm_tool_cli.core.result import UnwrapError
 from llm_tool_cli.paths import PathInput
-from llm_tool_cli.protocol import Protocol, write_output
+from llm_tool_cli.protocol import write_output
 from llm_tool_cli.protocol.logic_cells.base import LogicCell
 from llm_tool_cli.protocol.rendering import write_cells
 
 from donna.context.context import Context
-from donna.domain.constants import DONNA_CONFIG_NAME
 from donna.protocol.errors import environment_error_node
 from donna.protocol.journal import JournalRecord
 from donna.protocol.modes import get_journal_formatter
@@ -23,24 +24,18 @@ from donna.workspaces import config as workspace_config
 
 
 class CliEmitter:
-    __slots__ = ("_protocol", "_journal_formatter")
-
-    def __init__(self, protocol: Protocol) -> None:
-        self._protocol = protocol
-
-        self._journal_formatter = get_journal_formatter(protocol)
+    __slots__ = ()
 
     def emit_cells(self, cells: Iterable[LogicCell], *, stderr: bool = False) -> None:
-        write_cells(cells, protocol=self._protocol, stderr=stderr)
+        write_cells(cells, protocol=runtime_config.get().protocol, stderr=stderr)
 
     def emit_journal(self, record: JournalRecord) -> None:
-        write_output(self._journal_formatter.format_journal(record).decode("utf-8"))
+        formatter = get_journal_formatter(runtime_config.get().protocol)
+        write_output(formatter.format_journal(record).decode("utf-8"))
 
 
 def output_cells(cells: Iterable[LogicCell]) -> None:
-    emitter = CliEmitter(workspace_config.protocol())
-
-    emitter.emit_cells(cells)
+    CliEmitter().emit_cells(cells)
 
 
 class CommandContext(BaseCommandContext):
@@ -48,30 +43,10 @@ class CommandContext(BaseCommandContext):
 
     def __init__(self, context: typer.Context) -> None:
         super().__init__(context)
-        self.emitter = CliEmitter(self.protocol)
-
-    def install_protocol(self) -> None:
-        if not workspace_config.protocol.is_set():
-            workspace_config.protocol.set(self.protocol)
-
-    @unwrap_to_error
-    def load_workspace(self) -> Result[workspace_config.Workspace]:
-        config_path = locate_config(
-            DONNA_CONFIG_NAME, path=self.global_options.config_path, cwd=pathlib.Path.cwd()
-        ).unwrap()
-        loaded_config = load_config(config_path, workspace_config.Config).unwrap()
-        workspace = workspace_config.construct_workspace(loaded_config, config_path=config_path)
-        workspace_config.install_workspace(workspace)
-        return Ok(workspace)
+        self.emitter = CliEmitter()
 
     def target_dir(self) -> PathInput:
-        if workspace_config.project_dir.is_set():
-            return PathInput(workspace_config.project_dir())
-
-        if self.global_options.config_path is not None:
-            return PathInput(self.global_options.config_path.parent)
-
-        return PathInput(pathlib.Path.cwd())
+        return PathInput(project_config.get().project_dir)
 
 
 @contextmanager
@@ -84,12 +59,13 @@ def command_context(context: typer.Context, *, load_environment: bool = True) ->
     machine_context_token: Token[machine_context.MachineContext | None] | None = None
 
     try:
-        with handle_command_errors(protocol=command.protocol):
+        with handle_command_errors(protocol=command.protocol), ExitStack() as resources:
             try:
-                command.install_protocol()
-
                 if load_environment:
-                    command.load_workspace().unwrap()
+                    loaded_config = context.with_resource(
+                        load_project(workspace_config.Config, cwd=PathInput(Path.cwd()), path=command.config_input)
+                    ).unwrap()
+                    resources.enter_context(workspace_config.config.scope(loaded_config))
                     runtime_context = Context(output=command.emitter)
                     context_token = set_context(runtime_context)
                     machine_context_token = machine_context.set_context(runtime_context)

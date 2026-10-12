@@ -2,6 +2,8 @@ import datetime
 from typing import cast
 
 import pytest
+from llm_tool_cli.config.runtime import RuntimeConfig, runtime_config
+from llm_tool_cli.config.tests.fixtures import runtime_settings
 from llm_tool_cli.core.result import Ok
 from llm_tool_cli.protocol import Protocol
 from llm_tool_cli.protocol import errors as protocol_errors
@@ -44,24 +46,26 @@ class TestJournal:
     def test_smart_actor_id__depends_on_selected_protocol(
         self, mocker: MockerFixture, mode: Protocol, actor_id: str
     ) -> None:
-        mocker.patch("donna.context.journal.protocol_mode", return_value=mode)
-
-        assert Journal(cast(Context, _FakeContext())).smart_actor_id() == actor_id
+        with runtime_config.scope(RuntimeConfig(protocol=mode)):
+            assert Journal(cast(Context, _FakeContext())).smart_actor_id() == actor_id
 
     def test_smart_actor_id__raises_for_unsupported_mode(self, mocker: MockerFixture) -> None:
-        mocker.patch("donna.context.journal.protocol_mode", return_value="unsupported")
-
-        with pytest.raises(protocol_errors.UnsupportedFormatterMode):
+        with (
+            runtime_config.scope(RuntimeConfig(protocol=Protocol.human).replace(protocol="unsupported")),
+            pytest.raises(protocol_errors.UnsupportedFormatterMode),
+        ):
             Journal(cast(Context, _FakeContext())).smart_actor_id()
 
     def test_add__builds_writes_and_emits_journal_record(self, mocker: MockerFixture) -> None:
         now = datetime.datetime(2026, 5, 18, 8, 30, tzinfo=datetime.UTC)
         fake_context = _FakeContext()
-        mocker.patch("donna.context.journal.protocol_mode", return_value=Protocol.llm)
         mocker.patch("donna.context.journal.now", return_value=now)
         write_record = mocker.patch("donna.context.journal.workspace_journal.write_record", return_value=Ok(None))
 
-        with fake_context.current_work_unit_id.scope(machine_make.WORK_UNIT_ID):
+        with (
+            runtime_config.scope(RuntimeConfig(protocol=Protocol.llm)),
+            fake_context.current_work_unit_id.scope(machine_make.WORK_UNIT_ID),
+        ):
             with fake_context.current_operation_id.scope(machine_make.PRIMARY_OPERATION_ID):
                 result = Journal(cast(Context, fake_context)).add("message")
 
@@ -80,10 +84,15 @@ class TestJournal:
         fake_context = _FakeContext()
         mocker.patch("donna.context.journal.now", return_value=datetime.datetime(2026, 5, 18, tzinfo=datetime.UTC))
         mocker.patch("donna.context.journal.workspace_journal.write_record", return_value=Ok(None))
-        protocol_mode = mocker.patch("donna.context.journal.protocol_mode")
+        smart_actor = mocker.patch.object(Journal, "smart_actor_id")
 
         result = Journal(cast(Context, fake_context)).add("message", actor_id="donna")
 
         assert result.is_ok()
         assert result.unwrap().actor_id == "donna"
-        protocol_mode.assert_not_called()
+        smart_actor.assert_not_called()
+
+
+__all__ = ["runtime_settings"]
+
+pytestmark = pytest.mark.usefixtures("runtime_settings")

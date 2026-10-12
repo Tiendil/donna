@@ -2,15 +2,12 @@ import pathlib
 
 import pydantic
 import pytest
-from llm_tool_cli.paths import ProjectConfigPath, ProjectRootPath, RelativeProjectPath
-from pytest_mock import MockerFixture
+from llm_tool_cli.paths import RelativeProjectPath
 
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.python_path import PythonPath
 from donna.workspaces import config as workspace_config
-from donna.workspaces import errors as workspace_errors
-from donna.workspaces.config import Config, DefaultsConfig, GlobalConfig, JournalConfig, JournalRecordAttribute
-from donna.workspaces.tests import make
+from donna.workspaces.config import Config, DefaultsConfig, JournalConfig, JournalRecordAttribute
 
 
 class TestJournalRecordAttribute:
@@ -140,96 +137,3 @@ class TestConfig:
         )
 
         assert config.model_dump(mode="json")["workflow_dirs"] == ["./workflows", "./.session/donna"]
-
-
-class TestGlobalConfig:
-    def test_get__raises_when_value_is_not_set(self) -> None:
-        global_config = GlobalConfig[str]()
-
-        with pytest.raises(workspace_errors.GlobalConfigNotSet):
-            global_config.get()
-
-    def test_set__stores_single_value(self) -> None:
-        global_config = GlobalConfig[str]()
-
-        global_config.set("value")
-
-        assert global_config.get() == "value"
-        assert global_config()
-        assert global_config.is_set()
-
-        with pytest.raises(workspace_errors.GlobalConfigAlreadySet):
-            global_config.set("other")
-
-
-class TestWorkspace:
-    def test_builds_validated_workspace_entity(self, tmp_path: pathlib.Path) -> None:
-        workspace = make.workspace(tmp_path)
-
-        assert workspace.root == ProjectRootPath(tmp_path)
-        assert workspace.config_path == ProjectConfigPath(tmp_path / "donna.toml")
-        assert workspace.config == Config()
-
-
-class TestConstructWorkspace:
-    def test_derives_root_without_reading_config_or_installing_globals(
-        self, mocker: MockerFixture, tmp_path: pathlib.Path
-    ) -> None:
-        mocker.patch.object(workspace_config.project_dir, "_value", None)
-        mocker.patch.object(workspace_config.config_path, "_value", None)
-        mocker.patch.object(workspace_config.config, "_value", None)
-        config_path = ProjectConfigPath(tmp_path / "custom.toml")
-
-        workspace = workspace_config.construct_workspace(Config(), config_path=config_path)
-
-        assert workspace.root == tmp_path
-        assert workspace.config_path == config_path
-        assert not config_path.exists()
-        assert not workspace_config.project_dir.is_set()
-        assert not workspace_config.config_path.is_set()
-        assert not workspace_config.config.is_set()
-
-    def test_selected_symlink__keeps_supplied_path(self, tmp_path: pathlib.Path) -> None:
-        config_path = ProjectConfigPath(tmp_path / "linked.toml")
-        config_path.symlink_to(tmp_path / "target" / "config.toml")
-
-        workspace = workspace_config.construct_workspace(Config(), config_path=config_path)
-
-        assert workspace.root == tmp_path
-        assert workspace.config_path == config_path
-
-
-class TestInstallWorkspace:
-    def test_install_workspace__sets_unset_globals(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
-        project_dir = GlobalConfig[ProjectRootPath]()
-        config_path = GlobalConfig[ProjectConfigPath]()
-        config = GlobalConfig[Config]()
-        mocker.patch.object(workspace_config, "project_dir", project_dir)
-        mocker.patch.object(workspace_config, "config_path", config_path)
-        mocker.patch.object(workspace_config, "config", config)
-        workspace = make.workspace(tmp_path)
-
-        workspace_config.install_workspace(workspace)
-
-        assert project_dir.get() == ProjectRootPath(tmp_path)
-        assert config_path.get() == ProjectConfigPath(tmp_path / "donna.toml")
-        assert config.get() == workspace.config
-
-    def test_install_workspace__does_not_replace_existing_globals(
-        self, mocker: MockerFixture, tmp_path: pathlib.Path
-    ) -> None:
-        project_dir = GlobalConfig[ProjectRootPath]()
-        config_path = GlobalConfig[ProjectConfigPath]()
-        config = GlobalConfig[Config]()
-        project_dir.set(ProjectRootPath(tmp_path / "existing"))
-        config_path.set(ProjectConfigPath(tmp_path / "existing.toml"))
-        config.set(Config(session_dir=RelativeProjectPath(pathlib.Path("custom"))))
-        mocker.patch.object(workspace_config, "project_dir", project_dir)
-        mocker.patch.object(workspace_config, "config_path", config_path)
-        mocker.patch.object(workspace_config, "config", config)
-
-        workspace_config.install_workspace(make.workspace(tmp_path))
-
-        assert project_dir.get() == ProjectRootPath(tmp_path / "existing")
-        assert config_path.get() == ProjectConfigPath(tmp_path / "existing.toml")
-        assert config.get().session_dir == pathlib.Path("custom")

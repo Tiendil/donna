@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from llm_tool_cli.config.runtime import runtime_config
 from llm_tool_cli.core.result import Ok, Result, unwrap_to_error
 from llm_tool_cli.protocol import Protocol
 from llm_tool_cli.protocol import errors as protocol_errors
@@ -11,7 +12,6 @@ from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import TaskId, WorkUnitId
 from donna.protocol import journal as protocol_journal
 from donna.workspaces import journal as workspace_journal
-from donna.workspaces.config import protocol as protocol_mode
 
 if TYPE_CHECKING:
     from donna.context.context import Context
@@ -24,7 +24,7 @@ class Journal:
         self._context = context
 
     def smart_actor_id(self) -> str:
-        match protocol_mode():
+        match runtime_config.get().protocol:
             case Protocol.human:
                 return "human"
             case Protocol.llm:
@@ -32,7 +32,7 @@ class Journal:
             case Protocol.automation:
                 return "automation"
             case _:
-                raise protocol_errors.UnsupportedFormatterMode(details={"mode": protocol_mode()})
+                raise protocol_errors.UnsupportedFormatterMode(details={"mode": runtime_config.get().protocol})
 
     @unwrap_to_error
     def add(

@@ -11,7 +11,7 @@ register_version_command(app, distribution="donna")
 
 
 def main() -> None:
-    settings.initialize(label=settings.ToolLabel("DONNA"))
+    settings.initialize(label=settings.ToolLabel("DONNA"), config_filename=settings.ConfigFilename("donna.toml"))
 
     from donna.cli.commands import artifacts  # noqa: F401
     from donna.cli.commands import sessions  # noqa: F401

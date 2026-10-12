@@ -1,14 +1,16 @@
 import shutil
 
+from llm_tool_cli.config.project import project_config
 from llm_tool_cli.paths import ResolvedProjectPath
 
 from donna.domain.constants import STATE_FILE_NAME
-from donna.workspaces.config import config, project_dir
+from donna.workspaces import config as workspace_config
 from donna.workspaces.files import FileFingerprint
 
 
 def _path() -> ResolvedProjectPath:
-    return ResolvedProjectPath(project_dir() / config().session_dir)
+    project_dir = project_config.get().project_dir
+    return ResolvedProjectPath(project_dir / workspace_config.config.get().session_dir)
 
 
 def _state_path() -> ResolvedProjectPath:

@@ -1,12 +1,33 @@
 import pathlib
 
 import pytest
+from llm_tool_cli.config.project import project_config
 from pytest_mock import MockerFixture
 
 from donna.cli.tests import helpers
 
 
 class TestInit:
+    @pytest.mark.parametrize(
+        "text, code",
+        [("version =", "config_invalid_toml"), ('session_dir = "../outside"', "config_validation_failed")],
+    )
+    def test_invalid_starter__is_not_published_as_a_project(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path, text: str, code: str
+    ) -> None:
+        fixtures = tmp_path / "fixtures"
+        fixtures.mkdir()
+        (fixtures / "base_config.toml").write_text(text, encoding="utf-8")
+        mocker.patch("llm_tool_cli.config.files.importlib.resources.files", return_value=tmp_path)
+        path = tmp_path / "donna.toml"
+
+        result = helpers.invoke(["--config", str(path), "-p", "automation", "init"])
+
+        assert result.exit_code == 2
+        assert [record["code"] for record in helpers.json_lines(result.stdout)] == [code]
+        assert path.read_text(encoding="utf-8") == text
+        assert not project_config.is_set()
+
     def test_parent_config__creates_in_current_directory(
         self, monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path
     ) -> None:
@@ -102,6 +123,12 @@ class TestInit:
 
         assert result.exit_code == 0
         assert (tmp_path / "donna.toml").is_file()
+        text = (tmp_path / "donna.toml").read_text(encoding="utf-8")
+        assert 'session_dir = ".session/donna"' in text
+        assert '"./workflows"' in text
+        assert '"./.session/donna"' in text
+        assert "# [defaults]" in text
+        assert "# [journal]" in text
         records = helpers.json_lines(result.output)
         assert len(records) == 1
         assert records[0]["content"] == "Configuration created."

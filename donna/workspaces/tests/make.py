@@ -1,14 +1,9 @@
-import pathlib
-
-from llm_tool_cli.paths import ProjectConfigPath, ProjectRootPath
-
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
 from donna.machine.artifacts import ArtifactSectionConfig
 from donna.workspaces import markdown
-from donna.workspaces.config import Config, Workspace
 from donna.workspaces.markdown import CodeSource, SectionLevel, SectionSource
 
 ARTIFACT_ID = ArtifactId("@/workflows/test.donna.md")
@@ -16,14 +11,6 @@ ARTIFACT_ID = ArtifactId("@/workflows/test.donna.md")
 
 def text_kind() -> PythonPath:
     return PythonPath(NormalizedRawIdPath("donna.primitives.sections.text.Text"))
-
-
-def workspace(root: pathlib.Path, config: Config | None = None) -> Workspace:
-    return Workspace(
-        root=ProjectRootPath(root),
-        config_path=ProjectConfigPath(root / "donna.toml"),
-        config=config or Config(),
-    )
 
 
 def section_source(

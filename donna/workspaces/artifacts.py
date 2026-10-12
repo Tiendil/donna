@@ -2,6 +2,7 @@ import glob
 import pathlib
 from typing import TYPE_CHECKING, Sequence
 
+from llm_tool_cli.config.project import project_config
 from llm_tool_cli.core.entities import BaseEntity
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 from llm_tool_cli.paths import (
@@ -70,14 +71,12 @@ def _artifact_is_in_workflow_dirs(artifact_id: ArtifactId, workflow_dirs: Sequen
 def _artifact_is_visible_in_workspace(artifact_id: ArtifactId) -> bool:
     from donna.workspaces import config as workspace_config
 
-    return _artifact_is_in_workflow_dirs(artifact_id, workspace_config.config().workflow_dirs)
+    return _artifact_is_in_workflow_dirs(artifact_id, workspace_config.config.get().workflow_dirs)
 
 
 @unwrap_to_error
 def walk_filesystem(workflow_dirs: Sequence[RelativeProjectPath]) -> Result[list[ArtifactId]]:
-    from donna.workspaces.config import project_dir
-
-    root = project_dir()
+    root = project_config.get().project_dir
     artifacts: list[ArtifactId] = []
     for workflow_dir in workflow_dirs:
         if workflow_dir.parts:
@@ -96,7 +95,7 @@ def list_artifact_ids() -> Result[list[ArtifactId]]:
     artifacts: list[ArtifactId] = []
     seen: set[ArtifactId] = set()
 
-    for artifact_id in walk_filesystem(workspace_config.config().workflow_dirs).unwrap():
+    for artifact_id in walk_filesystem(workspace_config.config.get().workflow_dirs).unwrap():
         if artifact_id in seen:
             continue
 
@@ -107,9 +106,8 @@ def list_artifact_ids() -> Result[list[ArtifactId]]:
 
 
 def resolve_artifact_path(artifact_id: ArtifactId) -> Result[ResolvedProjectPath | None]:
-    from donna.workspaces.config import project_dir
-
-    resolved = resolve_project_path(artifact_id, project_dir())
+    root = project_config.get().project_dir
+    resolved = resolve_project_path(artifact_id, root)
     if resolved.is_err(InvalidProjectPath):
         return Ok(None)
     if resolved.is_err():
@@ -148,11 +146,10 @@ def render_markdown_artifact(
     content: bytes,
     render_context: ArtifactRenderContext,
 ) -> Result["Artifact"]:
-    from donna.workspaces.config import config
+    from donna.workspaces import config as workspace_config
     from donna.workspaces.markdown_parser import construct_artifact_from_bytes
 
-    workspace_config = config()
-    defaults = workspace_config.defaults
+    defaults = workspace_config.config.get().defaults
     return Ok(
         construct_artifact_from_bytes(
             artifact_id,

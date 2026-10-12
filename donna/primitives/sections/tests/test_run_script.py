@@ -1,5 +1,9 @@
 from pathlib import Path
 
+import pytest
+from llm_tool_cli.config.project import ProjectConfig, project_config
+from llm_tool_cli.config.tests.fixtures import runtime_settings
+from llm_tool_cli.paths import ProjectConfigPath
 from pytest_mock import MockerFixture
 
 from donna.machine.changes import ChangeAddWorkUnit, ChangeSetTaskContext
@@ -129,7 +133,6 @@ class TestRunScript:
     def test_execute_section__stores_outputs_and_adds_selected_next_work_unit(self, mocker: MockerFixture) -> None:
         runtime_context = make.FakeRuntimeContext()
         mocker.patch("donna.primitives.sections.run_script.context", return_value=runtime_context)
-        mocker.patch.object(run_script.workspace_config, "project_dir", return_value=Path("/project"))
         run = mocker.patch.object(run_script, "_run_script", return_value=("stdout", "stderr", 2))
         artifact = machine_make.artifact(
             [
@@ -154,12 +157,13 @@ class TestRunScript:
             ]
         )
 
-        result = RunScript().execute_section(
-            machine_make.task(),
-            machine_make.work_unit(operation_id=make.operation_id("start")),
-            artifact,
-            make.section_id("start"),
-        )
+        with project_config.scope(ProjectConfig(config_path=ProjectConfigPath(Path("/project/donna.toml")))):
+            result = RunScript().execute_section(
+                machine_make.task(),
+                machine_make.work_unit(operation_id=make.operation_id("start")),
+                artifact,
+                make.section_id("start"),
+            )
 
         assert result.is_ok()
         run.assert_called_once_with(script="echo ok", timeout=60, project_dir=Path("/project"))
@@ -187,3 +191,8 @@ class TestCoerceOutput:
 
     def test_returns_string_output_unchanged(self) -> None:
         assert _coerce_output("ok") == "ok"
+
+
+__all__ = ["runtime_settings"]
+
+pytestmark = pytest.mark.usefixtures("runtime_settings")

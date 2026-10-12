@@ -6,8 +6,12 @@ import sys
 import pytest
 from llm_tool_cli.cli.errors import InvalidArguments
 from llm_tool_cli.config import errors as config_errors
+from llm_tool_cli.config.project import ProjectConfig, project_config
+from llm_tool_cli.config.runtime import RuntimeConfig, runtime_config
+from llm_tool_cli.config.tests.fixtures import runtime_settings
 from llm_tool_cli.core import errors as llm_tool_errors
 from llm_tool_cli.core.result import Err, Ok, UnwrapError
+from llm_tool_cli.paths import ProjectConfigPath
 from llm_tool_cli.protocol import Protocol
 from llm_tool_cli.protocol.logic_cells import ContentCell
 from llm_tool_cli.protocol.output_cells import HumanOutputCell
@@ -23,11 +27,22 @@ from donna.domain.ids import SectionId
 from donna.machine import context as machine_context
 from donna.primitives.sections.run_script import RunScriptInvalidExitCode
 from donna.protocol.tests.make import cell, journal_record
+from donna.workspaces import config as workspace_config
 from donna.workspaces import errors as workspace_errors
 from donna.workspaces import journal as workspace_journal
 
 
 class TestCliEmitter:
+    def test_emit_cells__uses_current_runtime_protocol(self, capsys: pytest.CaptureFixture[str]) -> None:
+        emitter = CliEmitter()
+        with runtime_config.scope(RuntimeConfig(protocol=Protocol.llm)):
+            emitter.emit_cells([cell(content="First")])
+        assert capsys.readouterr().out.startswith("--DONNA-CELL ")
+
+        with runtime_config.scope(RuntimeConfig(protocol=Protocol.automation)):
+            emitter.emit_cells([cell(content="Second")])
+        assert helpers.json_lines(capsys.readouterr().out)[0]["content"] == "Second"
+
     @pytest.mark.parametrize("stderr", [False, True])
     @pytest.mark.parametrize(
         ("mode", "expected"),
@@ -48,7 +63,8 @@ class TestCliEmitter:
         mocker.patch.object(sys, "stdout", stdout)
         mocker.patch.object(sys, "stderr", error_stream)
 
-        CliEmitter(mode).emit_cells([cell(media_type=None, content=None, meta={})], stderr=stderr)
+        with runtime_config.scope(RuntimeConfig(protocol=mode)):
+            CliEmitter().emit_cells([cell(media_type=None, content=None, meta={})], stderr=stderr)
 
         output = error_stream.getvalue() if stderr else stdout.getvalue()
         assert re.sub(r"[A-Za-z0-9_-]{22}", "<cell-id>", output) == expected
@@ -59,7 +75,8 @@ class TestCliEmitter:
         stdout = io.StringIO()
         mocker.patch.object(sys, "stdout", stdout)
 
-        CliEmitter(mode).emit_cells([cell(content="  日本語  ")])
+        with runtime_config.scope(RuntimeConfig(protocol=mode)):
+            CliEmitter().emit_cells([cell(content="  日本語  ")])
 
         output = stdout.getvalue()
         assert "日本語" in output
@@ -73,10 +90,11 @@ class TestCliEmitter:
     def test_emit_journal__keeps_consecutive_records_separate(self, mocker: MockerFixture, mode: Protocol) -> None:
         stdout = io.StringIO()
         mocker.patch.object(sys, "stdout", stdout)
-        emitter = CliEmitter(mode)
+        emitter = CliEmitter()
 
-        emitter.emit_journal(journal_record(message="日本語"))
-        emitter.emit_journal(journal_record(message="Next step"))
+        with runtime_config.scope(RuntimeConfig(protocol=mode)):
+            emitter.emit_journal(journal_record(message="日本語"))
+            emitter.emit_journal(journal_record(message="Next step"))
 
         lines = stdout.getvalue().splitlines()
         assert len(lines) == 2
@@ -94,12 +112,47 @@ class TestCliEmitter:
         mocker.patch.object(HumanOutputCell, "render", autospec=True, side_effect=render)
         cells = (ContentCell(kind="item", content=text, media_type="text/markdown") for text in ["first", "second"])
 
-        CliEmitter(Protocol.human).emit_cells(cells)
+        CliEmitter().emit_cells(cells)
 
         assert stdout.getvalue() == "DONNA 0/2: first\nDONNA 1/2: second\n"
 
 
 class TestCommandContext:
+    def test_workspace_setup__keeps_runtime_and_loaded_settings_together(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
+        observed: list[tuple[Protocol, pathlib.Path, pathlib.Path, pathlib.Path]] = []
+
+        def observe(message: str) -> None:
+            project = project_config.get()
+            observed.append(
+                (
+                    runtime_config.get().protocol,
+                    project.config_path,
+                    project.project_dir,
+                    workspace_config.config.get().session_dir,
+                )
+            )
+
+        mocker.patch("donna.cli.commands.artifacts._log_artifact_operation", side_effect=observe)
+        outer = runtime_config.get()
+        outer_project = ProjectConfig(config_path=ProjectConfigPath(tmp_path / "outer.toml"))
+        previous = workspace_config.Config()
+        with project_config.scope(outer_project), workspace_config.config.scope(previous):
+            for name, protocol in [("first", Protocol.llm), ("second", Protocol.automation)]:
+                root = tmp_path / name
+                root.mkdir()
+                config_path = root / "custom.toml"
+                config_path.write_text(f'session_dir = "{name}"\nworkflow_dirs = []\n', encoding="utf-8")
+
+                result = helpers.invoke(["--config", str(config_path), "-p", protocol.value, "list"])
+
+                assert result.exit_code == 0, result.exception
+                assert observed[-1] == (protocol, config_path, root, pathlib.Path(name))
+                assert runtime_config.get() == outer
+                assert project_config.get() == outer_project
+                assert workspace_config.config.get() == previous
+
     @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
     @pytest.mark.parametrize("command, code", [("list", "config_unreadable"), ("init", "config_already_exists")])
     def test_config_path__directory_is_checked_by_configuration_operation(
@@ -176,7 +229,7 @@ class TestCommandContext:
     @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
     def test_local_errors__use_shared_cells_and_exit_code(self, mocker: MockerFixture, protocol: str) -> None:
         error = workspace_errors.ArtifactNotFound(artifact_id=ArtifactId("@/missing.donna.md"))
-        mocker.patch("donna.cli.utils.locate_config", return_value=Err([error]))
+        mocker.patch("llm_tool_cli.config.project.locate_config", return_value=Err([error]))
 
         result = helpers.invoke(["-p", protocol, "list"])
 
@@ -236,7 +289,7 @@ class TestCommandContext:
         self, mocker: MockerFixture, tmp_path: pathlib.Path, protocol: str
     ) -> None:
         failure = config_errors.DiscoveryFailed(path=tmp_path, reason="permission denied")
-        mocker.patch("donna.cli.utils.locate_config", return_value=Err([failure]))
+        mocker.patch("llm_tool_cli.config.project.locate_config", return_value=Err([failure]))
 
         result = helpers.invoke(["-p", protocol, "list"])
 
@@ -248,7 +301,7 @@ class TestCommandContext:
 
     def test_other_shared_errors__preserve_record_and_exit_three(self, mocker: MockerFixture) -> None:
         failure = llm_tool_errors.EnvironmentError(message="service unavailable", code="service_unavailable")
-        mocker.patch("donna.cli.utils.locate_config", return_value=Err([failure]))
+        mocker.patch("llm_tool_cli.config.project.locate_config", return_value=Err([failure]))
 
         result = helpers.invoke(["-p", "automation", "list"])
 
@@ -259,7 +312,7 @@ class TestCommandContext:
     @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
     def test_invalid_arguments__use_declared_exit_code(self, mocker: MockerFixture, protocol: str) -> None:
         failure = InvalidArguments(reason="invalid argument")
-        mocker.patch("donna.cli.utils.locate_config", return_value=Err([failure]))
+        mocker.patch("llm_tool_cli.config.project.locate_config", return_value=Err([failure]))
 
         result = helpers.invoke(["-p", protocol, "list"])
 
@@ -296,13 +349,14 @@ class TestCommandContext:
             assert failure.code in journal_entry.message
             assert context() == previous_context
             assert machine_context.context() == previous_context
+            assert not project_config.is_set()
         finally:
             machine_context.reset_context(machine_context_token)
             reset_context(context_token)
 
     def test_unexpected_errors__propagate_without_expected_diagnostic(self, mocker: MockerFixture) -> None:
         failure = RuntimeError("unexpected defect")
-        mocker.patch("donna.cli.utils.locate_config", side_effect=failure)
+        mocker.patch("llm_tool_cli.config.project.locate_config", side_effect=failure)
 
         result = helpers.invoke(["-p", "automation", "list"])
 
@@ -312,7 +366,7 @@ class TestCommandContext:
 
     def test_shared_internal_errors__propagate_without_expected_diagnostic(self, mocker: MockerFixture) -> None:
         failure = llm_tool_errors.InternalError("unexpected defect")
-        mocker.patch("donna.cli.utils.locate_config", side_effect=failure)
+        mocker.patch("llm_tool_cli.config.project.locate_config", side_effect=failure)
 
         result = helpers.invoke(["-p", "automation", "list"])
 
@@ -333,7 +387,7 @@ class TestCommandContext:
             failures.append(llm_tool_errors.EnvironmentError(code="unavailable", message="Service unavailable"))
         if reverse:
             failures.reverse()
-        mocker.patch("donna.cli.utils.locate_config", return_value=Err(failures))
+        mocker.patch("llm_tool_cli.config.project.locate_config", return_value=Err(failures))
 
         result = helpers.invoke(["-p", protocol, "list"])
 
@@ -356,7 +410,7 @@ class TestCommandContext:
         failure = RunScriptInvalidExitCode(
             artifact_id=ArtifactId("@/workflow.donna.md"), section_id=SectionId("script"), exit_code="invalid"
         )
-        mocker.patch("donna.cli.utils.locate_config", return_value=Err([failure]))
+        mocker.patch("llm_tool_cli.config.project.locate_config", return_value=Err([failure]))
 
         result = helpers.invoke(["-p", "automation", "list"])
 
@@ -382,7 +436,7 @@ class TestCommandContext:
     ) -> None:
         failure = UnwrapError(error=[])
         failure.details["error"] = payload
-        mocker.patch("donna.cli.utils.locate_config", side_effect=failure)
+        mocker.patch("llm_tool_cli.config.project.locate_config", side_effect=failure)
 
         result = helpers.invoke(["-p", protocol, "list"])
 
@@ -413,3 +467,8 @@ class TestCommandContext:
             assert not result.stdout
             assert "donna.toml" in result.stderr
             assert str(tmp_path) in result.stderr
+
+
+__all__ = ["runtime_settings"]
+
+pytestmark = pytest.mark.usefixtures("runtime_settings")

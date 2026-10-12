@@ -179,11 +179,3 @@ class MarkdownSectionsCountMismatch(InternalError):
         "Artifact `{artifact_id}` has {original_count} sections in the original render "
         "and {analyzed_count} sections in the analysis render."
     )
-
-
-class GlobalConfigAlreadySet(InternalError):
-    message_template: ClassVar[str] = "Global config value is already set"
-
-
-class GlobalConfigNotSet(InternalError):
-    message_template: ClassVar[str] = "Global config value is not set"

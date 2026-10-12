@@ -65,8 +65,8 @@ The following topics are out of scope:
   - low-level output boundary infrastructure that MAY be used by any top-level module.
 - `./donna/skills/` — module responsible for built-in skill document definitions and packaged Markdown resources.
 - `./donna/workspaces/` — module responsible for workspace management, including:
-  - finding and parsing config.
-  - detecting current project root.
+  - application configuration schema and packaged starter configuration.
+  - using the project root owned by shared project configuration.
   - operations with project files and directories.
   - artifact discovery and loading.
   - session state storage.
@@ -78,6 +78,15 @@ The CLI MUST NOT build domain-result payloads from internal domain objects.
 Internal domain and machine APIs MAY retain their own typed results; the logic-cell contract applies at the boundary used to present domain results to the CLI.
 
 The CLI MUST use `llm_tool_cli.skills` directly for skill-document loading and propagate its returned errors without local adapters.
+
+Donna MUST use frozen `StaticConfig` in `llm_tool_cli.core.settings` for application identity and the default `donna.toml` filename before parsing, `RuntimeConfig` in `llm_tool_cli.config.runtime` for the effective protocol, and `ProjectConfig` in `llm_tool_cli.config.project` for the active config path and derived project directory.
+The three shared context bindings MUST remain independent; project settings MUST be complete when bound after successful preparation and restored when the command context closes.
+The `donna.workspaces.config.config` binding MUST use shared `ContextValue[Config]` for loaded Donna-specific settings.
+The CLI MUST scope loaded settings around workspace-dependent execution and error journaling, restoring the previous binding on exit.
+The CLI MUST use shared `load_project` and `initialize_project` contexts with Donna's `Config` schema, retaining them through the framework command context's resource lifecycle.
+Discovery, loading, starter creation and validation, `ProjectConfig` construction, and project binding and restoration MUST belong to the shared library; Donna MUST NOT keep local preparation wrappers.
+Initialization MUST supply the `donna.workspaces` resource package and `base_config.toml` template.
+Donna MUST NOT maintain a parallel `GlobalConfig` implementation or a workspace wrapper duplicating runtime paths.
 
 ## Submodules
 
@@ -119,7 +128,7 @@ Donna MUST retain ownership of its cell projections, journal records, journal fo
 The public `donna.protocol.journal_formatters` package MUST own journal formatters independently of shared output cells.
 The runtime output boundary MUST accept iterables of logic cells through `emit_cells` without exposing an output-cell class.
 Single-cell callers MUST pass a one-item iterable through the same method.
-The CLI emitter MUST retain the selected protocol for shared cell rendering and select its journal formatter from the same protocol.
+The CLI emitter MUST read the active protocol from `llm_tool_cli.config.runtime.runtime_config` for shared cell rendering and journal formatter selection; it MUST NOT cache a protocol or formatter.
 The CLI MUST pass complete emitted logic-cell batches to shared sequence rendering with the selected protocol and Donna's tool label.
 
 Lexical project-path normalization, filesystem resolution and containment, symlink rejection, and file enumeration MUST be provided by `llm_tool_cli` and used directly.

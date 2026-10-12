@@ -1,14 +1,17 @@
 import pathlib
 
 import pytest
+from llm_tool_cli.config.project import ProjectConfig, project_config
+from llm_tool_cli.config.tests.fixtures import project_settings
 from llm_tool_cli.core.result import Err, Ok
-from llm_tool_cli.paths import RelativeProjectPath, ResolvedProjectPath
+from llm_tool_cli.paths import ProjectConfigPath, RelativeProjectPath, ResolvedProjectPath
 from llm_tool_cli.paths.errors import FilesUnreadable, InvalidProjectPath, PathResolutionFailed
 from pytest_mock import MockerFixture
 
 from donna.domain.artifact_ids import ArtifactId
 from donna.machine.artifacts import Artifact
 from donna.workspaces import artifacts
+from donna.workspaces import config as workspace_config
 from donna.workspaces import errors as workspace_errors
 from donna.workspaces.config import Config
 from donna.workspaces.files import FileFingerprint
@@ -58,12 +61,9 @@ class TestArtifactIsInWorkflowDirs:
 
 class TestArtifactIsVisibleInWorkspace:
     def test_uses_configured_workflow_dirs(self, mocker: MockerFixture) -> None:
-        mocker.patch(
-            "donna.workspaces.config.config",
-            return_value=Config(workflow_dirs=[RelativeProjectPath(pathlib.Path("workflows"))]),
-        )
+        with workspace_config.config.scope(Config(workflow_dirs=[RelativeProjectPath(pathlib.Path("workflows"))])):
 
-        assert artifacts._artifact_is_visible_in_workspace(make.ARTIFACT_ID)
+            assert artifacts._artifact_is_visible_in_workspace(make.ARTIFACT_ID)
 
 
 class TestWalkFilesystem:
@@ -77,7 +77,6 @@ class TestWalkFilesystem:
         (workflows / "ignored.md").write_text("", encoding="utf-8")
         (workflows / "spaced name.donna.md").write_text("", encoding="utf-8")
         (nested / "a.donna.md").write_text("", encoding="utf-8")
-        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
 
         assert artifacts.walk_filesystem([RelativeProjectPath(pathlib.Path("workflows"))]).unwrap() == [
             ArtifactId("@/workflows/b.donna.md"),
@@ -94,7 +93,6 @@ class TestWalkFilesystem:
         second.mkdir()
         (first / "b.donna.md").write_text("", encoding="utf-8")
         (second / "a.donna.md").write_text("", encoding="utf-8")
-        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
 
         assert artifacts.walk_filesystem(
             [
@@ -109,7 +107,6 @@ class TestWalkFilesystem:
     def test_walk_filesystem__ignores_missing_workflow_dirs(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
-        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
 
         assert artifacts.walk_filesystem([RelativeProjectPath(pathlib.Path("missing"))]).unwrap() == []
 
@@ -122,7 +119,6 @@ class TestWalkFilesystem:
         (directory / "file.donna.md").symlink_to(directory / ".hidden.DONNA.MD")
         (directory / "cycle").symlink_to(directory)
         (directory / "external").symlink_to(tmp_path.parent)
-        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
 
         assert artifacts.walk_filesystem([RelativeProjectPath(pathlib.Path("workflows"))]).unwrap() == [
             ArtifactId("@/workflows/.hidden.DONNA.MD")
@@ -133,7 +129,6 @@ class TestWalkFilesystem:
         self, mocker: MockerFixture, tmp_path: pathlib.Path, name: str
     ) -> None:
         (tmp_path / "link").symlink_to(tmp_path)
-        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
 
         assert artifacts.walk_filesystem([RelativeProjectPath(pathlib.Path(name))]).is_err(InvalidProjectPath)
 
@@ -144,7 +139,6 @@ class TestWalkFilesystem:
         directory = tmp_path / name
         directory.mkdir(exist_ok=True)
         (directory / "test.donna.md").touch()
-        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
 
         assert artifacts.walk_filesystem([RelativeProjectPath(pathlib.Path(name))]).unwrap() == [
             ArtifactId("@/" + (directory / "test.donna.md").relative_to(tmp_path).as_posix())
@@ -154,26 +148,28 @@ class TestWalkFilesystem:
 class TestListArtifactIds:
     def test_list_artifact_ids__deduplicates_discovered_artifacts(self, mocker: MockerFixture) -> None:
         config = Config(workflow_dirs=[RelativeProjectPath(pathlib.Path("workflows"))])
-        mocker.patch("donna.workspaces.config.config", return_value=config)
-        mocker.patch.object(
-            artifacts,
-            "walk_filesystem",
-            return_value=Ok([make.ARTIFACT_ID, make.ARTIFACT_ID, ArtifactId("@/workflows/other.donna.md")]),
-        )
+        with workspace_config.config.scope(config):
+            mocker.patch.object(
+                artifacts,
+                "walk_filesystem",
+                return_value=Ok([make.ARTIFACT_ID, make.ARTIFACT_ID, ArtifactId("@/workflows/other.donna.md")]),
+            )
 
-        assert artifacts.list_artifact_ids().unwrap() == [make.ARTIFACT_ID, ArtifactId("@/workflows/other.donna.md")]
+            assert artifacts.list_artifact_ids().unwrap() == [
+                make.ARTIFACT_ID,
+                ArtifactId("@/workflows/other.donna.md"),
+            ]
 
     def test_propagates_directory_read_failure(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         (tmp_path / "workflows").mkdir()
-        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
-        mocker.patch("donna.workspaces.config.config", return_value=Config())
-        cause = PermissionError("cannot list directory")
-        mocker.patch.object(pathlib.Path, "iterdir", side_effect=cause)
+        with workspace_config.config.scope(Config()):
+            cause = PermissionError("cannot list directory")
+            mocker.patch.object(pathlib.Path, "iterdir", side_effect=cause)
 
-        failure = artifacts.list_artifact_ids().unwrap_err()[0]
+            failure = artifacts.list_artifact_ids().unwrap_err()[0]
 
-        assert isinstance(failure, FilesUnreadable)
-        assert failure.cause == cause
+            assert isinstance(failure, FilesUnreadable)
+            assert failure.cause == cause
 
 
 class TestResolveArtifactPath:
@@ -184,7 +180,6 @@ class TestResolveArtifactPath:
         (target / "file.donna.md").touch()
         (tmp_path / "file.donna.md").symlink_to(target / "file.donna.md")
         (tmp_path / "directory").symlink_to(target)
-        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
 
         assert artifacts.resolve_artifact_path(ArtifactId("@/" + suffix)).unwrap() is None
 
@@ -202,7 +197,6 @@ class TestResolveArtifactPath:
                 raise cause
             return resolve(candidate)
 
-        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
         mocker.patch.object(pathlib.Path, "resolve", autospec=True, side_effect=fail_target)
 
         failures = artifacts.resolve_artifact_path(make.ARTIFACT_ID).unwrap_err()
@@ -223,9 +217,8 @@ class TestResolveArtifactPath:
         outside = tmp_path / "outside.donna.md"
         outside.write_text("", encoding="utf-8")
         (workflows / "test.donna.md").symlink_to(outside)
-        mocker.patch("donna.workspaces.config.project_dir", return_value=project)
-
-        result = artifacts.resolve_artifact_path(make.ARTIFACT_ID)
+        with project_config.scope(ProjectConfig(config_path=ProjectConfigPath(project / "donna.toml"))):
+            result = artifacts.resolve_artifact_path(make.ARTIFACT_ID)
 
         assert result.is_ok()
         assert result.unwrap() is None
@@ -236,7 +229,6 @@ class TestResolveArtifactPath:
         path = tmp_path / "workflows" / "test.donna.md"
         path.parent.mkdir()
         path.write_text("", encoding="utf-8")
-        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
 
         result = artifacts.resolve_artifact_path(make.ARTIFACT_ID)
 
@@ -246,7 +238,6 @@ class TestResolveArtifactPath:
     def test_resolve_artifact_path__returns_none_for_missing_file(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
-        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
 
         result = artifacts.resolve_artifact_path(make.ARTIFACT_ID)
 
@@ -303,29 +294,22 @@ class TestFetchRawArtifact:
         path = tmp_path / "workflows" / "test.donna.md"
         path.parent.mkdir()
         path.write_text("content", encoding="utf-8")
-        mocker.patch("donna.workspaces.config.project_dir", return_value=tmp_path)
-        mocker.patch(
-            "donna.workspaces.config.config",
-            return_value=Config(workflow_dirs=[RelativeProjectPath(pathlib.Path("workflows"))]),
-        )
+        with workspace_config.config.scope(Config(workflow_dirs=[RelativeProjectPath(pathlib.Path("workflows"))])):
 
-        result = artifacts.fetch_raw_artifact(make.ARTIFACT_ID)
+            result = artifacts.fetch_raw_artifact(make.ARTIFACT_ID)
 
-        assert result.is_ok()
-        assert result.unwrap().get_bytes() == b"content"
+            assert result.is_ok()
+            assert result.unwrap().get_bytes() == b"content"
 
     def test_fetch_raw_artifact__rejects_artifacts_outside_workflow_dirs(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
-        mocker.patch(
-            "donna.workspaces.config.config",
-            return_value=Config(workflow_dirs=[RelativeProjectPath(pathlib.Path("other"))]),
-        )
+        with workspace_config.config.scope(Config(workflow_dirs=[RelativeProjectPath(pathlib.Path("other"))])):
 
-        result = artifacts.fetch_raw_artifact(make.ARTIFACT_ID)
+            result = artifacts.fetch_raw_artifact(make.ARTIFACT_ID)
 
-        assert result.is_err()
-        assert isinstance(result.unwrap_err()[0], workspace_errors.ArtifactNotFound)
+            assert result.is_err()
+            assert isinstance(result.unwrap_err()[0], workspace_errors.ArtifactNotFound)
 
 
 class TestFetchArtifactBytes:
@@ -343,24 +327,24 @@ class TestFetchArtifactBytes:
 class TestRenderMarkdownArtifact:
     def test_render_markdown_artifact__uses_workspace_defaults(self, mocker: MockerFixture) -> None:
         expected_artifact = Artifact(id=make.ARTIFACT_ID, sections=[])
-        mocker.patch("donna.workspaces.config.config", return_value=Config())
-        construct = mocker.patch(
-            "donna.workspaces.markdown_parser.construct_artifact_from_bytes",
-            return_value=Ok(expected_artifact),
-        )
+        with workspace_config.config.scope(Config()):
+            construct = mocker.patch(
+                "donna.workspaces.markdown_parser.construct_artifact_from_bytes",
+                return_value=Ok(expected_artifact),
+            )
 
-        result = artifacts.render_markdown_artifact(make.ARTIFACT_ID, b"# Workflow", artifacts.RENDER_CONTEXT_VIEW)
+            result = artifacts.render_markdown_artifact(make.ARTIFACT_ID, b"# Workflow", artifacts.RENDER_CONTEXT_VIEW)
 
-        assert result.is_ok()
-        assert result.unwrap() == expected_artifact
-        construct.assert_called_once_with(
-            make.ARTIFACT_ID,
-            b"# Workflow",
-            artifacts.RENDER_CONTEXT_VIEW,
-            default_section_kind=Config().defaults.tail_section_kind,
-            default_primary_section_kind=Config().defaults.primary_section_kind,
-            default_primary_section_id=Config().defaults.primary_section_id,
-        )
+            assert result.is_ok()
+            assert result.unwrap() == expected_artifact
+            construct.assert_called_once_with(
+                make.ARTIFACT_ID,
+                b"# Workflow",
+                artifacts.RENDER_CONTEXT_VIEW,
+                default_section_kind=Config().defaults.tail_section_kind,
+                default_primary_section_kind=Config().defaults.primary_section_kind,
+                default_primary_section_id=Config().defaults.primary_section_id,
+            )
 
 
 class TestArtifactFingerprint:
@@ -383,3 +367,8 @@ class TestArtifactFingerprint:
 
         assert result.is_ok()
         assert result.unwrap() is None
+
+
+__all__ = ["project_settings"]
+
+pytestmark = pytest.mark.usefixtures("project_settings")

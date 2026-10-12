@@ -1,5 +1,6 @@
 import enum
 
+from llm_tool_cli.config.project import project_config
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 from llm_tool_cli.paths import PathInput, resolve_project_path
 
@@ -7,7 +8,6 @@ from donna.core import errors as core_errors
 from donna.domain.artifact_ids import ArtifactId
 from donna.machine.templates import Directive, PreparedDirectiveResult
 from donna.machine.templates_context import DirectiveContext
-from donna.workspaces import config as workspace_config
 from donna.workspaces.paths import normalize_project_path
 
 
@@ -80,7 +80,7 @@ class Path(Directive):
         raw_path = str(argv[0])
         mode: PathRenderMode = argv[1]  # type: ignore[assignment]
         artifact_id: ArtifactId = argv[2]  # type: ignore[assignment]
-        project_root = workspace_config.project_dir()
+        project_root = project_config.get().project_dir
 
         normalized = normalize_project_path(raw_path, PathInput(project_root), relative_to=artifact_id).unwrap()
 

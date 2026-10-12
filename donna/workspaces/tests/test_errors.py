@@ -110,13 +110,3 @@ class TestMarkdownSectionsCountMismatch(_InternalErrorCase):
         return workspace_errors.MarkdownSectionsCountMismatch(
             details={"artifact_id": make.ARTIFACT_ID, "original_count": 1, "analyzed_count": 2}
         )
-
-
-class TestGlobalConfigAlreadySet(_InternalErrorCase):
-    def error(self) -> workspace_errors.InternalError:
-        return workspace_errors.GlobalConfigAlreadySet()
-
-
-class TestGlobalConfigNotSet(_InternalErrorCase):
-    def error(self) -> workspace_errors.InternalError:
-        return workspace_errors.GlobalConfigNotSet()

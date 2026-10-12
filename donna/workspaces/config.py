@@ -1,20 +1,17 @@
 from __future__ import annotations
 
 import enum
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
 import pydantic
+from llm_tool_cli.core.context import ContextValue
 from llm_tool_cli.core.entities import BaseEntity
-from llm_tool_cli.paths import ProjectConfigPath, ProjectRootPath, RelativeProjectPath
+from llm_tool_cli.paths import RelativeProjectPath
 
 from donna.domain.constants import DONNA_DEFAULT_SESSION_DIR, DONNA_DEFAULT_WORKFLOW_DIR
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
-from donna.workspaces import errors as world_errors
-
-if TYPE_CHECKING:
-    from llm_tool_cli.protocol import Protocol
 
 
 class JournalRecordAttribute(str, enum.Enum):
@@ -118,56 +115,4 @@ class Config(BaseEntity):
         return [_serialize_workflow_dir(path) for path in value]
 
 
-class Workspace(BaseEntity):
-    model_config = pydantic.ConfigDict(arbitrary_types_allowed=True)
-
-    root: ProjectRootPath
-    config_path: ProjectConfigPath
-    config: Config
-
-
-def construct_workspace(config: Config, *, config_path: ProjectConfigPath) -> Workspace:
-    """Derive the workspace root from the selected path without reading files or installing globals."""
-    return Workspace(root=ProjectRootPath(config_path.parent), config_path=config_path, config=config)
-
-
-class GlobalConfig[V]():
-    __slots__ = ("_value",)
-
-    def __init__(self) -> None:
-        self._value: V | None = None
-
-    def set(self, value: V) -> None:
-        if self._value is not None:
-            raise world_errors.GlobalConfigAlreadySet()
-
-        self._value = value
-
-    def get(self) -> V:
-        if self._value is None:
-            raise world_errors.GlobalConfigNotSet()
-
-        return self._value
-
-    def is_set(self) -> bool:
-        return self._value is not None
-
-    def __call__(self) -> V:
-        return self.get()
-
-
-project_dir = GlobalConfig[ProjectRootPath]()
-config_path = GlobalConfig[ProjectConfigPath]()
-config = GlobalConfig[Config]()
-protocol: GlobalConfig["Protocol"] = GlobalConfig()
-
-
-def install_workspace(workspace: Workspace) -> None:
-    if not project_dir.is_set():
-        project_dir.set(ProjectRootPath(workspace.root))
-
-    if not config_path.is_set():
-        config_path.set(ProjectConfigPath(workspace.config_path))
-
-    if not config.is_set():
-        config.set(workspace.config)
+config = ContextValue[Config]("donna_config")
