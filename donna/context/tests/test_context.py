@@ -10,7 +10,7 @@ from donna.context.tests.helpers import FakeOutputEmitter
 
 
 class TestContext:
-    def test_init__creates_invocation_local_caches_and_scopes(self) -> None:
+    def test_init__creates_invocation_local_services(self) -> None:
         runtime_context = Context()
 
         assert isinstance(runtime_context.artifacts, ArtifactsCache)
@@ -18,8 +18,6 @@ class TestContext:
         assert isinstance(runtime_context.primitives, PrimitivesCache)
         assert isinstance(runtime_context.journal, Journal)
         assert isinstance(runtime_context.output, NoopEmitter)
-        assert runtime_context.current_work_unit_id.get() is None
-        assert runtime_context.current_operation_id.get() is None
 
     def test_init__uses_explicit_output_emitter(self) -> None:
         output = FakeOutputEmitter()

@@ -1,9 +1,12 @@
-from llm_tool_cli.core.result import Ok, Result
+import pytest
+from llm_tool_cli.core.errors import EnvironmentError
+from llm_tool_cli.core.result import Err, Ok, Result
+from pytest_mock import MockerFixture
 
 from donna.domain.internal_ids import TaskId, WorkUnitId
 from donna.machine import errors as machine_errors
 from donna.machine.changes import Change, ChangeSetTaskContext
-from donna.machine.context import reset_context, set_context
+from donna.machine.context import ExecutionContext, execution_context, reset_context, set_context
 from donna.machine.operations import OperationKind
 from donna.machine.state import MutableState
 from donna.machine.tasks import Task, WorkUnit
@@ -20,7 +23,7 @@ class _StateOperation(OperationKind):
         artifact: object,
         section_id: object,
     ) -> Result[list[Change]]:
-        return Ok([ChangeSetTaskContext(task_id=task.id, key="status", value="done")])
+        return Ok([ChangeSetTaskContext(task_id=task.id, key="execution", value=execution_context.get().model_dump())])
 
 
 class TestBaseState:
@@ -180,17 +183,55 @@ class TestMutableState:
         unit = make.work_unit()
         state = make.mutable_state(tasks=[task], work_units=[unit])
         machine_context = FakeMachineContext(artifact=make.artifact(), primitive=_StateOperation())
+        outer = ExecutionContext(
+            current_work_unit_id=WorkUnitId("WU-9-j"), current_operation_id=make.SECONDARY_OPERATION_ID
+        )
         token = set_context(machine_context)
 
         try:
-            result = state.execute_next_work_unit()
+            with execution_context.scope(outer):
+                result = state.execute_next_work_unit()
+                assert execution_context.get() == outer
         finally:
             reset_context(token)
 
         assert result.is_ok()
         assert state.work_units == []
-        assert state.tasks[0].context == {"status": "done"}
-        assert machine_context.current_work_unit_id.get() is None
+        assert state.tasks[0].context == {
+            "execution": {"current_work_unit_id": unit.id, "current_operation_id": unit.operation_id}
+        }
+        assert not execution_context.is_set()
+
+    @pytest.mark.parametrize("unexpected", [False, True])
+    def test_execute_next_work_unit__restores_both_scopes_after_failure(
+        self, mocker: MockerFixture, unexpected: bool
+    ) -> None:
+        task = make.task()
+        unit = make.work_unit()
+        state = make.mutable_state(tasks=[task], work_units=[unit])
+        machine_context = FakeMachineContext(artifact=make.artifact(), primitive=_StateOperation())
+        failure = EnvironmentError(code="unavailable", message="Unavailable")
+        execute = mocker.patch.object(_StateOperation, "execute_section", return_value=Err([failure]))
+        if unexpected:
+            execute.side_effect = ValueError("unexpected defect")
+        outer = ExecutionContext(
+            current_work_unit_id=WorkUnitId("WU-9-j"), current_operation_id=make.SECONDARY_OPERATION_ID
+        )
+        token = set_context(machine_context)
+        try:
+            with execution_context.scope(outer):
+                if unexpected:
+                    with pytest.raises(ValueError):
+                        state.execute_next_work_unit()
+                else:
+                    assert state.execute_next_work_unit().unwrap_err() == [failure]
+                assert execution_context.get() == outer
+        finally:
+            reset_context(token)
+
+        assert state.work_units == [unit]
+        assert state.tasks[0].context == {}
+        assert not execution_context.is_set()
 
 
 class TestStateNode:

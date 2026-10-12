@@ -8,8 +8,8 @@ from llm_tool_cli.protocol import Protocol
 from llm_tool_cli.protocol import errors as protocol_errors
 
 from donna.core.utils import now
-from donna.domain.artifact_ids import ArtifactSectionId
-from donna.domain.internal_ids import TaskId, WorkUnitId
+from donna.domain.internal_ids import TaskId
+from donna.machine.context import execution_context
 from donna.protocol import journal as protocol_journal
 from donna.workspaces import journal as workspace_journal
 
@@ -45,16 +45,15 @@ class Journal:
 
         state = self._context.state.load().unwrap()
         parsed_task_id: TaskId | None = state.current_task.id if state.current_task else None
-        parsed_work_unit_id: WorkUnitId | None = self._context.current_work_unit_id.get()
-        parsed_operation_id: ArtifactSectionId | None = self._context.current_operation_id.get()
+        execution = execution_context.get()
 
         record = protocol_journal.JournalRecord(
             timestamp=now(),
             actor_id=actor_id,
             message=message,
             current_task_id=parsed_task_id,
-            current_work_unit_id=parsed_work_unit_id,
-            current_operation_id=parsed_operation_id,
+            current_work_unit_id=execution.current_work_unit_id,
+            current_operation_id=execution.current_operation_id,
         )
 
         workspace_journal.write_record(record).unwrap()

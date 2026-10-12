@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import contextvars
-from collections.abc import Iterator
-from contextlib import contextmanager
-from typing import TYPE_CHECKING, Generic, Protocol, TypeVar
+from typing import TYPE_CHECKING, Protocol
 
+from llm_tool_cli.core.context import ContextValue
+from llm_tool_cli.core.entities import BaseEntity
 from llm_tool_cli.core.result import Result
 
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
@@ -17,26 +17,13 @@ if TYPE_CHECKING:
     from donna.machine.primitives import Primitive
     from donna.machine.tasks import Task, WorkUnit
 
-TScopedValue = TypeVar("TScopedValue")
+
+class ExecutionContext(BaseEntity):
+    current_work_unit_id: WorkUnitId | None = None
+    current_operation_id: ArtifactSectionId | None = None
 
 
-class ValueScope(Generic[TScopedValue]):
-    __slots__ = ("_value",)
-
-    def __init__(self, initial: TScopedValue | None = None) -> None:
-        self._value: TScopedValue | None = initial
-
-    def get(self) -> TScopedValue | None:
-        return self._value
-
-    @contextmanager
-    def scope(self, value: TScopedValue | None) -> Iterator[None]:
-        previous = self._value
-        self._value = value
-        try:
-            yield
-        finally:
-            self._value = previous
+execution_context = ContextValue[ExecutionContext]("donna_execution_context")
 
 
 class MachineArtifacts(Protocol):
@@ -73,14 +60,6 @@ class MachineContext(Protocol):
 
     @property
     def journal(self) -> MachineJournal:
-        pass
-
-    @property
-    def current_work_unit_id(self) -> ValueScope[WorkUnitId]:
-        pass
-
-    @property
-    def current_operation_id(self) -> ValueScope[ArtifactSectionId]:
         pass
 
 

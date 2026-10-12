@@ -38,6 +38,7 @@ The following topics are out of scope:
   - state changes.
   - operation and primitive interfaces.
   - workflow execution orchestration that is independent of CLI argument parsing and protocol-specific formatting.
+  - immutable invocation-local execution identifiers for the current work unit and operation, scoped through shared context management.
   - protocol-facing views of machine-owned concepts that prepare protocol-independent logic cells through `./donna/protocol/`.
 - `./donna/runtime/` — module responsible for command-independent runtime orchestration. Contains:
   - session lifecycle use cases.
@@ -48,7 +49,6 @@ The following topics are out of scope:
   - no CLI argument parsing.
 - `./donna/context/` — module responsible for invocation-local runtime context. Contains:
   - context-local caches.
-  - context-local execution scopes.
   - glue that gives machine and primitive logic access to loaded artifacts, primitive registries, and session state.
 - `./donna/primitives/` — module responsible for built-in primitive implementations. Contains:
   - artifact primitives.
@@ -87,6 +87,12 @@ The CLI MUST use shared `load_project` and `initialize_project` contexts with Do
 Discovery, loading, starter creation and validation, `ProjectConfig` construction, and project binding and restoration MUST belong to the shared library; Donna MUST NOT keep local preparation wrappers.
 Initialization MUST supply the `donna.workspaces` resource package and `base_config.toml` template.
 Donna MUST NOT maintain a parallel `GlobalConfig` implementation or a workspace wrapper duplicating runtime paths.
+
+The machine module MUST own a frozen execution-context value containing the optional current work unit and operation identifiers, bound independently through shared `ContextValue`.
+The application context and the machine's service interface MUST NOT store duplicate execution identifiers.
+The CLI MUST bind an empty execution context for successfully prepared workspace commands, retaining it through command execution and error journaling and restoring the previous binding on exit.
+Work-unit and operation execution MUST use nested scopes that replace their respective identifier, preserve the other identifier, and restore the previous value after success or failure.
+Journaling MUST read execution identifiers from this binding; the current task identifier MUST remain derived from session state.
 
 ## Submodules
 

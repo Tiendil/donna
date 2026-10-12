@@ -8,8 +8,10 @@ from donna.machine import primitives as primitives
 from donna.machine import state as state
 from donna.machine import tasks as tasks
 from donna.machine import templates as templates
+from donna.machine.context import ExecutionContext
 
 __all__ = (
+    "ExecutionContext",
     "action_requests",
     "artifacts",
     "changes",

@@ -2,11 +2,9 @@ from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Err, Ok, Result
 
 from donna.context.tests.helpers import FakeJournal
-from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
-from donna.domain.internal_ids import WorkUnitId
+from donna.domain.artifact_ids import ArtifactId
 from donna.domain.python_path import PythonPath
 from donna.machine.artifacts import Artifact
-from donna.machine.context import ValueScope
 from donna.machine.primitives import Primitive
 from donna.machine.tasks import Task, WorkUnit
 
@@ -64,8 +62,6 @@ class FakeMachineContext:
         self._artifacts = FakeArtifacts(artifact=artifact, error=artifact_error)
         self._primitives = FakePrimitives(primitive=primitive, error=primitive_error)
         self._journal = FakeJournal()
-        self._current_work_unit_id: ValueScope[WorkUnitId] = ValueScope()
-        self._current_operation_id: ValueScope[ArtifactSectionId] = ValueScope()
 
     @property
     def artifacts(self) -> FakeArtifacts:
@@ -78,11 +74,3 @@ class FakeMachineContext:
     @property
     def journal(self) -> FakeJournal:
         return self._journal
-
-    @property
-    def current_work_unit_id(self) -> ValueScope[WorkUnitId]:
-        return self._current_work_unit_id
-
-    @property
-    def current_operation_id(self) -> ValueScope[ArtifactSectionId]:
-        return self._current_operation_id

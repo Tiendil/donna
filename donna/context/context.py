@@ -5,9 +5,6 @@ from donna.context.journal import Journal
 from donna.context.output import NoopEmitter, OutputEmitter
 from donna.context.primitives import PrimitivesCache
 from donna.context.state import StateCache
-from donna.domain.artifact_ids import ArtifactSectionId
-from donna.domain.internal_ids import WorkUnitId
-from donna.machine.context import ValueScope
 
 
 class Context:
@@ -17,8 +14,6 @@ class Context:
         "_primitives",
         "_journal",
         "output",
-        "current_work_unit_id",
-        "current_operation_id",
     )
 
     def __init__(self, output: OutputEmitter | None = None) -> None:
@@ -27,8 +22,6 @@ class Context:
         self._primitives = PrimitivesCache()
         self._journal = Journal(self)
         self.output = output if output is not None else NoopEmitter()
-        self.current_work_unit_id: ValueScope[WorkUnitId] = ValueScope()
-        self.current_operation_id: ValueScope[ArtifactSectionId] = ValueScope()
 
     @property
     def artifacts(self) -> ArtifactsCache:

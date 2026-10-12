@@ -12,9 +12,8 @@ from pytest_mock import MockerFixture
 from donna.context.context import Context
 from donna.context.journal import Journal
 from donna.context.tests.helpers import FakeOutputEmitter
-from donna.domain.artifact_ids import ArtifactSectionId
-from donna.domain.internal_ids import WorkUnitId
-from donna.machine.context import ValueScope
+from donna.machine import ExecutionContext
+from donna.machine.context import execution_context
 from donna.machine.tests import make as machine_make
 
 
@@ -29,8 +28,6 @@ class _FakeStateCache:
 class _FakeContext:
     def __init__(self) -> None:
         self.state = _FakeStateCache()
-        self.current_work_unit_id: ValueScope[WorkUnitId] = ValueScope()
-        self.current_operation_id: ValueScope[ArtifactSectionId] = ValueScope()
         self.output = FakeOutputEmitter()
 
 
@@ -64,9 +61,11 @@ class TestJournal:
 
         with (
             runtime_config.scope(RuntimeConfig(protocol=Protocol.llm)),
-            fake_context.current_work_unit_id.scope(machine_make.WORK_UNIT_ID),
+            execution_context.scope(ExecutionContext(current_work_unit_id=machine_make.WORK_UNIT_ID)),
         ):
-            with fake_context.current_operation_id.scope(machine_make.PRIMARY_OPERATION_ID):
+            with execution_context.scope(
+                execution_context.get().replace(current_operation_id=machine_make.PRIMARY_OPERATION_ID)
+            ):
                 result = Journal(cast(Context, fake_context)).add("message")
 
         assert result.is_ok()
@@ -86,10 +85,13 @@ class TestJournal:
         mocker.patch("donna.context.journal.workspace_journal.write_record", return_value=Ok(None))
         smart_actor = mocker.patch.object(Journal, "smart_actor_id")
 
-        result = Journal(cast(Context, fake_context)).add("message", actor_id="donna")
+        with execution_context.scope(ExecutionContext()):
+            result = Journal(cast(Context, fake_context)).add("message", actor_id="donna")
 
         assert result.is_ok()
         assert result.unwrap().actor_id == "donna"
+        assert result.unwrap().current_work_unit_id is None
+        assert result.unwrap().current_operation_id is None
         smart_actor.assert_not_called()
 
 

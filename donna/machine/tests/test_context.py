@@ -1,32 +1,8 @@
 import pytest
 
 from donna.machine import errors as machine_errors
-from donna.machine.context import ValueScope, context, reset_context, set_context
+from donna.machine.context import context, reset_context, set_context
 from donna.machine.tests.helpers import FakeMachineContext
-
-
-class TestValueScope:
-    def test_get__returns_initial_value(self) -> None:
-        scope = ValueScope("initial")
-
-        assert scope.get() == "initial"
-
-    def test_scope__restores_previous_value(self) -> None:
-        scope = ValueScope("outer")
-
-        with scope.scope("inner"):
-            assert scope.get() == "inner"
-
-        assert scope.get() == "outer"
-
-    def test_scope__restores_previous_value_after_exception(self) -> None:
-        scope = ValueScope("outer")
-
-        with pytest.raises(ValueError):
-            with scope.scope("inner"):
-                raise ValueError
-
-        assert scope.get() == "outer"
 
 
 class TestContext:

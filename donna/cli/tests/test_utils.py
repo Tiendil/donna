@@ -24,7 +24,10 @@ from donna.cli.utils import CliEmitter
 from donna.context import Context, context, reset_context, set_context
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
+from donna.machine import ExecutionContext
 from donna.machine import context as machine_context
+from donna.machine.context import execution_context
+from donna.machine.tests import make as machine_make
 from donna.primitives.sections.run_script import RunScriptInvalidExitCode
 from donna.protocol.tests.make import cell, journal_record
 from donna.workspaces import config as workspace_config
@@ -118,6 +121,51 @@ class TestCliEmitter:
 
 
 class TestCommandContext:
+    @pytest.mark.parametrize("outcome", ["success", "environment_error", "exception"])
+    def test_execution_scope__starts_empty_and_restores_previous_binding(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path, outcome: str
+    ) -> None:
+        config_path = helpers.write_config(tmp_path)
+        initialized = helpers.invoke(["--config", str(config_path), "-p", "automation", "new-session"])
+        assert initialized.exit_code == 0
+        assert not execution_context.is_set()
+        observed: list[ExecutionContext] = []
+        failure = llm_tool_errors.EnvironmentError(code="command_failed", message="Command failed")
+        defect = ValueError("unexpected defect")
+
+        def observe(message: str) -> None:
+            observed.append(execution_context.get())
+            if outcome == "environment_error":
+                Err([failure]).unwrap()
+            if outcome == "exception":
+                raise defect
+
+        mocker.patch("donna.cli.commands.artifacts._log_artifact_operation", side_effect=observe)
+        outer = ExecutionContext(
+            current_work_unit_id=machine_make.WORK_UNIT_ID,
+            current_operation_id=machine_make.PRIMARY_OPERATION_ID,
+        )
+        with execution_context.scope(outer):
+            result = helpers.invoke(["--config", str(config_path), "-p", "automation", "list"])
+            assert execution_context.get() == outer
+
+        assert observed == [ExecutionContext()]
+        assert not execution_context.is_set()
+        if outcome == "success":
+            assert result.exit_code == 0, result.exception
+        elif outcome == "environment_error":
+            assert result.exit_code == 3
+            records = helpers.json_lines(result.stdout)
+            assert_error_cells([record for record in records if record.get("type") == "error"], [failure])
+            journals = [record for record in records if "current_work_unit_id" in record]
+            assert len(journals) == 1
+            assert journals[0]["current_work_unit_id"] is None
+            assert journals[0]["current_operation_id"] is None
+        else:
+            assert result.exception == defect
+            assert not result.stdout
+            assert not result.stderr
+
     def test_workspace_setup__keeps_runtime_and_loaded_settings_together(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:

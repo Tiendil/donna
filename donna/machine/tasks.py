@@ -7,7 +7,7 @@ from llm_tool_cli.core.result import Ok, Result, unwrap_to_error
 
 from donna.domain.artifact_ids import ArtifactSectionId, split_artifact_section_id
 from donna.domain.internal_ids import TaskId, WorkUnitId
-from donna.machine.context import context
+from donna.machine.context import context, execution_context
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -57,7 +57,7 @@ class WorkUnit(BaseEntity):
     @unwrap_to_error
     def run(self, task: Task) -> Result[list["Change"]]:
         ctx = context()
-        with ctx.current_operation_id.scope(self.operation_id):
+        with execution_context.scope(execution_context.get().replace(current_operation_id=self.operation_id)):
             operation_parts = split_artifact_section_id(self.operation_id)
             assert operation_parts is not None
             artifact = ctx.artifacts.load_for_execution(operation_parts.artifact_id, task, self).unwrap()

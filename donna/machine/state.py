@@ -17,7 +17,7 @@ from donna.machine.changes import (
     ChangeRemoveTask,
     ChangeRemoveWorkUnit,
 )
-from donna.machine.context import context
+from donna.machine.context import context, execution_context
 from donna.machine.tasks import Task, WorkUnit
 from donna.protocol import SessionStateCell
 from donna.protocol.nodes import Node
@@ -206,7 +206,7 @@ class MutableState(BaseState):
         current_task = self.current_task
         assert current_task is not None
 
-        with context().current_work_unit_id.scope(next_work_unit.id):
+        with execution_context.scope(execution_context.get().replace(current_work_unit_id=next_work_unit.id)):
             changes = next_work_unit.run(current_task).unwrap()
         changes.append(ChangeRemoveWorkUnit(work_unit_id=next_work_unit.id))
 
