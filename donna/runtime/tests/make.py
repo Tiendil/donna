@@ -8,6 +8,7 @@ from llm_tool_cli.core.result import Err, Ok, Result
 from donna.context.context import Context
 from donna.context.context import reset_context as reset_runtime_context
 from donna.context.context import set_context as set_runtime_context
+from donna.context.output import output
 from donna.context.tests.helpers import FakeJournal, FakeOutputEmitter
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.python_path import PythonPath
@@ -101,6 +102,7 @@ class InstalledContext:
         self._resources = ExitStack()
 
     def __enter__(self) -> FakeRuntimeContext:
+        self._resources.enter_context(output.scope(self.context.output))
         self._resources.enter_context(caches.scope(self.context.caches))
         self._resources.enter_context(execution_context.scope(ExecutionContext()))
         self._runtime_token = set_runtime_context(cast(Context, self.context))

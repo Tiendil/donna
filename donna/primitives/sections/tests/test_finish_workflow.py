@@ -1,6 +1,7 @@
 from llm_tool_cli.protocol.logic_cells import ContentCell
-from pytest_mock import MockerFixture
 
+from donna.context.output import output
+from donna.context.tests.helpers import FakeOutputEmitter
 from donna.machine.changes import ChangeFinishTask
 from donna.machine.operations import FsmMode, OperationMeta
 from donna.machine.tests import make as machine_make
@@ -27,9 +28,8 @@ class TestFinishWorkflow:
         assert meta.fsm_mode == FsmMode.final
         assert meta.allowed_transitions == set()
 
-    def test_execute_section__emits_message_and_finishes_task(self, mocker: MockerFixture) -> None:
-        runtime_context = make.FakeRuntimeContext()
-        mocker.patch("donna.primitives.sections.finish_workflow.context", return_value=runtime_context)
+    def test_execute_section__emits_message_and_finishes_task(self) -> None:
+        emitter = FakeOutputEmitter()
         artifact = machine_make.artifact(
             [
                 machine_make.artifact_section(
@@ -41,12 +41,13 @@ class TestFinishWorkflow:
             ]
         )
 
-        result = FinishWorkflow().execute_section(
-            machine_make.task(), machine_make.work_unit(), artifact, make.section_id("done")
-        )
+        with output.scope(emitter):
+            result = FinishWorkflow().execute_section(
+                machine_make.task(), machine_make.work_unit(), artifact, make.section_id("done")
+            )
 
         assert result.is_ok()
-        cell = runtime_context.output.cells[0]
+        cell = emitter.cells[0]
         assert isinstance(cell, ContentCell)
         assert cell.kind == "info"
         assert cell.content == "Finished"

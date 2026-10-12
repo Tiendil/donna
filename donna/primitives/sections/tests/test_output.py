@@ -1,6 +1,7 @@
 from llm_tool_cli.protocol.logic_cells import ContentCell
-from pytest_mock import MockerFixture
 
+from donna.context.output import output
+from donna.context.tests.helpers import FakeOutputEmitter
 from donna.machine.changes import ChangeAddWorkUnit
 from donna.machine.operations import FsmMode
 from donna.machine.tests import make as machine_make
@@ -63,9 +64,8 @@ class TestOutput:
         assert result.is_err()
         assert isinstance(result.unwrap_err()[0], OutputMissingNextOperation)
 
-    def test_execute_section__emits_message_and_adds_next_work_unit(self, mocker: MockerFixture) -> None:
-        runtime_context = make.FakeRuntimeContext()
-        mocker.patch("donna.primitives.sections.output.context", return_value=runtime_context)
+    def test_execute_section__emits_message_and_adds_next_work_unit(self) -> None:
+        emitter = FakeOutputEmitter()
         artifact = machine_make.artifact(
             [
                 machine_make.artifact_section(
@@ -80,15 +80,16 @@ class TestOutput:
             ]
         )
 
-        result = Output().execute_section(
-            machine_make.task(),
-            machine_make.work_unit(operation_id=make.operation_id("start")),
-            artifact,
-            make.section_id("start"),
-        )
+        with output.scope(emitter):
+            result = Output().execute_section(
+                machine_make.task(),
+                machine_make.work_unit(operation_id=make.operation_id("start")),
+                artifact,
+                make.section_id("start"),
+            )
 
         assert result.is_ok()
-        cell = runtime_context.output.cells[0]
+        cell = emitter.cells[0]
         assert isinstance(cell, ContentCell)
         assert cell.kind == "info"
         assert cell.content == "Agent message"

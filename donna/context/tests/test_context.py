@@ -2,8 +2,6 @@ import pytest
 
 from donna.context.context import Context, context, reset_context, set_context
 from donna.context.journal import Journal
-from donna.context.output import NoopEmitter
-from donna.context.tests.helpers import FakeOutputEmitter
 
 
 class TestContext:
@@ -11,14 +9,6 @@ class TestContext:
         runtime_context = Context()
 
         assert isinstance(runtime_context.journal, Journal)
-        assert isinstance(runtime_context.output, NoopEmitter)
-
-    def test_init__uses_explicit_output_emitter(self) -> None:
-        output = FakeOutputEmitter()
-
-        runtime_context = Context(output=output)
-
-        assert runtime_context.output == output
 
 
 class TestSetContext:

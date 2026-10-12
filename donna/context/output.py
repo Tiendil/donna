@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 from typing import Protocol
 
+from llm_tool_cli.core.context import ContextValue
 from llm_tool_cli.protocol.logic_cells.base import LogicCell
 
 from donna.protocol.journal import JournalRecord
@@ -12,6 +13,9 @@ class OutputEmitter(Protocol):
 
     def emit_journal(self, record: JournalRecord) -> None:
         pass
+
+
+output = ContextValue[OutputEmitter]("donna_output")
 
 
 class NoopEmitter:

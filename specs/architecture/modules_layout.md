@@ -50,6 +50,7 @@ The following topics are out of scope:
   - no CLI argument parsing.
 - `./donna/context/` — module responsible for invocation-local runtime context. Contains:
   - artifact, primitive, and session-state cache implementations.
+  - the runtime output interface and its independent scoped binding.
   - glue that gives machine and primitive logic access to loaded artifacts, primitive registries, and session state.
 - `./donna/primitives/` — module responsible for built-in primitive implementations. Contains:
   - artifact primitives.
@@ -143,6 +144,13 @@ Donna MUST retain ownership of its cell projections, journal records, journal fo
 The public `donna.protocol.journal_formatters` package MUST own journal formatters independently of shared output cells.
 The runtime output boundary MUST accept iterables of logic cells through `emit_cells` without exposing an output-cell class.
 Single-cell callers MUST pass a one-item iterable through the same method.
+The public `donna.context.output` boundary MUST expose the active runtime emitter through an independent shared `ContextValue` binding.
+Workflow primitives and journal emission MUST read that binding directly; the application context and command context MUST NOT store duplicate emitter references.
+The CLI MUST bind its emitter around Donna-owned command execution, including project preparation and error journaling, and restore the previous binding after success or failure.
+Output binding MUST NOT require a loaded project, cache collection, execution identifiers, or application context.
+Programmatic callers MUST bind an emitter explicitly when executing output-producing behavior; an explicitly bound no-op emitter MAY discard runtime output without suppressing journal forwarding.
+The journal MUST NOT retain an application-context reference solely to access output.
+Returned command cells and environment-error diagnostics MUST continue through shared command rendering and error handling.
 The CLI emitter MUST read the active protocol from `llm_tool_cli.config.runtime.runtime_config` for shared cell rendering and journal formatter selection; it MUST NOT cache a protocol or formatter.
 The CLI MUST pass complete emitted logic-cell batches to shared sequence rendering with the selected protocol and Donna's tool label.
 

@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, ClassVar, Literal, cast
 from llm_tool_cli.core.result import Ok, Result, unwrap_to_error
 from llm_tool_cli.protocol import cell_shortcuts
 
-from donna.context.context import context
+from donna.context.output import output
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
 from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
@@ -29,7 +29,7 @@ class FinishWorkflow(MarkdownSectionMixin, OperationKind):
 
         operation = artifact.get_section(section_id).unwrap()
         info = cell_shortcuts.info(operation.description)
-        context().output.emit_cells([info])
+        output.get().emit_cells([info])
 
         return Ok([ChangeFinishTask(task_id=task.id)])
 

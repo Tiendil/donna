@@ -1,18 +1,13 @@
 import contextvars
 
 from donna.context.journal import Journal
-from donna.context.output import NoopEmitter, OutputEmitter
 
 
 class Context:
-    __slots__ = (
-        "_journal",
-        "output",
-    )
+    __slots__ = ("_journal",)
 
-    def __init__(self, output: OutputEmitter | None = None) -> None:
-        self._journal = Journal(self)
-        self.output = output if output is not None else NoopEmitter()
+    def __init__(self) -> None:
+        self._journal = Journal()
 
     @property
     def journal(self) -> Journal:

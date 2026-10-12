@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from llm_tool_cli.config.runtime import runtime_config
 from llm_tool_cli.core.result import Ok, Result, unwrap_to_error
 from llm_tool_cli.protocol import Protocol
 from llm_tool_cli.protocol import errors as protocol_errors
 
+from donna.context.output import output
 from donna.core.utils import now
 from donna.domain.internal_ids import TaskId
 from donna.machine.caches import caches
@@ -14,15 +13,9 @@ from donna.machine.context import execution_context
 from donna.protocol import journal as protocol_journal
 from donna.workspaces import journal as workspace_journal
 
-if TYPE_CHECKING:
-    from donna.context.context import Context
-
 
 class Journal:
-    __slots__ = ("_context",)
-
-    def __init__(self, context: Context) -> None:
-        self._context = context
+    __slots__ = ()
 
     def smart_actor_id(self) -> str:
         match runtime_config.get().protocol:
@@ -58,6 +51,6 @@ class Journal:
         )
 
         workspace_journal.write_record(record).unwrap()
-        self._context.output.emit_journal(record)
+        output.get().emit_journal(record)
 
         return Ok(record)

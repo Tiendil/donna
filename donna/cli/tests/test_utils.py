@@ -3,7 +3,9 @@ import pathlib
 import re
 import sys
 
+import click
 import pytest
+import typer
 from llm_tool_cli.cli.errors import InvalidArguments
 from llm_tool_cli.config import errors as config_errors
 from llm_tool_cli.config.project import ProjectConfig, project_config
@@ -23,7 +25,9 @@ from donna.cli import utils as cli_utils
 from donna.cli.tests import helpers
 from donna.cli.utils import CliEmitter
 from donna.context import Context, context, reset_context, set_context
+from donna.context.output import OutputEmitter, output
 from donna.context.tests import make as context_make
+from donna.context.tests.helpers import FakeOutputEmitter
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
 from donna.machine import Caches, ExecutionContext
@@ -133,12 +137,13 @@ class TestCommandContext:
         assert initialized.exit_code == 0
         assert not execution_context.is_set()
         assert not caches.is_set()
-        observed: list[tuple[ExecutionContext, Caches]] = []
+        assert not output.is_set()
+        observed: list[tuple[ExecutionContext, Caches, OutputEmitter]] = []
         failure = llm_tool_errors.EnvironmentError(code="command_failed", message="Command failed")
         defect = ValueError("unexpected defect")
 
         def observe(message: str) -> None:
-            observed.append((execution_context.get(), caches.get()))
+            observed.append((execution_context.get(), caches.get(), output.get()))
             if outcome == "environment_error":
                 Err([failure]).unwrap()
             if outcome == "exception":
@@ -150,16 +155,22 @@ class TestCommandContext:
             current_operation_id=machine_make.PRIMARY_OPERATION_ID,
         )
         previous_caches = context_make.caches()
-        with execution_context.scope(outer), caches.scope(previous_caches):
+        previous_output = FakeOutputEmitter()
+        with execution_context.scope(outer), caches.scope(previous_caches), output.scope(previous_output):
             result = helpers.invoke(["--config", str(config_path), "-p", "automation", "list"])
             assert execution_context.get() == outer
             assert caches.get() == previous_caches
+            assert output.get() == previous_output
 
         assert len(observed) == 1
         assert observed[0][0] == ExecutionContext()
         assert observed[0][1] != previous_caches
+        assert observed[0][2] != previous_output
         assert not execution_context.is_set()
         assert not caches.is_set()
+        assert not output.is_set()
+        assert not previous_output.cells
+        assert not previous_output.journal_records
         if outcome == "success":
             assert result.exit_code == 0, result.exception
         elif outcome == "environment_error":
@@ -178,13 +189,32 @@ class TestCommandContext:
     def test_failed_preparation__does_not_create_caches(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         construct = mocker.spy(cli_utils, "Caches")
         previous = context_make.caches()
-        with caches.scope(previous):
+        previous_output = FakeOutputEmitter()
+        with caches.scope(previous), output.scope(previous_output):
             result = helpers.invoke(["--config", str(tmp_path / "missing.toml"), "-p", "automation", "list"])
             assert caches.get() == previous
+            assert output.get() == previous_output
 
         assert result.exit_code == 2
         construct.assert_not_called()
         assert not caches.is_set()
+        assert not output.is_set()
+
+    def test_output_scope__works_without_workspace_and_restores_outer_emitter(
+        self, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        previous_output = FakeOutputEmitter()
+        cli_context = typer.Context(click.Command("init"))
+        with output.scope(previous_output), cli_context:
+            with cli_utils.command_context(cli_context, load_environment=False):
+                assert not caches.is_set()
+                assert not execution_context.is_set()
+                output.get().emit_cells([cell(content="Without a workspace")])
+            assert output.get() == previous_output
+
+        assert "Without a workspace" in capsys.readouterr().out
+        assert not previous_output.cells
+        assert not output.is_set()
 
     @pytest.mark.parametrize("command", ["init", "skill", "version"])
     def test_project_independent_commands__do_not_create_caches(
@@ -196,6 +226,7 @@ class TestCommandContext:
         assert result.exit_code == 0, result.exception
         construct.assert_not_called()
         assert not caches.is_set()
+        assert not output.is_set()
 
     def test_workspace_setup__keeps_runtime_and_loaded_settings_together(
         self, mocker: MockerFixture, tmp_path: pathlib.Path

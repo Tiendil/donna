@@ -18,6 +18,7 @@ from llm_tool_cli.protocol.rendering import write_cells
 
 from donna.context.artifacts import ArtifactsCache
 from donna.context.context import Context
+from donna.context.output import output
 from donna.context.primitives import PrimitivesCache
 from donna.context.state import StateCache
 from donna.machine import Caches, ExecutionContext
@@ -39,16 +40,8 @@ class CliEmitter:
         write_output(formatter.format_journal(record).decode("utf-8"))
 
 
-def output_cells(cells: Iterable[LogicCell]) -> None:
-    CliEmitter().emit_cells(cells)
-
-
 class CommandContext(BaseCommandContext):
-    __slots__ = ("emitter",)
-
-    def __init__(self, context: typer.Context) -> None:
-        super().__init__(context)
-        self.emitter = CliEmitter()
+    __slots__ = ()
 
     def target_dir(self) -> PathInput:
         return PathInput(project_config.get().project_dir)
@@ -64,7 +57,7 @@ def command_context(context: typer.Context, *, load_environment: bool = True) ->
     machine_context_token: Token[machine_context.MachineContext | None] | None = None
 
     try:
-        with handle_command_errors(protocol=command.protocol), ExitStack() as resources:
+        with output.scope(CliEmitter()), handle_command_errors(protocol=command.protocol), ExitStack() as resources:
             try:
                 if load_environment:
                     loaded_config = context.with_resource(
@@ -77,7 +70,7 @@ def command_context(context: typer.Context, *, load_environment: bool = True) ->
                         )
                     )
                     resources.enter_context(machine_context.execution_context.scope(ExecutionContext()))
-                    runtime_context = Context(output=command.emitter)
+                    runtime_context = Context()
                     context_token = set_context(runtime_context)
                     machine_context_token = machine_context.set_context(runtime_context)
 
