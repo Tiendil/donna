@@ -11,7 +11,7 @@ from donna.domain.python_path import PythonPath
 from donna.machine import ArtifactRenderContext, Caches
 from donna.machine.artifacts import Artifact
 from donna.machine.caches import caches
-from donna.machine.context import reset_context, set_context
+from donna.machine.journal import journal
 from donna.machine.primitives import Primitive
 from donna.machine.tasks import Task, WorkUnit
 
@@ -66,7 +66,7 @@ class FakePrimitives:
         return Ok(self.primitive)
 
 
-class FakeMachineContext:
+class MachineServices:
     def __init__(
         self,
         *,
@@ -75,29 +75,13 @@ class FakeMachineContext:
         artifact_error: EnvironmentErrors | None = None,
         primitive_error: EnvironmentErrors | None = None,
     ) -> None:
-        self._artifacts = FakeArtifacts(artifact=artifact, error=artifact_error)
-        self._primitives = FakePrimitives(primitive=primitive, error=primitive_error)
-        self.caches = Caches(artifacts=self._artifacts, primitives=self._primitives, state=StateCache())
-        self._journal = FakeJournal()
-
-    @property
-    def artifacts(self) -> FakeArtifacts:
-        return self._artifacts
-
-    @property
-    def primitives(self) -> FakePrimitives:
-        return self._primitives
-
-    @property
-    def journal(self) -> FakeJournal:
-        return self._journal
+        self.artifacts = FakeArtifacts(artifact=artifact, error=artifact_error)
+        self.primitives = FakePrimitives(primitive=primitive, error=primitive_error)
+        self.caches = Caches(artifacts=self.artifacts, primitives=self.primitives, state=StateCache())
+        self.journal = FakeJournal()
 
 
 @contextmanager
-def installed_context(value: FakeMachineContext) -> Iterator[None]:
-    token = set_context(value)
-    try:
-        with caches.scope(value.caches):
-            yield
-    finally:
-        reset_context(token)
+def services_scope(value: MachineServices) -> Iterator[None]:
+    with caches.scope(value.caches), journal.scope(value.journal):
+        yield

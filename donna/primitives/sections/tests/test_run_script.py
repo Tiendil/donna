@@ -6,7 +6,9 @@ from llm_tool_cli.config.tests.fixtures import runtime_settings
 from llm_tool_cli.paths import ProjectConfigPath
 from pytest_mock import MockerFixture
 
+from donna.context.tests.helpers import FakeJournal
 from donna.machine.changes import ChangeAddWorkUnit, ChangeSetTaskContext
+from donna.machine.journal import journal
 from donna.machine.tests import make as machine_make
 from donna.primitives.sections import run_script
 from donna.primitives.sections.run_script import (
@@ -131,8 +133,7 @@ class TestRunScript:
         }
 
     def test_execute_section__stores_outputs_and_adds_selected_next_work_unit(self, mocker: MockerFixture) -> None:
-        runtime_context = make.FakeRuntimeContext()
-        mocker.patch("donna.primitives.sections.run_script.context", return_value=runtime_context)
+        active_journal = FakeJournal()
         run = mocker.patch.object(run_script, "_run_script", return_value=("stdout", "stderr", 2))
         artifact = machine_make.artifact(
             [
@@ -157,7 +158,10 @@ class TestRunScript:
             ]
         )
 
-        with project_config.scope(ProjectConfig(config_path=ProjectConfigPath(Path("/project/donna.toml")))):
+        with (
+            project_config.scope(ProjectConfig(config_path=ProjectConfigPath(Path("/project/donna.toml")))),
+            journal.scope(active_journal),
+        ):
             result = RunScript().execute_section(
                 machine_make.task(),
                 machine_make.work_unit(operation_id=make.operation_id("start")),
@@ -167,7 +171,7 @@ class TestRunScript:
 
         assert result.is_ok()
         run.assert_called_once_with(script="echo ok", timeout=60, project_dir=Path("/project"))
-        assert [message for _, message in runtime_context.journal.messages] == [
+        assert [message for _, message in active_journal.messages] == [
             "Run script `Run checks`",
             "Script finished `Run checks`, exit code: 2, has stdout: True, has stderr: True`",
         ]

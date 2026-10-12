@@ -6,11 +6,11 @@ from llm_tool_cli.protocol.cell_shortcuts import operation_succeeded
 from llm_tool_cli.protocol.logic_cells import ContentCell
 from llm_tool_cli.protocol.logic_cells.base import LogicCell
 
-from donna.context.context import context
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId, artifact_section_id, split_artifact_section_id
 from donna.domain.internal_ids import ActionRequestId
 from donna.machine import errors as machine_errors
 from donna.machine.caches import caches
+from donna.machine.journal import journal
 from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
 from donna.machine.templates import RENDER_CONTEXT_VIEW
@@ -75,7 +75,7 @@ def _session_required(
 def new_session() -> Result[list[ContentCell]]:
     _save_state(MutableState.build().freeze()).unwrap()
 
-    context().journal.add(message="Created new session state.").unwrap()
+    journal.get().add(message="Created new session state.").unwrap()
 
     return Ok([operation_succeeded("Created new session state.")])
 

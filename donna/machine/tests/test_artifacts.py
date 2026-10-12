@@ -7,7 +7,7 @@ from donna.machine import errors as machine_errors
 from donna.machine.artifacts import Artifact, ArtifactNode, ArtifactSectionMeta, ArtifactSectionNode
 from donna.machine.primitives import Primitive
 from donna.machine.tests import make
-from donna.machine.tests.helpers import FakeMachineContext, installed_context
+from donna.machine.tests.helpers import MachineServices, services_scope
 from donna.protocol import ArtifactInfoCell, ArtifactSectionStatusCell, ArtifactStatusCell
 
 
@@ -103,9 +103,9 @@ class TestArtifact:
 
     def test_validate_artifact__accepts_valid_artifact(self) -> None:
         artifact = make.artifact()
-        machine_context = FakeMachineContext(primitive=Primitive())
+        machine_context = MachineServices(primitive=Primitive())
 
-        with installed_context(machine_context):
+        with services_scope(machine_context):
             result = artifact.validate_artifact()
 
         assert result.is_ok()
@@ -113,9 +113,9 @@ class TestArtifact:
 
     def test_validate_artifact__collects_primary_and_section_errors(self) -> None:
         artifact = make.artifact([make.artifact_section(primary=False)])
-        machine_context = FakeMachineContext(primitive=_RejectingPrimitive())
+        machine_context = MachineServices(primitive=_RejectingPrimitive())
 
-        with installed_context(machine_context):
+        with services_scope(machine_context):
             result = artifact.validate_artifact()
 
         assert result.is_err()

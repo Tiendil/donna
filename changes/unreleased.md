@@ -1,9 +1,11 @@
 ### Migration
 
+- Replace `context().journal` with `donna.machine.journal.journal.get()`. Python integrations must bind `Journal()` from `donna.context.journal` through `journal.scope(...)` around journal-producing behavior, alongside the settings, caches, execution identifiers, and output required by that implementation. The CLI scopes it automatically after successful project preparation. `MachineJournal` now lives in `donna.machine.journal`; `Context`, `MachineContext`, and both aggregate `context`, `set_context`, and `reset_context` APIs are removed. Missing bindings raise the shared `ContextValueNotSet` internal error instead of `MachineContextNotSet`.
+
 - Replace `Context(output=...)`, `context().output`, and `CommandContext.emitter` with `donna.context.output.output.scope(emitter)` and `output.get()`. Python callers must explicitly bind an emitter around output-producing workflow execution and journaling; use `NoopEmitter()` from the same module for silent runtime output. Construct `Journal()` without an application context. CLI commands manage output scopes automatically. The unused `donna.cli.utils.output_cells` helper is removed; command results continue through `command.write_cells(...)`.
 
 - Replace `context().artifacts`, `.primitives`, and `.state` with `donna.machine.caches.caches.get()` and the corresponding member. Python integrations must construct `donna.machine.Caches` with artifact, primitive, and state cache instances and scope it around cache use and journaling; CLI commands manage this automatically. The standard implementations are `ArtifactsCache`, `PrimitivesCache`, and `StateCache` in the corresponding `donna.context` submodules; custom implementations can also be supplied.
-- Import `ArtifactRenderContext` from `donna.machine` and `RENDER_CONTEXT_VIEW` from `donna.machine.templates`. Cache interfaces now live in `donna.machine.caches`; the remaining machine context provides journal access.
+- Import `ArtifactRenderContext` from `donna.machine` and `RENDER_CONTEXT_VIEW` from `donna.machine.templates`. Cache interfaces now live in `donna.machine.caches`.
 
 - Python integrations must bind `donna.machine.ExecutionContext` through `donna.machine.context.execution_context.scope(...)` around execution and journaling. Read current IDs through `execution_context.get()` and enter nested scopes with an updated value from `.replace(...)`. The application `Context` and machine service interface no longer expose ID scopes; `ValueScope` is removed. CLI commands manage the execution binding automatically.
 
@@ -73,6 +75,8 @@
 - Missing configuration during upward discovery now reports `config_not_found` and exits with status `2` instead of returning a Donna error cell with status `0`.
 
 ### Changes
+
+- Complete the context refactor with independent bindings for execution identifiers, caches, journal, and output. Remove aggregate application and machine service contexts, preserving journal records, forwarding, error handling, and scope restoration. Failed project setup and project-independent commands do not create or use a journal.
 
 - Scope runtime output independently through shared `ContextValue`, removing emitter ownership from application and command contexts. Workflow messages and journal output use the active binding, with restoration after failures and unchanged protocol rendering, stream routing, and journal forwarding.
 

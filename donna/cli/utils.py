@@ -1,6 +1,5 @@
 from collections.abc import Iterable, Iterator
 from contextlib import ExitStack, contextmanager
-from contextvars import Token
 from pathlib import Path
 
 import typer
@@ -17,12 +16,14 @@ from llm_tool_cli.protocol.logic_cells.base import LogicCell
 from llm_tool_cli.protocol.rendering import write_cells
 
 from donna.context.artifacts import ArtifactsCache
-from donna.context.context import Context
+from donna.context.journal import Journal
 from donna.context.output import output
 from donna.context.primitives import PrimitivesCache
 from donna.context.state import StateCache
 from donna.machine import Caches, ExecutionContext
 from donna.machine.caches import caches
+from donna.machine.context import execution_context
+from donna.machine.journal import journal
 from donna.protocol.errors import environment_error_node
 from donna.protocol.journal import JournalRecord
 from donna.protocol.modes import get_journal_formatter
@@ -49,51 +50,32 @@ class CommandContext(BaseCommandContext):
 
 @contextmanager
 def command_context(context: typer.Context, *, load_environment: bool = True) -> Iterator[CommandContext]:
-    from donna.context import reset_context, set_context
-    from donna.machine import context as machine_context
-
     command = CommandContext(context)
-    context_token: Token[Context | None] | None = None
-    machine_context_token: Token[machine_context.MachineContext | None] | None = None
+    with output.scope(CliEmitter()), handle_command_errors(protocol=command.protocol), ExitStack() as resources:
+        if load_environment:
+            loaded_config = context.with_resource(
+                load_project(workspace_config.Config, cwd=PathInput(Path.cwd()), path=command.config_input)
+            ).unwrap()
+            resources.enter_context(workspace_config.config.scope(loaded_config))
+            resources.enter_context(
+                caches.scope(Caches(artifacts=ArtifactsCache(), primitives=PrimitivesCache(), state=StateCache()))
+            )
+            resources.enter_context(execution_context.scope(ExecutionContext()))
+            resources.enter_context(journal.scope(Journal()))
 
-    try:
-        with output.scope(CliEmitter()), handle_command_errors(protocol=command.protocol), ExitStack() as resources:
-            try:
-                if load_environment:
-                    loaded_config = context.with_resource(
-                        load_project(workspace_config.Config, cwd=PathInput(Path.cwd()), path=command.config_input)
-                    ).unwrap()
-                    resources.enter_context(workspace_config.config.scope(loaded_config))
-                    resources.enter_context(
-                        caches.scope(
-                            Caches(artifacts=ArtifactsCache(), primitives=PrimitivesCache(), state=StateCache())
-                        )
-                    )
-                    resources.enter_context(machine_context.execution_context.scope(ExecutionContext()))
-                    runtime_context = Context()
-                    context_token = set_context(runtime_context)
-                    machine_context_token = machine_context.set_context(runtime_context)
-
-                yield command
-            except UnwrapError as error:
-                if context_token is not None:
-                    _write_errors_to_journal(error.errors)
-                raise
-    finally:
-        if machine_context_token is not None:
-            machine_context.reset_context(machine_context_token)
-
-        if context_token is not None:
-            reset_context(context_token)
+        try:
+            yield command
+        except UnwrapError as error:
+            if load_environment:
+                _write_errors_to_journal(error.errors)
+            raise
 
 
 def _write_errors_to_journal(errors: EnvironmentErrors) -> None:
-    from donna.context.context import context
-
     for error in errors:
         message = f"Error: {environment_error_node(error).journal_message()} [{error.code}]"
 
-        context().journal.add(
+        journal.get().add(
             message=message,
             actor_id="donna",
         )

@@ -40,6 +40,7 @@ The following topics are out of scope:
   - workflow execution orchestration that is independent of CLI argument parsing and protocol-specific formatting.
   - immutable invocation-local execution identifiers for the current work unit and operation, scoped through shared context management.
   - cache interfaces, the collection of active caches and its independent binding, and artifact-rendering context data shared with workspace implementations.
+  - the journal interface and its independent scoped binding.
   - protocol-facing views of machine-owned concepts that prepare protocol-independent logic cells through `./donna/protocol/`.
 - `./donna/runtime/` — module responsible for command-independent runtime orchestration. Contains:
   - session lifecycle use cases.
@@ -48,10 +49,10 @@ The following topics are out of scope:
   - command-facing domain results returned as logic cells or ordered collections of their subclasses.
   - journal event forwarding orchestration.
   - no CLI argument parsing.
-- `./donna/context/` — module responsible for invocation-local runtime context. Contains:
+- `./donna/context/` — module responsible for runtime service implementations and output access. Contains:
   - artifact, primitive, and session-state cache implementations.
   - the runtime output interface and its independent scoped binding.
-  - glue that gives machine and primitive logic access to loaded artifacts, primitive registries, and session state.
+  - the journal implementation that combines current session state and execution identifiers with workspace forwarding and runtime output.
 - `./donna/primitives/` — module responsible for built-in primitive implementations. Contains:
   - artifact primitives.
   - section primitives.
@@ -91,7 +92,6 @@ Initialization MUST supply the `donna.workspaces` resource package and `base_con
 Donna MUST NOT maintain a parallel `GlobalConfig` implementation or a workspace wrapper duplicating runtime paths.
 
 The machine module MUST own a frozen execution-context value containing the optional current work unit and operation identifiers, bound independently through shared `ContextValue`.
-The application context and the machine's service interface MUST NOT store duplicate execution identifiers.
 The CLI MUST bind an empty execution context for successfully prepared workspace commands, retaining it through command execution and error journaling and restoring the previous binding on exit.
 Work-unit and operation execution MUST use nested scopes that replace their respective identifier, preserve the other identifier, and restore the previous value after success or failure.
 Journaling MUST read execution identifiers from this binding; the current task identifier MUST remain derived from session state.
@@ -101,8 +101,14 @@ Cache implementations MUST remain owned by the context module; machine code MUST
 Artifact-rendering context data used in cache interfaces MUST belong to the machine module.
 The CLI MUST directly construct and bind fresh caches after successful workspace preparation, retain them through command execution and error journaling, and restore the previous collection on exit.
 Commands that do not load a workspace MUST NOT require cache construction.
-The application context and machine service context MUST NOT own caches or duplicate the cache binding.
 Cache construction MUST NOT require a workspace argument or perform workspace I/O; artifact refresh and render-mode behavior, primitive lookup caching, and session-state external-change detection MUST be preserved.
+
+The machine's public journal boundary MUST expose its typed interface and one independent shared `ContextValue` binding.
+Journal consumers MUST access this binding directly; the concrete implementation MUST remain owned by the context module, without machine code importing context or workspace implementations.
+The CLI MUST bind a fresh journal after successful workspace preparation, retain it through execution and error journaling, and restore the previous binding after success or failure.
+Commands that do not load a workspace MUST NOT require journal construction; failed preparation and project-independent commands MUST NOT journal errors through an outer journal binding.
+The journal implementation MUST derive record context from active settings, caches, and execution identifiers and use the active output binding after successful workspace forwarding.
+Execution identifiers, caches, journal, and output MUST remain independently scoped; Donna MUST NOT maintain an aggregate application or machine service context that duplicates these bindings.
 
 ## Submodules
 
@@ -145,11 +151,10 @@ The public `donna.protocol.journal_formatters` package MUST own journal formatte
 The runtime output boundary MUST accept iterables of logic cells through `emit_cells` without exposing an output-cell class.
 Single-cell callers MUST pass a one-item iterable through the same method.
 The public `donna.context.output` boundary MUST expose the active runtime emitter through an independent shared `ContextValue` binding.
-Workflow primitives and journal emission MUST read that binding directly; the application context and command context MUST NOT store duplicate emitter references.
+Workflow primitives and journal emission MUST read that binding directly; the command context MUST NOT store a duplicate emitter reference.
 The CLI MUST bind its emitter around Donna-owned command execution, including project preparation and error journaling, and restore the previous binding after success or failure.
-Output binding MUST NOT require a loaded project, cache collection, execution identifiers, or application context.
+Output binding MUST NOT require a loaded project, cache collection, execution identifiers, or journal.
 Programmatic callers MUST bind an emitter explicitly when executing output-producing behavior; an explicitly bound no-op emitter MAY discard runtime output without suppressing journal forwarding.
-The journal MUST NOT retain an application-context reference solely to access output.
 Returned command cells and environment-error diagnostics MUST continue through shared command rendering and error handling.
 The CLI emitter MUST read the active protocol from `llm_tool_cli.config.runtime.runtime_config` for shared cell rendering and journal formatter selection; it MUST NOT cache a protocol or formatter.
 The CLI MUST pass complete emitted logic-cell batches to shared sequence rendering with the selected protocol and Donna's tool label.

@@ -11,7 +11,7 @@ from donna.machine.operations import OperationKind
 from donna.machine.state import MutableState
 from donna.machine.tasks import Task, WorkUnit
 from donna.machine.tests import make
-from donna.machine.tests.helpers import FakeMachineContext, installed_context
+from donna.machine.tests.helpers import MachineServices, services_scope
 from donna.protocol import ActionRequestCell, SessionStateCell
 
 
@@ -100,9 +100,9 @@ class TestMutableState:
     def test_add_action_request__assigns_id_and_logs_request(self) -> None:
         state = make.mutable_state(last_id=2)
         request = make.action_request(id=None)
-        machine_context = FakeMachineContext()
+        machine_context = MachineServices()
 
-        with installed_context(machine_context):
+        with services_scope(machine_context):
             state.add_action_request(request)
 
         assert state.action_requests == [request.replace(id=make.ACTION_REQUEST_ID)]
@@ -121,9 +121,9 @@ class TestMutableState:
         task = make.task()
         request = make.action_request()
         state = make.mutable_state(tasks=[task], action_requests=[request], last_id=2)
-        machine_context = FakeMachineContext()
+        machine_context = MachineServices()
 
-        with installed_context(machine_context):
+        with services_scope(machine_context):
             result = state.complete_action_request(make.ACTION_REQUEST_ID, make.SECONDARY_OPERATION_ID)
 
         assert result.is_ok()
@@ -139,9 +139,9 @@ class TestMutableState:
     def test_start_workflow__creates_task_and_initial_work_unit(self) -> None:
         state = MutableState.build()
         artifact = make.artifact()
-        machine_context = FakeMachineContext(artifact=artifact)
+        machine_context = MachineServices(artifact=artifact)
 
-        with installed_context(machine_context):
+        with services_scope(machine_context):
             result = state.start_workflow(make.PRIMARY_OPERATION_ID)
 
         assert result.is_ok()
@@ -158,9 +158,9 @@ class TestMutableState:
     def test_finish_workflow__removes_task_and_logs_workflow_title(self) -> None:
         task = make.task()
         state = make.mutable_state(tasks=[task])
-        machine_context = FakeMachineContext(artifact=make.artifact())
+        machine_context = MachineServices(artifact=make.artifact())
 
-        with installed_context(machine_context):
+        with services_scope(machine_context):
             state.finish_workflow(task.id)
 
         assert state.tasks == []
@@ -170,12 +170,12 @@ class TestMutableState:
         task = make.task()
         unit = make.work_unit()
         state = make.mutable_state(tasks=[task], work_units=[unit])
-        machine_context = FakeMachineContext(artifact=make.artifact(), primitive=_StateOperation())
+        machine_context = MachineServices(artifact=make.artifact(), primitive=_StateOperation())
         outer = ExecutionContext(
             current_work_unit_id=WorkUnitId("WU-9-j"), current_operation_id=make.SECONDARY_OPERATION_ID
         )
 
-        with installed_context(machine_context):
+        with services_scope(machine_context):
             with execution_context.scope(outer):
                 result = state.execute_next_work_unit()
                 assert execution_context.get() == outer
@@ -194,7 +194,7 @@ class TestMutableState:
         task = make.task()
         unit = make.work_unit()
         state = make.mutable_state(tasks=[task], work_units=[unit])
-        machine_context = FakeMachineContext(artifact=make.artifact(), primitive=_StateOperation())
+        machine_context = MachineServices(artifact=make.artifact(), primitive=_StateOperation())
         failure = EnvironmentError(code="unavailable", message="Unavailable")
         execute = mocker.patch.object(_StateOperation, "execute_section", return_value=Err([failure]))
         if unexpected:
@@ -203,7 +203,7 @@ class TestMutableState:
             current_work_unit_id=WorkUnitId("WU-9-j"), current_operation_id=make.SECONDARY_OPERATION_ID
         )
 
-        with installed_context(machine_context):
+        with services_scope(machine_context):
             with execution_context.scope(outer):
                 if unexpected:
                     with pytest.raises(ValueError):

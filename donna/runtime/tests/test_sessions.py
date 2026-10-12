@@ -89,8 +89,8 @@ def _context(
     *,
     state: ConsistentState | None = None,
     primitive: OperationKind | None = None,
-) -> make.FakeRuntimeContext:
-    return make.FakeRuntimeContext(
+) -> make.RuntimeServices:
+    return make.RuntimeServices(
         state=state or MutableState.build().freeze(),
         artifact=_artifact(),
         primitive=primitive or _NoopOperation(),
@@ -119,7 +119,7 @@ class TestLoadState:
         state = MutableState.build().freeze()
         runtime_context = _context(state=state)
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.load_state()
 
         assert result.is_ok()
@@ -131,7 +131,7 @@ class TestLoadState:
         runtime_context.state.state = None
         runtime_context.state.errors = [machine_errors.SessionStateNotInitialized()]
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.load_state()
 
         assert result.is_ok()
@@ -144,7 +144,7 @@ class TestLoadState:
         runtime_context = _context()
         runtime_context.state.errors = [error]
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.load_state()
 
         assert result.is_err()
@@ -158,7 +158,7 @@ class TestNewSession:
         existing_state.mark_started()
         runtime_context = _context(state=existing_state.freeze())
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.new_session()
 
         assert result.is_ok()
@@ -192,7 +192,7 @@ class TestContinue:
         )
         runtime_context = _context(state=state.freeze(), primitive=_RequestActionOperation())
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.continue_()
 
         assert result.is_ok()
@@ -211,7 +211,7 @@ class TestStatus:
     def test_returns_current_state_info_cell(self) -> None:
         runtime_context = _context()
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.status()
 
         assert result.is_ok()
@@ -229,7 +229,7 @@ class TestDetails:
         )
         runtime_context = _context(state=state.freeze())
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.details()
 
         assert result.is_ok()
@@ -243,7 +243,7 @@ class TestStartWorkflow:
     def test_starts_primary_workflow_operation_runs_it_and_returns_details(self) -> None:
         runtime_context = _context(primitive=_RequestActionOperation())
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.start_workflow(ARTIFACT_ID)
 
         assert result.is_ok()
@@ -272,7 +272,7 @@ class TestValidateOperationTransition:
         )
         runtime_context = _context()
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions._validate_operation_transition(state, ACTION_REQUEST_ID, NEXT_OPERATION_ID)
 
         assert result.is_ok()
@@ -287,7 +287,7 @@ class TestValidateOperationTransition:
         )
         runtime_context = _context()
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions._validate_operation_transition(state, ACTION_REQUEST_ID, OTHER_OPERATION_ID)
 
         assert result.is_err()
@@ -308,7 +308,7 @@ class TestCompleteActionRequest:
         )
         runtime_context = _context(state=state.freeze())
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.complete_action_request(ACTION_REQUEST_ID, NEXT_OPERATION_ID)
 
         assert result.is_ok()
@@ -330,7 +330,7 @@ class TestCompleteActionRequest:
         )
         runtime_context = _context(state=state.freeze())
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.complete_action_request(ACTION_REQUEST_ID, OTHER_OPERATION_ID)
 
         assert result.is_err()

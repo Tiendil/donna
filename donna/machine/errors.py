@@ -18,10 +18,6 @@ class SessionStateStatusInvalid(InternalError):
     message_template: ClassVar[str] = "Session state status is invalid."
 
 
-class MachineContextNotSet(InternalError):
-    message_template: ClassVar[str] = "Machine context is not initialized."
-
-
 class UnsupportedFormatterMode(InternalError):
     message_template: ClassVar[str] = "Formatter for mode '{mode}' is not implemented."
 

@@ -24,16 +24,15 @@ from pytest_mock import MockerFixture
 from donna.cli import utils as cli_utils
 from donna.cli.tests import helpers
 from donna.cli.utils import CliEmitter
-from donna.context import Context, context, reset_context, set_context
 from donna.context.output import OutputEmitter, output
 from donna.context.tests import make as context_make
-from donna.context.tests.helpers import FakeOutputEmitter
+from donna.context.tests.helpers import FakeJournal, FakeOutputEmitter
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
 from donna.machine import Caches, ExecutionContext
-from donna.machine import context as machine_context
 from donna.machine.caches import caches
 from donna.machine.context import execution_context
+from donna.machine.journal import MachineJournal, journal
 from donna.machine.tests import make as machine_make
 from donna.primitives.sections.run_script import RunScriptInvalidExitCode
 from donna.protocol.tests.make import cell, journal_record
@@ -138,12 +137,13 @@ class TestCommandContext:
         assert not execution_context.is_set()
         assert not caches.is_set()
         assert not output.is_set()
-        observed: list[tuple[ExecutionContext, Caches, OutputEmitter]] = []
+        assert not journal.is_set()
+        observed: list[tuple[ExecutionContext, Caches, OutputEmitter, MachineJournal]] = []
         failure = llm_tool_errors.EnvironmentError(code="command_failed", message="Command failed")
         defect = ValueError("unexpected defect")
 
         def observe(message: str) -> None:
-            observed.append((execution_context.get(), caches.get(), output.get()))
+            observed.append((execution_context.get(), caches.get(), output.get(), journal.get()))
             if outcome == "environment_error":
                 Err([failure]).unwrap()
             if outcome == "exception":
@@ -156,19 +156,29 @@ class TestCommandContext:
         )
         previous_caches = context_make.caches()
         previous_output = FakeOutputEmitter()
-        with execution_context.scope(outer), caches.scope(previous_caches), output.scope(previous_output):
+        previous_journal = FakeJournal()
+        with (
+            execution_context.scope(outer),
+            caches.scope(previous_caches),
+            output.scope(previous_output),
+            journal.scope(previous_journal),
+        ):
             result = helpers.invoke(["--config", str(config_path), "-p", "automation", "list"])
             assert execution_context.get() == outer
             assert caches.get() == previous_caches
             assert output.get() == previous_output
+            assert journal.get() == previous_journal
 
         assert len(observed) == 1
         assert observed[0][0] == ExecutionContext()
         assert observed[0][1] != previous_caches
         assert observed[0][2] != previous_output
+        assert observed[0][3] != previous_journal
         assert not execution_context.is_set()
         assert not caches.is_set()
         assert not output.is_set()
+        assert not journal.is_set()
+        assert not previous_journal.records
         assert not previous_output.cells
         assert not previous_output.journal_records
         if outcome == "success":
@@ -186,19 +196,27 @@ class TestCommandContext:
             assert not result.stdout
             assert not result.stderr
 
-    def test_failed_preparation__does_not_create_caches(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
+    def test_failed_preparation__does_not_create_caches_or_use_journal(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
         construct = mocker.spy(cli_utils, "Caches")
+        construct_journal = mocker.spy(cli_utils, "Journal")
         previous = context_make.caches()
         previous_output = FakeOutputEmitter()
-        with caches.scope(previous), output.scope(previous_output):
+        previous_journal = FakeJournal()
+        with caches.scope(previous), output.scope(previous_output), journal.scope(previous_journal):
             result = helpers.invoke(["--config", str(tmp_path / "missing.toml"), "-p", "automation", "list"])
             assert caches.get() == previous
             assert output.get() == previous_output
+            assert journal.get() == previous_journal
 
         assert result.exit_code == 2
         construct.assert_not_called()
+        construct_journal.assert_not_called()
+        assert not previous_journal.records
         assert not caches.is_set()
         assert not output.is_set()
+        assert not journal.is_set()
 
     def test_output_scope__works_without_workspace_and_restores_outer_emitter(
         self, capsys: pytest.CaptureFixture[str]
@@ -209,6 +227,7 @@ class TestCommandContext:
             with cli_utils.command_context(cli_context, load_environment=False):
                 assert not caches.is_set()
                 assert not execution_context.is_set()
+                assert not journal.is_set()
                 output.get().emit_cells([cell(content="Without a workspace")])
             assert output.get() == previous_output
 
@@ -217,16 +236,19 @@ class TestCommandContext:
         assert not output.is_set()
 
     @pytest.mark.parametrize("command", ["init", "skill", "version"])
-    def test_project_independent_commands__do_not_create_caches(
+    def test_project_independent_commands__do_not_create_caches_or_journal(
         self, mocker: MockerFixture, tmp_path: pathlib.Path, command: str
     ) -> None:
         construct = mocker.spy(cli_utils, "Caches")
+        construct_journal = mocker.spy(cli_utils, "Journal")
         result = helpers.invoke(["--config", str(tmp_path / "donna.toml"), "-p", "automation", command])
 
         assert result.exit_code == 0, result.exception
         construct.assert_not_called()
+        construct_journal.assert_not_called()
         assert not caches.is_set()
         assert not output.is_set()
+        assert not journal.is_set()
 
     def test_workspace_setup__keeps_runtime_and_loaded_settings_together(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
@@ -435,7 +457,7 @@ class TestCommandContext:
             separator = " = " if protocol == "human" else "="
             assert f"code{separator}invalid_arguments\n" in result.stderr
 
-    def test_shared_errors_during_command__restore_runtime_context(
+    def test_shared_errors_during_command__restore_journal_scope(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
         config_path = helpers.write_config(tmp_path)
@@ -443,26 +465,22 @@ class TestCommandContext:
         assert initialized.exit_code == 0
         failure = llm_tool_errors.EnvironmentError(message="command failed", code="command_failed")
         mocker.patch("donna.cli.commands.artifacts._log_artifact_operation", side_effect=UnwrapError(error=[failure]))
-        journal = mocker.spy(workspace_journal, "write_record")
-        previous_context = Context()
-        context_token = set_context(previous_context)
-        machine_context_token = machine_context.set_context(previous_context)
-        try:
+        forwarded = mocker.spy(workspace_journal, "write_record")
+        previous_journal = FakeJournal()
+        with journal.scope(previous_journal):
             result = helpers.invoke(["--config", str(config_path), "-p", "automation", "list"])
 
             assert result.exit_code == 3
             records = helpers.json_lines(result.stdout)
             assert_error_cells([record for record in records if record.get("type") == "error"], [failure])
-            journal.assert_called_once()
-            journal_entry = journal.call_args.args[0]
+            forwarded.assert_called_once()
+            journal_entry = forwarded.call_args.args[0]
             assert journal_entry.actor_id == "donna"
             assert failure.code in journal_entry.message
-            assert context() == previous_context
-            assert machine_context.context() == previous_context
+            assert journal.get() == previous_journal
+            assert not previous_journal.records
             assert not project_config.is_set()
-        finally:
-            machine_context.reset_context(machine_context_token)
-            reset_context(context_token)
+        assert not journal.is_set()
 
     def test_unexpected_errors__propagate_without_expected_diagnostic(self, mocker: MockerFixture) -> None:
         failure = RuntimeError("unexpected defect")

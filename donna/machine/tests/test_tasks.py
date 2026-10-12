@@ -9,7 +9,7 @@ from donna.machine.context import ExecutionContext, execution_context
 from donna.machine.operations import OperationKind
 from donna.machine.tasks import Task, WorkUnit
 from donna.machine.tests import make
-from donna.machine.tests.helpers import FakeMachineContext, installed_context
+from donna.machine.tests.helpers import MachineServices, services_scope
 
 
 class _ContextSettingOperation(OperationKind):
@@ -79,9 +79,9 @@ class TestWorkUnit:
         unit = make.work_unit()
         artifact = make.artifact()
         primitive = _ContextSettingOperation()
-        machine_context = FakeMachineContext(artifact=artifact, primitive=primitive)
+        machine_context = MachineServices(artifact=artifact, primitive=primitive)
 
-        with installed_context(machine_context):
+        with services_scope(machine_context):
             with execution_context.scope(outer):
                 result = unit.run(task)
                 assert execution_context.get() == outer
@@ -110,7 +110,7 @@ class TestWorkUnit:
     @pytest.mark.parametrize("source", ["artifact", "primitive"])
     def test_run__restores_scope_after_environment_error(self, source: str) -> None:
         failure = EnvironmentError(code="unavailable", message="Unavailable")
-        machine_context = FakeMachineContext(
+        machine_context = MachineServices(
             artifact=make.artifact(),
             artifact_error=[failure] if source == "artifact" else None,
             primitive_error=[failure] if source == "primitive" else None,
@@ -119,7 +119,7 @@ class TestWorkUnit:
             current_work_unit_id=make.WORK_UNIT_ID, current_operation_id=make.SECONDARY_OPERATION_ID
         )
 
-        with installed_context(machine_context):
+        with services_scope(machine_context):
             with execution_context.scope(outer):
                 result = make.work_unit().run(make.task())
                 assert result.unwrap_err() == [failure]
@@ -129,13 +129,13 @@ class TestWorkUnit:
 
     def test_run__restores_scope_after_unexpected_exception(self, mocker: MockerFixture) -> None:
         failure = ValueError("unexpected defect")
-        machine_context = FakeMachineContext(artifact=make.artifact(), primitive=_ContextSettingOperation())
+        machine_context = MachineServices(artifact=make.artifact(), primitive=_ContextSettingOperation())
         mocker.patch.object(_ContextSettingOperation, "execute_section", side_effect=failure)
         outer = ExecutionContext(
             current_work_unit_id=make.WORK_UNIT_ID, current_operation_id=make.SECONDARY_OPERATION_ID
         )
 
-        with installed_context(machine_context):
+        with services_scope(machine_context):
             with execution_context.scope(outer):
                 with pytest.raises(ValueError) as caught:
                     make.work_unit().run(make.task())
