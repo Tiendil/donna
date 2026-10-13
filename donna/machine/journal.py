@@ -1,17 +1,10 @@
-from types import EllipsisType
-
-from llm_tool_cli.config.runtime import runtime_config
-from llm_tool_cli.core.result import Result
-from llm_tool_cli.output import output
-from llm_tool_cli.protocol import Protocol
-
 from donna.machine.caches import caches
 from donna.machine.context import execution_context
 from donna.protocol import JournalCell
 
 
-def journal_emit(message: str, *, actor_id: str | None | EllipsisType = ...) -> Result[None]:
-    """Emit a journal cell using the cached task, scoped execution IDs, and an overridable actor."""
+def journal_cell(*, message: str, actor_id: str | None) -> JournalCell:
+    """Capture the consistent task and active execution scope for one event."""
     # Task IDs are deliberately not caller-supplied: each work unit runs for the
     # task in the cached consistent state. Its mutable copy can already point to
     # another task while changes are being applied, but that task does not run
@@ -26,18 +19,10 @@ def journal_emit(message: str, *, actor_id: str | None | EllipsisType = ...) -> 
     # execution, the corresponding scoped IDs are None.
     execution = execution_context.get()
 
-    if actor_id is ...:
-        protocol = runtime_config.get().protocol
-        actor_id = "agent" if protocol == Protocol.llm else protocol.value
-
-    return output.get().emit(
-        [
-            JournalCell(
-                message=message,
-                actor_id=actor_id,
-                current_task_id=task.id if task is not None else None,
-                current_work_unit_id=execution.current_work_unit_id,
-                current_operation_id=execution.current_operation_id,
-            )
-        ]
+    return JournalCell(
+        message=message,
+        actor_id=actor_id,
+        current_task_id=task.id if task is not None else None,
+        current_work_unit_id=execution.current_work_unit_id,
+        current_operation_id=execution.current_operation_id,
     )

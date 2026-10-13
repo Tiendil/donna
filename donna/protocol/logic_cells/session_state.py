@@ -1,10 +1,13 @@
 import textwrap
+from typing import Literal
 
+import pydantic
 from llm_tool_cli.protocol.logic_cells.uniform import UniformCell
 from llm_tool_cli.protocol.output_cells.base import OutputCell
 
 
 class SessionStateCell(UniformCell):
+    is_journal: Literal[False] = pydantic.Field(default=False, exclude=True)
     started: bool
     tasks: int
     queued_work_units: int

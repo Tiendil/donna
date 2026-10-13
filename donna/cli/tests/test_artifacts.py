@@ -2,6 +2,7 @@ import json
 import pathlib
 
 import pytest
+from llm_tool_cli.output.journal import NoopJournalProcessor
 from llm_tool_cli.paths import resolve_project_root
 from llm_tool_cli.paths.errors import InvalidProjectPath
 from llm_tool_cli.protocol.tests.helpers import assert_error_cells, cell_payloads
@@ -121,7 +122,9 @@ class TestRender:
 
 class TestValidate:
     @pytest.mark.parametrize("all_artifacts", [False, True])
-    def test_collected_errors__are_journaled_and_reported(self, tmp_path: pathlib.Path, all_artifacts: bool) -> None:
+    def test_collected_errors__are_journaled_and_reported_once(
+        self, tmp_path: pathlib.Path, all_artifacts: bool, mocker: MockerFixture
+    ) -> None:
         config_path = helpers.write_config(tmp_path)
         artifact_ids = ["@/workflows/first.donna.md", "@/workflows/second.donna.md"]
         for artifact_id in artifact_ids:
@@ -135,6 +138,7 @@ class TestValidate:
         initialized = helpers.invoke(["--config", str(config_path), "-p", "automation", "new-session"])
         assert initialized.exit_code == 0
         selection = ["--all"] if all_artifacts else artifact_ids
+        process = mocker.spy(NoopJournalProcessor, "process")
 
         result = helpers.invoke(["--config", str(config_path), "-p", "automation", "validate", *selection])
 
@@ -142,7 +146,7 @@ class TestValidate:
         assert not result.stderr
         records = helpers.json_lines(result.stdout)
         diagnostics = [record for record in records if record.get("type") == "error"]
-        journal = [record for record in records if record.get("actor_id") == "donna"]
+        journal = [call.args[1] for call in process.call_args_list if call.args[1].attributes.get("type") == "error"]
         assert [
             record["artifact_id"]
             for record in diagnostics
@@ -150,8 +154,10 @@ class TestValidate:
         ] == artifact_ids
         assert len(journal) == len(diagnostics)
         for entry, diagnostic in zip(journal, diagnostics, strict=True):
-            assert str(entry["message"]).startswith("Error: ")
-            assert str(entry["message"]).endswith(f"[{diagnostic['code']}]")
+            assert str(diagnostic["content"]).startswith(entry.message)
+            assert entry.attributes["code"] == diagnostic["code"]
+        assert len(records) == len(diagnostics) + 1
+        assert records[0]["actor_id"] == "automation"
         assert not any(record.get("type") == "operation_succeeded" for record in records)
 
     @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])

@@ -4,6 +4,7 @@ from typing import Sequence, cast
 import pydantic
 from llm_tool_cli.core.entities import BaseEntity
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.output import output
 from llm_tool_cli.protocol.logic_cells.base import LogicCell
 
 from donna.domain.artifact_ids import ArtifactSectionId, split_artifact_section_id
@@ -20,7 +21,6 @@ from donna.machine.changes import (
     ChangeRemoveWorkUnit,
 )
 from donna.machine.context import execution_context
-from donna.machine.journal import journal_emit
 from donna.machine.tasks import Task, WorkUnit
 from donna.protocol import SessionStateCell
 
@@ -130,7 +130,7 @@ class MutableState(BaseState):
     def add_action_request(self, action_request: ActionRequest) -> None:
         full_request = action_request.replace(id=self.next_action_request_id())
 
-        journal_emit(f"Request agent action `{full_request.title}`", actor_id="donna").unwrap()
+        output.get().journal(f"Request agent action `{full_request.title}`", actor_id="donna").unwrap()
 
         self.action_requests.append(full_request)
 
@@ -165,7 +165,7 @@ class MutableState(BaseState):
         assert current_task is not None
 
         action_request = self.get_action_request(request_id).unwrap()
-        journal_emit(f"Complete agent action `{action_request.title}`").unwrap()
+        output.get().journal(f"Complete agent action `{action_request.title}`").unwrap()
 
         changes = [
             ChangeAddWorkUnit(task_id=current_task.id, operation_id=next_operation_id),
@@ -181,7 +181,7 @@ class MutableState(BaseState):
         artifact = caches.get().artifacts.load_for_view(operation_parts.artifact_id).unwrap()
         workflow = artifact.get_section(operation_parts.section_id).unwrap()
 
-        journal_emit(f"Start workflow `{workflow.title}`").unwrap()
+        output.get().journal(f"Start workflow `{workflow.title}`").unwrap()
 
         changes = [ChangeAddTask(operation_id=full_operation_id)]
         self.apply_changes(changes)
@@ -195,7 +195,7 @@ class MutableState(BaseState):
         artifact = caches.get().artifacts.load_for_view(workflow_parts.artifact_id).unwrap()
         workflow = artifact.get_section(workflow_parts.section_id).unwrap()
 
-        journal_emit(f"Finish workflow `{workflow.title}`").unwrap()
+        output.get().journal(f"Finish workflow `{workflow.title}`").unwrap()
 
         changes = [ChangeRemoveTask(task_id=task_id)]
         self.apply_changes(changes)

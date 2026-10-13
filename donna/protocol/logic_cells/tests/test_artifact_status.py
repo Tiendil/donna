@@ -1,3 +1,4 @@
+import pydantic
 import pytest
 from llm_tool_cli.protocol import Protocol
 
@@ -7,6 +8,18 @@ from donna.protocol.logic_cells.tests.helpers import project
 
 
 class TestArtifactStatusCell:
+    def test_model_validate__rejects_journal_delivery(self) -> None:
+        with pytest.raises(pydantic.ValidationError, match="is_journal"):
+            ArtifactStatusCell.model_validate(
+                {
+                    "artifact_id": make.ARTIFACT_ID,
+                    "artifact_kind": make.PRIMITIVE_PATH,
+                    "artifact_title": "Workflow",
+                    "description": "Workflow description",
+                    "is_journal": True,
+                }
+            )
+
     @pytest.mark.parametrize("protocol", list(Protocol))
     @pytest.mark.parametrize("description", ["Workflow description", ""])
     def test_render__preserves_summary_payload(self, protocol: Protocol, description: str) -> None:

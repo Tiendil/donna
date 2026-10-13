@@ -1,3 +1,4 @@
+import pydantic
 import pytest
 from llm_tool_cli.protocol import Protocol
 
@@ -8,6 +9,12 @@ from donna.protocol.logic_cells.tests.helpers import project
 
 
 class TestActionRequestCell:
+    def test_model_validate__rejects_journal_delivery(self) -> None:
+        with pytest.raises(pydantic.ValidationError, match="is_journal"):
+            ActionRequestCell.model_validate(
+                {"action_request_id": make.ACTION_REQUEST_ID, "request": "Do the thing", "is_journal": True}
+            )
+
     @pytest.mark.parametrize("protocol", list(Protocol))
     @pytest.mark.parametrize("request_id", [make.ACTION_REQUEST_ID, None])
     def test_render__preserves_request_instruction_and_id(

@@ -7,6 +7,7 @@ import pydantic
 from llm_tool_cli.config.project import project_config
 from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.output import output
 from llm_tool_cli.paths import ProjectRootPath
 
 from donna.core import errors as core_errors
@@ -14,7 +15,6 @@ from donna.domain.artifact_ids import ArtifactId, artifact_section_id, split_art
 from donna.domain.ids import SectionId
 from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
-from donna.machine.journal import journal_emit
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta
 from donna.workspaces import markdown
 from donna.workspaces.markdown_parser import MarkdownSectionMixin
@@ -152,7 +152,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         script = meta.script
         assert script is not None
 
-        journal_emit(f"Run script `{operation.title}`", actor_id="donna").unwrap()
+        output.get().journal(f"Run script `{operation.title}`", actor_id="donna").unwrap()
 
         project_dir = project_config.get().project_dir
         stdout, stderr, exit_code = _run_script(
@@ -161,7 +161,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
             project_dir=project_dir,
         )
 
-        journal_emit(
+        output.get().journal(
             f"Script finished `{operation.title}`, exit code: {exit_code}, "
             f"has stdout: {bool(stdout)}, has stderr: {bool(stderr)}`",
             actor_id="donna",

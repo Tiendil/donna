@@ -7,6 +7,7 @@ __all__ = [
     "JournalCell",
     "ActionRequestCell",
     "ArtifactStatusCell",
+    "RenderedArtifactCell",
     "SessionStateCell",
 ]
 
@@ -14,5 +15,6 @@ from donna.protocol.journal import JournalCell
 from donna.protocol.logic_cells import (
     ActionRequestCell,
     ArtifactStatusCell,
+    RenderedArtifactCell,
     SessionStateCell,
 )

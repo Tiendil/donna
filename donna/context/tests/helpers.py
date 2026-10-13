@@ -1,11 +1,14 @@
 from llm_tool_cli.core.result import Ok, Result
+from llm_tool_cli.output import StreamOutputEmitter
 from llm_tool_cli.protocol.logic_cells.base import LogicCell
 
+from donna.machine.journal import journal_cell
 from donna.protocol.journal import JournalCell
 
 
-class FakeOutputEmitter:
+class FakeOutputEmitter(StreamOutputEmitter):
     def __init__(self) -> None:
+        super().__init__(journal_factory=journal_cell)
         self.cells: list[LogicCell] = []
         self.journal_records: list[JournalCell] = []
 

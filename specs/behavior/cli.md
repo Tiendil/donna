@@ -162,6 +162,9 @@ Donna owns the projection of its results and journal context into cells.
 Shared output delivery MUST buffer ordinary results, emit successfully processed journal cells immediately, and place collected warnings last.
 On command failure, buffered ordinary results MUST be discarded; error diagnostics MUST precede collected warnings.
 
+Artifact-status, rendered-artifact, action-request, and session-state cells MUST reject construction with journal delivery enabled.
+They MUST remain ordinary buffered output; operation journaling MUST use separate explicit journal events.
+
 Consumers MUST NOT treat generated cell ids as deterministic identifiers.
 
 Commands MAY emit multiple cells for one invocation.
@@ -211,6 +214,8 @@ Automation protocol cell output SHOULD follow this shape:
 The CLI MUST use global-option registration and parsing, context-scoped runtime configuration, command-context protocol selection and output scope setup, and shared emitter delivery managed by `llm_tool_cli`.
 Donna MUST register its commands on the application provided by `llm_tool_cli`.
 Application-specific runtime setup, journal-cell construction, and runtime cleanup MUST remain Donna-owned; project loading and output delivery MUST be shared.
+Workspace commands MUST compose the shared command execution scope with Donna's runtime setup and journal-cell factory.
+Commands without Donna runtime requirements MUST use shared command setup directly.
 The effective protocol MUST be read from shared runtime configuration; the active config path and derived project directory MUST be read from independent shared project configuration.
 These configurations and the static application identity MUST be immutable and complete when bound.
 Donna MUST NOT retain separate protocol or workspace-path globals.
@@ -267,8 +272,8 @@ donna init
 donna --config /path/to/project/donna.toml init
 ```
 
-The command MUST use shared project initialization, supplying Donna's schema, packaged starter location, invocation working directory, and optional `--config` path; the default filename MUST come from static settings.
-The library owns target selection and resolution, template reading, exclusive creation, subsequent loading and validation, project scope management, and their diagnostics.
+The application MUST register the initialization command managed by `llm_tool_cli`, supplying Donna's schema, packaged starter location, and initialization help text.
+The library owns command setup, invocation working directory and optional `--config` handling, target selection and resolution, template reading, exclusive creation, subsequent loading and validation, project scope management, success output, and diagnostics; the default filename MUST come from static settings.
 Donna owns the starter contents and schema described in `specs/behavior/config.md`.
 
 The generated configuration MUST be valid TOML and use schema version `1`.
@@ -462,7 +467,7 @@ The library owns installed version lookup, help, configuration independence, pro
 
 ## Errors and exit codes
 
-Skill- and version-command failure handling MUST be managed by `llm_tool_cli`.
+Skill-, version-, and initialization-command failure handling MUST be managed by `llm_tool_cli`.
 The remaining execution policies apply to tool-owned commands.
 
 Typer command line parsing errors SHOULD use Typer's standard invalid-arguments behavior.
@@ -474,7 +479,10 @@ This replaces Donna's custom error-cell kinds and `error_code` field with the sh
 Custom introductory prefixes MUST be removed; artifact, section, and configuration context MUST remain available through shared metadata conversion, including optional null fields.
 
 The CLI MUST use command error handling and explicit error reporting managed by `llm_tool_cli`, including error cells on stdout, diagnostic ordering, exit statuses, and exception propagation.
-Donna MUST retain application-specific runtime setup, error journaling, and runtime context cleanup.
+Donna MUST retain application-specific runtime setup and runtime context cleanup.
+Terminal error journaling MUST be managed by the shared library through error cells, without separate console journal lines or calls to Donna's journal-cell factory.
+Those journal records MUST NOT load Donna session state or require task, work-unit, or operation attribution.
+Donna runtime resources MUST retain their existing execution scope rather than remaining active for shared error reporting.
 
 Configuration selection, loading, and creation MUST propagate the diagnostics provided by `llm_tool_cli` without local translation.
 

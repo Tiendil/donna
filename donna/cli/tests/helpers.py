@@ -10,7 +10,6 @@ from donna.cli.application import app
 COMMAND_MODULES = (
     "donna.cli.commands.artifacts",
     "donna.cli.commands.sessions",
-    "donna.cli.commands.workspaces",
 )
 
 

@@ -2,40 +2,13 @@ import pathlib
 
 import pydantic
 import pytest
+from llm_tool_cli.output.journal import JournalConfig
 from llm_tool_cli.paths import RelativeProjectPath
 
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.python_path import PythonPath
 from donna.workspaces import config as workspace_config
-from donna.workspaces.config import Config, DefaultsConfig, JournalConfig, JournalRecordAttribute
-
-
-class TestJournalRecordAttribute:
-    def test_has_attribute__accepts_supported_attribute_names(self) -> None:
-        assert JournalRecordAttribute.has_attribute("message")
-        assert not JournalRecordAttribute.has_attribute("missing")
-
-
-class TestIsJournalVariableArgument:
-    def test_detects_whole_argument_placeholders(self) -> None:
-        assert workspace_config._is_journal_variable_argument("{message}")
-        assert not workspace_config._is_journal_variable_argument("literal:{message}")
-        assert not workspace_config._is_journal_variable_argument("{message")
-
-
-class TestJournalConfig:
-    def test_validate_cmd__accepts_none_and_supported_placeholders(self) -> None:
-        assert JournalConfig(cmd=None).cmd is None
-        assert JournalConfig(cmd=["tool", "{message}", "literal:{message}"]).cmd == [
-            "tool",
-            "{message}",
-            "literal:{message}",
-        ]
-
-    @pytest.mark.parametrize("cmd", [[], ["tool", "{missing}"], ["tool", 1]])
-    def test_validate_cmd__rejects_invalid_command(self, cmd: list[object]) -> None:
-        with pytest.raises(pydantic.ValidationError):
-            JournalConfig.model_validate({"cmd": cmd})
+from donna.workspaces.config import Config, DefaultsConfig
 
 
 class TestDefaultsConfig:

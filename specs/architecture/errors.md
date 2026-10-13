@@ -129,7 +129,7 @@ Construction sites SHOULD pass only the structured fields that vary for that err
 
 All environment errors, including errors embedded in artifact views, MUST use the shared typed environment-error cell and its common presentation contract.
 Donna MUST construct shared environment-error cells directly, without error-node wrappers.
-The CLI MUST obtain error journal messages from the error's formatted message, replace internal newlines with spaces, and strip surrounding whitespace before adding the error prefix and code.
+Shared error cells MUST produce journal records from the error's formatted message and structured diagnostic fields, preserving internal line breaks without a separate prefix or duplicate console journal line.
 
 The core error base classes MUST NOT depend on protocol cells, protocol formatters, or CLI output.
 
@@ -211,9 +211,10 @@ CLI argument parsing MAY raise `typer.BadParameter`, `click.UsageError`, or `typ
 
 After the selected protocol is installed, the CLI MUST use command error handling and explicit error reporting managed by `llm_tool_cli`, including its diagnostic order, cell presentation, stdout delivery, and exit behavior for all environment errors.
 Donna MUST NOT maintain a separate rendering or exit path for errors owned by Donna.
-The local command context MUST retain workspace and runtime setup, observe and re-raise unwrapped errors for journaling, and restore runtime contexts after success or failure.
+The local command context MUST retain workspace and runtime setup and restore runtime contexts after success or failure, without a local error-journaling catch.
 
-The CLI SHOULD write environment error journal cells when workspace configuration is loaded.
+The shared CLI boundary MUST journal terminal error cells without invoking Donna's journal-cell factory or loading session state.
+Generic error journal records MUST NOT require Donna execution identifiers, including after failed initialization or runtime cleanup.
 Journal processor failures MUST NOT trigger recursive attempts to journal the same processor failure.
 
 Error classes outside the CLI module MAY declare exit-code overrides through the shared core contract; process termination MUST be delegated to the shared CLI boundary.

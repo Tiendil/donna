@@ -198,18 +198,19 @@ If present, `journal.cmd` MUST be a non-empty list of command arguments.
 Each argument MUST be a string.
 
 Donna MUST configure the shared command journal processor to execute the configured command once per journal-marked cell.
+The processor MUST receive the shared journal record produced by that cell.
 
 Donna MUST execute the command directly as an argument list, not through a shell.
 
 Journal command execution failures MUST propagate the shared `journal_command_failed` diagnostic.
-Argument construction failures MUST propagate the shared `journal_command_config_invalid` diagnostic.
 Journal message arguments MUST use the normalized logical-cell message, including its internal line breaks; compact console escaping MUST NOT alter external command arguments.
 
 ### Journal placeholders
 
 Donna MUST recognize placeholders only when the whole command argument starts with `{` and ends with `}`.
 
-The supported placeholders MUST be:
+Placeholders MUST resolve through the shared journal record's dictionary representation.
+Donna journal cells MUST provide these placeholders:
 
 - `{timestamp}` — record creation time formatted as ISO-8601.
 - `{actor_id}` — actor that created the record, or an empty string.
@@ -218,7 +219,8 @@ The supported placeholders MUST be:
 - `{current_work_unit_id}` — current work unit id, or an empty string.
 - `{current_operation_id}` — current operation artifact section id, or an empty string.
 
-Unsupported placeholder names MUST cause configuration loading or journal command argument construction to fail.
+Missing or null field values MUST become empty arguments, preserving their positions in the argument list.
+This includes execution identifiers absent from shared terminal-error records and names absent from every record; such names MUST NOT cause configuration loading or argument construction to fail.
 
 Arguments that contain placeholder-like text as only part of the value MUST be treated as literal arguments.
 
@@ -270,7 +272,6 @@ Configuration loading MUST fail for:
 - invalid default primitive paths.
 - invalid default primary section id.
 - empty `journal.cmd`.
-- unsupported journal placeholders.
 
 ## Compatibility rules
 

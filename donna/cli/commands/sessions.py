@@ -1,4 +1,6 @@
 import typer
+from llm_tool_cli.config.project import project_config
+from llm_tool_cli.paths import PathInput
 
 from donna.cli.application import app
 from donna.cli.types import (
@@ -41,8 +43,8 @@ def details(context: typer.Context) -> None:
 
 @app.command(help="Run a workflow from an artifact to drive the current session forward.")
 def run(context: typer.Context, workflow_path: ArtifactIdArgument) -> None:
-    with command_context(context) as command:
-        workflow_id = parse_artifact_id_argument(workflow_path, command.target_dir()).unwrap()
+    with command_context(context):
+        workflow_id = parse_artifact_id_argument(workflow_path, PathInput(project_config.get().project_dir)).unwrap()
         sessions.start_workflow(workflow_id).unwrap()
 
 
@@ -55,6 +57,8 @@ def complete_action_request(
     request_id: ActionRequestIdArgument,
     next_operation_path: ArtifactSectionIdArgument,
 ) -> None:
-    with command_context(context) as command:
-        next_operation_id = parse_artifact_section_id_argument(next_operation_path, command.target_dir()).unwrap()
+    with command_context(context):
+        next_operation_id = parse_artifact_section_id_argument(
+            next_operation_path, PathInput(project_config.get().project_dir)
+        ).unwrap()
         sessions.complete_action_request(request_id, next_operation_id).unwrap()

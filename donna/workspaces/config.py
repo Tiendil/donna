@@ -1,60 +1,17 @@
 from __future__ import annotations
 
-import enum
 from typing import Literal
 
 import pydantic
 from llm_tool_cli.core.context import ContextValue
 from llm_tool_cli.core.entities import BaseEntity
+from llm_tool_cli.output.journal import JournalConfig
 from llm_tool_cli.paths import RelativeProjectPath
 
 from donna.domain.constants import DONNA_DEFAULT_SESSION_DIR, DONNA_DEFAULT_WORKFLOW_DIR
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
-
-
-class JournalRecordAttribute(str, enum.Enum):
-    timestamp = "timestamp"
-    actor_id = "actor_id"
-    message = "message"
-    current_task_id = "current_task_id"
-    current_work_unit_id = "current_work_unit_id"
-    current_operation_id = "current_operation_id"
-
-    @classmethod
-    def has_attribute(cls, name: str) -> bool:
-        return name in cls.__members__
-
-
-def _is_journal_variable_argument(argument: str) -> bool:
-    return len(argument) >= 2 and argument[0] == "{" and argument[-1] == "}"
-
-
-class JournalConfig(BaseEntity):
-    cmd: list[str] | None = None
-
-    @pydantic.field_validator("cmd", mode="after")
-    @classmethod
-    def validate_cmd(cls, value: list[str] | None) -> list[str] | None:
-        if value is None:
-            return value
-
-        if not value:
-            raise ValueError("Journal command config is invalid: Configured command is empty.")
-
-        for argument in value:
-            if not _is_journal_variable_argument(argument):
-                continue
-
-            name = argument[1:-1]
-
-            if not JournalRecordAttribute.has_attribute(name):
-                raise ValueError(
-                    f"Journal command config is invalid: `{name}` is not a supported `JournalRecord` argument."
-                )
-
-        return value
 
 
 class DefaultsConfig(BaseEntity):

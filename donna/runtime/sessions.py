@@ -9,7 +9,6 @@ from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId, artifact_se
 from donna.domain.internal_ids import ActionRequestId
 from donna.machine import errors as machine_errors
 from donna.machine.caches import caches
-from donna.machine.journal import journal_emit
 from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
 from donna.machine.templates import RENDER_CONTEXT_VIEW
@@ -73,7 +72,7 @@ def _session_required(
 def new_session() -> Result[None]:
     _save_state(MutableState.build().freeze()).unwrap()
 
-    journal_emit("Created new session state.").unwrap()
+    output.get().journal("Created new session state.").unwrap()
 
     return output.get().emit([operation_succeeded("Created new session state.")])
 

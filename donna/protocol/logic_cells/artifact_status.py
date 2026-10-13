@@ -1,3 +1,6 @@
+from typing import Literal
+
+import pydantic
 from llm_tool_cli.protocol.logic_cells.uniform import UniformCell
 from llm_tool_cli.protocol.output_cells.base import OutputCell
 
@@ -6,6 +9,7 @@ from donna.domain.python_path import PythonPath
 
 
 class ArtifactStatusCell(UniformCell):
+    is_journal: Literal[False] = pydantic.Field(default=False, exclude=True)
     artifact_id: ArtifactId
     artifact_kind: PythonPath
     artifact_title: str

@@ -2,18 +2,19 @@ from typing import Annotated
 
 import click
 import typer
+from llm_tool_cli.config.project import project_config
 from llm_tool_cli.core.result import Err
 from llm_tool_cli.output import output
+from llm_tool_cli.paths import PathInput
 from llm_tool_cli.protocol.cell_shortcuts import operation_succeeded
-from llm_tool_cli.protocol.logic_cells import ContentCell
 
 from donna.cli.application import app
 from donna.cli.types import ArtifactIdArgument, ArtifactIdsArgument, RenderModeOption, parse_artifact_id_argument
 from donna.cli.utils import command_context
 from donna.machine import ArtifactRenderContext
 from donna.machine.caches import caches
-from donna.machine.journal import journal_emit
 from donna.machine.templates import RENDER_CONTEXT_VIEW
+from donna.protocol import RenderedArtifactCell
 from donna.workspaces.artifacts import fetch_artifact_bytes
 from donna.workspaces.templates import render as render_template
 
@@ -23,7 +24,7 @@ def list_(
     typer_context: typer.Context,
 ) -> None:
     with command_context(typer_context):
-        journal_emit("List artifacts").unwrap()
+        output.get().journal("List artifacts").unwrap()
 
         artifacts = caches.get().artifacts.list(RENDER_CONTEXT_VIEW).unwrap()
 
@@ -36,24 +37,15 @@ def render(
     artifact_path: ArtifactIdArgument,
     mode: RenderModeOption,
 ) -> None:
-    with command_context(typer_context) as command:
-        artifact_id = parse_artifact_id_argument(artifact_path, command.target_dir()).unwrap()
-        journal_emit(f"Render artifact `{artifact_id}` in `{mode.value}` mode").unwrap()
+    with command_context(typer_context):
+        artifact_id = parse_artifact_id_argument(artifact_path, PathInput(project_config.get().project_dir)).unwrap()
+        output.get().journal(f"Render artifact `{artifact_id}` in `{mode.value}` mode").unwrap()
 
         content = fetch_artifact_bytes(artifact_id).unwrap().decode("utf-8")
         render_context = ArtifactRenderContext(primary_mode=mode)
         rendered = render_template(artifact_id, content, render_context).unwrap()
 
-        output.get().emit(
-            [
-                ContentCell(
-                    kind="rendered_artifact",
-                    media_type="text/markdown",
-                    content=rendered,
-                    meta={"type": "rendered_artifact"},
-                )
-            ]
-        ).unwrap()
+        output.get().emit([RenderedArtifactCell(artifact_id=artifact_id, content=rendered)]).unwrap()
 
 
 @app.command(help="Validate the given artifact ids, or validate every discovered artifact with --all.")
@@ -65,7 +57,7 @@ def validate(  # noqa: CCR001
         typer.Option("--all", help="Validate every discovered artifact."),
     ] = False,
 ) -> None:
-    with command_context(typer_context) as command:
+    with command_context(typer_context):
         if all_artifacts and artifact_paths:
             raise click.UsageError("Pass artifact ids or --all, not both.")
 
@@ -73,15 +65,15 @@ def validate(  # noqa: CCR001
             raise click.UsageError("Pass artifact ids or --all.")
 
         if all_artifacts:
-            journal_emit("Validate all artifacts").unwrap()
+            output.get().journal("Validate all artifacts").unwrap()
             artifacts = caches.get().artifacts.list(RENDER_CONTEXT_VIEW).unwrap()
         else:
             assert artifact_paths is not None
             artifact_ids = [
-                parse_artifact_id_argument(artifact_path, command.target_dir()).unwrap()
+                parse_artifact_id_argument(artifact_path, PathInput(project_config.get().project_dir)).unwrap()
                 for artifact_path in artifact_paths
             ]
-            journal_emit(
+            output.get().journal(
                 f"Validate artifacts {', '.join(f'`{artifact_id}`' for artifact_id in artifact_ids)}"
             ).unwrap()
             artifacts = [

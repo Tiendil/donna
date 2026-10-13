@@ -126,7 +126,7 @@ Fields:
 
 - `cmd`: optional non-empty list of command arguments.
 
-Supported whole-argument placeholders:
+Common whole-argument placeholders:
 
 - `{timestamp}`: ISO-8601 record timestamp.
 - `{actor_id}`: actor that created the record.
@@ -135,7 +135,7 @@ Supported whole-argument placeholders:
 - `{current_work_unit_id}`: current work unit id, if any.
 - `{current_operation_id}`: current operation artifact section id, if any.
 
-Invalid placeholder names make configuration loading fail.
+Placeholders use the journal record's fields. Missing or null values, including unknown field names, become empty arguments without removing their positions in the command.
 
 Placeholders are recognized only when the whole argument starts with `{` and ends with `}`. For example, `{message}` is a placeholder, but `message:{message}` is a literal argument.
 

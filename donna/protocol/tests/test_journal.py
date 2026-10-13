@@ -77,7 +77,7 @@ class TestJournalCell:
                 "{message}",
             ]
         )
-        processor.process(journal_record(message="  first\nsecond\n  ")).unwrap()
+        processor.process(journal_record(message="  first\nsecond\n  ").to_journal_record()).unwrap()
         run.assert_called_once_with(
             [
                 "tool",

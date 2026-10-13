@@ -12,13 +12,13 @@ from donna.machine import Caches, ExecutionContext
 from donna.machine.caches import caches
 from donna.machine.context import execution_context
 from donna.machine.errors import SessionStateChangedExternally, SessionStateNotInitialized
-from donna.machine.journal import journal_emit
+from donna.machine.journal import journal_cell
 from donna.machine.tests import make
 from donna.machine.tests.helpers import FakeArtifacts, FakePrimitives
 from donna.runtime.tests.make import FakeStateStore
 
 
-class TestJournalEmit:
+class TestJournalCell:
     @pytest.mark.parametrize(
         ("protocol", "actor"),
         [(Protocol.human, "human"), (Protocol.llm, "agent"), (Protocol.automation, "automation")],
@@ -36,7 +36,7 @@ class TestJournalEmit:
             runtime_config.scope(RuntimeConfig(protocol=protocol)),
             output.scope(emitter),
         ):
-            journal_emit("event").unwrap()
+            output.get().journal("event").unwrap()
 
         assert state.loaded_count == 1
         assert not state.saved
@@ -62,7 +62,7 @@ class TestJournalEmit:
             execution_context.scope(context),
             output.scope(emitter),
         ):
-            journal_emit("event", actor_id=actor).unwrap()
+            output.get().journal("event", actor_id=actor).unwrap()
 
         assert state.loaded_count == 1
         assert [cell.model_dump(exclude={"timestamp"}) for cell in emitter.journal_records] == [
@@ -91,9 +91,9 @@ class TestJournalEmit:
             execution_context.scope(context),
             output.scope(emitter),
         ):
-            journal_emit("Before saving", actor_id="donna").unwrap()
+            output.get().journal("Before saving", actor_id="donna").unwrap()
             state.save(mutator.freeze()).unwrap()
-            journal_emit("After saving", actor_id="donna").unwrap()
+            output.get().journal("After saving", actor_id="donna").unwrap()
 
         assert [record.current_task_id for record in emitter.journal_records] == [
             child.id,
@@ -117,7 +117,7 @@ class TestJournalEmit:
             runtime_config.scope(RuntimeConfig(protocol=Protocol.llm)),
             output.scope(emitter),
         ):
-            result = journal_emit("event")
+            result = output.get().journal("event")
 
         assert result.is_ok()
         assert state.loaded_count == 1
@@ -145,7 +145,7 @@ class TestJournalEmit:
             execution_context.scope(ExecutionContext()),
             output.scope(emitter),
         ):
-            result = journal_emit("event", actor_id="donna")
+            result = output.get().journal("event", actor_id="donna")
 
         assert result.unwrap_err() == [failure]
         emit.assert_called_once()
@@ -155,4 +155,4 @@ class TestJournalEmit:
         mocker.patch.object(state, "load", side_effect=ValueError("unexpected defect"))
         with caches.scope(Caches(artifacts=FakeArtifacts(), primitives=FakePrimitives(), state=state)):
             with pytest.raises(ValueError, match="unexpected defect"):
-                journal_emit("event")
+                journal_cell(message="event", actor_id=None)

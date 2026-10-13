@@ -1,3 +1,4 @@
+import pydantic
 import pytest
 from llm_tool_cli.protocol import Protocol
 
@@ -6,6 +7,12 @@ from donna.protocol.logic_cells.tests.helpers import project
 
 
 class TestSessionStateCell:
+    def test_model_validate__rejects_journal_delivery(self) -> None:
+        with pytest.raises(pydantic.ValidationError, match="is_journal"):
+            SessionStateCell.model_validate(
+                {"started": True, "tasks": 2, "queued_work_units": 3, "pending_action_requests": 1, "is_journal": True}
+            )
+
     @pytest.mark.parametrize("protocol", list(Protocol))
     @pytest.mark.parametrize(
         ("counts", "message"),

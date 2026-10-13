@@ -1,5 +1,7 @@
 import textwrap
+from typing import Literal
 
+import pydantic
 from llm_tool_cli.protocol.logic_cells.uniform import UniformCell
 from llm_tool_cli.protocol.output_cells.base import OutputCell
 
@@ -7,6 +9,7 @@ from donna.domain.internal_ids import ActionRequestId
 
 
 class ActionRequestCell(UniformCell):
+    is_journal: Literal[False] = pydantic.Field(default=False, exclude=True)
     action_request_id: ActionRequestId | None
     request: str
 

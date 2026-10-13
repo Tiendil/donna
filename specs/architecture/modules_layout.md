@@ -81,14 +81,17 @@ The CLI MUST use `llm_tool_cli.skills` directly for skill-document loading and p
 Donna MUST use frozen `StaticConfig` in `llm_tool_cli.core.settings` for application identity and the default `donna.toml` filename before parsing, `RuntimeConfig` in `llm_tool_cli.config.runtime` for the effective protocol, and `ProjectConfig` in `llm_tool_cli.config.project` for the active config path and derived project directory.
 The three shared context bindings MUST remain independent; project settings MUST be complete when bound after successful preparation and restored when the command context closes.
 The `donna.workspaces.config.config` binding MUST use shared `ContextValue[Config]` for loaded Donna-specific settings.
-The CLI MUST scope loaded settings around workspace-dependent execution and error journaling, restoring the previous binding on exit.
-The CLI MUST use shared `load_project` and `initialize_project` contexts with Donna's `Config` schema, retaining them through the framework command context's resource lifecycle.
+The CLI MUST scope loaded settings around workspace-dependent execution, restoring the previous binding before shared terminal-error reporting.
+Donna's project-command context MUST compose `llm_tool_cli.cli.context.command_context` with its runtime preparation and journal factory, without a local `CommandContext` subclass or error-journaling catch.
+The CLI MUST use shared `load_project` with Donna's `Config` schema, retaining it through the framework command context's resource lifecycle.
+The application MUST register initialization through `llm_tool_cli.cli.commands.initialization.register_init_command`, supplying Donna's `Config` schema and its initialization help text.
+Shared initialization MUST retain its project context through the framework command context's resource lifecycle.
 Discovery, loading, starter creation and validation, `ProjectConfig` construction, and project binding and restoration MUST belong to the shared library; Donna MUST NOT keep local preparation wrappers.
 Initialization MUST supply the `donna.workspaces` resource package and `base_config.toml` template.
 Donna MUST NOT maintain a parallel `GlobalConfig` implementation or a workspace wrapper duplicating runtime paths.
 
 The machine module MUST own a frozen execution-context value containing the optional current work unit and operation identifiers, bound independently through shared `ContextValue`.
-The CLI MUST bind an empty execution context for successfully prepared workspace commands, retaining it through command execution and error journaling and restoring the previous binding on exit.
+The CLI MUST bind an empty execution context for successfully prepared workspace commands, retaining it through command execution and restoring the previous binding before shared terminal-error reporting.
 Work-unit and operation execution MUST use nested scopes that replace their respective identifier, preserve the other identifier, and restore the previous value after success or failure.
 Journaling MUST obtain execution identifiers exclusively from this binding, which reflects the active execution scope.
 The journal task identifier MUST always come from cached consistent session state, which identifies the task being processed until changes are saved.
@@ -96,18 +99,16 @@ The journal task identifier MUST always come from cached consistent session stat
 The machine's public cache boundary MUST expose one collection of artifact, primitive, and session-state caches through a shared `ContextValue` binding.
 Cache implementations MUST remain owned by the context module; machine code MUST access them through typed interfaces without importing context or workspace implementations.
 Artifact-rendering context data used in cache interfaces MUST belong to the machine module.
-The CLI MUST directly construct and bind fresh caches after successful workspace preparation, retain them through command execution and error journaling, and restore the previous collection on exit.
+The CLI MUST directly construct and bind fresh caches after successful workspace preparation, retain them through command execution, and restore the previous collection before shared terminal-error reporting.
 Commands that do not load a workspace MUST NOT require cache construction.
 Cache construction MUST NOT require a workspace argument or perform workspace I/O; artifact refresh and render-mode behavior, primitive lookup caching, and session-state external-change detection MUST be preserved.
 
-The public `donna.machine.journal.journal_emit(message, *, actor_id=...) -> Result[None]` helper MUST construct Donna journal cells and submit them through the shared output binding.
-Journal call sites SHOULD use this helper, supplying an explicit actor when needed.
-The helper MUST derive an omitted actor from runtime context, obtain execution identifiers from the active execution context, and always obtain the task identifier through the machine's state-cache interface.
-If session loading returns an environment failure or there is no active task, the helper MUST emit the event without a task identifier, preserving actor and execution context.
-It MUST NOT accept a task identifier override: mutable state can advance beyond the saved snapshot during change application, before execution proceeds with another task.
-It MUST NOT accept work-unit or operation identifier overrides: execution scopes own these identifiers and restore them when execution ends, so independently supplied identifiers could contradict active execution.
-An explicit actor, including `None`, MUST take precedence over the inferred actor without bypassing session loading or execution context.
-The helper MUST remain stateless and leave processing, rendering, buffering, and stream delivery to the shared emitter.
+The public `donna.machine.journal.journal_cell(*, message, actor_id) -> JournalCell` factory MUST construct Donna journal cells without submitting them.
+Journal call sites MUST use `output.get().journal(...)`, supplying an explicit actor when needed; default actor selection MUST belong to the shared emitter.
+The factory MUST obtain execution identifiers from the active execution context and the task identifier through the machine's state-cache interface on each call.
+If session loading returns an environment failure or there is no active task, the factory MUST construct the event without a task identifier, preserving actor and execution context.
+It MUST NOT accept task, work-unit, or operation identifier overrides because these must agree with the consistent state and active execution scopes.
+The factory MUST preserve the supplied actor, including `None`, and leave processing, rendering, buffering, and stream delivery to the shared emitter.
 Journal cells MUST NOT read context or load session state during construction or projection.
 Donna MUST NOT maintain a journal service or journal context binding.
 Failed preparation and project-independent commands MUST NOT journal errors through outer runtime services.
@@ -154,13 +155,18 @@ Batch-rendering orchestration and stream writing MUST belong to the shared emitt
 Donna MUST retain ownership of its domain cell projections and journal context.
 The public `donna.protocol.journal.JournalCell` MUST extend the shared journal cell with task, work-unit, and operation identifiers.
 Its human and LLM projections MUST retain Donna's compact layouts, using shared escaping and automation journal serialization.
-Donna MUST NOT maintain a separate journal record, formatter family, output interface, output binding, or external command processor.
+Donna MUST use shared journal records and MUST NOT maintain a separate record implementation, formatter family, output interface, output binding, or external command processor.
+Journal-cell conversion MUST preserve Donna's captured execution identifiers as shared record attributes without consulting runtime state.
 Workflow primitives, runtime operations, and journal construction MUST submit cells directly through `llm_tool_cli.output.output`.
 Shared command setup MUST bind the emitter independently of project preparation.
-After loading journal configuration, Donna MUST configure the shared command journal processor when a command is present.
+After runtime preparation, Donna MUST configure the shared emitter with its journal-cell factory and the processor produced by shared journal configuration.
+Donna MUST use the shared `JournalConfig` directly for command validation and processor construction, without a local subclass or field registry.
+The configured emitter MUST remain available for shared finalization, but terminal-error conversion MUST bypass its Donna factory and MUST NOT access restored runtime bindings.
 Programmatic callers MUST explicitly bind an emitter for output-producing behavior.
 Session command operations without another useful result MUST submit their result cells and return `Result[None]`.
-The `render` command MUST submit its prepared Markdown document as a shared content logic cell through the emitter.
+The `render` command MUST submit its prepared Markdown document as a Donna-owned `RenderedArtifactCell` through the emitter.
+Artifact-status, rendered-artifact, action-request, and session-state cells MUST prohibit journaling with `is_journal: Literal[False]` and MUST NOT implement journal-record conversion.
+Generic content cells MUST retain the shared prohibition on journaling.
 
 Lexical project-path normalization, filesystem resolution and containment, symlink rejection, and file enumeration MUST be provided by `llm_tool_cli` and used directly.
 Donna MUST retain artifact-specific path behavior, workflow-directory selection and ordering, and artifact-extension filtering.

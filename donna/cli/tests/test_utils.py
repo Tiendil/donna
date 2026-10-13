@@ -1,9 +1,7 @@
 import pathlib
 import subprocess  # noqa: S404
 
-import click
 import pytest
-import typer
 from llm_tool_cli.cli.errors import InvalidArguments
 from llm_tool_cli.config import errors as config_errors
 from llm_tool_cli.config.project import ProjectConfig, project_config
@@ -30,12 +28,43 @@ from donna.machine.caches import caches
 from donna.machine.context import execution_context
 from donna.machine.tests import make as machine_make
 from donna.primitives.sections.run_script import RunScriptInvalidExitCode
-from donna.protocol.tests.make import cell
 from donna.workspaces import config as workspace_config
 from donna.workspaces import errors as workspace_errors
 
 
 class TestCommandContext:
+    def test_terminal_error__forwards_after_runtime_cleanup_without_factory_access(
+        self, mocker: MockerFixture, tmp_path: pathlib.Path
+    ) -> None:
+        config_path = helpers.write_config(tmp_path)
+        config_path.write_text(
+            config_path.read_text() + '\n[journal]\ncmd = ["journal-tool", "{message}", "{current_task_id}", '
+            '"{current_work_unit_id}", "{current_operation_id}"]\n'
+        )
+        failure = llm_tool_errors.EnvironmentError(code="command_failed", message="first\nsecond")
+        mocker.patch("donna.context.artifacts.ArtifactsCache.list", return_value=Err([failure]))
+        factory = mocker.spy(cli_utils, "journal_cell")
+        calls: list[list[str]] = []
+
+        def run(args: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+            calls.append(args)
+            if args[1] == failure.format_message():
+                assert not caches.is_set()
+                assert not execution_context.is_set()
+                assert not workspace_config.config.is_set()
+            return subprocess.CompletedProcess(args, 0, "", "")
+
+        mocker.patch("llm_tool_cli.output.journal.subprocess.run", side_effect=run)
+        result = helpers.invoke(["--config", str(config_path), "-p", "automation", "list"])
+        assert result.exit_code == 3, result.exception
+        factory.assert_called_once()
+        assert len(calls) == 2
+        assert calls[-1] == ["journal-tool", "first\nsecond", "", "", ""]
+        records = helpers.json_lines(result.stdout)
+        assert len(records) == 2
+        assert records[0]["message"] == "List artifacts"
+        assert_error_cells(records[1:], [failure])
+
     @pytest.mark.parametrize(
         ("protocol", "actor"), [("human", "human"), ("llm", "agent"), ("automation", "automation")]
     )
@@ -52,9 +81,9 @@ class TestCommandContext:
         cell = processed.call_args.args[1]
         assert cell.actor_id == actor
         assert cell.message == "Created new session state."
-        assert cell.current_task_id is None
-        assert cell.current_work_unit_id is None
-        assert cell.current_operation_id is None
+        assert cell.attributes["current_task_id"] is None
+        assert cell.attributes["current_work_unit_id"] is None
+        assert cell.attributes["current_operation_id"] is None
 
     def test_journal_processor_failure__does_not_print_or_retry_the_event(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
@@ -132,7 +161,7 @@ class TestCommandContext:
             records = helpers.json_lines(result.stdout)
             assert_error_cells([record for record in records if record.get("type") == "error"], [failure])
             journals = [record for record in records if "current_work_unit_id" in record]
-            assert len(journals) == 2
+            assert len(journals) == 1
             assert journals[0]["current_work_unit_id"] is None
             assert journals[0]["current_operation_id"] is None
         else:
@@ -154,23 +183,6 @@ class TestCommandContext:
         assert result.exit_code == 2
         construct.assert_not_called()
         assert not caches.is_set()
-        assert not output.is_set()
-
-    def test_output_scope__works_without_workspace_and_restores_outer_emitter(
-        self, capsys: pytest.CaptureFixture[str]
-    ) -> None:
-        previous_output = FakeOutputEmitter()
-        cli_context = typer.Context(click.Command("init"))
-        with output.scope(previous_output), cli_context:
-            with cli_utils.command_context(cli_context, load_environment=False):
-                assert not caches.is_set()
-                assert not execution_context.is_set()
-                output.get().emit([cell(content="Without a workspace")]).unwrap()
-            cli_context.close()
-            assert output.get() == previous_output
-
-        assert "Without a workspace" in capsys.readouterr().out
-        assert not previous_output.cells
         assert not output.is_set()
 
     @pytest.mark.parametrize("command", ["init", "skill", "version"])
@@ -396,7 +408,7 @@ class TestCommandContext:
     @pytest.mark.parametrize("with_session", [False, True])
     @pytest.mark.parametrize(
         ("message", "journal_message"),
-        [("command failed", "command failed"), ("First line.\nSecond line.", "First line. Second line.")],
+        [("command failed", "command failed"), ("First line.\nSecond line.", "First line.\nSecond line.")],
     )
     def test_shared_errors_during_command__restore_output_scope(
         self, mocker: MockerFixture, tmp_path: pathlib.Path, with_session: bool, message: str, journal_message: str
@@ -417,9 +429,11 @@ class TestCommandContext:
             assert_error_cells([record for record in records if record.get("type") == "error"], [failure])
             assert forwarded.call_count == 2
             journal_entry = forwarded.call_args.args[1]
-            assert journal_entry.actor_id == "donna"
-            assert journal_entry.current_task_id is None
-            assert journal_entry.message == f"Error: {journal_message} [{failure.code}]"
+            assert journal_entry.actor_id is None
+            assert "current_task_id" not in journal_entry.attributes
+            assert journal_entry.message == journal_message
+            assert journal_entry.attributes["code"] == failure.code
+            assert len(records) == 2
             assert output.get() == previous_output
             assert not previous_output.journal_records
             assert not project_config.is_set()
