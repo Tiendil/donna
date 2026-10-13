@@ -3,6 +3,7 @@ from pathlib import Path
 import typer
 from llm_tool_cli.config import initialize_project
 from llm_tool_cli.config.project import project_config
+from llm_tool_cli.output import output
 from llm_tool_cli.paths import PathInput
 from llm_tool_cli.protocol.cell_shortcuts import configuration_created
 
@@ -23,4 +24,4 @@ def init(context: typer.Context) -> None:
                 path=command.config_input,
             )
         ).unwrap()
-        command.write_cells([configuration_created(project_config.get().config_path)])
+        output.get().emit([configuration_created(project_config.get().config_path)]).unwrap()

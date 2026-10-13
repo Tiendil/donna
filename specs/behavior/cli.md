@@ -49,7 +49,7 @@ Global options, when present, MUST be provided before the subcommand:
 donna [GLOBAL_OPTIONS] COMMAND [COMMAND_OPTIONS]
 ```
 
-The CLI MUST write requested command output to stdout.
+The CLI MUST write all cells, including results, journal events, warnings, and environment errors, to stdout in every protocol.
 
 Environment-error diagnostics MUST use the command error handling managed by `llm_tool_cli` when the selected protocol has already been installed.
 
@@ -93,17 +93,26 @@ Label storage, initialization checks, and label selection for cell rendering MUS
 
 ## Output behavior
 
-The CLI MUST use text writing provided by `llm_tool_cli.protocol`.
+The CLI MUST submit cells directly to the active emitter in `llm_tool_cli.output`, which owns batch rendering and text writing.
 
 Command output produced through Donna's protocol layer MUST be represented as Donna cells.
 
 All environment errors MUST use the typed environment-error logic cell and ordinary output cells provided by `llm_tool_cli`.
 
-The `render` command MUST write rendered Markdown directly.
+The `render` command MUST deliver rendered Markdown in an ordinary cell through shared buffered output.
 
 Help and command line parsing output MAY use Typer's standard rendering.
 
-Commands MAY emit Donna journal records while executing. Journal records are command output when they are printed by the selected protocol formatter.
+Commands MAY emit Donna journal cells while executing.
+Their console output MUST follow successful shared journal processing.
+An omitted journal actor MUST default to `agent` in the LLM protocol and the protocol name otherwise.
+Journal task context MUST always use the cached consistent session's current task, including an absent task; callers MUST NOT override it from mutable state or other objects.
+Journal work-unit and operation identifiers MUST always use the active execution context, including absent identifiers; callers MUST NOT override them.
+An explicit actor, including an absent actor, MUST take precedence over the default actor.
+When loading cached session context returns an environment failure, journaling MUST continue with an absent task identifier, preserving actor and execution context without creating a session.
+An absent journal task identifier MUST mean no task attribution is available, either because no task is active or because session context could not be loaded.
+Shared emitter failures MUST remain failed results for the caller to handle; unexpected failures MUST propagate.
+Multiline messages MUST use shared logical-cell normalization, stripping surrounding whitespace while retaining internal line breaks. Compact text MUST escape those line breaks; automation records MUST retain the normalized cell values.
 
 Output MUST NOT contain terminal color or styling escape sequences.
 
@@ -146,10 +155,12 @@ Additional fields MAY be added in future versions. Consumers MUST ignore unknown
 A Donna cell is the protocol-level output unit used by most CLI commands.
 
 Donna MUST use the cell model, construction helpers, and cell formatting provided by `llm_tool_cli`.
-Donna MUST construct protocol-independent logic cells and supply the active protocol when rendering each emitted sequence.
+Donna MUST construct protocol-independent logic cells; the shared emitter MUST select the active protocol when rendering each emitted sequence.
 The library owns logic-cell protocol dispatch, cell layouts, sequence rendering contexts, metadata ordering, and automation cell records.
 
-Donna owns the projection of its results into cells, journal formatting, and output routing.
+Donna owns the projection of its results and journal context into cells.
+Shared output delivery MUST buffer ordinary results, emit successfully processed journal cells immediately, and place collected warnings last.
+On command failure, buffered ordinary results MUST be discarded; error diagnostics MUST precede collected warnings.
 
 Consumers MUST NOT treat generated cell ids as deterministic identifiers.
 
@@ -197,9 +208,9 @@ Automation protocol cell output SHOULD follow this shape:
 
 ## Global options
 
-The CLI MUST use global-option registration and parsing, context-scoped runtime configuration, and command-context protocol selection and cell writing managed by `llm_tool_cli`.
+The CLI MUST use global-option registration and parsing, context-scoped runtime configuration, command-context protocol selection and output scope setup, and shared emitter delivery managed by `llm_tool_cli`.
 Donna MUST register its commands on the application provided by `llm_tool_cli`.
-Application-specific runtime setup, journal emission, and runtime cleanup MUST remain Donna-owned; project loading and its scope MUST be shared.
+Application-specific runtime setup, journal-cell construction, and runtime cleanup MUST remain Donna-owned; project loading and output delivery MUST be shared.
 The effective protocol MUST be read from shared runtime configuration; the active config path and derived project directory MUST be read from independent shared project configuration.
 These configurations and the static application identity MUST be immutable and complete when bound.
 Donna MUST NOT retain separate protocol or workspace-path globals.
@@ -304,9 +315,10 @@ Allowed render modes MUST include:
 - `execute`
 - `analysis`
 
-The rendered artifact output MUST be written as raw Markdown rather than wrapped in a Donna cell.
+The rendered artifact output MUST be one ordinary cell of kind `rendered_artifact`, with media type `text/markdown`, `type = rendered_artifact` metadata, and the rendered Markdown as content.
+It MUST honor the selected output protocol, including JSON Lines serialization for automation.
 
-This command MAY still emit Donna journal records before the rendered Markdown when artifact rendering logs command activity.
+This command MAY emit Donna journal cells before the rendered artifact cell when artifact rendering logs command activity.
 
 ## `donna validate` command
 
@@ -434,7 +446,7 @@ After the selected next operation is queued, the command MUST advance workflow e
 ## `donna skill` command
 
 The CLI MUST register the skill command managed by `llm_tool_cli`, supplying the `donna.skills` resource package and Donna's document definitions.
-The library owns argument selection and validation, defaults, help and completion, configuration independence, cell output, and failure streams and exit statuses.
+The library owns argument selection and validation, defaults, help and completion, configuration independence, cell output, and failure delivery and exit statuses.
 
 Donna MUST provide these documents:
 
@@ -461,7 +473,7 @@ Donna-owned and shared environment-error values MUST use the common error-cell c
 This replaces Donna's custom error-cell kinds and `error_code` field with the shared `error` kind, `type = error`, and `code` metadata.
 Custom introductory prefixes MUST be removed; artifact, section, and configuration context MUST remain available through shared metadata conversion, including optional null fields.
 
-The CLI MUST use command error handling and explicit error reporting managed by `llm_tool_cli`, including error cells, stream selection, diagnostic ordering, exit statuses, and exception propagation.
+The CLI MUST use command error handling and explicit error reporting managed by `llm_tool_cli`, including error cells on stdout, diagnostic ordering, exit statuses, and exception propagation.
 Donna MUST retain application-specific runtime setup, error journaling, and runtime context cleanup.
 
 Configuration selection, loading, and creation MUST propagate the diagnostics provided by `llm_tool_cli` without local translation.

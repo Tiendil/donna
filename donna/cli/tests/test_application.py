@@ -40,15 +40,15 @@ class TestApp:
         result = helpers.invoke([option, value, "version"])
 
         assert result.exit_code == 1
-        assert not result.stdout
-        assert result.stderr.startswith("--DONNA-CELL ")
-        assert result.stderr.count(" BEGIN--\n") == 1
-        assert "kind=error\n" in result.stderr
-        assert "code=invalid_arguments\n" in result.stderr
-        assert value in result.stderr
-        assert "human" in result.stderr
-        assert "llm" in result.stderr
-        assert "automation" in result.stderr
+        assert not result.stderr
+        assert result.stdout.startswith("--DONNA-CELL ")
+        assert result.stdout.count(" BEGIN--\n") == 1
+        assert "kind=error\n" in result.stdout
+        assert "code=invalid_arguments\n" in result.stdout
+        assert value in result.stdout
+        assert "human" in result.stdout
+        assert "llm" in result.stdout
+        assert "automation" in result.stdout
 
 
 class TestMain:
@@ -75,7 +75,7 @@ class TestMain:
 
             assert caught.value.code == exit_code
             captured = capsys.readouterr()
-            output = captured.err if exit_code else captured.out
-            assert not (captured.out if exit_code else captured.err)
+            output = captured.out
+            assert not captured.err
             assert output.startswith("--DONNA-CELL ")
             assert ("code=invalid_arguments\n" if exit_code else "kind=skill\n") in output

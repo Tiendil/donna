@@ -74,12 +74,12 @@ class TestInit:
             assert record["reason"]
             assert record["content"]
         else:
-            assert not result.stdout
+            assert not result.stderr
             separator = " = " if protocol == "human" else "="
-            assert f"kind{separator}error\n" in result.stderr
-            assert f"code{separator}config_template_unreadable\n" in result.stderr
-            assert f"path{separator}{config_path}\n" in result.stderr
-            assert f"template{separator}base_config.toml\n" in result.stderr
+            assert f"kind{separator}error\n" in result.stdout
+            assert f"code{separator}config_template_unreadable\n" in result.stdout
+            assert f"path{separator}{config_path}\n" in result.stdout
+            assert f"template{separator}base_config.toml\n" in result.stdout
 
     def test_config_home_marker__selects_target_in_home(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         mocker.patch.dict("os.environ", {"HOME": str(tmp_path)})

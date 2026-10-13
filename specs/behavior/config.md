@@ -197,11 +197,13 @@ If present, `journal.cmd` MUST be a non-empty list of command arguments.
 
 Each argument MUST be a string.
 
-Donna MUST execute the configured journal command once per journal record.
+Donna MUST configure the shared command journal processor to execute the configured command once per journal-marked cell.
 
 Donna MUST execute the command directly as an argument list, not through a shell.
 
-Donna MUST treat a journal command execution failure as an environment error.
+Journal command execution failures MUST propagate the shared `journal_command_failed` diagnostic.
+Argument construction failures MUST propagate the shared `journal_command_config_invalid` diagnostic.
+Journal message arguments MUST use the normalized logical-cell message, including its internal line breaks; compact console escaping MUST NOT alter external command arguments.
 
 ### Journal placeholders
 

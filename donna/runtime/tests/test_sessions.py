@@ -163,20 +163,24 @@ class TestNewSession:
 
         assert result.is_ok()
         assert runtime_context.state.saved == [MutableState.build().freeze()]
-        assert runtime_context.journal.records == [{"message": "Created new session state.", "actor_id": None}]
-        assert result.unwrap()[0].render(Protocol.human)[0].kind == "operation_succeeded"
+        assert [
+            cell.model_dump(include={"message", "actor_id"}) for cell in runtime_context.output.journal_records
+        ] == [{"message": "Created new session state.", "actor_id": "human"}]
+        assert runtime_context.output.cells[0].render(Protocol.human)[0].kind == "operation_succeeded"
 
 
 class TestClear:
     def test_resets_workspace_session_dir_and_reports_success(self, mocker: MockerFixture) -> None:
         reset_dir = mocker.patch("donna.runtime.sessions.workspace_sessions.reset_dir")
 
-        result = sessions.clear()
+        runtime_context = _context()
+        with make.services_scope(runtime_context):
+            result = sessions.clear()
 
         assert result.is_ok()
         reset_dir.assert_called_once_with()
-        assert result.unwrap()[0].render(Protocol.human)[0].kind == "operation_succeeded"
-        output = result.unwrap()[0].render(Protocol.automation)[0]
+        assert runtime_context.output.cells[0].render(Protocol.human)[0].kind == "operation_succeeded"
+        output = runtime_context.output.cells[0].render(Protocol.automation)[0]
         assert output.meta == {"type": "operation_succeeded"}
         assert output.content == "Cleared session."
 
@@ -201,7 +205,7 @@ class TestContinue:
         assert final_state.work_units == []
         assert len(final_state.action_requests) == 1
         assert runtime_context.state.saved[-1] == final_state
-        assert [cell.render(Protocol.human)[0].kind for cell in result.unwrap()] == [
+        assert [cell.render(Protocol.human)[0].kind for cell in runtime_context.output.cells] == [
             "session_state_status",
             "action_request",
         ]
@@ -215,7 +219,9 @@ class TestStatus:
             result = sessions.status()
 
         assert result.is_ok()
-        assert [cell.render(Protocol.human)[0].kind for cell in result.unwrap()] == ["session_state_status"]
+        assert [cell.render(Protocol.human)[0].kind for cell in runtime_context.output.cells] == [
+            "session_state_status"
+        ]
 
 
 class TestDetails:
@@ -233,7 +239,7 @@ class TestDetails:
             result = sessions.details()
 
         assert result.is_ok()
-        assert [cell.render(Protocol.human)[0].kind for cell in result.unwrap()] == [
+        assert [cell.render(Protocol.human)[0].kind for cell in runtime_context.output.cells] == [
             "session_state_status",
             "action_request",
         ]
@@ -255,7 +261,7 @@ class TestStartWorkflow:
         assert len(final_state.action_requests) == 1
         assert runtime_context.artifacts.loaded[0][0] == ARTIFACT_ID
         assert runtime_context.artifacts.viewed == [ARTIFACT_ID]
-        assert [cell.render(Protocol.human)[0].kind for cell in result.unwrap()] == [
+        assert [cell.render(Protocol.human)[0].kind for cell in runtime_context.output.cells] == [
             "session_state_status",
             "action_request",
         ]
@@ -318,7 +324,9 @@ class TestCompleteActionRequest:
         assert final_state.work_units == []
         assert len(runtime_context.state.saved) == 2
         assert runtime_context.artifacts.executed[0][0] == ARTIFACT_ID
-        assert [cell.render(Protocol.human)[0].kind for cell in result.unwrap()] == ["session_state_status"]
+        assert [cell.render(Protocol.human)[0].kind for cell in runtime_context.output.cells] == [
+            "session_state_status"
+        ]
 
     def test_returns_error_for_disallowed_transition_without_saving(self) -> None:
         state = MutableState(

@@ -1,9 +1,10 @@
+import json
 import pathlib
 
 import pytest
 from llm_tool_cli.paths import resolve_project_root
 from llm_tool_cli.paths.errors import InvalidProjectPath
-from llm_tool_cli.protocol.tests.helpers import assert_error_cells
+from llm_tool_cli.protocol.tests.helpers import assert_error_cells, cell_payloads
 from pytest_mock import MockerFixture
 
 from donna.cli.tests import helpers
@@ -81,18 +82,41 @@ class TestRender:
         assert result.exit_code == 0
         assert "# Test Workflow" in result.stdout
 
-    def test_renders_raw_markdown_without_cell_wrapping(self, tmp_path: pathlib.Path) -> None:
+    @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
+    @pytest.mark.parametrize("mode", ["view", "execute", "analysis"])
+    @pytest.mark.parametrize("with_session", [False, True])
+    def test_renders_markdown_as_protocol_cell(  # noqa: CCR001
+        self, tmp_path: pathlib.Path, protocol: str, mode: str, with_session: bool
+    ) -> None:
         config_path = helpers.write_config(tmp_path)
-        helpers.write_workflow(tmp_path)
+        template = "{{ 'Expanded café 日本語' }}"
+        workflow_path = helpers.write_workflow(tmp_path, description=template)
+        expected = workflow_path.read_text(encoding="utf-8").replace(template, "Expanded café 日本語").strip()
+        if with_session:
+            initialized = helpers.invoke(["--config", str(config_path), "-p", "automation", "new-session"])
+            assert initialized.exit_code == 0, initialized.exception
 
         result = helpers.invoke(
-            ["--config", str(config_path), "-p", "human", "render", "--mode", "view", "@/workflows/test.donna.md"]
+            ["--config", str(config_path), "-p", protocol, "render", "--mode", mode, "@/workflows/test.donna.md"]
         )
 
-        assert result.exit_code == 0
-        assert "# Test Workflow" in result.output
-        assert "----- DONNA CELL" not in result.output
-        assert "--DONNA-CELL" not in result.output
+        assert result.exit_code == 0, result.exception
+        assert not result.stderr
+        if protocol == "automation":
+            records = [json.loads(line) for line in result.stdout.splitlines()]
+            assert len(records) == 2
+            assert cell_payloads(records[-1:]) == [{"type": "rendered_artifact", "content": expected}]
+            assert records[0]["message"] == f"Render artifact `@/workflows/test.donna.md` in `{mode}` mode"
+            assert records[0]["current_task_id"] is None
+        else:
+            separator = " = " if protocol == "human" else "="
+            prefix = "----- DONNA CELL " if protocol == "human" else "--DONNA-CELL "
+            assert prefix in result.stdout
+            assert f"kind{separator}rendered_artifact\n" in result.stdout
+            assert f"media_type{separator}text/markdown\n" in result.stdout
+            assert f"type{separator}rendered_artifact\n" in result.stdout
+            assert expected in result.stdout
+        assert (tmp_path / ".session" / "donna" / "state.json").is_file() == with_session
 
 
 class TestValidate:
@@ -154,8 +178,8 @@ class TestValidate:
             assert not any(record.get("type") == "operation_succeeded" for record in records)
         else:
             separator = " = " if protocol == "human" else "="
-            assert f"kind{separator}error\n" in result.stderr
-            assert f"kind{separator}error\n" not in result.stdout
+            assert f"kind{separator}error\n" in result.stdout
+            assert not result.stderr
             assert f"kind{separator}operation_succeeded\n" not in result.stdout
 
     def test_all_option_validates_every_discovered_artifact(self, tmp_path: pathlib.Path) -> None:
@@ -166,8 +190,8 @@ class TestValidate:
 
         assert result.exit_code == 0
         records = helpers.json_lines(result.output)
-        assert records[0]["content"] == "All artifacts are valid"
-        assert records[0]["type"] == "operation_succeeded"
+        assert records[-1]["content"] == "All artifacts are valid"
+        assert records[-1]["type"] == "operation_succeeded"
 
     def test_explicit_artifact_argument_is_normalized(self, tmp_path: pathlib.Path) -> None:
         config_path = helpers.write_config(tmp_path)
@@ -248,7 +272,7 @@ class TestParseArtifactIdArgument:
             assert "cause" not in diagnostics[0]
             assert not result.stderr
         else:
-            assert str(target) in result.stderr
+            assert str(target) in result.stdout
 
     @pytest.mark.parametrize("protocol", ["human", "llm", "automation"])
     def test_root_resolution_failure_uses_shared_diagnostic(
@@ -271,7 +295,7 @@ class TestParseArtifactIdArgument:
             )
             assert not result.stderr
         else:
-            assert error.format_message() in result.stderr
+            assert error.format_message() in result.stdout
 
     @pytest.mark.parametrize("command", [["render", "--mode", "view"], ["validate"], ["run"]])
     def test_invalid_path_uses_shared_automation_diagnostic(self, tmp_path: pathlib.Path, command: list[str]) -> None:
@@ -287,14 +311,14 @@ class TestParseArtifactIdArgument:
         assert result.stderr == ""
 
     @pytest.mark.parametrize("protocol", ["human", "llm"])
-    def test_invalid_path_uses_shared_stderr_diagnostic(self, tmp_path: pathlib.Path, protocol: str) -> None:
+    def test_invalid_path_uses_shared_stdout_diagnostic(self, tmp_path: pathlib.Path, protocol: str) -> None:
         config_path = helpers.write_config(tmp_path)
         value = "@/workflows//test.donna.md"
 
         result = helpers.invoke(["--config", str(config_path), "-p", protocol, "validate", value])
 
         assert result.exit_code == 3
-        assert InvalidProjectPath(path=value).format_message() in result.stderr
+        assert InvalidProjectPath(path=value).format_message() in result.stdout
         assert "kind=domain_error" not in result.stdout
 
     def test_rejects_unsupported_artifact_extension(self, tmp_path: pathlib.Path) -> None:

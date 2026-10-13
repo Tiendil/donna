@@ -208,11 +208,12 @@ Typer command line parsing errors MAY use Typer's standard invalid-argument beha
 
 CLI argument parsing MAY raise `typer.BadParameter`, `click.UsageError`, or `typer.Exit` before command execution has fully entered Donna's result-based flow.
 
-After the selected protocol is installed, the CLI MUST use command error handling and explicit error reporting managed by `llm_tool_cli`, including its diagnostic order, cell presentation, stream routing, and exit behavior for all environment errors.
+After the selected protocol is installed, the CLI MUST use command error handling and explicit error reporting managed by `llm_tool_cli`, including its diagnostic order, cell presentation, stdout delivery, and exit behavior for all environment errors.
 Donna MUST NOT maintain a separate rendering or exit path for errors owned by Donna.
 The local command context MUST retain workspace and runtime setup, observe and re-raise unwrapped errors for journaling, and restore runtime contexts after success or failure.
 
-The CLI SHOULD write environment error journal records when workspace configuration is loaded and journal forwarding is available.
+The CLI SHOULD write environment error journal cells when workspace configuration is loaded.
+Journal processor failures MUST NOT trigger recursive attempts to journal the same processor failure.
 
 Error classes outside the CLI module MAY declare exit-code overrides through the shared core contract; process termination MUST be delegated to the shared CLI boundary.
 
@@ -224,9 +225,8 @@ Warnings MUST be used only when processing can continue and the command can stil
 
 Warnings MUST NOT be used for invalid command line arguments, invalid configuration that prevents workspace loading, invalid artifacts that prevent requested validation, or workflow execution failures.
 
-Donna currently has no shared warning storage or warning protocol record architecture.
-
-Until such architecture is specified and implemented, modules MUST NOT invent ad hoc warning channels.
+Warnings MUST use shared warning cells and scoped output delivery from `llm_tool_cli`.
+The shared emitter MUST buffer warnings until finalization and place them after results or reported environment errors.
 
 ## Naming error classes
 

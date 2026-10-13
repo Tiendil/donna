@@ -1,18 +1,19 @@
 from collections.abc import Iterator
 from contextlib import contextmanager
 
+from llm_tool_cli.config.runtime import RuntimeConfig, runtime_config
 from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Err, Ok, Result
+from llm_tool_cli.output import output
+from llm_tool_cli.protocol import Protocol
 
-from donna.context.output import output
-from donna.context.tests.helpers import FakeJournal, FakeOutputEmitter
+from donna.context.tests.helpers import FakeOutputEmitter
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.python_path import PythonPath
 from donna.machine import ArtifactRenderContext, Caches, ExecutionContext
 from donna.machine.artifacts import Artifact
 from donna.machine.caches import caches
 from donna.machine.context import execution_context
-from donna.machine.journal import journal
 from donna.machine.primitives import Primitive
 from donna.machine.state import ConsistentState
 from donna.machine.tasks import Task, WorkUnit
@@ -85,16 +86,15 @@ class RuntimeServices:
         self.artifacts = FakeArtifacts(artifact)
         self.primitives = FakePrimitives(primitive)
         self.caches = Caches(artifacts=self.artifacts, primitives=self.primitives, state=self.state)
-        self.journal = FakeJournal()
         self.output = FakeOutputEmitter()
 
 
 @contextmanager
 def services_scope(services: RuntimeServices) -> Iterator[RuntimeServices]:
     with (
+        runtime_config.scope(RuntimeConfig(protocol=Protocol.human)),
         output.scope(services.output),
         caches.scope(services.caches),
         execution_context.scope(ExecutionContext()),
-        journal.scope(services.journal),
     ):
         yield services

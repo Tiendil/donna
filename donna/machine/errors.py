@@ -41,15 +41,6 @@ class SessionStateChangedExternally(EnvironmentError):
     ]
 
 
-class JournalMessageContainsNewlines(EnvironmentError):
-    code: str = "donna.machine.journal_message_contains_newlines"
-    message: str = "Journal message must be a single line and must not contain newline characters."
-    ways_to_fix: list[str] = [
-        "Provide journal messages as single-line strings.",
-        "Replace newline characters with spaces or split the text into multiple journal records.",
-    ]
-
-
 class ActionRequestNotFound(EnvironmentError):
     code: str = "donna.machine.action_request_not_found"
     message: str = "Action request `{error.request_id}` was not found in the current session state."

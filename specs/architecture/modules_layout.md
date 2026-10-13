@@ -40,19 +40,15 @@ The following topics are out of scope:
   - workflow execution orchestration that is independent of CLI argument parsing and protocol-specific formatting.
   - immutable invocation-local execution identifiers for the current work unit and operation, scoped through shared context management.
   - cache interfaces, the collection of active caches and its independent binding, and artifact-rendering context data shared with workspace implementations.
-  - the journal interface and its independent scoped binding.
   - protocol-facing views of machine-owned concepts that prepare protocol-independent logic cells through `./donna/protocol/`.
 - `./donna/runtime/` — module responsible for command-independent runtime orchestration. Contains:
   - session lifecycle use cases.
   - workflow execution loop coordination.
   - invocation-local wiring between context, machine, workspaces, and protocol-facing results.
-  - command-facing domain results returned as logic cells or ordered collections of their subclasses.
-  - journal event forwarding orchestration.
+  - command-facing domain results submitted as logic cells to the shared output emitter.
   - no CLI argument parsing.
-- `./donna/context/` — module responsible for runtime service implementations and output access. Contains:
+- `./donna/context/` — module responsible for runtime cache implementations. Contains:
   - artifact, primitive, and session-state cache implementations.
-  - the runtime output interface and its independent scoped binding.
-  - the journal implementation that combines current session state and execution identifiers with workspace forwarding and runtime output.
 - `./donna/primitives/` — module responsible for built-in primitive implementations. Contains:
   - artifact primitives.
   - section primitives.
@@ -62,8 +58,7 @@ The following topics are out of scope:
 - `./donna/protocol/` — module responsible for Donna output boundary values and protocol formatting. Contains:
   - Donna-specific output value definitions and projections into shared cells used to communicate Donna results between modules.
   - generic helpers for projecting Donna-owned data into output values and error nodes using shared error cells.
-  - journal formatter selection.
-  - protocol-specific journal formatters for human, llm, and automation output.
+  - domain journal cells extending shared journal projections with Donna execution identifiers.
   - Donna-specific serialized record construction for external output protocols.
   - low-level output boundary infrastructure that MAY be used by any top-level module.
 - `./donna/skills/` — module responsible for built-in skill document definitions and packaged Markdown resources.
@@ -73,10 +68,9 @@ The following topics are out of scope:
   - operations with project files and directories.
   - artifact discovery and loading.
   - session state storage.
-  - journal forwarding.
 - `./donna/cli/` — module responsible for argument parsing, runtime invocation, protocol and stream selection, error handling, and writing returned or emitted logic cells through shared rendering.
 
-Domain views and runtime operations MUST assemble domain-result cells before returning them to the CLI.
+Domain views and runtime operations MUST assemble domain-result cells before returning or submitting them to shared output.
 The CLI MUST NOT build domain-result payloads from internal domain objects.
 Internal domain and machine APIs MAY retain their own typed results; the logic-cell contract applies at the boundary used to present domain results to the CLI.
 
@@ -94,7 +88,8 @@ Donna MUST NOT maintain a parallel `GlobalConfig` implementation or a workspace 
 The machine module MUST own a frozen execution-context value containing the optional current work unit and operation identifiers, bound independently through shared `ContextValue`.
 The CLI MUST bind an empty execution context for successfully prepared workspace commands, retaining it through command execution and error journaling and restoring the previous binding on exit.
 Work-unit and operation execution MUST use nested scopes that replace their respective identifier, preserve the other identifier, and restore the previous value after success or failure.
-Journaling MUST read execution identifiers from this binding; the current task identifier MUST remain derived from session state.
+Journaling MUST obtain execution identifiers exclusively from this binding, which reflects the active execution scope.
+The journal task identifier MUST always come from cached consistent session state, which identifies the task being processed until changes are saved.
 
 The machine's public cache boundary MUST expose one collection of artifact, primitive, and session-state caches through a shared `ContextValue` binding.
 Cache implementations MUST remain owned by the context module; machine code MUST access them through typed interfaces without importing context or workspace implementations.
@@ -103,12 +98,19 @@ The CLI MUST directly construct and bind fresh caches after successful workspace
 Commands that do not load a workspace MUST NOT require cache construction.
 Cache construction MUST NOT require a workspace argument or perform workspace I/O; artifact refresh and render-mode behavior, primitive lookup caching, and session-state external-change detection MUST be preserved.
 
-The machine's public journal boundary MUST expose its typed interface and one independent shared `ContextValue` binding.
-Journal consumers MUST access this binding directly; the concrete implementation MUST remain owned by the context module, without machine code importing context or workspace implementations.
-The CLI MUST bind a fresh journal after successful workspace preparation, retain it through execution and error journaling, and restore the previous binding after success or failure.
-Commands that do not load a workspace MUST NOT require journal construction; failed preparation and project-independent commands MUST NOT journal errors through an outer journal binding.
-The journal implementation MUST derive record context from active settings, caches, and execution identifiers and use the active output binding after successful workspace forwarding.
-Execution identifiers, caches, journal, and output MUST remain independently scoped; Donna MUST NOT maintain an aggregate application or machine service context that duplicates these bindings.
+The public `donna.machine.journal.journal_emit(message, *, actor_id=...) -> Result[None]` helper MUST construct Donna journal cells and submit them through the shared output binding.
+Journal call sites SHOULD use this helper, supplying an explicit actor when needed.
+The helper MUST derive an omitted actor from runtime context, obtain execution identifiers from the active execution context, and always obtain the task identifier through the machine's state-cache interface.
+If session loading returns an environment failure or there is no active task, the helper MUST emit the event without a task identifier, preserving actor and execution context.
+It MUST NOT accept a task identifier override: mutable state can advance beyond the saved snapshot during change application, before execution proceeds with another task.
+It MUST NOT accept work-unit or operation identifier overrides: execution scopes own these identifiers and restore them when execution ends, so independently supplied identifiers could contradict active execution.
+An explicit actor, including `None`, MUST take precedence over the inferred actor without bypassing session loading or execution context.
+The helper MUST remain stateless and leave processing, rendering, buffering, and stream delivery to the shared emitter.
+Journal cells MUST NOT read context or load session state during construction or projection.
+Donna MUST NOT maintain a journal service or journal context binding.
+Failed preparation and project-independent commands MUST NOT journal errors through outer runtime services.
+The emitter MUST own external processing before console delivery.
+Execution identifiers, caches, and shared output MUST remain independently scoped; Donna MUST NOT maintain an aggregate application or machine service context that duplicates these bindings.
 
 ## Submodules
 
@@ -145,19 +147,18 @@ The `donna.protocol.logic_cells` package MUST own domain-result cells and their 
 Its public cell entities MUST be exported from `donna.protocol` for use by other top-level modules.
 Artifact and section Markdown, action-request instructions, and session-status messages MUST be constructed by those cells during projection.
 Generic messages and already prepared documents MAY use shared content logic cells.
-Logic-cell protocol dispatch, protocol-specific output-cell types, rendering contexts, sequence rendering, and shared-error cell construction MUST be provided by `llm_tool_cli` and used directly.
-Donna MUST retain ownership of its cell projections, journal records, journal formatting, and output routing.
-The public `donna.protocol.journal_formatters` package MUST own journal formatters independently of shared output cells.
-The runtime output boundary MUST accept iterables of logic cells through `emit_cells` without exposing an output-cell class.
-Single-cell callers MUST pass a one-item iterable through the same method.
-The public `donna.context.output` boundary MUST expose the active runtime emitter through an independent shared `ContextValue` binding.
-Workflow primitives and journal emission MUST read that binding directly; the command context MUST NOT store a duplicate emitter reference.
-The CLI MUST bind its emitter around Donna-owned command execution, including project preparation and error journaling, and restore the previous binding after success or failure.
-Output binding MUST NOT require a loaded project, cache collection, execution identifiers, or journal.
-Programmatic callers MUST bind an emitter explicitly when executing output-producing behavior; an explicitly bound no-op emitter MAY discard runtime output without suppressing journal forwarding.
-Returned command cells and environment-error diagnostics MUST continue through shared command rendering and error handling.
-The CLI emitter MUST read the active protocol from `llm_tool_cli.config.runtime.runtime_config` for shared cell rendering and journal formatter selection; it MUST NOT cache a protocol or formatter.
-The CLI MUST pass complete emitted logic-cell batches to shared sequence rendering with the selected protocol and Donna's tool label.
+Logic-cell protocol dispatch, protocol-specific output-cell types, rendering contexts, and shared-error cell construction MUST be provided by `llm_tool_cli.protocol` and used directly.
+Batch-rendering orchestration and stream writing MUST belong to the shared emitter in `llm_tool_cli.output`; individual projections and cell formatting MUST remain in the protocol layer.
+Donna MUST retain ownership of its domain cell projections and journal context.
+The public `donna.protocol.journal.JournalCell` MUST extend the shared journal cell with task, work-unit, and operation identifiers.
+Its human and LLM projections MUST retain Donna's compact layouts, using shared escaping and automation journal serialization.
+Donna MUST NOT maintain a separate journal record, formatter family, output interface, output binding, or external command processor.
+Workflow primitives, runtime operations, and journal construction MUST submit cells directly through `llm_tool_cli.output.output`.
+Shared command setup MUST bind the emitter independently of project preparation.
+After loading journal configuration, Donna MUST configure the shared command journal processor when a command is present.
+Programmatic callers MUST explicitly bind an emitter for output-producing behavior.
+Session command operations without another useful result MUST submit their result cells and return `Result[None]`.
+The `render` command MUST submit its prepared Markdown document as a shared content logic cell through the emitter.
 
 Lexical project-path normalization, filesystem resolution and containment, symlink rejection, and file enumeration MUST be provided by `llm_tool_cli` and used directly.
 Donna MUST retain artifact-specific path behavior, workflow-directory selection and ordering, and artifact-extension filtering.

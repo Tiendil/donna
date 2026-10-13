@@ -5,7 +5,7 @@ from llm_tool_cli.protocol.logic_cells import ContentCell
 from donna.domain.artifact_ids import ArtifactId, artifact_section_id
 from donna.domain.ids import SectionId
 from donna.domain.internal_ids import TaskId, WorkUnitId
-from donna.protocol.journal import JournalRecord
+from donna.protocol.journal import JournalCell
 
 
 def cell(**kwargs: object) -> ContentCell:
@@ -19,7 +19,7 @@ def cell(**kwargs: object) -> ContentCell:
     return ContentCell.model_validate(values)
 
 
-def journal_record(**kwargs: object) -> JournalRecord:
+def journal_record(**kwargs: object) -> JournalCell:
     values = {
         "timestamp": datetime.datetime(2026, 5, 18, 10, 30, 45, tzinfo=datetime.UTC),
         "actor_id": "agent",
@@ -29,4 +29,4 @@ def journal_record(**kwargs: object) -> JournalRecord:
         "current_operation_id": artifact_section_id(ArtifactId("@/workflow.donna.md"), SectionId("operation")),
     }
     values.update(kwargs)
-    return JournalRecord.model_validate(values)
+    return JournalCell.model_validate(values)

@@ -41,11 +41,11 @@ class TestSkill:
             assert records[0]["content"]
             assert result.stderr == ""
         else:
-            assert result.stdout == ""
+            assert result.stderr == ""
             separator = "=" if protocol == "llm" else " = "
-            assert f"kind{separator}error\n" in result.stderr
-            assert f"code{separator}skill_unreadable\n" in result.stderr
-            assert f"document{separator}usage\n" in result.stderr
+            assert f"kind{separator}error\n" in result.stdout
+            assert f"code{separator}skill_unreadable\n" in result.stdout
+            assert f"document{separator}usage\n" in result.stdout
 
     @pytest.mark.parametrize("protocol", [None, "human", "llm"])
     def test_default_document_outputs_usage_skill_without_workspace_config(self, protocol: str | None) -> None:

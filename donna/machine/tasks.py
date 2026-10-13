@@ -9,7 +9,7 @@ from donna.domain.artifact_ids import ArtifactSectionId, split_artifact_section_
 from donna.domain.internal_ids import TaskId, WorkUnitId
 from donna.machine.caches import caches
 from donna.machine.context import execution_context
-from donna.machine.journal import journal
+from donna.machine.journal import journal_emit
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -65,10 +65,7 @@ class WorkUnit(BaseEntity):
             operation = artifact.get_section(operation_parts.section_id).unwrap()
             operation_kind = caches.get().primitives.resolve(operation.kind).unwrap()
 
-            journal.get().add(
-                actor_id="donna",
-                message=operation.title,
-            ).unwrap()
+            journal_emit(operation.title, actor_id="donna").unwrap()
 
             changes = operation_kind.execute_section(task, self, artifact, operation.id).unwrap()
 

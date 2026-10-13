@@ -79,7 +79,9 @@ class TestWorkUnit:
         unit = make.work_unit()
         artifact = make.artifact()
         primitive = _ContextSettingOperation()
-        machine_context = MachineServices(artifact=artifact, primitive=primitive)
+        machine_context = MachineServices(
+            artifact=artifact, primitive=primitive, state=make.mutable_state(tasks=[task]).freeze()
+        )
 
         with services_scope(machine_context):
             with execution_context.scope(outer):
@@ -104,7 +106,13 @@ class TestWorkUnit:
         ]
         assert machine_context.artifacts.executed == [(make.ARTIFACT_ID, task, unit)]
         assert machine_context.primitives.resolved == [make.PRIMITIVE_PATH]
-        assert machine_context.journal.records == [{"message": "Workflow", "actor_id": "donna"}]
+        record = machine_context.output.journal_records[0]
+        assert record.current_task_id == task.id
+        assert record.current_work_unit_id == outer.current_work_unit_id
+        assert record.current_operation_id == unit.operation_id
+        assert [
+            cell.model_dump(include={"message", "actor_id"}) for cell in machine_context.output.journal_records
+        ] == [{"message": "Workflow", "actor_id": "donna"}]
         assert not execution_context.is_set()
 
     @pytest.mark.parametrize("source", ["artifact", "primitive"])
@@ -114,6 +122,7 @@ class TestWorkUnit:
             artifact=make.artifact(),
             artifact_error=[failure] if source == "artifact" else None,
             primitive_error=[failure] if source == "primitive" else None,
+            state=make.mutable_state(tasks=[make.task()]).freeze(),
         )
         outer = ExecutionContext(
             current_work_unit_id=make.WORK_UNIT_ID, current_operation_id=make.SECONDARY_OPERATION_ID
@@ -129,7 +138,11 @@ class TestWorkUnit:
 
     def test_run__restores_scope_after_unexpected_exception(self, mocker: MockerFixture) -> None:
         failure = ValueError("unexpected defect")
-        machine_context = MachineServices(artifact=make.artifact(), primitive=_ContextSettingOperation())
+        machine_context = MachineServices(
+            artifact=make.artifact(),
+            primitive=_ContextSettingOperation(),
+            state=make.mutable_state(tasks=[make.task()]).freeze(),
+        )
         mocker.patch.object(_ContextSettingOperation, "execute_section", side_effect=failure)
         outer = ExecutionContext(
             current_work_unit_id=make.WORK_UNIT_ID, current_operation_id=make.SECONDARY_OPERATION_ID

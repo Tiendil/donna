@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, ClassVar, cast
 
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.output import output
 from llm_tool_cli.protocol import cell_shortcuts
 
-from donna.context.output import output
 from donna.domain.artifact_ids import ArtifactId, artifact_section_id, split_artifact_section_id
 from donna.domain.ids import SectionId
 from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
@@ -68,7 +68,7 @@ class Output(MarkdownSectionMixin, OperationKind):
         meta = cast(OutputMeta, operation.meta)
 
         info = cell_shortcuts.info(operation.description)
-        output.get().emit_cells([info])
+        output.get().emit([info]).unwrap()
 
         next_operation_id = meta.next_operation_id
         assert next_operation_id is not None

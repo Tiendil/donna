@@ -2,15 +2,14 @@ import functools
 from typing import Callable, ParamSpec
 
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.output import output
 from llm_tool_cli.protocol.cell_shortcuts import operation_succeeded
-from llm_tool_cli.protocol.logic_cells import ContentCell
-from llm_tool_cli.protocol.logic_cells.base import LogicCell
 
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId, artifact_section_id, split_artifact_section_id
 from donna.domain.internal_ids import ActionRequestId
 from donna.machine import errors as machine_errors
 from donna.machine.caches import caches
-from donna.machine.journal import journal
+from donna.machine.journal import journal_emit
 from donna.machine.operations import OperationMeta
 from donna.machine.state import ConsistentState, MutableState
 from donna.machine.templates import RENDER_CONTEXT_VIEW
@@ -49,22 +48,21 @@ def _state_run(mutator: MutableState) -> Result[None]:
 
 
 @unwrap_to_error
-def _state_cells() -> Result[list[LogicCell]]:
-    return Ok(load_state().unwrap().node().details())
+def _emit_state() -> Result[None]:
+    return output.get().emit(load_state().unwrap().node().details())
 
 
 P = ParamSpec("P")
-CellsResult = Result[list[LogicCell]]
 
 
 def _session_required(
-    func: Callable[P, CellsResult],
-) -> Callable[P, CellsResult]:
+    func: Callable[P, Result[None]],
+) -> Callable[P, Result[None]]:
     # TODO: refactor to catch domain exception from load_state
     #       when we implement domain exceptions
     @functools.wraps(func)
     @unwrap_to_error
-    def wrapper(*args: P.args, **kwargs: P.kwargs) -> CellsResult:
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> Result[None]:
         load_state().unwrap()
         return func(*args, **kwargs)
 
@@ -72,43 +70,43 @@ def _session_required(
 
 
 @unwrap_to_error
-def new_session() -> Result[list[ContentCell]]:
+def new_session() -> Result[None]:
     _save_state(MutableState.build().freeze()).unwrap()
 
-    journal.get().add(message="Created new session state.").unwrap()
+    journal_emit("Created new session state.").unwrap()
 
-    return Ok([operation_succeeded("Created new session state.")])
+    return output.get().emit([operation_succeeded("Created new session state.")])
 
 
 @unwrap_to_error
-def clear() -> Result[list[ContentCell]]:
+def clear() -> Result[None]:
     workspace_sessions.reset_dir()
-    return Ok([operation_succeeded("Cleared session.")])
+    return output.get().emit([operation_succeeded("Cleared session.")])
 
 
 @_session_required
 @unwrap_to_error
-def continue_() -> Result[list[LogicCell]]:
+def continue_() -> Result[None]:
     mutator = load_state().unwrap().mutator()
     _state_run(mutator).unwrap()
-    return _state_cells()
+    return _emit_state()
 
 
 @_session_required
 @unwrap_to_error
-def status() -> Result[list[LogicCell]]:
-    return Ok([load_state().unwrap().node().info()])
+def status() -> Result[None]:
+    return output.get().emit([load_state().unwrap().node().info()])
 
 
 @_session_required
 @unwrap_to_error
-def details() -> Result[list[LogicCell]]:
-    return Ok(load_state().unwrap().node().details())
+def details() -> Result[None]:
+    return _emit_state()
 
 
 @_session_required
 @unwrap_to_error
-def start_workflow(artifact_id: ArtifactId) -> Result[list[LogicCell]]:  # noqa: CCR001
+def start_workflow(artifact_id: ArtifactId) -> Result[None]:  # noqa: CCR001
     static_state = load_state().unwrap()
     workflow = caches.get().artifacts.load(artifact_id, RENDER_CONTEXT_VIEW).unwrap()
     primary_section = workflow.primary_section().unwrap()
@@ -116,7 +114,7 @@ def start_workflow(artifact_id: ArtifactId) -> Result[list[LogicCell]]:  # noqa:
     mutator.start_workflow(artifact_section_id(workflow.id, primary_section.id)).unwrap()
     _save_state(mutator.freeze()).unwrap()
     _state_run(mutator).unwrap()
-    return _state_cells()
+    return _emit_state()
 
 
 @unwrap_to_error
@@ -144,12 +142,10 @@ def _validate_operation_transition(
 
 @_session_required
 @unwrap_to_error
-def complete_action_request(
-    request_id: ActionRequestId, next_operation_id: ArtifactSectionId
-) -> Result[list[LogicCell]]:
+def complete_action_request(request_id: ActionRequestId, next_operation_id: ArtifactSectionId) -> Result[None]:
     mutator = load_state().unwrap().mutator()
     _validate_operation_transition(mutator, request_id, next_operation_id).unwrap()
     mutator.complete_action_request(request_id, next_operation_id).unwrap()
     _save_state(mutator.freeze()).unwrap()
     _state_run(mutator).unwrap()
-    return _state_cells()
+    return _emit_state()

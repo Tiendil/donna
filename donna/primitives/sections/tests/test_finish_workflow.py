@@ -1,6 +1,6 @@
+from llm_tool_cli.output import output
 from llm_tool_cli.protocol.logic_cells import ContentCell
 
-from donna.context.output import output
 from donna.context.tests.helpers import FakeOutputEmitter
 from donna.machine.changes import ChangeFinishTask
 from donna.machine.operations import FsmMode, OperationMeta

@@ -14,8 +14,8 @@ from donna.runtime import sessions
 
 @app.command(name="new-session", help="Create fresh session state.")
 def new_session(context: typer.Context) -> None:
-    with command_context(context) as command:
-        command.write_cells(sessions.new_session().unwrap())
+    with command_context(context):
+        sessions.new_session().unwrap()
 
 
 @app.command(
@@ -23,27 +23,27 @@ def new_session(context: typer.Context) -> None:
     help="Continue the current session and emit the next queued action request(s).",
 )
 def continue_(context: typer.Context) -> None:
-    with command_context(context) as command:
-        command.write_cells(sessions.continue_().unwrap())
+    with command_context(context):
+        sessions.continue_().unwrap()
 
 
 @app.command(help="Show a concise status summary for the current session, including pending action requests.")
 def status(context: typer.Context) -> None:
-    with command_context(context) as command:
-        command.write_cells(sessions.status().unwrap())
+    with command_context(context):
+        sessions.status().unwrap()
 
 
 @app.command(help="Show detailed session state, including action requests.")
 def details(context: typer.Context) -> None:
-    with command_context(context) as command:
-        command.write_cells(sessions.details().unwrap())
+    with command_context(context):
+        sessions.details().unwrap()
 
 
 @app.command(help="Run a workflow from an artifact to drive the current session forward.")
 def run(context: typer.Context, workflow_path: ArtifactIdArgument) -> None:
     with command_context(context) as command:
         workflow_id = parse_artifact_id_argument(workflow_path, command.target_dir()).unwrap()
-        command.write_cells(sessions.start_workflow(workflow_id).unwrap())
+        sessions.start_workflow(workflow_id).unwrap()
 
 
 @app.command(
@@ -57,4 +57,4 @@ def complete_action_request(
 ) -> None:
     with command_context(context) as command:
         next_operation_id = parse_artifact_section_id_argument(next_operation_path, command.target_dir()).unwrap()
-        command.write_cells(sessions.complete_action_request(request_id, next_operation_id).unwrap())
+        sessions.complete_action_request(request_id, next_operation_id).unwrap()

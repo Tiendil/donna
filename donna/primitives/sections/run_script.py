@@ -14,7 +14,7 @@ from donna.domain.artifact_ids import ArtifactId, artifact_section_id, split_art
 from donna.domain.ids import SectionId
 from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
-from donna.machine.journal import journal
+from donna.machine.journal import journal_emit
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta
 from donna.workspaces import markdown
 from donna.workspaces.markdown_parser import MarkdownSectionMixin
@@ -152,10 +152,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         script = meta.script
         assert script is not None
 
-        journal.get().add(
-            actor_id="donna",
-            message=f"Run script `{operation.title}`",
-        ).unwrap()
+        journal_emit(f"Run script `{operation.title}`", actor_id="donna").unwrap()
 
         project_dir = project_config.get().project_dir
         stdout, stderr, exit_code = _run_script(
@@ -164,12 +161,10 @@ class RunScript(MarkdownSectionMixin, OperationKind):
             project_dir=project_dir,
         )
 
-        journal.get().add(
+        journal_emit(
+            f"Script finished `{operation.title}`, exit code: {exit_code}, "
+            f"has stdout: {bool(stdout)}, has stderr: {bool(stderr)}`",
             actor_id="donna",
-            message=(
-                f"Script finished `{operation.title}`, exit code: {exit_code}, "
-                f"has stdout: {bool(stdout)}, has stderr: {bool(stderr)}`"
-            ),
         ).unwrap()
 
         changes: list["Change"] = []

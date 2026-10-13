@@ -100,15 +100,15 @@ class TestMutableState:
     def test_add_action_request__assigns_id_and_logs_request(self) -> None:
         state = make.mutable_state(last_id=2)
         request = make.action_request(id=None)
-        machine_context = MachineServices()
+        machine_context = MachineServices(state=state.freeze())
 
         with services_scope(machine_context):
             state.add_action_request(request)
 
         assert state.action_requests == [request.replace(id=make.ACTION_REQUEST_ID)]
-        assert machine_context.journal.records == [
-            {"message": "Request agent action `Action title`", "actor_id": "donna"}
-        ]
+        assert [
+            cell.model_dump(include={"message", "actor_id"}) for cell in machine_context.output.journal_records
+        ] == [{"message": "Request agent action `Action title`", "actor_id": "donna"}]
 
     def test_apply_changes__applies_changes_in_order(self) -> None:
         state = make.mutable_state(tasks=[make.task()])
@@ -121,7 +121,7 @@ class TestMutableState:
         task = make.task()
         request = make.action_request()
         state = make.mutable_state(tasks=[task], action_requests=[request], last_id=2)
-        machine_context = MachineServices()
+        machine_context = MachineServices(state=state.freeze())
 
         with services_scope(machine_context):
             result = state.complete_action_request(make.ACTION_REQUEST_ID, make.SECONDARY_OPERATION_ID)
@@ -132,14 +132,14 @@ class TestMutableState:
         assert state.work_units[0].id == "WU-3-d"
         assert state.work_units[0].task_id == task.id
         assert state.work_units[0].operation_id == make.SECONDARY_OPERATION_ID
-        assert machine_context.journal.records == [
-            {"message": "Complete agent action `Action title`", "actor_id": None}
-        ]
+        assert [
+            cell.model_dump(include={"message", "actor_id"}) for cell in machine_context.output.journal_records
+        ] == [{"message": "Complete agent action `Action title`", "actor_id": "human"}]
 
     def test_start_workflow__creates_task_and_initial_work_unit(self) -> None:
         state = MutableState.build()
         artifact = make.artifact()
-        machine_context = MachineServices(artifact=artifact)
+        machine_context = MachineServices(artifact=artifact, state=state.freeze())
 
         with services_scope(machine_context):
             result = state.start_workflow(make.PRIMARY_OPERATION_ID)
@@ -153,24 +153,28 @@ class TestMutableState:
         assert state.work_units[0].id == "WU-2-c"
         assert state.work_units[0].task_id == state.tasks[0].id
         assert machine_context.artifacts.viewed == [make.ARTIFACT_ID]
-        assert machine_context.journal.records == [{"message": "Start workflow `Workflow`", "actor_id": None}]
+        assert [
+            cell.model_dump(include={"message", "actor_id"}) for cell in machine_context.output.journal_records
+        ] == [{"message": "Start workflow `Workflow`", "actor_id": "human"}]
 
     def test_finish_workflow__removes_task_and_logs_workflow_title(self) -> None:
         task = make.task()
         state = make.mutable_state(tasks=[task])
-        machine_context = MachineServices(artifact=make.artifact())
+        machine_context = MachineServices(artifact=make.artifact(), state=state.freeze())
 
         with services_scope(machine_context):
             state.finish_workflow(task.id)
 
         assert state.tasks == []
-        assert machine_context.journal.records == [{"message": "Finish workflow `Workflow`", "actor_id": None}]
+        assert [
+            cell.model_dump(include={"message", "actor_id"}) for cell in machine_context.output.journal_records
+        ] == [{"message": "Finish workflow `Workflow`", "actor_id": "human"}]
 
     def test_execute_next_work_unit__applies_operation_changes_and_removes_unit(self) -> None:
         task = make.task()
         unit = make.work_unit()
         state = make.mutable_state(tasks=[task], work_units=[unit])
-        machine_context = MachineServices(artifact=make.artifact(), primitive=_StateOperation())
+        machine_context = MachineServices(artifact=make.artifact(), primitive=_StateOperation(), state=state.freeze())
         outer = ExecutionContext(
             current_work_unit_id=WorkUnitId("WU-9-j"), current_operation_id=make.SECONDARY_OPERATION_ID
         )
@@ -194,7 +198,7 @@ class TestMutableState:
         task = make.task()
         unit = make.work_unit()
         state = make.mutable_state(tasks=[task], work_units=[unit])
-        machine_context = MachineServices(artifact=make.artifact(), primitive=_StateOperation())
+        machine_context = MachineServices(artifact=make.artifact(), primitive=_StateOperation(), state=state.freeze())
         failure = EnvironmentError(code="unavailable", message="Unavailable")
         execute = mocker.patch.object(_StateOperation, "execute_section", return_value=Err([failure]))
         if unexpected:

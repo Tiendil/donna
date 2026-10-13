@@ -25,16 +25,6 @@ class _InternalErrorCase:
         assert self.error().message
 
 
-class TestJournalCommandConfigInvalid(_EnvironmentErrorCase):
-    def error(self) -> workspace_errors.WorkspaceError:
-        return workspace_errors.JournalCommandConfigInvalid(argument="{missing}", details="bad")
-
-
-class TestJournalCommandFailed(_EnvironmentErrorCase):
-    def error(self) -> workspace_errors.WorkspaceError:
-        return workspace_errors.JournalCommandFailed(command=["tool"], returncode=1, details="bad")
-
-
 class TestArtifactNotFound(_EnvironmentErrorCase):
     def error(self) -> workspace_errors.WorkspaceError:
         return workspace_errors.ArtifactNotFound(artifact_id=make.ARTIFACT_ID)
