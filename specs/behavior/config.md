@@ -42,6 +42,7 @@ Donna MUST delegate configuration discovery, path resolution, TOML reading, and 
 Static application settings MUST declare `donna.toml` as the default configuration filename.
 Workspace-loading commands MUST enter shared project loading with Donna's schema, the invocation's working directory, and the optional `--config` path.
 The directory containing the selected configuration path MUST be the project root.
+Configuration selection and initialization MUST use the shared project-path symlink policy, including rejection of a configuration-file symlink.
 Donna MUST supply the application schema defined below and propagate the library's configuration diagnostics without local translation.
 
 ## Active configuration
@@ -138,6 +139,7 @@ Each workflow directory MUST NOT contain parent-directory references.
 Duplicate workflow directory entries MUST be removed while preserving the first occurrence.
 
 Workflow directory paths MUST be resolved from the Donna project root.
+Configuration examples SHOULD use `./` prefixes for directory paths when doing so improves readability.
 
 Missing workflow directories MUST be ignored during artifact discovery.
 Configured workflow directories MUST be rejected if any component below the resolved project root is a symbolic link.

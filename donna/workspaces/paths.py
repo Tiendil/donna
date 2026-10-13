@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pathlib
-
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 from llm_tool_cli.paths import (
     PathInput,
@@ -19,10 +17,7 @@ from donna.domain.artifact_ids import (
     artifact_section_id,
     validate_artifact_id,
 )
-from donna.domain.constants import ARTIFACT_ID_PREFIX
 from donna.domain.ids import SectionId
-
-PROJECT_ROOT_PREFIX = ARTIFACT_ID_PREFIX
 
 
 def normalize_project_path(
@@ -35,15 +30,9 @@ def normalize_project_path(
     if not isinstance(value, str):
         return Err([InvalidProjectPath(path=str(value))])
 
-    if relative_to is None or not value:
-        return normalize_path(value, root, cwd=cwd)
-
-    path = pathlib.Path(value)
-    if value.startswith(PROJECT_ROOT_PREFIX) or path.is_absolute() or str(path).startswith("~"):
-        return normalize_path(value, root, cwd=cwd)
-
-    parent_parts = artifact_path_parts(relative_to)[:-1]
-    return normalize_path(PROJECT_ROOT_PREFIX + "/".join((*parent_parts, value)), root)
+    if relative_to is not None:
+        cwd = PathInput(root.joinpath(*artifact_path_parts(relative_to)[:-1]))
+    return normalize_path(value, root, cwd=cwd)
 
 
 @unwrap_to_error

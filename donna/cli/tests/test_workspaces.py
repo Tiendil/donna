@@ -8,6 +8,29 @@ from donna.cli.tests import helpers
 
 
 class TestInit:
+    @pytest.mark.parametrize("explicit", [False, True])
+    @pytest.mark.parametrize("command", ["init", "list"])
+    def test_config_symlink__uses_shared_path_error(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path, explicit: bool, command: str
+    ) -> None:
+        target = tmp_path / "target.toml"
+        target.write_text("version = 1", encoding="utf-8")
+        config_path = tmp_path / "donna.toml"
+        config_path.symlink_to(target)
+        monkeypatch.chdir(tmp_path)
+        arguments = ["--config", str(config_path)] if explicit else []
+
+        result = helpers.invoke([*arguments, "-p", "automation", command])
+
+        assert result.exit_code == 3
+        record = helpers.json_lines(result.stdout)[0]
+        assert record["code"] == "invalid_project_path"
+        assert record["path"] == str(config_path)
+        assert not result.stderr
+        assert not project_config.is_set()
+        assert config_path.is_symlink()
+        assert target.read_text(encoding="utf-8") == "version = 1"
+
     @pytest.mark.parametrize(
         "text, code",
         [("version =", "config_invalid_toml"), ('session_dir = "../outside"', "config_validation_failed")],

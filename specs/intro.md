@@ -20,6 +20,8 @@ Detailed requirements for individual specifications are out of scope except for 
 
 ## Specification documents
 
+Shared configuration-file symlink rejection is covered by `specs/behavior/config.md`; artifact-relative base selection and delegation of generic path behavior are covered by `specs/behavior/file_paths.md`.
+
 Shared root configuration-version and session-directory fields, with Donna-owned supported versions, defaults, and storage behavior, are covered by `specs/architecture/modules_layout.md` and `specs/behavior/config.md`.
 
 Shared emitter journal calls, Donna's cell factory, the typed rendered-artifact cell, and prohibited journaling for ordinary result cells are covered by `specs/architecture/modules_layout.md` and `specs/behavior/cli.md`.
@@ -34,7 +36,7 @@ Shared terminal-error journaling without runtime attribution is covered by `spec
 - `./specs/architecture/tests.md` — specification of project test organization and testing expectations, including shared exception propagation, shared automation payload extraction and error-cell assertions, and local output parsing and journal filtering.
 - `./specs/behavior/cli.md` — specification of the `donna` command line interface, Donna-owned result projections with direct shared-emitter submission and shared protocol dispatch and rendering, and unified environment-error cells and preserved exit policies, buffered final results, immediate compact journal cells with shared whitespace normalization and internal multiline escaping, and final warnings, with task attribution from cached consistent state, execution identifiers from the active scope, default and explicit journal actors, and preserved journal events without task attribution when session context is unavailable. Shared project loading and initialization contexts own discovery, validation, and project scopes using a filename from static settings. All cell kinds, including errors, use stdout in every protocol. The render command emits its Markdown in an ordinary cell using the selected protocol. Shared command execution scopes and complete initialization-command registration are managed by the library.
 - `./specs/behavior/config.md` — specification of the `donna.toml` configuration file behavior, including independent immutable shared configuration bindings, shared path selection, home expansion, and missing-config diagnostics; file discovery uses shared enumeration without symbolic-link traversal. Shared project loading and initialization contexts own discovery, validation, and project scopes using a filename from static settings. Journal forwarding uses normalized logical messages with internal line breaks preserved.
-- `./specs/behavior/file_paths.md` — specification of Donna local project path, artifact id, and artifact section id syntax and resolution behavior; shared file enumeration and rejection of symbolic links below the resolved project root are included.
+- `./specs/behavior/file_paths.md` — artifact-path contract: artifact and section ids, CLI and artifact-relative directory bases, template path output, and delegation of generic path behavior to `llm_tool_cli`.
 - `./specs/behavior/skill_fixtures.md` — specification of built-in skill documentation fixture behavior.
 - `./specs/documentation/changelog.md` — specification of changelog tooling, source files, version record structure, and entry format.
 - `./specs/documentation/readme.md` — specification of the root `README.md` content, structure, source material, and tone.

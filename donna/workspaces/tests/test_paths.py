@@ -15,6 +15,35 @@ from donna.workspaces.paths import (
 
 
 class TestNormalizeProjectPath:
+    @pytest.mark.parametrize("value", ["link/file.md", "link/../file.md"])
+    def test_artifact_relative_path_rejects_symlinks(self, tmp_path: pathlib.Path, value: str) -> None:
+        directory = tmp_path / "workflows"
+        directory.mkdir()
+        (directory / "link").symlink_to(tmp_path, target_is_directory=True)
+
+        result = normalize_project_path(
+            value, PathInput(tmp_path), relative_to=ArtifactId("@/workflows/base.donna.md")
+        )
+
+        assert result.unwrap_err() == [InvalidProjectPath(path=str(directory / value))]
+
+    def test_artifact_base_preserves_shared_filesystem_syntax(self, tmp_path: pathlib.Path) -> None:
+        result = normalize_project_path(
+            "nested//file.md",
+            PathInput(tmp_path),
+            cwd=PathInput(tmp_path / "other"),
+            relative_to=ArtifactId("@/workflows/base.donna.md"),
+        )
+
+        assert result.unwrap() == "@/workflows/nested/file.md"
+
+    def test_artifact_base_does_not_reinterpret_invalid_identifier(self, tmp_path: pathlib.Path) -> None:
+        result = normalize_project_path(
+            "@invalid", PathInput(tmp_path), relative_to=ArtifactId("@/workflows/base.donna.md")
+        )
+
+        assert result.unwrap_err() == [InvalidProjectPath(path="@invalid")]
+
     @pytest.mark.parametrize("relative_to", [None, ArtifactId("@/workflows/source.donna.md")])
     def test_empty_input_propagates_shared_diagnostic(
         self, tmp_path: pathlib.Path, relative_to: ArtifactId | None

@@ -20,17 +20,18 @@ from donna.primitives.tests import make
 
 class TestPath:
     @pytest.mark.parametrize("mode", [PathRenderMode.project, PathRenderMode.absolute])
+    @pytest.mark.parametrize("value", ["link/file", "link/../file"])
     def test_render_view__rejects_artifact_relative_internal_link(
-        self, mocker: MockerFixture, tmp_path: pathlib.Path, mode: PathRenderMode
+        self, mocker: MockerFixture, tmp_path: pathlib.Path, mode: PathRenderMode, value: str
     ) -> None:
         (tmp_path / "workflows").mkdir()
         (tmp_path / "workflows/link").symlink_to(tmp_path)
 
         result = Path(analyze_id="path").render_view(
-            make.template_context(), "link/file", mode, ArtifactId("@/workflows/test.donna.md")
+            make.template_context(), value, mode, ArtifactId("@/workflows/test.donna.md")
         )
 
-        assert result.unwrap_err() == [InvalidProjectPath(path=str(tmp_path / "workflows/link/file"))]
+        assert result.unwrap_err() == [InvalidProjectPath(path=str(tmp_path / "workflows" / value))]
 
     def test_prepare_arguments__defaults_to_project_mode(self) -> None:
         result = Path(analyze_id="path")._prepare_arguments(
@@ -177,7 +178,7 @@ class TestPath:
         assert result.is_err()
         error = result.unwrap_err()[0]
         assert isinstance(error, InvalidProjectPath)
-        assert error.path == "@/../../outside.md"
+        assert error.path == str(tmp_path / "../../outside.md")
 
     def test_render_analyze__renders_regular_path(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
 
