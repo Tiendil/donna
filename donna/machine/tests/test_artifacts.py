@@ -4,34 +4,16 @@ from llm_tool_cli.protocol.logic_cells import EnvironmentErrorCell
 
 from donna.domain.ids import SectionId
 from donna.machine import errors as machine_errors
-from donna.machine.artifacts import Artifact, ArtifactNode, ArtifactSectionMeta, ArtifactSectionNode
+from donna.machine.artifacts import Artifact
 from donna.machine.primitives import Primitive
 from donna.machine.tests import make
 from donna.machine.tests.helpers import MachineServices, services_scope
-from donna.protocol import ArtifactInfoCell, ArtifactSectionStatusCell, ArtifactStatusCell
-
-
-class _Meta(ArtifactSectionMeta):
-    def cells_meta(self) -> dict[str, str]:
-        return {"custom": "value"}
+from donna.protocol import ArtifactStatusCell
 
 
 class _RejectingPrimitive(Primitive):
     def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None]:
         return Err([machine_errors.PrimitiveInvalidImportPath(import_path="bad")])
-
-
-class TestArtifactSectionMeta:
-    def test_cells_meta__returns_empty_metadata(self) -> None:
-        assert ArtifactSectionMeta().cells_meta() == {}
-
-
-class TestArtifactSection:
-
-    def test_node__returns_artifact_section_node(self) -> None:
-        section = make.artifact_section()
-
-        assert isinstance(section.node(), ArtifactSectionNode)
 
 
 class TestArtifact:
@@ -125,13 +107,8 @@ class TestArtifact:
             machine_errors.PrimitiveInvalidImportPath,
         ]
 
-    def test_node__returns_artifact_node(self) -> None:
-        assert isinstance(make.artifact().node(), ArtifactNode)
-
-
-class TestArtifactNode:
-    def test_status__returns_primary_section_summary(self) -> None:
-        cell = make.artifact().node().status()
+    def test_status_cell__returns_primary_section_summary(self) -> None:
+        cell = make.artifact().status_cell()
 
         assert isinstance(cell, ArtifactStatusCell)
         assert cell.artifact_id == make.ARTIFACT_ID
@@ -139,49 +116,12 @@ class TestArtifactNode:
         assert cell.artifact_title == "Workflow"
         assert cell.description == "Workflow description"
 
-    def test_info__returns_typed_artifact_sections(self) -> None:
-        primary = make.artifact_section(primary=True)
-        secondary = make.artifact_section(id=make.SECONDARY_SECTION_ID, title="Next", description="Body")
-        cell = make.artifact([primary, secondary]).node().info()
-
-        assert isinstance(cell, ArtifactInfoCell)
-        assert cell.artifact_id == make.ARTIFACT_ID
-        assert cell.artifact_kind == make.PRIMITIVE_PATH
-        assert cell.title == primary.title
-        assert cell.description == primary.description
-        assert [(section.section_id, section.title, section.description) for section in cell.sections] == [
-            (secondary.id, secondary.title, secondary.description),
-        ]
-
-    @pytest.mark.parametrize("view", ["status", "info"])
     @pytest.mark.parametrize("count", [0, 2])
-    def test_views__return_typed_error_for_invalid_primary_sections(self, view: str, count: int) -> None:
+    def test_status_cell__returns_typed_error_for_invalid_primary_sections(self, count: int) -> None:
         sections = [make.artifact_section(id=SectionId(f"section_{index}"), primary=True) for index in range(count)]
         artifact = make.artifact(sections)
 
-        cell = getattr(artifact.node(), view)()
+        cell = artifact.status_cell()
 
         assert isinstance(cell, EnvironmentErrorCell)
         assert cell.error == artifact.primary_section().unwrap_err()[0]
-
-    def test_components__returns_section_nodes(self) -> None:
-        components = make.artifact().node().components()
-
-        assert len(components) == 1
-        assert isinstance(components[0], ArtifactSectionNode)
-
-
-class TestArtifactSectionNode:
-    def test_status__returns_section_status_cell(self) -> None:
-        section = make.artifact_section(primary=True, meta=_Meta())
-
-        cell = ArtifactSectionNode(section).status()
-
-        assert isinstance(cell, ArtifactSectionStatusCell)
-        assert cell.artifact_id == section.artifact_id
-        assert cell.section_id == section.id
-        assert cell.section_kind == section.kind
-        assert cell.section_primary
-        assert cell.title == section.title
-        assert cell.description == section.description
-        assert cell.extra_meta == {"custom": "value"}

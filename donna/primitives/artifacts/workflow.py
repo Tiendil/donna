@@ -1,9 +1,7 @@
-from collections.abc import Mapping
 from typing import TYPE_CHECKING, ClassVar, cast
 
 from llm_tool_cli.core.errors import EnvironmentErrors
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
-from llm_tool_cli.protocol.output_cells.base import MetaValue
 
 from donna.core import errors as core_errors
 from donna.domain.artifact_ids import ArtifactId, artifact_section_id
@@ -109,11 +107,6 @@ class WorkflowConfig(ArtifactSectionConfig):
 
 class WorkflowMeta(ArtifactSectionMeta):
     start_operation_id: SectionId | None = None
-
-    def cells_meta(self) -> Mapping[str, MetaValue]:
-        if self.start_operation_id is None:
-            return {}
-        return {"start_operation_id": str(self.start_operation_id)}
 
 
 class Workflow(MarkdownSectionMixin, Primitive):

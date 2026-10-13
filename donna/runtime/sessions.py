@@ -49,7 +49,7 @@ def _state_run(mutator: MutableState) -> Result[None]:
 
 @unwrap_to_error
 def _emit_state() -> Result[None]:
-    return output.get().emit(load_state().unwrap().node().details())
+    return output.get().emit(load_state().unwrap().details_cells())
 
 
 P = ParamSpec("P")
@@ -95,7 +95,7 @@ def continue_() -> Result[None]:
 @_session_required
 @unwrap_to_error
 def status() -> Result[None]:
-    return output.get().emit([load_state().unwrap().node().info()])
+    return output.get().emit([load_state().unwrap().status_cell()])
 
 
 @_session_required

@@ -20,7 +20,6 @@ from donna.machine import Caches, ExecutionContext
 from donna.machine.caches import caches
 from donna.machine.context import execution_context
 from donna.machine.journal import journal_emit
-from donna.protocol.errors import environment_error_node
 from donna.workspaces import config as workspace_config
 
 
@@ -60,6 +59,6 @@ def command_context(  # noqa: CCR001
                 for failure in error.errors:
                     if isinstance(failure, OutputEnvironmentError):
                         continue
-                    message = f"Error: {environment_error_node(failure).journal_message()} [{failure.code}]"
-                    journal_emit(message, actor_id="donna")
+                    message = failure.format_message().replace("\n", " ").strip()
+                    journal_emit(f"Error: {message} [{failure.code}]", actor_id="donna")
             raise

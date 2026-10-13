@@ -128,9 +128,10 @@ Leaf environment errors SHOULD define their message and fix guidance in the clas
 Construction sites SHOULD pass only the structured fields that vary for that error instance.
 
 All environment errors, including errors embedded in artifact views, MUST use the shared typed environment-error cell and its common presentation contract.
-Donna's error nodes MUST retain graph and journal responsibilities while delegating cell construction to the shared library.
+Donna MUST construct shared environment-error cells directly, without error-node wrappers.
+The CLI MUST obtain error journal messages from the error's formatted message, replace internal newlines with spaces, and strip surrounding whitespace before adding the error prefix and code.
 
-The core error base classes MUST NOT depend on protocol cells, protocol nodes, protocol formatters, or CLI output.
+The core error base classes MUST NOT depend on protocol cells, protocol formatters, or CLI output.
 
 The shared library MUST manage error content, corrective guidance, native codes, and diagnostic context in cell output.
 

@@ -4,6 +4,7 @@ from typing import Sequence, cast
 import pydantic
 from llm_tool_cli.core.entities import BaseEntity
 from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.protocol.logic_cells.base import LogicCell
 
 from donna.domain.artifact_ids import ArtifactSectionId, split_artifact_section_id
 from donna.domain.internal_ids import ActionRequestId, InternalId, TaskId, WorkUnitId
@@ -22,7 +23,6 @@ from donna.machine.context import execution_context
 from donna.machine.journal import journal_emit
 from donna.machine.tasks import Task, WorkUnit
 from donna.protocol import SessionStateCell
-from donna.protocol.nodes import Node
 
 
 class BaseState(BaseEntity):
@@ -35,8 +35,16 @@ class BaseState(BaseEntity):
     def has_work(self) -> bool:
         return bool(self.work_units)
 
-    def node(self) -> "StateNode":
-        return StateNode(self)
+    def status_cell(self) -> SessionStateCell:
+        return SessionStateCell(
+            started=self.started,
+            tasks=len(self.tasks),
+            queued_work_units=len(self.work_units),
+            pending_action_requests=len(self.action_requests),
+        )
+
+    def details_cells(self) -> list[LogicCell]:
+        return [self.status_cell(), *(request.to_cell() for request in self.action_requests)]
 
     ###########
     # Accessors
@@ -205,21 +213,3 @@ class MutableState(BaseState):
 
         self.apply_changes(changes)
         return Ok(None)
-
-
-class StateNode(Node):
-    __slots__ = ("_state",)
-
-    def __init__(self, state: BaseState) -> None:
-        self._state = state
-
-    def status(self) -> SessionStateCell:
-        return SessionStateCell(
-            started=self._state.started,
-            tasks=len(self._state.tasks),
-            queued_work_units=len(self._state.work_units),
-            pending_action_requests=len(self._state.action_requests),
-        )
-
-    def references(self) -> list[Node]:
-        return [action_request.node() for action_request in self._state.action_requests]

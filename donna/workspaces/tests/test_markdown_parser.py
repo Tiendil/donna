@@ -66,7 +66,7 @@ class TestMarkdownSectionMixin:
         result = primitive.markdown_construct_meta(make.ARTIFACT_ID, make.section_source(), make.section_config(), "")
 
         assert result.is_ok()
-        assert result.unwrap().cells_meta() == {}
+        assert result.unwrap().model_dump() == {}
 
     def test_markdown_construct_section__builds_artifact_section(self) -> None:
         primitive = _MarkdownPrimitive()

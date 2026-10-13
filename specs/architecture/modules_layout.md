@@ -40,7 +40,7 @@ The following topics are out of scope:
   - workflow execution orchestration that is independent of CLI argument parsing and protocol-specific formatting.
   - immutable invocation-local execution identifiers for the current work unit and operation, scoped through shared context management.
   - cache interfaces, the collection of active caches and its independent binding, and artifact-rendering context data shared with workspace implementations.
-  - protocol-facing views of machine-owned concepts that prepare protocol-independent logic cells through `./donna/protocol/`.
+  - direct construction of protocol-independent logic cells by machine-owned entities through `./donna/protocol/`.
 - `./donna/runtime/` — module responsible for command-independent runtime orchestration. Contains:
   - session lifecycle use cases.
   - workflow execution loop coordination.
@@ -57,7 +57,7 @@ The following topics are out of scope:
 - `./donna/lib/` — module responsible for stable public names of built-in primitive instances used by Donna artifact configuration.
 - `./donna/protocol/` — module responsible for Donna output boundary values and protocol formatting. Contains:
   - Donna-specific output value definitions and projections into shared cells used to communicate Donna results between modules.
-  - generic helpers for projecting Donna-owned data into output values and error nodes using shared error cells.
+  - projections of Donna-owned logical cells into output values, using shared cells for environment errors.
   - domain journal cells extending shared journal projections with Donna execution identifiers.
   - Donna-specific serialized record construction for external output protocols.
   - low-level output boundary infrastructure that MAY be used by any top-level module.
@@ -70,7 +70,9 @@ The following topics are out of scope:
   - session state storage.
 - `./donna/cli/` — module responsible for argument parsing, runtime invocation, protocol and stream selection, error handling, and writing returned or emitted logic cells through shared rendering.
 
-Domain views and runtime operations MUST assemble domain-result cells before returning or submitting them to shared output.
+Domain entities and runtime operations MUST assemble domain-result cells before returning or submitting them to shared output.
+Donna MUST NOT introduce node wrappers or a node hierarchy for cell construction or composition.
+Session detail output MUST compose the session summary followed by pending action-request cells in their stored order.
 The CLI MUST NOT build domain-result payloads from internal domain objects.
 Internal domain and machine APIs MAY retain their own typed results; the logic-cell contract applies at the boundary used to present domain results to the CLI.
 
@@ -141,11 +143,11 @@ Shared result types, the common environment-error model, and the environment-err
 The common entity base MUST be provided by `llm_tool_cli.core.entities` and imported directly by higher-level modules.
 
 The `OutputCell` model, construction helpers, metadata conversion, and cell errors MUST be provided by `llm_tool_cli` and imported directly from their owning modules.
-Donna's node views MUST produce logic cells with typed domain fields without accepting an output-cell type; their view selection remains Donna-owned.
-Error views MUST use the shared environment-error logic cell directly.
+Donna's domain entities MUST produce logic cells with typed domain fields without accepting an output-cell type; their view selection remains Donna-owned.
+Error presentation MUST use the shared environment-error logic cell directly.
 The `donna.protocol.logic_cells` package MUST own domain-result cells and their projections into shared output cells.
 Its public cell entities MUST be exported from `donna.protocol` for use by other top-level modules.
-Artifact and section Markdown, action-request instructions, and session-status messages MUST be constructed by those cells during projection.
+Artifact summaries, action-request instructions, and session-status messages MUST be constructed by those cells during projection.
 Generic messages and already prepared documents MAY use shared content logic cells.
 Logic-cell protocol dispatch, protocol-specific output-cell types, rendering contexts, and shared-error cell construction MUST be provided by `llm_tool_cli.protocol` and used directly.
 Batch-rendering orchestration and stream writing MUST belong to the shared emitter in `llm_tool_cli.output`; individual projections and cell formatting MUST remain in the protocol layer.

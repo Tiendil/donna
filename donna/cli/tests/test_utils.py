@@ -394,14 +394,18 @@ class TestCommandContext:
             assert f"code{separator}invalid_arguments\n" in result.stdout
 
     @pytest.mark.parametrize("with_session", [False, True])
+    @pytest.mark.parametrize(
+        ("message", "journal_message"),
+        [("command failed", "command failed"), ("First line.\nSecond line.", "First line. Second line.")],
+    )
     def test_shared_errors_during_command__restore_output_scope(
-        self, mocker: MockerFixture, tmp_path: pathlib.Path, with_session: bool
+        self, mocker: MockerFixture, tmp_path: pathlib.Path, with_session: bool, message: str, journal_message: str
     ) -> None:
         config_path = helpers.write_config(tmp_path)
         if with_session:
             initialized = helpers.invoke(["--config", str(config_path), "-p", "automation", "new-session"])
             assert initialized.exit_code == 0
-        failure = llm_tool_errors.EnvironmentError(message="command failed", code="command_failed")
+        failure = llm_tool_errors.EnvironmentError(message=message, code="command_failed")
         mocker.patch("donna.context.artifacts.ArtifactsCache.list", side_effect=UnwrapError(error=[failure]))
         forwarded = mocker.spy(NoopJournalProcessor, "process")
         previous_output = FakeOutputEmitter()
@@ -415,7 +419,7 @@ class TestCommandContext:
             journal_entry = forwarded.call_args.args[1]
             assert journal_entry.actor_id == "donna"
             assert journal_entry.current_task_id is None
-            assert failure.code in journal_entry.message
+            assert journal_entry.message == f"Error: {journal_message} [{failure.code}]"
             assert output.get() == previous_output
             assert not previous_output.journal_records
             assert not project_config.is_set()

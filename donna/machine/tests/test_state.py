@@ -3,7 +3,7 @@ from llm_tool_cli.core.errors import EnvironmentError
 from llm_tool_cli.core.result import Err, Ok, Result
 from pytest_mock import MockerFixture
 
-from donna.domain.internal_ids import TaskId, WorkUnitId
+from donna.domain.internal_ids import ActionRequestId, TaskId, WorkUnitId
 from donna.machine import errors as machine_errors
 from donna.machine.changes import Change, ChangeSetTaskContext
 from donna.machine.context import ExecutionContext, execution_context
@@ -66,6 +66,43 @@ class TestBaseState:
         state = make.mutable_state(tasks=[older_task, current_task], work_units=[older_unit, current_unit])
 
         assert state.get_next_work_unit() == current_unit
+
+    def test_status_cell__captures_counts_and_started_flag(self) -> None:
+        state = make.mutable_state(
+            tasks=[make.task()], work_units=[make.work_unit()], action_requests=[make.action_request()], started=True
+        )
+
+        cell = state.status_cell()
+
+        assert isinstance(cell, SessionStateCell)
+        assert cell.started
+        assert cell.tasks == 1
+        assert cell.queued_work_units == 1
+        assert cell.pending_action_requests == 1
+
+    def test_status_cell__captures_new_session(self) -> None:
+        cell = MutableState.build().status_cell()
+
+        assert not cell.started
+        assert cell.tasks == cell.queued_work_units == cell.pending_action_requests == 0
+
+    @pytest.mark.parametrize("request_count", [0, 2])
+    def test_details_cells__includes_summary_then_requests_in_order(self, request_count: int) -> None:
+        requests = [
+            make.action_request(request="First request"),
+            make.action_request(id=ActionRequestId("AR-4-e"), request="Second request"),
+        ][:request_count]
+        state = make.mutable_state(action_requests=requests)
+
+        cells = state.details_cells()
+
+        assert len(cells) == request_count + 1
+        assert isinstance(cells[0], SessionStateCell)
+        assert cells[0].pending_action_requests == request_count
+        for cell, request in zip(cells[1:], requests, strict=True):
+            assert isinstance(cell, ActionRequestCell)
+            assert cell.action_request_id == request.id
+            assert cell.request == request.request
 
 
 class TestMutableState:
@@ -219,33 +256,3 @@ class TestMutableState:
         assert state.work_units == [unit]
         assert state.tasks[0].context == {}
         assert not execution_context.is_set()
-
-
-class TestStateNode:
-    def test_status__captures_counts_and_started_flag(self) -> None:
-        state = make.mutable_state(
-            tasks=[make.task()], work_units=[make.work_unit()], action_requests=[make.action_request()], started=True
-        )
-
-        cell = state.node().status()
-
-        assert isinstance(cell, SessionStateCell)
-        assert cell.started
-        assert cell.tasks == 1
-        assert cell.queued_work_units == 1
-        assert cell.pending_action_requests == 1
-
-    def test_status__captures_new_session(self) -> None:
-        cell = MutableState.build().node().status()
-
-        assert not cell.started
-        assert cell.tasks == cell.queued_work_units == cell.pending_action_requests == 0
-
-    def test_references__returns_action_request_nodes(self) -> None:
-        request = make.action_request()
-        references = make.mutable_state(action_requests=[request]).node().references()
-
-        assert len(references) == 1
-        cell = references[0].status()
-        assert isinstance(cell, ActionRequestCell)
-        assert cell.action_request_id == request.id

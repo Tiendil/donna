@@ -3,7 +3,6 @@ from llm_tool_cli.core.entities import BaseEntity
 from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import ActionRequestId
 from donna.protocol import ActionRequestCell
-from donna.protocol.nodes import Node
 
 
 class ActionRequest(BaseEntity):
@@ -21,15 +20,5 @@ class ActionRequest(BaseEntity):
             title=title,
         )
 
-    def node(self) -> "ActionRequestNode":
-        return ActionRequestNode(self)
-
-
-class ActionRequestNode(Node):
-    __slots__ = ("_action_request",)
-
-    def __init__(self, action_request: ActionRequest) -> None:
-        self._action_request = action_request
-
-    def status(self) -> ActionRequestCell:
-        return ActionRequestCell(action_request_id=self._action_request.id, request=self._action_request.request)
+    def to_cell(self) -> ActionRequestCell:
+        return ActionRequestCell(action_request_id=self.id, request=self.request)

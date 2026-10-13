@@ -27,7 +27,7 @@ def list_(
 
         artifacts = caches.get().artifacts.list(RENDER_CONTEXT_VIEW).unwrap()
 
-        output.get().emit([artifact.node().status() for artifact in artifacts]).unwrap()
+        output.get().emit([artifact.status_cell() for artifact in artifacts]).unwrap()
 
 
 @app.command(help="Render an artifact with the selected render mode and output a Markdown cell.")
