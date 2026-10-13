@@ -7,7 +7,6 @@ This document describes Donna artifact identifiers and the application of shared
 ## Scope
 
 This specification covers artifact and section identifiers, path input bases, and template path output.
-Generic path syntax, normalization, containment, symlink handling, enumeration, and path diagnostics are governed by `specs/behavior/paths.md` in the `llm-tool-cli` repository.
 
 The following topics are out of scope:
 
@@ -17,17 +16,16 @@ The following topics are out of scope:
 
 ## Shared project paths
 
-Donna MUST use the shared project-path contract for CLI inputs, artifact lookup, artifact-relative references, and both template path directive modes.
+Donna MUST use the project-path contract in `specs/behavior/paths.md` in the `llm-tool-cli` repository for CLI inputs, artifact lookup, artifact-relative references, and both template path directive modes.
 The project root MUST be the local directory containing the active configuration file, selected according to `specs/behavior/config.md`.
-Donna MUST retain only artifact-specific suffix and section validation, base selection, and availability policy.
-Artifact-relative filesystem inputs MUST use the source artifact's containing directory as their base and otherwise retain the shared input interpretation and validation.
+Artifact-relative filesystem inputs MUST use the source artifact's containing directory as their base.
 Artifact lookup MAY treat a candidate rejected for project-root containment or symbolic-link traversal as unavailable.
 
 ## Artifact ids
 
 An artifact id MUST be a canonical project path identifying a file with the `.donna.md` extension, such as `@/workflows/polish.donna.md`.
 
-Artifact ids SHOULD be written as root-anchored paths in workflow instructions, agent notes, and persisted session state.
+Artifact ids SHOULD be written as root-anchored paths in workflow instructions, agent notes, persisted session state, CLI examples, and protocol output unless demonstrating other accepted input forms.
 
 ## Artifact section ids
 
@@ -40,23 +38,12 @@ Artifact section ids are used by `complete-action-request` to identify the next 
 
 ## CLI path inputs
 
-CLI input parameters that accept artifact paths MUST accept root-anchored, relative filesystem, and absolute filesystem paths.
-Relative paths MUST resolve from the command's current working directory.
-
-Accepted inputs MUST be normalized to canonical root-anchored paths before artifact loading, artifact validation, workflow execution, or action request completion.
-
-New CLI examples and protocol output SHOULD use canonical root-anchored paths unless demonstrating relative or absolute filesystem input compatibility.
-Workflow instructions SHOULD also prefer root-anchored paths unless relative addressing is central to the example.
+CLI artifact inputs MUST use shared mixed path normalization with the command's current working directory as the relative filesystem base.
+Normalization MUST precede artifact loading, artifact validation, workflow execution, or action request completion.
 
 ## Template path directive
 
-The `donna.lib.path("<path>", mode="project"|"absolute")` directive MUST normalize local project paths in workflow text.
-
-The directive MUST accept:
-
-- root-anchored paths.
-- relative paths resolved from the directory containing the workflow artifact being rendered.
-- absolute filesystem paths that resolve inside the Donna project root.
+The `donna.lib.path("<path>", mode="project"|"absolute")` directive MUST use shared mixed path normalization with the rendered artifact's containing directory as the relative filesystem base.
 
 The default mode MUST be `project`.
 In `project` mode, the directive MUST render the canonical root-anchored path; in `absolute` mode, it MUST render the corresponding absolute filesystem path.

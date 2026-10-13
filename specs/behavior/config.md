@@ -38,11 +38,10 @@ This specification defines configuration semantics that the implementation MUST 
 
 The canonical configuration file name MUST be `donna.toml`.
 
-Donna MUST delegate configuration discovery, path resolution, TOML reading, and schema-validation mechanics to `llm_tool_cli`.
+Donna MUST use the configuration-file contract in `specs/behavior/config.md` in the `llm-tool-cli` repository for discovery, path resolution, loading, and initialization.
 Static application settings MUST declare `donna.toml` as the default configuration filename.
 Workspace-loading commands MUST enter shared project loading with Donna's schema, the invocation's working directory, and the optional `--config` path.
 The directory containing the selected configuration path MUST be the project root.
-Configuration selection and initialization MUST use the shared project-path symlink policy, including rejection of a configuration-file symlink.
 Donna MUST supply the application schema defined below and propagate the library's configuration diagnostics without local translation.
 
 ## Active configuration
@@ -104,12 +103,7 @@ If omitted, `session_dir` MUST default to:
 session_dir = ".session/donna"
 ```
 
-The `session_dir` field MUST be a project-relative path.
-
-The `session_dir` field MUST NOT be an absolute host filesystem path.
-
-The `session_dir` field MUST NOT contain parent-directory references.
-Its lexical path validation MUST use the shared session-directory field contract, retaining Donna's default and storage behavior.
+The `session_dir` field MUST use the shared session-directory field contract, retaining Donna's default and storage behavior.
 
 The path MUST be resolved from the Donna project root.
 
@@ -141,16 +135,10 @@ Duplicate workflow directory entries MUST be removed while preserving the first 
 Workflow directory paths MUST be resolved from the Donna project root.
 Configuration examples SHOULD use `./` prefixes for directory paths when doing so improves readability.
 
+Configured workflow directories MUST be resolved using the shared project-path contract applied by `specs/behavior/file_paths.md` before artifact discovery.
 Missing workflow directories MUST be ignored during artifact discovery.
-Configured workflow directories MUST be rejected if any component below the resolved project root is a symbolic link.
-
-Donna MUST recursively scan workflow directories for files ending with `.donna.md`.
-
-Donna MUST ignore files without the `.donna.md` suffix when discovering workflow artifacts.
-
-Artifact discovery MUST be deterministic for the same `workflow_dirs` order and filesystem state.
-Discovery MUST use shared file enumeration, include hidden entries, and skip all encountered symbolic links without following them.
-Configured workflow directory names MUST remain literal, including characters used by the shared glob grammar; discovery MUST escape them before constructing recursive patterns.
+Donna MUST use shared recursive file enumeration within each workflow directory, preserving configured directory order and selecting only files with the `.donna.md` suffix.
+Configured workflow directory names MUST be interpreted literally rather than as glob patterns.
 Shared enumeration errors MUST propagate without being treated as successful empty discovery.
 
 ## Defaults

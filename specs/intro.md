@@ -20,9 +20,8 @@ Detailed requirements for individual specifications are out of scope except for 
 
 ## Specification documents
 
-Workflow discovery uses shared glob enumeration while retaining literal configured directory names, as specified in `specs/behavior/config.md`.
-
-Shared configuration-file symlink rejection is covered by `specs/behavior/config.md`; artifact-relative base selection and delegation of generic path behavior are covered by `specs/behavior/file_paths.md`.
+Donna-specific artifact and section identifiers, path bases, and template directive output are covered by `specs/behavior/file_paths.md`; workflow discovery and literal directory interpretation are covered by `specs/behavior/config.md`.
+Generic path, glob, and configuration-file mechanics are delegated to the corresponding behavior contracts in the `llm-tool-cli` repository.
 
 Shared root configuration-version and session-directory fields, with Donna-owned supported versions, defaults, and storage behavior, are covered by `specs/architecture/modules_layout.md` and `specs/behavior/config.md`.
 
