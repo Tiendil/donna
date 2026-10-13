@@ -491,7 +491,6 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "ast-grep-cli", specifier = "==0.44.*" },
     { name = "autoflake", specifier = "==2.3.*" },
     { name = "black", specifier = "==25.12.*" },
     { name = "changy", specifier = "==0.4.*" },

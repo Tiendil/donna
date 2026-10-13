@@ -66,6 +66,7 @@ The top-level configuration MAY contain these fields:
 Unknown top-level fields MUST cause configuration loading to fail.
 
 The initial schema version MUST be `1`.
+Donna MUST own the supported schema versions and default; the shared configuration field MUST provide strict integer validation and diagnostic formatting for Donna's declared version constraint.
 
 If `version` is omitted, `donna` MUST treat the configuration as schema version `1`.
 
@@ -107,6 +108,7 @@ The `session_dir` field MUST be a project-relative path.
 The `session_dir` field MUST NOT be an absolute host filesystem path.
 
 The `session_dir` field MUST NOT contain parent-directory references.
+Its lexical path validation MUST use the shared session-directory field contract, retaining Donna's default and storage behavior.
 
 The path MUST be resolved from the Donna project root.
 

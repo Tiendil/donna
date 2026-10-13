@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Literal
 
 import pydantic
+from llm_tool_cli.config.fields import ConfigVersion, SessionDir, validate_relative_project_path
 from llm_tool_cli.core.context import ContextValue
 from llm_tool_cli.core.entities import BaseEntity
 from llm_tool_cli.output.journal import JournalConfig
@@ -31,27 +32,12 @@ def _serialize_workflow_dir(path: RelativeProjectPath) -> str:
     return f"./{path.as_posix()}"
 
 
-def _validate_relative_project_path(path: RelativeProjectPath) -> RelativeProjectPath:
-    if path.is_absolute():
-        raise ValueError("Project paths must be relative to the Donna project root.")
-
-    if any(part == ".." for part in path.parts):
-        raise ValueError("Project paths must not contain parent-directory references.")
-
-    return RelativeProjectPath(path)
-
-
 class Config(BaseEntity):
-    version: Literal[1] = 1
-    session_dir: RelativeProjectPath = RelativeProjectPath(DONNA_DEFAULT_SESSION_DIR)
+    version: ConfigVersion[Literal[1]] = 1
+    session_dir: SessionDir = RelativeProjectPath(DONNA_DEFAULT_SESSION_DIR)
     defaults: DefaultsConfig = pydantic.Field(default_factory=DefaultsConfig)
     workflow_dirs: list[RelativeProjectPath] = pydantic.Field(default_factory=_default_workflow_dirs)
     journal: JournalConfig = pydantic.Field(default_factory=JournalConfig)
-
-    @pydantic.field_validator("session_dir", mode="after")
-    @classmethod
-    def validate_session_dir(cls, value: RelativeProjectPath) -> RelativeProjectPath:
-        return _validate_relative_project_path(value)
 
     @pydantic.field_validator("workflow_dirs", mode="after")
     @classmethod
@@ -59,7 +45,7 @@ class Config(BaseEntity):
         workflow_dirs: list[RelativeProjectPath] = []
 
         for path in value:
-            path = _validate_relative_project_path(path)
+            path = validate_relative_project_path(path)
             if path in workflow_dirs:
                 continue
 

@@ -47,18 +47,6 @@ class TestSerializeWorkflowDir:
         )
 
 
-class TestValidateRelativeProjectPath:
-    def test_returns_relative_project_path(self) -> None:
-        path = RelativeProjectPath(pathlib.Path("workflows"))
-
-        assert workspace_config._validate_relative_project_path(path) == path
-
-    @pytest.mark.parametrize("path", [pathlib.Path("/outside"), pathlib.Path("../outside")])
-    def test_rejects_invalid_project_paths(self, path: pathlib.Path) -> None:
-        with pytest.raises(ValueError):
-            workspace_config._validate_relative_project_path(RelativeProjectPath(path))
-
-
 class TestConfig:
     def test_defaults__match_configuration_spec(self) -> None:
         config = Config()

@@ -20,6 +20,8 @@ Detailed requirements for individual specifications are out of scope except for 
 
 ## Specification documents
 
+Shared root configuration-version and session-directory fields, with Donna-owned supported versions, defaults, and storage behavior, are covered by `specs/architecture/modules_layout.md` and `specs/behavior/config.md`.
+
 Shared emitter journal calls, Donna's cell factory, the typed rendered-artifact cell, and prohibited journaling for ordinary result cells are covered by `specs/architecture/modules_layout.md` and `specs/behavior/cli.md`.
 Shared terminal-error journaling without runtime attribution is covered by `specs/behavior/cli.md` and `specs/architecture/errors.md`; empty arguments for missing journal fields are covered by `specs/behavior/config.md`, with direct use of shared journal configuration covered by `specs/architecture/modules_layout.md`.
 

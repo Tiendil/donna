@@ -81,6 +81,9 @@ The CLI MUST use `llm_tool_cli.skills` directly for skill-document loading and p
 Donna MUST use frozen `StaticConfig` in `llm_tool_cli.core.settings` for application identity and the default `donna.toml` filename before parsing, `RuntimeConfig` in `llm_tool_cli.config.runtime` for the effective protocol, and `ProjectConfig` in `llm_tool_cli.config.project` for the active config path and derived project directory.
 The three shared context bindings MUST remain independent; project settings MUST be complete when bound after successful preparation and restored when the command context closes.
 The `donna.workspaces.config.config` binding MUST use shared `ContextValue[Config]` for loaded Donna-specific settings.
+Donna's root configuration MUST use `ConfigVersion[Literal[1]]` and `SessionDir` from `llm_tool_cli.config.fields`, declaring the version default as `1` and retaining Donna's session-directory default.
+Donna MUST own its supported schema versions and defaults; shared version validation MUST apply Donna's declared constraint.
+Workflow-directory validation MUST reuse that module's relative-project-path validator; directory ordering, deduplication, and serialization MUST remain Donna-owned.
 The CLI MUST scope loaded settings around workspace-dependent execution, restoring the previous binding before shared terminal-error reporting.
 Donna's project-command context MUST compose `llm_tool_cli.cli.context.command_context` with its runtime preparation and journal factory, without a local `CommandContext` subclass or error-journaling catch.
 The CLI MUST use shared `load_project` with Donna's `Config` schema, retaining it through the framework command context's resource lifecycle.
