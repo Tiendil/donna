@@ -20,6 +20,8 @@ Detailed requirements for individual specifications are out of scope except for 
 
 ## Specification documents
 
+Workflow discovery uses shared glob enumeration while retaining literal configured directory names, as specified in `specs/behavior/config.md`.
+
 Shared configuration-file symlink rejection is covered by `specs/behavior/config.md`; artifact-relative base selection and delegation of generic path behavior are covered by `specs/behavior/file_paths.md`.
 
 Shared root configuration-version and session-directory fields, with Donna-owned supported versions, defaults, and storage behavior, are covered by `specs/architecture/modules_layout.md` and `specs/behavior/config.md`.

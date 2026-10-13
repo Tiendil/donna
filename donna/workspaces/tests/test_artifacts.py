@@ -134,7 +134,7 @@ class TestWalkFilesystem:
 
         assert artifacts.walk_filesystem([RelativeProjectPath(pathlib.Path(name))]).is_err(InvalidProjectPath)
 
-    @pytest.mark.parametrize("name", [".", "[work]*?", "~", "@literal"])
+    @pytest.mark.parametrize("name", [".", "[work]*?", "{*name}", "{**path}", "~", "@literal"])
     def test_preserves_literal_workflow_directory_names(
         self, mocker: MockerFixture, tmp_path: pathlib.Path, name: str
     ) -> None:

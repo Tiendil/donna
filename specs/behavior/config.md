@@ -150,6 +150,7 @@ Donna MUST ignore files without the `.donna.md` suffix when discovering workflow
 
 Artifact discovery MUST be deterministic for the same `workflow_dirs` order and filesystem state.
 Discovery MUST use shared file enumeration, include hidden entries, and skip all encountered symbolic links without following them.
+Configured workflow directory names MUST remain literal, including characters used by the shared glob grammar; discovery MUST escape them before constructing recursive patterns.
 Shared enumeration errors MUST propagate without being treated as successful empty discovery.
 
 ## Defaults
