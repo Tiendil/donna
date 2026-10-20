@@ -35,9 +35,7 @@ class TestVersion:
                     "--DONNA-CELL <id> END--\n"
                 )
             else:
-                assert (
-                    output == f"----- DONNA CELL <id> -----\nkind = version\ntype = version\nversion = {version}\n\n"
-                )
+                assert output == f"version: {version}\n\n"
 
     @pytest.mark.parametrize("content", [None, "not valid TOML"])
     def test_ignores_missing_or_invalid_config(self, tmp_path: pathlib.Path, content: str | None) -> None:

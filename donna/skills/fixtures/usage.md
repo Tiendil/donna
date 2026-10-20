@@ -32,6 +32,7 @@ Donna supports three protocol modes:
 Use `llm` when invoking `donna` as a coding agent. It is the normal choice for this documentation's examples.
 
 Use `human` for compact terminal inspection by a person.
+Human output shows readable metadata and content without cell borders or generated IDs. Errors start with `Error:` and warnings with `Warning:`.
 
 Without `--protocol`, `skill` uses `llm` and other commands use `human`. An explicit protocol overrides these defaults.
 
@@ -323,7 +324,7 @@ donna -p llm version
 
 ## Warnings And Errors
 
-Error cells contain `type = error`, a diagnostic `code`, context fields, and the formatted message in `content`. Read the message and any corrective guidance before continuing.
+In LLM and automation output, error cells contain `type = error`, a diagnostic `code`, context fields, and the formatted message in `content`. Human output shows the message and corrective guidance first, followed by diagnostic fields. Read the message and any corrective guidance before continuing.
 
 Success exits with `0`. Explicit invalid arguments use `1`, configuration errors use `2`, and other environment errors, including workflow validation failures, use `3`. When several errors occur, the highest status wins. Framework argument-parsing errors retain status `2` and may use plain-text stderr diagnostics.
 

@@ -42,8 +42,8 @@ class TestSkill:
             assert result.stderr == ""
         else:
             assert result.stderr == ""
-            separator = "=" if protocol == "llm" else " = "
-            assert f"kind{separator}error\n" in result.stdout
+            separator = "=" if protocol == "llm" else ": "
+            assert ("kind=error\n" if protocol == "llm" else "Error: ") in result.stdout
             assert f"code{separator}skill_unreadable\n" in result.stdout
             assert f"document{separator}usage\n" in result.stdout
 
@@ -53,9 +53,10 @@ class TestSkill:
 
         assert result.exit_code == 0
         assert result.stderr == ""
-        separator = " = " if protocol == "human" else "="
-        assert f"kind{separator}skill\n" in result.output
-        assert f"type{separator}skill\n" in result.output
+        separator = ": " if protocol == "human" else "="
+        if protocol != "human":
+            assert "kind=skill\n" in result.output
+            assert "type=skill\n" in result.output
         assert f"document{separator}usage\n" in result.output
         assert "# `donna` Usage" in result.output
 

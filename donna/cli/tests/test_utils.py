@@ -248,8 +248,8 @@ class TestCommandContext:
             assert records[0]["path"] == str(tmp_path)
         else:
             assert not result.stderr
-            separator = " = " if protocol == "human" else "="
-            assert f"kind{separator}error\n" in result.stdout
+            separator = ": " if protocol == "human" else "="
+            assert ("Error: " if protocol == "human" else "kind=error\n") in result.stdout
             assert f"code{separator}{code}\n" in result.stdout
             assert f"path{separator}{tmp_path}\n" in result.stdout
 
@@ -290,8 +290,8 @@ class TestCommandContext:
     def test_protocol_defaults__are_selected_for_each_invocation(self) -> None:
         invocations = [
             (["skill"], "--DONNA-CELL ", "kind=skill\n"),
-            (["version"], "----- DONNA CELL ", "kind = version\n"),
-            (["-p", "human", "skill"], "----- DONNA CELL ", "kind = skill\n"),
+            (["version"], "version: ", "version: "),
+            (["-p", "human", "skill"], "document: usage\n", "# `donna` Usage\n"),
             (["skill"], "--DONNA-CELL ", "kind=skill\n"),
         ]
         for arguments, prefix, kind in invocations:
@@ -320,8 +320,8 @@ class TestCommandContext:
             content = str(record["content"])
         else:
             assert not result.stderr
-            separator = " = " if protocol == "human" else "="
-            assert f"kind{separator}error\n" in result.stdout
+            separator = ": " if protocol == "human" else "="
+            assert ("Error: " if protocol == "human" else "kind=error\n") in result.stdout
             assert f"code{separator}{error.code}\n" in result.stdout
             assert f"artifact_id{separator}{error.artifact_id}\n" in result.stdout
             content = result.stdout
@@ -371,9 +371,9 @@ class TestCommandContext:
 
         assert result.exit_code == 2
         assert not result.stderr
-        assert result.stdout.startswith("----- DONNA CELL " if protocol == "human" else "--DONNA-CELL ")
+        assert result.stdout.startswith("Error: " if protocol == "human" else "--DONNA-CELL ")
         assert failure.format_message() in result.stdout
-        assert ("kind = error" if protocol == "human" else "kind=error") in result.stdout
+        assert ("code: " if protocol == "human" else "kind=error") in result.stdout
 
     def test_other_shared_errors__preserve_record_and_exit_three(self, mocker: MockerFixture) -> None:
         failure = llm_tool_errors.EnvironmentError(message="service unavailable", code="service_unavailable")
@@ -398,7 +398,7 @@ class TestCommandContext:
             assert not result.stderr
         else:
             assert not result.stderr
-            separator = " = " if protocol == "human" else "="
+            separator = ": " if protocol == "human" else "="
             assert f"code{separator}invalid_arguments\n" in result.stdout
 
     @pytest.mark.parametrize("with_session", [False, True])
@@ -475,7 +475,7 @@ class TestCommandContext:
             assert not result.stderr
         else:
             assert not result.stderr
-            separator = " = " if protocol == "human" else "="
+            separator = ": " if protocol == "human" else "="
             codes = [f"code{separator}{error.code}\n" for error in failures]
             assert all(code in result.stdout for code in codes)
             positions = [result.stdout.index(code) for code in codes]

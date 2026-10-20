@@ -98,8 +98,8 @@ class TestInit:
             assert record["content"]
         else:
             assert not result.stderr
-            separator = " = " if protocol == "human" else "="
-            assert f"kind{separator}error\n" in result.stdout
+            separator = ": " if protocol == "human" else "="
+            assert ("Error: " if protocol == "human" else "kind=error\n") in result.stdout
             assert f"code{separator}config_template_unreadable\n" in result.stdout
             assert f"path{separator}{config_path}\n" in result.stdout
             assert f"template{separator}base_config.toml\n" in result.stdout
@@ -167,9 +167,10 @@ class TestInit:
 
         assert result.exit_code == 0
         assert config_path.is_file()
-        separator = " = " if protocol == "human" else "="
-        assert f"kind{separator}operation_succeeded" in result.stdout
-        assert f"type{separator}operation_succeeded" in result.stdout
+        separator = ": " if protocol == "human" else "="
+        if protocol == "llm":
+            assert "kind=operation_succeeded" in result.stdout
+            assert "type=operation_succeeded" in result.stdout
         assert f"path{separator}{config_path}\n" in result.stdout
         assert "Configuration created.\n" in result.stdout
         assert not result.stderr

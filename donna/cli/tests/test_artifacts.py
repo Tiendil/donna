@@ -109,13 +109,13 @@ class TestRender:
             assert cell_payloads(records[-1:]) == [{"type": "rendered_artifact", "content": expected}]
             assert records[0]["message"] == f"Render artifact `@/workflows/test.donna.md` in `{mode}` mode"
             assert records[0]["current_task_id"] is None
+        elif protocol == "human":
+            assert result.stdout.endswith(expected + "\n\n")
         else:
-            separator = " = " if protocol == "human" else "="
-            prefix = "----- DONNA CELL " if protocol == "human" else "--DONNA-CELL "
-            assert prefix in result.stdout
-            assert f"kind{separator}rendered_artifact\n" in result.stdout
-            assert f"media_type{separator}text/markdown\n" in result.stdout
-            assert f"type{separator}rendered_artifact\n" in result.stdout
+            assert "--DONNA-CELL " in result.stdout
+            assert "kind=rendered_artifact\n" in result.stdout
+            assert "media_type=text/markdown\n" in result.stdout
+            assert "type=rendered_artifact\n" in result.stdout
             assert expected in result.stdout
         assert (tmp_path / ".session" / "donna" / "state.json").is_file() == with_session
 
@@ -181,10 +181,9 @@ class TestValidate:
             assert any(record.get("type") == "error" for record in records)
             assert not any(record.get("type") == "operation_succeeded" for record in records)
         else:
-            separator = " = " if protocol == "human" else "="
-            assert f"kind{separator}error\n" in result.stdout
+            assert ("Error: " if protocol == "human" else "kind=error\n") in result.stdout
             assert not result.stderr
-            assert f"kind{separator}operation_succeeded\n" not in result.stdout
+            assert "All artifacts are valid" not in result.stdout
 
     def test_all_option_validates_every_discovered_artifact(self, tmp_path: pathlib.Path) -> None:
         config_path = helpers.write_config(tmp_path)

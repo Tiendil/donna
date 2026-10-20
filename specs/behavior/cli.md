@@ -69,7 +69,7 @@ The following forms MUST be supported, with optional global options before the c
 
 ## Application identity
 
-Human and LLM cell framing MUST use `DONNA`, including error cells produced during argument parsing.
+LLM cell framing MUST use `DONNA`, including error cells produced during argument parsing.
 The default configuration filename MUST be `donna.toml`.
 
 ## Output behavior
@@ -101,6 +101,7 @@ Donna MUST support the `human`, `llm`, and `automation` protocols defined in `sp
 ### Human output
 
 Human output SHOULD be compact terminal text.
+Results, errors, and warnings MUST follow the Human cells contract in `specs/behavior/protocol.md` in `llm-tool-cli`, without cell borders or generated ids.
 Journals SHOULD include:
 
 - time.
@@ -148,12 +149,9 @@ Consumers MUST NOT treat generated ids as deterministic.
 Human output SHOULD follow this shape:
 
 ```text
------ DONNA CELL <cell-id> -----
-kind = session_state_status
-media_type = text/markdown
-pending_action_requests = 0
-queued_work_units = 0
-tasks = 0
+pending_action_requests: 0
+queued_work_units: 0
+tasks: 0
 
 The session is IDLE.
 
