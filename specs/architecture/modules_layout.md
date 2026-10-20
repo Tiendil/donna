@@ -142,7 +142,6 @@ The emitter MUST choose omitted actors and own:
 
 Journal cells MUST NOT read context or load state during construction/projection.
 Donna MUST NOT maintain journal services/bindings or aggregate contexts duplicating execution/cache/output scopes.
-Failed preparation and projectless commands MUST NOT journal errors through outer runtime services.
 External processing MUST precede console delivery.
 
 ## Submodules

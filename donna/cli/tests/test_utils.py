@@ -33,9 +33,7 @@ from donna.workspaces import errors as workspace_errors
 
 
 class TestCommandContext:
-    def test_terminal_error__forwards_after_runtime_cleanup_without_factory_access(
-        self, mocker: MockerFixture, tmp_path: pathlib.Path
-    ) -> None:
+    def test_terminal_error__reports_without_forwarding(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
         config_path = helpers.write_config(tmp_path)
         config_path.write_text(
             config_path.read_text() + '\n[journal]\ncmd = ["journal-tool", "{message}", "{current_task_id}", '
@@ -48,18 +46,16 @@ class TestCommandContext:
 
         def run(args: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
             calls.append(args)
-            if args[1] == failure.format_message():
-                assert not caches.is_set()
-                assert not execution_context.is_set()
-                assert not workspace_config.config.is_set()
             return subprocess.CompletedProcess(args, 0, "", "")
 
         mocker.patch("llm_tool_cli.output.journal.subprocess.run", side_effect=run)
         result = helpers.invoke(["--config", str(config_path), "-p", "automation", "list"])
         assert result.exit_code == 3, result.exception
         factory.assert_called_once()
-        assert len(calls) == 2
-        assert calls[-1] == ["journal-tool", "first\nsecond", "", "", ""]
+        assert calls == [["journal-tool", "List artifacts", "", "", ""]]
+        assert not caches.is_set()
+        assert not execution_context.is_set()
+        assert not workspace_config.config.is_set()
         records = helpers.json_lines(result.stdout)
         assert len(records) == 2
         assert records[0]["message"] == "List artifacts"
@@ -406,12 +402,9 @@ class TestCommandContext:
             assert f"code{separator}invalid_arguments\n" in result.stdout
 
     @pytest.mark.parametrize("with_session", [False, True])
-    @pytest.mark.parametrize(
-        ("message", "journal_message"),
-        [("command failed", "command failed"), ("First line.\nSecond line.", "First line.\nSecond line.")],
-    )
+    @pytest.mark.parametrize("message", ["command failed", "First line.\nSecond line."])
     def test_shared_errors_during_command__restore_output_scope(
-        self, mocker: MockerFixture, tmp_path: pathlib.Path, with_session: bool, message: str, journal_message: str
+        self, mocker: MockerFixture, tmp_path: pathlib.Path, with_session: bool, message: str
     ) -> None:
         config_path = helpers.write_config(tmp_path)
         if with_session:
@@ -427,12 +420,10 @@ class TestCommandContext:
             assert result.exit_code == 3
             records = helpers.json_lines(result.stdout)
             assert_error_cells([record for record in records if record.get("type") == "error"], [failure])
-            assert forwarded.call_count == 2
+            forwarded.assert_called_once()
             journal_entry = forwarded.call_args.args[1]
-            assert journal_entry.actor_id is None
-            assert "current_task_id" not in journal_entry.attributes
-            assert journal_entry.message == journal_message
-            assert journal_entry.attributes["code"] == failure.code
+            assert journal_entry.message == records[0]["message"]
+            assert "code" not in journal_entry.attributes
             assert len(records) == 2
             assert output.get() == previous_output
             assert not previous_output.journal_records

@@ -231,7 +231,7 @@ Rendering MAY emit activity journals before that cell.
 
 Validate MUST require exactly one of explicit artifact arguments or `--all`, rejecting their combination or absence.
 Explicit inputs MUST each normalize/validate; `--all` MUST validate every discovered artifact.
-Errors MUST follow the command error reporting, journaling, and exit rules defined below.
+Errors MUST follow the command error reporting and exit rules defined below.
 Success MUST emit a success cell.
 
 ## `donna new-session` command
@@ -301,7 +301,6 @@ Custom kinds, `error_code`, and introductory prefixes MUST NOT replace that cont
 Configuration diagnostics MUST propagate without local translation.
 Donna errors, including artifact validation, MUST use the default environment-error exit status defined by the referenced CLI contract.
 
-Terminal-error journal records MUST preserve the reported diagnostic without extra console lines or execution attribution.
 Reporting terminal errors MUST NOT load or create a Donna session, including after failed initialization.
 
 ## Compatibility rules

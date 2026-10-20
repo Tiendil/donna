@@ -96,7 +96,6 @@ For these cells, the library MUST own:
 - context.
 - rendering.
 
-Journal conversion MUST use formatted messages/structured fields, preserving internal line breaks without prefixes or duplicate console journal lines.
 Core error bases MUST NOT depend on cells, formatters, or CLI output.
 
 ## Results
@@ -155,8 +154,6 @@ After protocol installation, command handling provided by `llm_tool_cli` MUST ow
 Donna MUST NOT maintain another error-rendering/exit path.
 Local context MUST retain workspace/runtime setup and restoration on success/failure without an error-journaling catch.
 
-Shared terminal-error journals MUST bypass Donna's factory/session loading and MUST NOT require execution ids, including after failed initialization or cleanup.
-Processor failures MUST NOT recursively journal themselves.
 Non-CLI errors MAY declare shared-core exit overrides; termination MUST remain at the shared CLI boundary.
 
 ## Warnings

@@ -122,7 +122,7 @@ class TestRender:
 
 class TestValidate:
     @pytest.mark.parametrize("all_artifacts", [False, True])
-    def test_collected_errors__are_journaled_and_reported_once(
+    def test_collected_errors__are_reported_once_without_journaling(
         self, tmp_path: pathlib.Path, all_artifacts: bool, mocker: MockerFixture
     ) -> None:
         config_path = helpers.write_config(tmp_path)
@@ -146,16 +146,14 @@ class TestValidate:
         assert not result.stderr
         records = helpers.json_lines(result.stdout)
         diagnostics = [record for record in records if record.get("type") == "error"]
-        journal = [call.args[1] for call in process.call_args_list if call.args[1].attributes.get("type") == "error"]
         assert [
             record["artifact_id"]
             for record in diagnostics
             if record["code"] == "donna.workflows.wrong_start_operation"
         ] == artifact_ids
-        assert len(journal) == len(diagnostics)
-        for entry, diagnostic in zip(journal, diagnostics, strict=True):
-            assert str(diagnostic["content"]).startswith(entry.message)
-            assert entry.attributes["code"] == diagnostic["code"]
+        process.assert_called_once()
+        assert process.call_args.args[1].message == records[0]["message"]
+        assert "type" not in process.call_args.args[1].attributes
         assert len(records) == len(diagnostics) + 1
         assert records[0]["actor_id"] == "automation"
         assert not any(record.get("type") == "operation_succeeded" for record in records)

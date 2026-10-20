@@ -194,8 +194,8 @@ Standard operation kinds are:
 
 - `donna.lib.request_action`: stop and ask the agent to do work.
 - `donna.lib.run_script`: run a deterministic shell script from the project root.
-- `donna.lib.output`: print information, then continue automatically.
-- `donna.lib.finish`: print final information and finish the workflow task.
+- `donna.lib.output`: add information to the command output, then continue automatically.
+- `donna.lib.finish`: add final information to the command output and finish the workflow task.
 
 `donna.lib.text` is not an operation. It can be used for unreachable notes in an artifact, but a reachable workflow section must be an operation or validation fails.
 
@@ -289,7 +289,7 @@ Script output is not automatically shown to the agent. Save it to task context a
 
 ### `output`
 
-Use `donna.lib.output` when Donna should print information and then continue automatically.
+Use `donna.lib.output` when Donna should add information to the command output and then continue automatically.
 
 ````markdown
 ```toml donna
@@ -301,7 +301,7 @@ next_operation_id = "next_step"
 
 Fields:
 
-- `next_operation_id`: required operation id to queue after printing the section body.
+- `next_operation_id`: required operation id to queue after submitting the section body for output.
 - `fsm_mode`: optional, default `normal`.
 
 A reachable `output` operation must have `next_operation_id`.
@@ -317,7 +317,7 @@ kind = "donna.lib.finish"
 ```
 ````
 
-`finish` is always final. It prints the section body and completes the active workflow task. It must not have outgoing transitions.
+`finish` is always final. It adds the section body to the command output and completes the active workflow task. It must not have outgoing transitions.
 
 There may be multiple `finish` operations.
 
@@ -364,6 +364,8 @@ donna -p llm render @/workflows/example.donna.md --mode analysis
 ## Execution Notes
 
 `donna -p llm run @/path/to/workflow.donna.md` starts the workflow in the current session.
+
+Ordinary output, including `output` and `finish` messages, is buffered until the command completes successfully. Journals appear immediately after any configured forwarding succeeds. If a later operation fails, pending output is discarded; completed operations and saved state are not rolled back.
 
 Execution loop:
 
@@ -423,7 +425,7 @@ Directives have two author-facing uses:
 - Structural directives define workflow structure that is not convenient to express with static config alone.
 - Informational directives insert meaningful runtime information into text shown to the agent.
 
-Donna normally renders text for the agent in `view` mode. Other render modes exist, but they are implementation details and should not affect how you write normal workflows.
+Donna uses `view` mode for previews, where runtime values such as task variables appear as placeholders. During workflow execution it uses `execute` mode with the current task and work unit. `analysis` mode exposes directive markers for transition discovery and validation.
 
 Workflow authors may use regular Jinja2 constructs such as variables, conditionals, loops, and macros to produce complex agent-facing text.
 
