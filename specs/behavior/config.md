@@ -2,160 +2,89 @@
 
 ## Goal of the document
 
-This document describes the behavior and semantics of the `donna.toml` configuration file, including:
-
-- where it is found.
-- how it is interpreted.
-- how session storage is configured.
-- how workflow artifact discovery is configured.
-- how Markdown section defaults and journal forwarding are configured.
+This document describes Donna's project configuration contract.
 
 ## Scope
 
-The scope of this specification is limited to configuration file behavior.
+Configuration-file behavior; the following are out of scope:
 
-The following topics are out of scope:
+- CLI invocation.
+- output formatting.
+- workflow operations.
+- artifact syntax.
+- session schemas.
+- module ownership.
 
-- CLI invocation details.
-- output protocol formatting.
-- workflow operation semantics.
-- Markdown artifact source format.
-- internal session state schema.
-- project module ownership.
-
-This specification defines configuration semantics that the implementation MUST honor, but it does not require any particular implementation strategy.
+Requirements govern semantics without prescribing implementation strategy.
 
 ## Dictionary
 
-- `configuration file` — a TOML file named `donna.toml` that configures one Donna project.
-- `project root` — the directory that contains the active configuration file.
-- `session directory` — the project directory where Donna stores runtime session state and session-created artifacts.
-- `workflow directory` — a project directory recursively scanned for Donna workflow artifacts.
-- `section default` — a fallback Markdown section configuration value used when an artifact section omits the value.
-- `journal command` — an optional external command invoked for Donna journal records.
+- `configuration file` — one project's TOML configuration, canonically `donna.toml`.
+- `project root` — active configuration's containing directory.
+- `session directory` — runtime state and session-created artifacts.
+- `workflow directory` — recursively scanned project directory.
+- `section default` — fallback for omitted artifact-section configuration.
+- `journal command` — optional external journal destination.
 
 ## Configuration file discovery
 
-The canonical configuration file name MUST be `donna.toml`.
+Donna MUST follow the contract in `specs/behavior/config.md` in `llm-tool-cli`, with default filename `donna.toml`, for:
 
-Donna MUST use the configuration-file contract in `specs/behavior/config.md` in the `llm-tool-cli` repository for discovery, path resolution, loading, and initialization.
-Static application settings MUST declare `donna.toml` as the default configuration filename.
-Workspace-loading commands MUST enter shared project loading with Donna's schema, the invocation's working directory, and the optional `--config` path.
-The directory containing the selected configuration path MUST be the project root.
-Donna MUST supply the application schema defined below and propagate the library's configuration diagnostics without local translation.
+- discovery.
+- resolution.
+- loading.
+- initialization.
+
+Workspace commands MUST select and validate Donna configuration using invocation cwd and optional `--config` under that contract.
+The selected file's parent MUST be project root; configuration failures MUST preserve the contract's diagnostic information.
 
 ## Active configuration
 
-Shared immutable static configuration MUST own application identity and the default configuration filename, runtime configuration MUST own the effective protocol, and project configuration MUST own the active configuration path and project directory.
-The project directory MUST be derived from the active configuration path's parent.
-Shared project preparation MUST construct and bind project configuration only after configuration validation succeeds, retaining it through execution and output and restoring the preceding binding on exit.
-A failed load MUST preserve the preceding project binding.
-Application-specific configuration data MUST remain separate from shared settings.
-Configuration-independent commands MUST NOT load workspace data or establish a project binding.
+Workspace commands MUST validate the selected configuration before performing their requested work.
+The selected configuration file and project root MUST remain consistent through execution and output.
+Project-independent commands MUST NOT require or load workspace configuration.
 
 ## TOML structure
 
-The top-level configuration MAY contain these fields:
+Only these top-level fields MAY appear; unknown fields MUST fail:
 
-- `version` — configuration schema version.
-- `session_dir` — path to Donna runtime session storage.
-- `workflow_dirs` — list of directories scanned for workflow artifacts.
-- `defaults` — fallback configuration for Markdown artifact sections.
-- `journal` — optional external journal forwarding configuration.
+- `version` — Schema version.
+- `session_dir` — Runtime storage.
+- `workflow_dirs` — Discovery directories.
+- `defaults` — Artifact-section fallbacks.
+- `journal` — External forwarding.
 
-Unknown top-level fields MUST cause configuration loading to fail.
-
-The initial schema version MUST be `1`.
-Donna MUST own the supported schema versions and default; the shared configuration field MUST provide strict integer validation and diagnostic formatting for Donna's declared version constraint.
-
-If `version` is omitted, `donna` MUST treat the configuration as schema version `1`.
-
-If `version` is present, it MUST be an integer.
-
-If `version` is not supported, configuration loading MUST fail.
-
-Minimal example:
+The supported schema version and omitted-value default MUST be `1`.
+Version values and diagnostics MUST follow the Version contract in `specs/behavior/config.md` in `llm-tool-cli`; non-integer or unsupported versions MUST fail.
+A minimal file is `version = 1`; a starter includes:
 
 ```toml
 version = 1
-```
-
-Starter example:
-
-```toml
-version = 1
-
 session_dir = ".session/donna"
-
-workflow_dirs = [
-    "./workflows",
-    "./.session/donna",
-]
+workflow_dirs = ["./workflows", "./.session/donna"]
 ```
 
 ## Session directory
 
-The `session_dir` field MAY be omitted.
-
-If omitted, `session_dir` MUST default to:
-
-```toml
-session_dir = ".session/donna"
-```
-
-The `session_dir` field MUST use the shared session-directory field contract, retaining Donna's default and storage behavior.
-
-The path MUST be resolved from the Donna project root.
-
-Donna commands that use session state MUST store runtime state under this directory.
-
-Session directories MAY be created lazily by runtime commands.
+Optional `session_dir` MUST default to `.session/donna` and follow the Session directory contract in `specs/behavior/config.md` in `llm-tool-cli`.
+Its path MUST resolve from project root; session commands MUST store runtime state there.
+Runtime MAY create the directory lazily.
 
 ## Workflow directories
 
-The `workflow_dirs` field MAY be omitted.
+Optional `workflow_dirs` MUST default to `["./workflows", "./.session/donna"]`.
+Provided values MUST be project-relative path lists without absolute paths or parent references.
+Duplicates MUST be removed preserving first occurrence.
+Paths MUST resolve from project root under the project-path contract applied in `specs/behavior/file_paths.md`.
+Examples SHOULD use readable `./` prefixes.
 
-If omitted, `workflow_dirs` MUST default to:
-
-```toml
-workflow_dirs = [
-    "./workflows",
-    "./.session/donna",
-]
-```
-
-If present, `workflow_dirs` MUST be a list of project-relative paths.
-
-Each workflow directory MUST NOT be an absolute host filesystem path.
-
-Each workflow directory MUST NOT contain parent-directory references.
-
-Duplicate workflow directory entries MUST be removed while preserving the first occurrence.
-
-Workflow directory paths MUST be resolved from the Donna project root.
-Configuration examples SHOULD use `./` prefixes for directory paths when doing so improves readability.
-
-Configured workflow directories MUST be resolved using the shared project-path contract applied by `specs/behavior/file_paths.md` before artifact discovery.
-Missing workflow directories MUST be ignored during artifact discovery.
-Donna MUST use shared recursive file enumeration within each workflow directory, preserving configured directory order and selecting only files with the `.donna.md` suffix.
-Configured workflow directory names MUST be interpreted literally rather than as glob patterns.
-Shared enumeration errors MUST propagate without being treated as successful empty discovery.
+Discovery MUST ignore missing directories, recursively enumerate files in configured directory order under the File enumeration contract in `specs/behavior/paths.md` in `llm-tool-cli`, and select only `.donna.md` files.
+Directory names MUST remain literal, not globs.
+Enumeration failures MUST propagate, not become empty success.
 
 ## Defaults
 
-The `defaults` field MAY be omitted.
-
-If present, `defaults` MUST be a TOML table.
-
-The `defaults` table MAY contain these fields:
-
-- `tail_section_kind` — default primitive path for H2 sections.
-- `primary_section_kind` — default primitive path for the H1 section.
-- `primary_section_id` — default id for the H1 section.
-
-Unknown `defaults` fields MUST cause configuration loading to fail.
-
-If omitted, the effective defaults MUST be:
+Optional `defaults` MUST be a table with only these optional fields and effective defaults:
 
 ```toml
 [defaults]
@@ -164,124 +93,74 @@ primary_section_kind = "donna.lib.workflow"
 primary_section_id = "primary"
 ```
 
-Default primitive paths MUST be valid Python-path-like Donna primitive identifiers.
-
-`primary_section_id` MUST be a valid Donna section id.
-
-Explicit section config in a Markdown artifact MUST override configuration defaults.
-
-Projects SHOULD NOT change section defaults unless they intentionally use custom Donna primitives or a different artifact convention.
+These respectively configure H2 kind, H1 kind, and H1 id.
+Unknown fields MUST fail; primitive paths MUST be valid Python-path-like Donna identifiers and the id MUST be a valid section id.
+Explicit section configuration MUST override defaults.
+Projects SHOULD change them only for intentional custom primitives/artifact conventions.
 
 ## Journal
 
-The `journal` field MAY be omitted.
-
-If present, `journal` MUST be a TOML table.
-
-The `journal` table MAY contain:
-
-- `cmd` — optional command argument list used to forward Donna journal records to an external command.
-
-Unknown `journal` fields MUST cause configuration loading to fail.
-
-If `journal.cmd` is omitted or `None`, Donna MUST NOT execute an external journal command.
-
-If present, `journal.cmd` MUST be a non-empty list of command arguments.
-
-Each argument MUST be a string.
-
-Donna MUST configure the shared command journal processor to execute the configured command once per journal-marked cell.
-The processor MUST receive the shared journal record produced by that cell.
-
-Donna MUST execute the command directly as an argument list, not through a shell.
-
-Journal command execution failures MUST propagate the shared `journal_command_failed` diagnostic.
-Journal message arguments MUST use the normalized logical-cell message, including its internal line breaks; compact console escaping MUST NOT alter external command arguments.
+Optional `journal` MUST be a table with only optional `cmd`; unknown fields MUST fail.
+Absent/null `cmd` MUST disable external execution while retaining console journals.
+A present command MUST be a nonempty string-argument list.
+External journal delivery MUST follow the Output delivery contract in `specs/behavior/protocol.md` in `llm-tool-cli`, processing each journal event once and executing argument lists directly without a shell.
+Execution failures MUST preserve that contract's diagnostics.
+Message arguments MUST retain normalized internal line breaks independently of compact console escaping.
 
 ### Journal placeholders
 
-Donna MUST recognize placeholders only when the whole command argument starts with `{` and ends with `}`.
+Whole arguments enclosed in braces MUST substitute the corresponding journal-event value.
+Donna workflow journal events MUST provide:
 
-Placeholders MUST resolve through the shared journal record's dictionary representation.
-Donna journal cells MUST provide these placeholders:
+- `{timestamp}` — ISO-8601 creation time.
+- `{actor_id}` — Actor or empty string.
+- `{message}` — Message.
+- `{current_task_id}` — Task or empty string.
+- `{current_work_unit_id}` — Work unit or empty string.
+- `{current_operation_id}` — Operation artifact-section id or empty string.
 
-- `{timestamp}` — record creation time formatted as ISO-8601.
-- `{actor_id}` — actor that created the record, or an empty string.
-- `{message}` — journal message.
-- `{current_task_id}` — current task id, or an empty string.
-- `{current_work_unit_id}` — current work unit id, or an empty string.
-- `{current_operation_id}` — current operation artifact section id, or an empty string.
-
-Missing or null field values MUST become empty arguments, preserving their positions in the argument list.
-This includes execution identifiers absent from shared terminal-error records and names absent from every record; such names MUST NOT cause configuration loading or argument construction to fail.
-
-Arguments that contain placeholder-like text as only part of the value MUST be treated as literal arguments.
-
-For example, `{message}` is a placeholder, but `message:{message}` is a literal argument.
-
-Example:
+Missing/null fields MUST become position-preserving empty arguments, including absent error-record execution ids or entirely unknown names.
+Unknown placeholders MUST NOT fail configuration or argument construction.
+Embedded text MUST remain literal: `{message}` substitutes, `message:{message}` does not.
 
 ```toml
 [journal]
-cmd = [
-    "./bin/journal-tool.sh",
-    "record",
-    "{timestamp}",
-    "{actor_id}",
-    "{current_task_id}",
-    "{current_operation_id}",
-    "{message}",
-]
+cmd = ["./bin/journal-tool.sh", "record", "{timestamp}", "{actor_id}", "{current_task_id}", "{current_operation_id}", "{message}"]
 ```
-
-Donna MUST still print newly created journal records through the selected output protocol when `journal.cmd` is omitted.
 
 ## Starter configuration
 
-The `donna init` command MUST create a starter configuration based on the packaged base config fixture.
-Donna MUST delegate project initialization to `llm_tool_cli`, supplying its schema, invocation working directory, optional configuration path, and packaged starter template; the default filename MUST come from static settings.
-The shared initializer MUST load and validate the generated configuration before constructing and binding project settings.
-Commands that use loaded Donna settings MUST scope those settings for their execution, keeping the settings and active path from the same workspace.
+Init MUST select its target using invocation cwd, optional `--config`, and default filename `donna.toml` under the initialization contract in `specs/behavior/config.md` in `llm-tool-cli`.
+The created file MUST pass Donna configuration validation before success is reported.
+A file created before subsequent validation failure MUST remain on disk.
 
-The starter configuration MUST:
+The starter MUST be valid TOML after ignoring comments and contain:
 
-- use schema version `1`.
-- set `session_dir` to `.session/donna`.
-- set `workflow_dirs` to `./workflows` and `./.session/donna`.
-- include commented examples for `defaults`.
-- include commented examples for `journal.cmd`.
-
-The starter configuration MUST be valid TOML after comments are ignored.
+- version `1`.
+- `session_dir = ".session/donna"`.
+- `workflow_dirs = ["./workflows", "./.session/donna"]`.
+- commented `defaults` examples.
+- commented `journal.cmd` examples.
 
 ## Invalid configuration
 
-Configuration loading MUST fail for:
+Loading MUST reject:
 
-- unsupported schema version.
-- unknown top-level fields.
-- unknown fields in known nested tables.
-- invalid `session_dir`.
-- invalid `workflow_dirs`.
-- invalid default primitive paths.
-- invalid default primary section id.
-- empty `journal.cmd`.
+- unsupported versions.
+- unknown top-level/nested fields.
+- invalid session/workflow directories.
+- invalid default primitive paths or primary id.
+- empty journal commands.
 
 ## Compatibility rules
 
-The configuration schema SHOULD preserve backward compatibility for:
+Compatibility SHOULD preserve:
 
-- the `donna.toml` file name.
-- schema version semantics.
-- existing top-level field names.
-- existing nested field names.
-- default `session_dir`.
-- default `workflow_dirs`.
-- supported journal placeholder meanings.
+- filename.
+- version semantics.
+- top-level/nested field names.
+- session/workflow directory defaults.
+- journal placeholder meanings.
 
-Backward-compatible additions MAY include:
-
-- new optional fields.
-- new supported schema versions.
-- new journal placeholders.
-
-Backward-incompatible changes MUST be documented in this specification before implementation.
+New optional fields, versions, and placeholders MAY be compatible additions.
+Breaking changes MUST be specified before implementation.

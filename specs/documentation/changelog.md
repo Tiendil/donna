@@ -2,65 +2,61 @@
 
 ## Goal of the document
 
-This document describes the expected tooling, source files, structure, and entry format for the project changelog.
+This document describes requirements for maintaining the project changelog.
 
 ## Scope
 
-The scope of this specification is limited to changelog documentation artifacts.
+This specification covers changelog artifacts.
+The following are out of scope:
 
-The following topics are out of scope:
-
-- release version selection.
-- package publishing.
-- Git tagging.
-- release automation implementation details.
-- project documentation files other than changelog artifacts.
+- release versioning.
+- publishing.
+- tagging.
+- automation implementation.
+- other documentation.
 
 ## Dictionary
 
-- `changelog artifact` - a file that is either a Changy source file in `changes/` or the generated root `CHANGELOG.md`.
-- `version record` - the Markdown content that describes changes for one released or unreleased version.
+- `changelog artifact` — a Changy source in `changes/` or generated root `CHANGELOG.md`.
+- `version record` — Markdown changes for one released or unreleased version.
 
 ## Tooling
 
-The project MUST use [Changy](https://github.com/Tiendil/changy/) to manage the changelog.
+The project MUST:
 
-Changelog source files MUST live in `changes/`.
-
-The root `CHANGELOG.md` MUST be generated from Changy source files.
-
-Unreleased changes MUST be recorded in `changes/unreleased.md`.
+- use [Changy](https://github.com/Tiendil/changy/).
+- keep sources in `changes/`.
+- generate root `CHANGELOG.md` from those sources.
+- record unreleased changes in `changes/unreleased.md`.
 
 ## Version Record Structure
 
-A single changelog version record MAY contain these parts, in this order:
+A record MAY contain these parts, in order:
 
-1. A short introductory description of the whole version when the version contains large coordinated changes that benefit from context before individual entries.
-2. A `Migration` section with instructions for users to migrate to the new version when there are breaking changes or required manual upgrade steps.
-3. A `Changes` section with a bullet list of all notable changes in the version.
-4. A `Deprecations` section with a bullet list of features or behaviors that are now deprecated.
+1. A short introduction for large coordinated changes benefiting from context.
+2. `Migration` instructions for breaking changes or manual upgrades.
+3. `Changes`, listing all notable changes.
+4. `Deprecations`, listing deprecated features or behavior.
 
-The `Migration`, `Changes`, and `Deprecations` sections MUST use `h3` Markdown headings.
+Named sections MUST use h3 headings.
+`Changes` SHOULD appear for notable user-visible, developer-visible, or maintenance changes.
+`Migration` MUST appear for required manual steps before, during, or after upgrading.
+`Deprecations` MUST appear when any of the following is deprecated:
 
-The `Changes` section SHOULD be present when the version contains notable user-visible, developer-visible, or project-maintenance changes.
+- features.
+- behavior.
+- APIs.
+- commands.
+- configuration fields.
+- documented workflows.
 
-The `Migration` section MUST be present when users need to perform manual steps before, during, or after upgrading.
-
-The `Deprecations` section MUST be present when the version deprecates features, behaviors, APIs, commands, configuration fields, or documented workflows.
-
-Additional `h3` sections MAY be used when a version needs a distinct category that is not covered by `Migration`, `Changes`, or `Deprecations`.
+Additional h3 sections MAY cover distinct categories.
 
 ## Entry Format
 
-Each bullet entry SHOULD be linked to a task, issue, or pull request when such a reference exists.
-
-When an entry references a GitHub issue, the reference SHOULD use the `gh-<number>` form.
-
-When an entry references a pull request or another task tracker, the reference SHOULD use the shortest stable project convention for that tracker.
-
-Each bullet entry SHOULD include a short description of the change, deprecation, migration instruction, or other notable item.
-
-Additional details MAY be added as nested bullet points under the main entry when the detail helps users understand the impact or required action.
+Entries SHOULD be short bullet descriptions linked to existing tasks, issues, or pull requests.
+GitHub issues SHOULD use `gh-<number>`; references to pull requests or other trackers SHOULD use the shortest stable project convention.
+Nested details MAY explain impact or required action.
 
 ## Example
 

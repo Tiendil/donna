@@ -2,51 +2,40 @@
 
 ## Goal of the document
 
-This document describes the expected content, structure, and tone of the project `README.md`.
+This document describes the root README's content, structure, and tone.
 
 ## Scope
 
-The scope of this specification is limited to the repository root `README.md`.
+This specification covers the root `README.md`.
+The following are out of scope:
 
-The following topics are out of scope:
-
-- package publishing.
-- generated command help.
-- detailed CLI behavior.
-- detailed configuration syntax.
-- detailed workflow artifact syntax.
-- development environment rules for agents.
-- documentation files other than the root `README.md`.
+- publishing.
+- generated help.
+- detailed CLI/configuration/workflow syntax.
+- agent development rules.
+- other documentation.
 
 ## Audience
 
-`README.md` MUST be written primarily for humans who are discovering the project.
+The README MUST primarily address humans discovering Donna.
+It MAY discuss coding agents but MUST NOT duplicate the full built-in agent skills.
+It SHOULD quickly explain:
 
-`README.md` MAY mention coding agents because Donna is designed for agent workflows, but it MUST NOT duplicate the full built-in agent skill documentation.
-
-`README.md` SHOULD help readers quickly understand:
-
-- what problem Donna solves.
-- what Donna does.
-- how to try the main commands.
+- the problem and Donna's role.
+- how to try main commands.
 - where to find detailed usage, configuration, and workflow documentation.
-- how to work on the project.
+- how to develop the project.
 
 ## Source Material
 
-`README.md` MUST reflect the current behavior and architecture described in `./specs/`.
-
-`README.md` MAY use project metadata from `pyproject.toml` for stable package identity, repository links, and installation context.
-
-Existing `README.md` prose MUST NOT be treated as a source of truth when it conflicts with `./specs/` or package metadata.
+The README MUST reflect current `./specs/` behavior and architecture.
+It MAY use `pyproject.toml` for package identity, repository links, and installation context.
+Existing prose MUST NOT override conflicting specs or metadata.
 
 ## Structure
 
-`README.md` MUST start with a single h1 heading containing the project name.
-
-The first paragraphs after the h1 heading SHOULD explain the core value proposition in plain language.
-
-`README.md` MUST use the following h2 sections in this order:
+The README MUST start with one project-name h1, followed by introductory paragraphs that SHOULD explain its value plainly.
+These h2 sections MUST follow in order:
 
 1. `Features`
 2. `Example`
@@ -57,59 +46,43 @@ The first paragraphs after the h1 heading SHOULD explain the core value proposit
 7. `Specifications`
 8. `Development`
 
-The `Features` section MUST be the first h2 section after the introductory paragraphs.
-
-The `Features` section MUST use compact bullet items with bold feature names followed by short descriptions.
-
-
-Additional h2 sections MUST NOT be added without updating this specification first. Lower-level subsections MAY be added under the required h2 sections when they help human readers.
-
-`README.md` SHOULD avoid deep implementation details.
+`Features` MUST be the first h2 and use compact bullets with bold feature names and short descriptions.
+Additional h2 sections MUST NOT appear without updating this specification.
+Helpful lower-level subsections MAY appear; deep implementation details SHOULD be avoided.
 
 ## Content Requirements
 
-`README.md` MUST mention that Donna is a CLI tool.
+The README MUST explain:
 
-`README.md` MUST explain that Donna helps agents run predefined workflows in a deterministic way.
+- Donna is a CLI for deterministic agent execution of predefined workflows, interpreted as state-machine-like operation graphs.
+- It coordinates workflow execution by:
 
-`README.md` MUST explain that Donna interprets workflows as state-machine-like graphs of operations.
+  - maintaining project-local session state.
+  - discovering artifacts.
+  - emitting agent action requests.
+  - accepting next-operation reports.
 
-`README.md` MUST explain that Donna maintains project-local session state, discovers workflow artifacts, emits action requests for agents, and accepts agent reports about the next operation to run.
+- Projects use `donna.toml`; workflow artifacts are Markdown files ending in `.donna.md`.
+- This repository uses Donna; its `donna.toml` and `./workflows` are real examples.
+- `donna init` creates starter configuration that should be reviewed and edited.
+- Coding agents can help create or adapt workflows.
+- `human` is the terminal default; `--protocol llm` is for coding agents.
+- Development uses Docker-backed `./bin/dev.sh` and `./bin/dev-tests.sh`.
 
-`README.md` MUST explain that a Donna project is configured by `donna.toml`.
+It MUST include PyPI installation examples using both `uv` and `pip`, and an `AGENTS.md` snippet directing agents to use Donna only when instructed by a developer, project instructions, or Donna itself.
 
-`README.md` MUST explain that workflow artifacts are Markdown files ending with `.donna.md`.
+It MUST mention these workflows:
 
-`README.md` MUST link to the configuration behavior specification when describing configuration.
+- project initialization.
+- workflow discovery.
+- new-session creation.
+- workflow startup.
+- session inspection.
+- queued execution continuation.
+- action-request completion.
+- built-in skill reading.
 
-`README.md` MUST link to the CLI behavior specification when describing command behavior.
-
-`README.md` MUST link to the skill fixture specification or mention built-in skill documentation when describing detailed user documentation.
-
-`README.md` MUST mention that this repository uses Donna and that its `donna.toml` and `./workflows` directory can be used as real project examples.
-
-`README.md` MUST explain how to create a starter configuration with `donna init`.
-
-`README.md` MUST include installation examples for installing Donna from PyPI with `uv` and `pip`.
-
-`README.md` MUST explain that the generated starter configuration should be reviewed and edited for the project.
-
-`README.md` MUST mention that a user can ask a coding agent to help create or adapt workflow files.
-
-`README.md` MUST include a short `AGENTS.md` instruction snippet that tells agents to use Donna only when instructed by a developer, project instructions, or Donna itself.
-
-`README.md` MUST mention the primary workflows:
-
-- initializing a Donna project.
-- listing discovered workflow artifacts.
-- starting a new session.
-- starting a workflow.
-- inspecting the current session.
-- continuing queued workflow execution.
-- completing an action request.
-- reading built-in skill-style documentation.
-
-`README.md` MUST include command examples for:
+It MUST show command examples for:
 
 - `donna init`.
 - `donna list`.
@@ -120,24 +93,20 @@ Additional h2 sections MUST NOT be added without updating this specification fir
 - `donna complete-action-request ...`.
 - `donna skill usage`.
 
-Human-facing command examples SHOULD use command defaults.
-
-`README.md` MUST mention that `--protocol llm` is intended for coding agents and that `human` is the default protocol for terminal users.
-
-`README.md` MUST point readers to `./specs/` as the source of project behavior and architecture.
-
-`README.md` MUST describe development commands through `./bin/dev.sh` and `./bin/dev-tests.sh`.
-
-`README.md` MUST state that development commands are run through Docker-backed project scripts.
+Human-facing examples SHOULD use command defaults.
+Configuration and command descriptions MUST link to their behavior specs.
+Detailed-documentation guidance MUST link to the skill fixture spec or mention built-in skills.
+The README MUST identify `./specs/` as the behavior and architecture source.
 
 ## Style
 
-`README.md` SHOULD be concise and practical.
+The README SHOULD be:
 
-`README.md` SHOULD prefer short explanations, bullet lists, and command examples.
+- concise.
+- practical.
+- confident.
+- accurate.
 
-`README.md` SHOULD use a confident but accurate tone.
+It SHOULD use short explanations, bullets, and commands.
 
-`README.md` SHOULD avoid promising behavior that is only planned or not implemented.
-
-`README.md` SHOULD not be an exhaustive user manual; detailed command, configuration, and workflow guidance belongs in built-in skill documentation and specifications.
+It SHOULD avoid promises of unimplemented behavior and exhaustive manual content; detailed guidance belongs in skills and specs.

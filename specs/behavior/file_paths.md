@@ -16,7 +16,13 @@ The following topics are out of scope:
 
 ## Shared project paths
 
-Donna MUST use the project-path contract in `specs/behavior/paths.md` in the `llm-tool-cli` repository for CLI inputs, artifact lookup, artifact-relative references, and both template path directive modes.
+Donna MUST use the project-path contract in `specs/behavior/paths.md` in the `llm-tool-cli` repository for:
+
+- CLI inputs.
+- artifact lookup.
+- artifact-relative references.
+- both template path directive modes.
+
 The project root MUST be the local directory containing the active configuration file, selected according to `specs/behavior/config.md`.
 Artifact-relative filesystem inputs MUST use the source artifact's containing directory as their base.
 Artifact lookup MAY treat a candidate rejected for project-root containment or symbolic-link traversal as unavailable.
@@ -25,25 +31,44 @@ Artifact lookup MAY treat a candidate rejected for project-root containment or s
 
 An artifact id MUST be a canonical project path identifying a file with the `.donna.md` extension, such as `@/workflows/polish.donna.md`.
 
-Artifact ids SHOULD be written as root-anchored paths in workflow instructions, agent notes, persisted session state, CLI examples, and protocol output unless demonstrating other accepted input forms.
+Unless demonstrating other accepted input forms, artifact ids SHOULD be written as root-anchored paths in:
+
+- workflow instructions.
+- agent notes.
+- persisted session state.
+- CLI examples.
+- protocol output.
 
 ## Artifact section ids
 
 An artifact section id MUST combine a valid artifact id and a local section id with `:`, as in `@/workflows/polish.donna.md:finish`.
 
 Section id syntax MUST remain independent from artifact path segment syntax.
-Section ids MUST contain only ASCII letters, ASCII digits, `.`, `_`, or `-`, and MUST contain at least one character other than `.` or `-`.
+Section ids MUST contain only:
+
+- ASCII letters.
+- ASCII digits.
+- `.`.
+- `_`.
+- `-`.
+
+They MUST contain at least one character other than `.` or `-`.
 
 Artifact section ids are used by `complete-action-request` to identify the next operation selected by an agent.
 
 ## CLI path inputs
 
-CLI artifact inputs MUST use shared mixed path normalization with the command's current working directory as the relative filesystem base.
-Normalization MUST precede artifact loading, artifact validation, workflow execution, or action request completion.
+CLI artifact inputs MUST follow the Mixed path normalization contract in `specs/behavior/paths.md` in `llm-tool-cli`, with the command's current working directory as the relative filesystem base.
+Normalization MUST precede:
+
+- artifact loading.
+- artifact validation.
+- workflow execution.
+- action request completion.
 
 ## Template path directive
 
-The `donna.lib.path("<path>", mode="project"|"absolute")` directive MUST use shared mixed path normalization with the rendered artifact's containing directory as the relative filesystem base.
+The `donna.lib.path("<path>", mode="project"|"absolute")` directive MUST follow the Mixed path normalization contract in `specs/behavior/paths.md` in `llm-tool-cli`, with the rendered artifact's containing directory as the relative filesystem base.
 
 The default mode MUST be `project`.
 In `project` mode, the directive MUST render the canonical root-anchored path; in `absolute` mode, it MUST render the corresponding absolute filesystem path.

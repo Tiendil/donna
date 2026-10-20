@@ -2,176 +2,150 @@
 
 ## Goal of the document
 
-This document describes how `donna` behaves as a command line interface, including:
-
-- how agents, users, and tools invoke it.
-- which commands and arguments are accepted.
-- which output protocols are supported.
-- what each command does at the CLI boundary.
+This document describes Donna's command-line interface.
 
 ## Scope
 
-The scope of this specification is limited to CLI behavior.
-
-The following topics are out of scope:
+CLI behavior; the following are out of scope:
 
 - workflow operation semantics.
-- Markdown artifact parsing rules.
-- configuration file field semantics.
-- internal session state representation.
-- exact prose emitted by built-in skill documents.
+- Markdown parsing.
+- configuration fields.
+- internal session representation.
+- exact skill prose.
 
-This specification may refer to the following concepts only to describe how the CLI accepts arguments and renders output:
+The following concepts appear only to specify input/output boundaries:
 
-- Donna project roots.
-- Donna artifact ids.
-- artifact section ids.
-- workflow artifacts.
+- project roots.
+- ids.
+- workflows.
 - action requests.
-- session state.
+- sessions.
 
 ## General behavior
 
-`donna` is a command line tool that helps agents run predefined workflows in a deterministic way. It maintains project-local session state, discovers workflow artifacts, runs workflow operations, emits action requests for agents, and accepts agent reports about the next operation to run.
+Donna deterministically runs agent workflows by:
 
-The CLI has four primary command areas:
+- maintaining project-local sessions.
+- discovering artifacts.
+- executing operations.
+- exchanging action requests and next-operation reports.
 
-- `donna run ...` — start a workflow artifact in the current session.
-- `donna continue` and `donna complete-action-request ...` — advance existing session work.
-- `donna list`, `donna render ...`, and `donna validate ...` — inspect and validate workflow artifacts.
-- `donna skill [DOCUMENT]` — print built-in agent-oriented documentation.
+The root MUST expose a command group, with global options before the subcommand:
+`donna [GLOBAL_OPTIONS] COMMAND [COMMAND_OPTIONS]`.
+It MUST NOT directly start or continue workflows.
 
-The root command MUST be a command group constructed through the application setup managed by `llm_tool_cli`.
-
-Global options, when present, MUST be provided before the subcommand:
-
-```bash
-donna [GLOBAL_OPTIONS] COMMAND [COMMAND_OPTIONS]
-```
-
-The CLI MUST write all cells, including results, journal events, warnings, and environment errors, to stdout in every protocol.
-
-Environment-error diagnostics MUST use the command error handling managed by `llm_tool_cli` when the selected protocol has already been installed.
-
-For `automation` output, stdout MUST contain only JSON Lines records when command output is produced through Donna cells or journal records.
-
-The CLI MUST produce deterministic output for the same:
+All cells, including journals/warnings/errors, MUST use stdout.
+Once a protocol is selected, environment errors MUST follow the Command error handling contract in `specs/behavior/cli.md` in `llm-tool-cli`.
+Automation cell/journal output MUST contain only JSON Lines.
+Output MUST be deterministic, subject to generated-id rules below, for the same:
 
 - input.
 - configuration.
-- working directory.
+- cwd.
 - project state.
 
-Commands that load a workspace MUST discover or use a Donna configuration file before executing command-specific behavior.
-
-`donna skill ...`, `donna init`, and `donna version` MUST NOT require an existing Donna project configuration.
+Workspace commands MUST select configuration before command behavior.
+Skill, init, and version MUST NOT require existing configuration.
+Session commands MUST load workspace configuration and operate under the configured session directory.
 
 ## Commands
 
-The CLI MUST support these commands and command forms:
+The following forms MUST be supported, with optional global options before the command:
 
-- `donna [GLOBAL_OPTIONS] init` — create a starter `donna.toml`.
-- `donna [GLOBAL_OPTIONS] list` — list discovered workflow artifacts.
-- `donna [GLOBAL_OPTIONS] render [OPTIONS] ARTIFACT` — render one artifact.
-- `donna [GLOBAL_OPTIONS] validate [OPTIONS] [ARTIFACT...]` — validate selected artifacts or every discovered artifact.
-- `donna [GLOBAL_OPTIONS] new-session` — create fresh session state.
-- `donna [GLOBAL_OPTIONS] continue` — continue queued workflow execution in the current session.
-- `donna [GLOBAL_OPTIONS] status` — show concise session status.
-- `donna [GLOBAL_OPTIONS] details` — show detailed session state.
-- `donna [GLOBAL_OPTIONS] run WORKFLOW` — start a workflow artifact in the current session.
-- `donna [GLOBAL_OPTIONS] complete-action-request ACTION_REQUEST_ID NEXT_OPERATION` — complete an action request and continue with the selected operation.
-- `donna [GLOBAL_OPTIONS] skill [DOCUMENT]` — print built-in agent-oriented documentation for using `donna`.
-- `donna [GLOBAL_OPTIONS] version` — print the tool version.
-- `donna --help` — print root help information.
-
-The root command MUST NOT start or continue workflow execution directly.
+- `init` — Starter configuration.
+- `list` — Discover workflows.
+- `render [OPTIONS] ARTIFACT` — Render an artifact.
+- `validate [OPTIONS] [ARTIFACT...]` — Validate selected/all artifacts.
+- `new-session` — Fresh session.
+- `continue` — Advance queued work.
+- `status` — Concise session status.
+- `details` — Detailed session state.
+- `run WORKFLOW` — Start a workflow.
+- `complete-action-request ACTION_REQUEST_ID NEXT_OPERATION` — Complete a request and continue.
+- `skill [DOCUMENT]` — Built-in documentation.
+- `version` — Tool version.
+- `--help` — Root help.
 
 ## Application identity
 
-The CLI MUST initialize static settings with the tool label `DONNA` and default configuration filename `donna.toml` through `llm_tool_cli` at application startup before command-line parsing.
-Label storage, initialization checks, and label selection for cell rendering MUST be managed by `llm_tool_cli`.
+Human and LLM cell framing MUST use `DONNA`, including error cells produced during argument parsing.
+The default configuration filename MUST be `donna.toml`.
 
 ## Output behavior
 
-The CLI MUST submit cells directly to the active emitter in `llm_tool_cli.output`, which owns batch rendering and text writing.
+Donna output MUST follow the cell formatting and delivery contracts in `specs/behavior/protocol.md` in `llm-tool-cli`.
+Environment errors MUST follow that specification's Environment-error cells contract.
+Render MUST deliver Markdown as ordinary output after successful completion.
+Help and argument-parsing diagnostics MAY use plain text.
+Output MUST NOT contain color or styling escapes.
 
-Command output produced through Donna's protocol layer MUST be represented as Donna cells.
+Commands MAY emit journals during execution, with console delivery only after successful journal processing under the output delivery contract.
+Omitted actors MUST default to `agent` for LLM and the protocol name otherwise; explicit actors, including absence, MUST win.
+Task attribution MUST identify the task being processed according to consistent session state; work-unit/operation ids MUST identify the current execution.
+Uncommitted state changes MUST NOT change that attribution.
+Session-load environment failure MUST preserve the event, actor, and execution context without creating a session, using no task id.
+Absent task id MUST mean no active task or unavailable session context.
+Expected output-delivery failures MUST be reported as command failures; unexpected failures MUST propagate.
+Messages MUST:
 
-All environment errors MUST use the typed environment-error logic cell and ordinary output cells provided by `llm_tool_cli`.
-
-The `render` command MUST deliver rendered Markdown in an ordinary cell through shared buffered output.
-
-Help and command line parsing output MAY use Typer's standard rendering.
-
-Commands MAY emit Donna journal cells while executing.
-Their console output MUST follow successful shared journal processing.
-An omitted journal actor MUST default to `agent` in the LLM protocol and the protocol name otherwise.
-Journal task context MUST always use the cached consistent session's current task, including an absent task; callers MUST NOT override it from mutable state or other objects.
-Journal work-unit and operation identifiers MUST always use the active execution context, including absent identifiers; callers MUST NOT override them.
-An explicit actor, including an absent actor, MUST take precedence over the default actor.
-When loading cached session context returns an environment failure, journaling MUST continue with an absent task identifier, preserving actor and execution context without creating a session.
-An absent journal task identifier MUST mean no task attribution is available, either because no task is active or because session context could not be loaded.
-Shared emitter failures MUST remain failed results for the caller to handle; unexpected failures MUST propagate.
-Multiline messages MUST use shared logical-cell normalization, stripping surrounding whitespace while retaining internal line breaks. Compact text MUST escape those line breaks; automation records MUST retain the normalized cell values.
-
-Output MUST NOT contain terminal color or styling escape sequences.
+- strip surrounding whitespace.
+- preserve internal whitespace/newlines.
+- escape line breaks for compact text.
+- retain normalized values in automation.
 
 ## Output protocols
 
-The CLI MUST support the output modes defined by `llm_tool_cli.protocol`.
-
-Donna interprets these modes as follows:
-
-- `human` — text protocol for terminal users.
-- `llm` — text protocol optimized for coding agents that invoke `donna` as a tool.
-- `automation` — protocol optimized for programs; output is serialized as JSON Lines.
+Donna MUST support the `human`, `llm`, and `automation` protocols defined in `specs/behavior/protocol.md` in `llm-tool-cli`.
 
 ### Human output
 
 Human output SHOULD be compact terminal text.
+Journals SHOULD include:
 
-Human journal output SHOULD include the time, current task id when present, actor id, and message.
+- time.
+- task id when present.
+- actor.
+- message.
 
 ### LLM output
 
-The `llm` protocol MUST be used when a coding agent invokes `donna` as a tool.
+Agents invoking Donna as a tool MUST use `llm`.
+Output SHOULD be stable/self-contained.
+Journals SHOULD include:
 
-LLM output SHOULD be stable and self-contained for coding agents that receive the output as a tool result.
-
-LLM journal output SHOULD include the full timestamp, current task id, actor id, current work unit id, current operation id, and message.
+- full timestamp.
+- task.
+- actor.
+- work-unit.
+- operation.
+- message.
 
 ### Automation output
 
-Automation JSON Lines serialization MUST be provided by `llm_tool_cli.protocol`.
-
-Automation output MUST use stable field names.
-
-Each journal record MUST produce one automation record.
-
-Additional fields MAY be added in future versions. Consumers MUST ignore unknown fields.
+Serialization MUST follow that protocol specification's JSON Lines contract, with stable fields and one record per journal event.
+Future fields MAY be added; consumers MUST ignore unknown fields.
 
 ## Donna cells
 
-A Donna cell is the protocol-level output unit used by most CLI commands.
+Cells MUST use the selected protocol's framing, metadata order, and serialization under `specs/behavior/protocol.md` in `llm-tool-cli`.
+Ordinary cells MUST appear only after successful command completion; successfully processed journals MUST appear immediately, and warnings MUST appear last.
+Failure MUST suppress pending ordinary results and emit errors before warnings.
+The following cells MUST remain ordinary output and MUST NOT be forwarded as journal events:
 
-Donna MUST use the cell model, construction helpers, and cell formatting provided by `llm_tool_cli`.
-Donna MUST construct protocol-independent logic cells; the shared emitter MUST select the active protocol when rendering each emitted sequence.
-The library owns logic-cell protocol dispatch, cell layouts, sequence rendering contexts, metadata ordering, and automation cell records.
+- artifact-status cells.
+- rendered-artifact cells.
+- action-request cells.
+- session-state cells.
 
-Donna owns the projection of its results and journal context into cells.
-Shared output delivery MUST buffer ordinary results, emit successfully processed journal cells immediately, and place collected warnings last.
-On command failure, buffered ordinary results MUST be discarded; error diagnostics MUST precede collected warnings.
+Journaling MUST use explicit events.
 
-Artifact-status, rendered-artifact, action-request, and session-state cells MUST reject construction with journal delivery enabled.
-They MUST remain ordinary buffered output; operation journaling MUST use separate explicit journal events.
-
-Consumers MUST NOT treat generated cell ids as deterministic identifiers.
-
-Commands MAY emit multiple cells for one invocation.
+Commands MAY emit multiple cells.
+Consumers MUST NOT treat generated ids as deterministic.
 
 ### Human cell example
 
-Human protocol cell output SHOULD follow this shape:
+Human output SHOULD follow this shape:
 
 ```text
 ----- DONNA CELL <cell-id> -----
@@ -187,7 +161,7 @@ The session is IDLE.
 
 ### LLM cell example
 
-LLM protocol cell output SHOULD follow this shape:
+LLM output SHOULD follow this shape:
 
 ```text
 --DONNA-CELL <cell-id> BEGIN--
@@ -203,7 +177,7 @@ The session is IDLE.
 
 ### Automation cell example
 
-Automation protocol cell output SHOULD follow this shape:
+Automation output SHOULD follow this shape:
 
 ```json
 {"content":"The session is IDLE.","id":"<cell-id>","pending_action_requests":0,"queued_work_units":0,"tasks":0}
@@ -211,301 +185,140 @@ Automation protocol cell output SHOULD follow this shape:
 
 ## Global options
 
-The CLI MUST use global-option registration and parsing, context-scoped runtime configuration, command-context protocol selection and output scope setup, and shared emitter delivery managed by `llm_tool_cli`.
-Donna MUST register its commands on the application provided by `llm_tool_cli`.
-Application-specific runtime setup, journal-cell construction, and runtime cleanup MUST remain Donna-owned; project loading and output delivery MUST be shared.
-Workspace commands MUST compose the shared command execution scope with Donna's runtime setup and journal-cell factory.
-Commands without Donna runtime requirements MUST use shared command setup directly.
-The effective protocol MUST be read from shared runtime configuration; the active config path and derived project directory MUST be read from independent shared project configuration.
-These configurations and the static application identity MUST be immutable and complete when bound.
-Donna MUST NOT retain separate protocol or workspace-path globals.
+Global options MUST follow the configuration-option and protocol-option contracts in `specs/behavior/cli.md` in `llm-tool-cli`.
+Each command's output MUST honor its effective protocol and selected project without inheriting another command's pending output.
 
 ### Help and completion
 
-The CLI MUST use help aliases and shell completion options managed by `llm_tool_cli`.
+Help aliases and completion MUST follow the Application setup contract in `specs/behavior/cli.md` in `llm-tool-cli`.
 
 ### `-p`, `--protocol PROTOCOL`
 
-The CLI MUST use protocol-option parsing and invalid-value diagnostics managed by `llm_tool_cli`.
-
-Subcommands that render Donna cells or journal records MUST use the selected protocol.
+Parsing, defaults, and invalid-value diagnostics MUST follow the Protocol option and Protocol selection contracts in `specs/behavior/cli.md` in `llm-tool-cli`.
+Cells/journals MUST honor the selected protocol.
 
 ### `--config PATH`
 
-The CLI MUST use the configuration-option parsing managed by `llm_tool_cli`, including its deferred filesystem validation.
-
-Workspace-loading commands MUST pass this option to the configuration selection managed by `llm_tool_cli`.
-Donna's configuration filename, schema, and project-root rules are defined in `specs/behavior/config.md`.
+Parsing MUST defer filesystem validation as specified by the Configuration option contract in `specs/behavior/cli.md` in `llm-tool-cli`.
+Workspace commands MUST select configuration using the option; filename/schema/root rules are in `specs/behavior/config.md`.
 
 ## Artifact id arguments
 
-CLI arguments that identify Donna artifacts MUST be accepted as:
-
-- root-anchored artifact ids.
-- relative filesystem paths that resolve inside the Donna project root.
-- absolute filesystem paths that resolve inside the Donna project root.
-
-Accepted artifact arguments MUST normalize to canonical root-anchored artifact ids before command-specific behavior uses them.
-
-Artifact arguments used by workflow artifact commands MUST identify files with the Donna artifact extension:
-
-```text
-.donna.md
-```
-
-Artifact arguments that load existing workflow artifacts MUST identify artifacts visible through configured workflow directories.
-
-Artifact section arguments MUST use artifact section id syntax:
-
-```text
-@/path/to/workflow.donna.md:section_id
-```
-
-Artifact section arguments MUST normalize the artifact part as an artifact id and validate the section id part as a Donna section id.
+Arguments MUST accept root-anchored ids and contained relative/absolute filesystem paths, normalized before use.
+Workflow artifact arguments MUST end in `.donna.md`; loading existing artifacts MUST require visibility through configured workflow directories.
+Section arguments MUST use `@/path/workflow.donna.md:section_id`, normalizing the artifact part and validating the local section id.
 
 ## `donna init` command
 
-The `init` command MUST create a starter Donna configuration file.
-
-```bash
-donna init
-donna --config /path/to/project/donna.toml init
-```
-
-The application MUST register the initialization command managed by `llm_tool_cli`, supplying Donna's schema, packaged starter location, and initialization help text.
-The library owns command setup, invocation working directory and optional `--config` handling, target selection and resolution, template reading, exclusive creation, subsequent loading and validation, project scope management, success output, and diagnostics; the default filename MUST come from static settings.
-Donna owns the starter contents and schema described in `specs/behavior/config.md`.
-
-The generated configuration MUST be valid TOML and use schema version `1`.
-
-After project initialization succeeds, the command MUST emit the configuration-creation success cell managed by `llm_tool_cli` within the shared project scope, supplying the active configuration path from its settings.
-
-The command MUST NOT accept artifact arguments, session arguments, or skill document arguments.
+Init MUST follow the Initialization command contract in `specs/behavior/cli.md` in `llm-tool-cli` and create a valid version-1 starter described by Donna's `specs/behavior/config.md`.
+Success MUST emit the contract's creation acknowledgement with the created configuration path.
+Artifact/session/skill-document arguments MUST NOT be accepted.
+**Example:** `donna --config /path/to/project/donna.toml init` selects an explicit target.
 
 ## `donna list` command
 
-The `list` command MUST list workflow artifacts discovered under configured workflow directories.
-
-```bash
-donna list
-```
-
-The command MUST load workspace configuration.
-
-The command MUST render one status cell per discovered artifact.
-
-Discovered artifacts MUST be ordered deterministically by configured workflow directory order and filesystem traversal order.
-
-Duplicate artifact ids discovered through multiple workflow directories MUST be emitted once.
-
-Missing workflow directories MUST be ignored.
-
-The command MUST NOT accept artifact arguments or session arguments.
+List MUST load configuration and emit one status cell per discovered artifact, ordered by configured directory then traversal order.
+Overlapping directories MUST emit each id once; missing directories MUST be ignored.
+Artifact/session arguments MUST NOT be accepted.
 
 ## `donna render` command
 
-The `render` command MUST render one artifact with the selected render mode and write rendered Markdown to stdout.
-
-```bash
-donna render --mode MODE ARTIFACT
-```
-
-`ARTIFACT` MUST be an artifact id or path accepted by Donna artifact id normalization.
-
-The `--mode MODE` option MUST be required.
-
-Allowed render modes MUST include:
-
-- `view`
-- `execute`
-- `analysis`
-
-The rendered artifact output MUST be one ordinary cell of kind `rendered_artifact`, with media type `text/markdown`, `type = rendered_artifact` metadata, and the rendered Markdown as content.
-It MUST honor the selected output protocol, including JSON Lines serialization for automation.
-
-This command MAY emit Donna journal cells before the rendered artifact cell when artifact rendering logs command activity.
+Render MUST accept one normalized artifact and required `--mode MODE`, supporting `view`, `execute`, and `analysis`.
+It MUST emit one `rendered_artifact` cell with `text/markdown`, `type = rendered_artifact`, and rendered Markdown content to stdout under the selected protocol.
+Rendering MAY emit activity journals before that cell.
 
 ## `donna validate` command
 
-The `validate` command MUST validate selected workflow artifacts or every discovered workflow artifact.
-
-```bash
-donna validate ARTIFACT...
-donna validate --all
-```
-
-The command MUST require exactly one of:
-
-- one or more artifact arguments.
-- `--all`.
-
-The command MUST fail when `--all` is used together with one or more artifact arguments.
-
-When artifact arguments are provided, the command MUST normalize and validate each artifact id.
-
-When `--all` is provided, the command MUST validate every discovered workflow artifact.
-
-If validation finds errors, the command MUST render error cells.
-Collected validation errors MUST pass through the command context's error handling, including its journal policy, before shared reporting and termination.
-
-If validation succeeds, the command MUST render a success cell.
+Validate MUST require exactly one of explicit artifact arguments or `--all`, rejecting their combination or absence.
+Explicit inputs MUST each normalize/validate; `--all` MUST validate every discovered artifact.
+Errors MUST follow the command error reporting, journaling, and exit rules defined below.
+Success MUST emit a success cell.
 
 ## `donna new-session` command
 
-The `new-session` command MUST create fresh session state.
-
-```bash
-donna new-session
-```
-
-The command MUST load workspace configuration.
-
-The command MUST operate on the session stored under the configured session directory.
-
-The command MUST render resulting session cells.
+New-session MUST create fresh state and emit resulting session cells.
 
 ## `donna status` command
 
-The `status` command MUST show concise session status.
-
-```bash
-donna status
-```
-
-The command MUST load workspace configuration.
-
-The command MUST operate on the session stored under the configured session directory.
-
-The output MUST include whether Donna is idle or has pending action requests.
+Status MUST report concise session state, including idle versus pending action requests.
 
 ## `donna details` command
 
-The `details` command MUST show detailed session state.
-
-```bash
-donna details
-```
-
-The command MUST load workspace configuration.
-
-The command MUST operate on the session stored under the configured session directory.
-
-The output MUST include action requests when they are present in the session state.
+Details MUST report detailed session state, including action requests when present.
 
 ## `donna continue` command
 
-The `continue` command MUST continue queued workflow execution.
-
-```bash
-donna continue
-```
-
-The command MUST load workspace configuration.
-
-The command MUST operate on the session stored under the configured session directory.
-
-The command MUST advance queued workflow execution until the workflow finishes, workflow execution fails, or Donna emits an action request for the agent.
-
-The command MUST emit resulting cells.
+Continue MUST advance queued work until finish, failure, or an agent action request, and emit resulting cells.
 
 ## `donna run` command
 
-The `run` command MUST start a workflow artifact in the current session.
-
-```bash
-donna run WORKFLOW
-```
-
-The command MUST load workspace configuration.
-
-The command MUST operate on the session stored under the configured session directory.
-
-The command MUST normalize `WORKFLOW` as an artifact id.
-
-The command MUST load the workflow artifact before starting it.
-
-The command MUST execute the started workflow until the workflow finishes, workflow execution fails, or Donna emits an action request for the agent.
+Run MUST normalize/load `WORKFLOW` before starting it in the current session and execute until finish, failure, or an agent action request.
 
 ## `donna complete-action-request` command
 
-The `complete-action-request` command MUST complete an action request and continue workflow execution.
-
-```bash
-donna complete-action-request ACTION_REQUEST_ID NEXT_OPERATION
-```
-
-The command MUST load workspace configuration.
-
-The command MUST operate on the session stored under the configured session directory.
-
 The command MUST:
 
-- validate the action request id format.
-- normalize `NEXT_OPERATION` as an artifact section id.
-- mark the action request as completed.
-- queue the selected next operation.
-- continue workflow execution immediately.
-
-After the selected next operation is queued, the command MUST advance workflow execution until the workflow finishes, workflow execution fails, or Donna emits an action request for the agent.
+- validate the request id.
+- normalize `NEXT_OPERATION` as an artifact-section id.
+- complete the request.
+- queue the selected operation.
+- immediately continue until finish, failure, or another action request.
 
 ## `donna skill` command
 
-The CLI MUST register the skill command managed by `llm_tool_cli`, supplying the `donna.skills` resource package and Donna's document definitions.
-The library owns argument selection and validation, defaults, help and completion, configuration independence, cell output, and failure delivery and exit statuses.
+The command MUST follow the Skill command contract in `specs/behavior/cli.md` in `llm-tool-cli` and offer:
 
-Donna MUST provide these documents:
+- `usage`: commands.
+- `configuration`: configuration.
+- `initialization`: project initialization.
+- `workflows`: authoring/execution.
 
-- `usage` — general command usage documentation.
-- `configuration` — configuration documentation.
-- `initialization` — project initialization documentation.
-- `workflows` — workflow authoring and execution documentation.
+Document content MUST follow Donna's `specs/behavior/skill_fixtures.md`.
 
 ## `donna version` command
 
-The CLI MUST register the version command managed by `llm_tool_cli`, supplying the distribution name `donna`.
-The library owns installed version lookup, help, configuration independence, protocol selection, version-cell output, and exit and failure behavior.
+The command MUST report the installed version of distribution `donna` under the Version command contract in `specs/behavior/cli.md` in `llm-tool-cli`.
 
 ## Errors and exit codes
 
-Skill-, version-, and initialization-command failure handling MUST be managed by `llm_tool_cli`.
-The remaining execution policies apply to tool-owned commands.
+Commands MUST follow the Command error handling and Exit statuses contracts in `specs/behavior/cli.md` in `llm-tool-cli`.
+Argument parsing SHOULD retain the parsing-error behavior defined by that specification and MAY emit plain-text diagnostics before protocol selection.
+The following failures SHOULD render error cells when possible:
 
-Typer command line parsing errors SHOULD use Typer's standard invalid-arguments behavior.
+- workspace failures.
+- artifact failures.
+- validation failures.
+- environment failures.
 
-Workspace, artifact, validation, and environment errors SHOULD be rendered as Donna error cells when possible.
+All environment errors MUST use the Environment-error cells contract in `specs/behavior/protocol.md` in `llm-tool-cli`, with:
 
-Donna-owned and shared environment-error values MUST use the common error-cell contract provided by `llm_tool_cli`, including corrective guidance and native diagnostic context.
-This replaces Donna's custom error-cell kinds and `error_code` field with the shared `error` kind, `type = error`, and `code` metadata.
-Custom introductory prefixes MUST be removed; artifact, section, and configuration context MUST remain available through shared metadata conversion, including optional null fields.
+- `type = error`.
+- native `code`.
+- guidance.
+- diagnostic metadata including null context.
 
-The CLI MUST use command error handling and explicit error reporting managed by `llm_tool_cli`, including error cells on stdout, diagnostic ordering, exit statuses, and exception propagation.
-Donna MUST retain application-specific runtime setup and runtime context cleanup.
-Terminal error journaling MUST be managed by the shared library through error cells, without separate console journal lines or calls to Donna's journal-cell factory.
-Those journal records MUST NOT load Donna session state or require task, work-unit, or operation attribution.
-Donna runtime resources MUST retain their existing execution scope rather than remaining active for shared error reporting.
+Custom kinds, `error_code`, and introductory prefixes MUST NOT replace that contract.
+Configuration diagnostics MUST propagate without local translation.
+Donna errors, including artifact validation, MUST use the default environment-error exit status defined by the referenced CLI contract.
 
-Configuration selection, loading, and creation MUST propagate the diagnostics provided by `llm_tool_cli` without local translation.
-
-Donna-owned environment errors MUST use the shared default environment-error exit status, including artifact validation failures.
-
-If command line parsing fails before Donna installs an output protocol, diagnostics MAY be written by Typer using its standard behavior.
+Terminal-error journal records MUST preserve the reported diagnostic without extra console lines or execution attribution.
+Reporting terminal errors MUST NOT load or create a Donna session, including after failed initialization.
 
 ## Compatibility rules
 
-The CLI SHOULD preserve backward compatibility for:
+Compatibility SHOULD preserve:
 
 - command names.
-- option names.
-- output protocol names.
-- artifact id syntax.
-- artifact section id syntax.
-- automation JSONL field meanings.
+- options.
+- protocols.
+- artifact/section-id syntax.
+- automation field meanings.
 
-Backward-compatible additions MAY include:
+The following MAY be compatible additions:
 
-- new commands.
-- new options.
-- new output cell metadata fields.
-- new skill documents.
+- commands.
+- options.
+- metadata fields.
+- skill documents.
 
-Backward-incompatible changes MUST be documented in this specification before implementation.
+Breaking changes MUST be specified before implementation.

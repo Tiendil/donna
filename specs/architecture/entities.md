@@ -2,260 +2,242 @@
 
 ## Goal of the document
 
-This document describes the architecture of project entities and data structures used to pass artifact, workflow, configuration, session, protocol, and command information between modules.
+This document describes project entities and cross-module data.
 
 ## Scope
 
-The scope of this specification is limited to architectural requirements for Python data structures that represent project concepts.
+Python data structures representing project concepts; the following are out of scope:
 
-The following topics are out of scope:
-
-- exact class names.
-- exact constructor signatures.
-- serialization formats for CLI protocols.
-- workflow execution algorithms.
-- Markdown parsing algorithms.
-- validation rules already specified by behavior specifications.
+- exact class names and constructor signatures.
+- CLI serialization formats.
+- workflow execution and Markdown parsing algorithms.
+- behavioral validation rules.
 
 ## Dictionary
 
-- `entity` — a typed Python object that represents one project concept and can be passed across module boundaries.
-- `value entity` — an entity whose equality is based on its data rather than object identity.
-- `data entity` — an entity that primarily carries validated data across boundaries or into serialization.
-- `domain entity` — an entity that owns behavior, invariants, or state transitions for a project concept.
-- `boundary entity` — an entity that is passed between modules with different responsibilities.
-- `serialized representation` — a plain data representation prepared for an external protocol such as JSON Lines, Markdown output, logs, or persistent storage.
+- `entity` — a typed object representing one project concept across modules.
+- `value entity` — an entity compared by data rather than identity.
+- `data entity` — validated data carried across boundaries or into serialization.
+- `domain entity` — an entity owning concept behavior, invariants, or transitions.
+- `boundary entity` — an entity crossing responsibility boundaries.
+- `serialized representation` — plain data for:
+
+  - protocols.
+  - Markdown output.
+  - logs.
+  - storage.
 
 ## General principles
 
-Project concepts MUST be represented as explicit typed entities before they cross module boundaries.
-
-Boundary entities MUST NOT be represented as untyped dictionaries unless the data is already being prepared as a serialized representation.
-
-Project entities SHOULD use Pydantic v2 for structured data models.
+Project concepts MUST cross boundaries as explicit typed entities, not untyped dictionaries except for serialized data.
+Structured entities SHOULD use Pydantic v2.
 
 ### Data entities
 
-Data entities SHOULD limit behavior to validating, normalizing, copying, serializing, and deriving values from their
-own fields.
+Data entities SHOULD limit behavior to:
 
-Data entities MUST NOT access invocation-local context, load artifacts, execute primitives, mutate session state, or
-perform low-level infrastructure work.
+- validation.
+- normalization.
+- copying.
+- serialization.
+- derivation from their fields.
+
+They MUST NOT:
+
+- access invocation context.
+- load artifacts.
+- execute primitives.
+- mutate sessions.
+- perform low-level infrastructure work.
 
 ### Domain entities
 
-Domain entities MAY be rich domain objects.
+Introducing a domain entity or converting a data entity into a domain entity MUST have explicit developer approval before implementation.
 
-Domain entities SHOULD keep behavior close to the state, invariants, transitions, and domain operations they own.
+Domain entities MAY be rich objects and SHOULD keep behavior with their owned:
+
+- state.
+- invariants.
+- transitions.
+- operations.
+
 They MAY:
 
-- change their own state or apply state changes.
-- derive facts from their own state.
-- validate related project objects.
-- coordinate behavior through typed collaborator or invocation-local context interfaces.
+- change their state or apply changes.
+- derive state facts.
+- validate related objects.
+- coordinate through typed collaborators or invocation context.
 
-Domain entity methods SHOULD keep direct infrastructure details behind collaborator interfaces or module boundaries.
-
-If an entity directly touches an external resource, the entity MUST be owned by the module responsible for that
-resource and SHOULD represent that resource explicitly.
-
-Entities MUST NOT directly perform low-level infrastructure work unrelated to their owned concept, such as:
+Methods SHOULD hide infrastructure behind collaborators or module boundaries.
+An entity directly touching an external resource MUST belong to that resource's module and SHOULD represent it explicitly.
+Entities MUST NOT directly perform unrelated low-level infrastructure work, such as:
 
 - filesystem access.
 - process execution.
 - terminal output.
-- configuration file discovery.
+- configuration discovery.
 - workspace loading.
 
-Entities MAY call typed collaborators or context objects that perform those operations when the behavior and
-dependency are part of the module's public contract.
+Typed collaborators or contexts MAY perform these operations when behavior and dependency are public module contracts.
 
 ### Value entities
 
-Value entities SHOULD be immutable after construction when practical.
-
-Entities that can be used for de-duplication SHOULD be hashable when practical.
+Value entities SHOULD be immutable when practical; deduplicatable entities SHOULD be hashable when practical.
 
 ## Pydantic baseline
 
-The project accepts Pydantic v2 as the default dependency for entity modeling.
+Pydantic v2 is the default modeling dependency.
+The project MUST use `llm_tool_cli.core.entities` infrastructure.
+Entities SHOULD inherit its base unless direct Pydantic use has a specific reason, such as external configuration/transfer shapes or third-party model contracts.
 
-The project MUST use the shared base entity infrastructure provided by `llm_tool_cli.core.entities`.
+Shared defaults SHOULD:
 
-Project entities SHOULD inherit from the shared base entity unless they have a specific reason to use Pydantic directly.
-
-Direct Pydantic usage MAY be used for:
-
-- configuration objects that mirror external input shapes.
-- external transfer objects that intentionally mirror boundary-facing data shapes.
-- third-party interfaces that require a direct Pydantic model shape.
-
-Shared entity defaults SHOULD:
-
-- strip surrounding whitespace from string values.
-- validate default values.
+- strip surrounding string whitespace.
+- validate defaults.
 - reject unknown fields.
-- prefer immutable value objects where practical.
-- validate assignment when mutation is explicitly enabled.
-- avoid attribute-based construction unless a boundary explicitly needs it.
+- prefer immutable values.
+- validate assignment when mutation is enabled.
+- avoid attribute-based construction unless a boundary needs it.
 
-Entities SHOULD use Pydantic field metadata and validators for local field constraints, default factories, discriminators, and model invariants.
+Entities SHOULD use Pydantic fields/validators for:
 
-Entities SHOULD use Pydantic serialization methods at boundaries that need model dumps or JSON.
+- local constraints.
+- defaults.
+- discriminators.
+- invariants.
 
-The shared base entity MUST provide a copy-with-changes operation.
+They SHOULD use Pydantic serialization for dumps/JSON.
 
-Very small internal helper values MAY use plain Python classes with `__slots__` when Pydantic would add no practical value.
-
-Project data structures MUST NOT use `dataclasses.dataclass`.
+The shared base MUST provide copy-with-changes.
+Small internal helpers MAY use plain slotted classes when Pydantic adds no value.
+Data structures MUST NOT use `dataclasses.dataclass`.
 
 ## Enumeration conventions
 
-Closed sets of named values MUST be represented as Python enum classes.
-
-String-valued external protocols, render modes, record kinds, primitive modes, document names, and similar closed type sets SHOULD use `enum.StrEnum`.
-
-Integer-valued closed sets SHOULD use `enum.IntEnum` when the integer value is part of the external contract or persisted state.
-
-Enum classes MUST use `enum.StrEnum` or `enum.IntEnum` instead of `str, enum.Enum` or `int, enum.Enum`.
-
-Plain strings MUST NOT be used as the primary internal representation for values that have a finite configured, persisted, or specified set of allowed names.
-
-Enum values that cross external boundaries MUST preserve the specified serialized or persisted value exactly.
-
-Output protocol values are a closed set of named string values and MUST be represented internally with an enum rather than raw strings or lists of strings.
+Closed named sets, including output protocols, MUST use enums rather than primarily raw strings or string lists.
+String sets MUST use `enum.StrEnum`; integer sets MUST use `enum.IntEnum` when externally contracted or persisted.
+Enums MUST use these standard bases instead of `str, enum.Enum` or `int, enum.Enum`.
+External and persisted values MUST remain exact.
 
 ## Semantic primitive types
 
-Semantically specific primitive values MUST have semantically specific Python types before they cross module boundaries.
+Distinct Donna primitive meanings MUST use semantic Python types across boundaries, in entities, and in public signatures.
+Examples include:
 
-For example, an artifact id, artifact section id, section id, action request id, work unit id, task id, project path, or primitive path MUST NOT be represented as an unqualified primitive value in entities or public function signatures when the value has a distinct Donna meaning.
+- artifact/section ids.
+- execution ids.
+- project paths.
+- primitive paths.
 
-Semantic primitive types SHOULD use `typing.NewType` when runtime behavior is identical to the underlying primitive.
+`typing.NewType` SHOULD be used when runtime behavior matches the primitive.
+Small custom classes MAY add:
 
-Semantic primitive types MAY use small custom classes when they need validation, normalization, ordering, immutability, Pydantic integration, or custom string rendering.
+- validation.
+- normalization.
+- ordering.
+- immutability.
+- Pydantic integration.
+- rendering.
 
-Raw primitive types MAY be used at parsing, rendering, storage, and serialization boundaries where external data is converted into or out of project types.
+Raw primitives MAY appear at these boundaries:
 
-Raw primitive types MAY be used inside local helper code when the value has already been validated or when adding a semantic type would not improve module-boundary clarity.
+- parsing.
+- rendering.
+- storage.
+- serialization.
 
-Semantic primitive types SHOULD be owned by the module that owns the corresponding project concept.
+They MAY also appear in local helpers after validation or when semantic typing adds no boundary clarity.
 
-Shared semantic primitive types SHOULD belong to the domain module.
-
-Module-specific semantic primitive types SHOULD belong to the owning module.
+Shared semantic types SHOULD belong to the domain module; others SHOULD belong to their concept's owner.
 
 ## Static typing suppressions
 
-When a static type checker cannot prove a semantic primitive type relationship that is already guaranteed by validation or construction at the same boundary, code SHOULD use a local `# type: ignore[...]` suppression instead of `typing.cast(...)` or a pure runtime no-op conversion such as `str(...)`.
-
-Type suppressions MUST be as narrow as practical.
-
-Type suppressions SHOULD include the static checker error code when the checker provides one.
-
-Type suppressions MUST NOT be used to bypass missing validation, unsafe external input conversion, or a real mismatch between runtime behavior and declared types.
-
-Runtime constructors and validation functions SHOULD remain the preferred way to convert untrusted primitive input into semantic primitive types.
+For semantic relationships guaranteed by validation or construction at the same boundary, code SHOULD prefer local `# type: ignore[...]` over `typing.cast(...)` or runtime no-ops such as `str(...)`.
+Suppressions MUST be as narrow as practical, include available checker error codes, and MUST NOT bypass validation, unsafe input conversion, or actual type mismatches.
+Runtime constructors and validators SHOULD remain preferred for untrusted primitive conversion.
 
 ## Entity ownership
 
-Shared entity infrastructure MUST belong to the shared library's core module.
-
-Shared domain primitive types and universal domain entities MUST belong to the domain module.
-
-Module-specific entities MUST belong to the module that owns the corresponding responsibility.
-
-Entity classes that are part of a top-level module's public cross-module API MUST be exported from the owning module's package initializer.
-
-Top-level modules MUST import public entities owned by another top-level module from the owning module's package root.
-
-Public re-exports MUST NOT hide ownership. The defining module MUST remain clear from the source tree.
+Reusable entity infrastructure MUST belong to `llm_tool_cli.core`; universal Donna entities and primitives shared across Donna modules MUST belong to `donna.domain`; other entities MUST belong to their responsibility's module.
+Public cross-module entity classes MUST be exported from, and imported through, the owning top-level package root.
+Re-exports MUST keep the defining owner clear.
 
 ## Core and domain entities
 
-Core entity infrastructure MUST be provided by the shared library rather than duplicated in Donna.
+Entity infrastructure from `llm_tool_cli.core` MUST NOT be duplicated in Donna or contain Donna-specific concepts.
+The domain layer MUST contain only universal concepts shared by all or most modules, independent of creating/rendering interfaces.
+It MUST NOT contain narrower subsystem entities or depend on:
 
-Core entity infrastructure MUST NOT contain domain-specific Donna concepts such as artifacts, workflows, sections, sessions, protocols, primitives, or workspace paths.
-
-The domain layer MUST contain only universal entities and semantic primitive types for concepts shared by all or most other modules.
-
-Domain entities MUST model universal Donna concepts independently from the concrete interface that created or renders them.
-
-Domain entities MUST NOT depend on CLI option parsing, output protocol rendering, workspace loading, session storage, or concrete configuration file syntax.
-
-Domain entities MUST NOT contain subsystem-specific entities when those entities are required only by one narrower module.
+- CLI option parsing.
+- protocol rendering.
+- workspace loading.
+- session storage.
+- concrete configuration syntax.
 
 ## Configuration entities
 
-Configuration entities MAY represent parsed TOML data at the configuration loading boundary when their responsibility is to validate the configuration file shape.
+Configuration entities MAY validate parsed TOML shape or reference validated domain entities.
+They SHOULD reject malformed input with Pydantic before lower layers and MUST preserve useful error context.
+Workspace entities MUST expose validated, file-shape-independent configuration concepts and shared concepts as domain entities.
+Configuration entities MUST NOT:
 
-Configuration entities SHOULD use Pydantic validation to reject malformed parsed data before it reaches lower layers.
-
-Workspace entities MUST model validated configuration concepts independently from raw TOML table shapes before data reaches lower layers.
-
-Workspace entities MUST expose shared project concepts as domain entities rather than configuration-specific entities.
-
-Configuration entities MUST preserve enough information to report useful configuration errors.
-
-Configuration entities MUST NOT execute workflow artifacts, run primitives, write session state, or forward journal records.
-
-Configuration entities MAY reference domain entities when the referenced concept has already been validated as a domain concept.
+- execute artifacts.
+- execute primitives.
+- write session state.
+- forward journals.
 
 ## CLI and command entities
 
-CLI entities MUST represent parsed user intent before the command is executed.
-
-CLI entities MUST model command selection and parsed options independently from rendered output.
-
-CLI entities MUST NOT contain rendered output.
-
-CLI entities MUST NOT perform command execution.
-
-CLI entities SHOULD use domain semantic primitive types for parsed ids and paths when the values have already been normalized or validated.
+CLI entities MUST represent parsed selection/options before execution, independently of output, and MUST NOT contain rendered output or execute commands.
+Normalized or validated ids/paths SHOULD use domain semantic types.
 
 ## Protocol and serialization entities
 
-Logic cells MUST be the primary interface for successful domain results passed to the CLI layer.
-Command-facing domain and runtime operations MAY submit logic cells directly to the shared scoped output emitter and return `Result[None]` when they have no other useful result.
-Operations that compute reusable values MAY retain typed return values, including cells and their ordered collections.
-Cells MAY retain typed domain entities needed for projection; the CLI MUST NOT inspect those entities or assemble domain output payloads from internal results.
-Internal domain operations MAY continue to exchange ordinary typed entities.
+Logic cells MUST be the primary successful domain-to-CLI interface.
+Command-facing operations MAY submit cells to the scoped emitter provided by `llm_tool_cli` and return `Result[None]` when no other result is useful.
+Reusable computations MAY return typed values, including cells and ordered collections; internal domain operations MAY retain ordinary entities.
+Cells MAY hold typed projection data, but the CLI MUST NOT inspect it or assemble domain payloads.
 
-Cells MUST carry the information needed for their projections without reading runtime state or writing output.
-CLI initialization MUST establish output delivery and the effective protocol; the shared emitter MUST own buffering and delivery of submitted cells.
-Expected failures MUST remain structured errors in failed results until the CLI error-handling boundary.
-Generic CLI acknowledgements, journal events, and rendered Markdown documents MUST use logical cells while preserving their specified representations.
+Cells MUST carry projection data without runtime reads or output writes.
+CLI initialization MUST establish delivery and protocol; the shared emitter MUST buffer and deliver cells.
+Expected failures MUST remain structured failed-result errors until the CLI error boundary.
+Acknowledgements, journals, and rendered Markdown MUST use logical cells with their specified representations.
 
-Serialized representations MUST be created at protocol boundaries and SHOULD be treated as write-only output data.
+Serialized representations MUST originate at protocol boundaries and SHOULD be write-only, produced through explicit boundary code rather than leaking Pydantic dump shapes into domain behavior.
+Protocol entities MAY contain formatting metadata.
+The following entities SHOULD NOT depend on concrete record shapes:
 
-Serialized representations SHOULD be produced from entities through explicit boundary code, not by leaking Pydantic dump shapes into domain behavior.
+- domain entities.
+- machine entities.
+- workspace entities.
+- CLI entities.
 
-Protocol entities MAY contain presentation-oriented metadata when their responsibility is output formatting.
-
-Domain, machine, workspace, and CLI entities SHOULD NOT depend on concrete serialized protocol record shapes.
-
-Entity methods that return dictionaries for protocol metadata, logging, or storage MUST return structured values with stable keys and MUST NOT contain terminal formatting.
+Metadata/logging/storage dictionaries MUST contain stable structured keys and MUST NOT format terminal output.
 
 ## Data structure conventions
 
-Ordered input from users, workflow artifacts, configuration files, and persisted session state SHOULD be represented with ordered collections.
+The following ordered input SHOULD use ordered collections:
 
-Sets MAY be used internally for de-duplication, but externally visible output order MUST be produced explicitly according to the relevant behavior specification.
+- user input.
+- artifact input.
+- configuration input.
+- persisted input.
 
-Mappings keyed by semantic ids SHOULD use the semantic id type when possible.
-
-Optional values MUST be represented with `None` instead of sentinel strings.
-
-Collections that represent stacks, queues, or ordered workflow state MUST preserve order explicitly.
+Sets MAY deduplicate internally, but observable order MUST follow behavior specs explicitly.
+Semantic-id mappings SHOULD use semantic key types when possible.
+Optional values MUST use `None`, not sentinel strings.
+Stacks, queues, and ordered workflow state MUST preserve order explicitly.
 
 ## Validation boundaries
 
-Parsing layers SHOULD validate external data before creating entities that are used by lower layers.
+Parsing layers SHOULD validate external input before constructing lower-layer entities.
+Model validation MAY enforce local invariants but MUST NOT perform:
 
-Pydantic model validation MAY validate local invariants that are always true for the entity, but MUST NOT perform
-filesystem access, configuration discovery, workspace loading, artifact discovery, primitive execution, subprocess
-execution, or command execution.
+- filesystem access.
+- configuration or artifact discovery.
+- workspace loading.
+- primitive execution.
+- subprocess or command execution.
 
-Validation that requires those operations MUST live in behavior methods, runtime orchestration, or functions that return Donna-specific errors.
-
-Invalid external input MUST be reported through the error architecture instead of by returning partially valid entities.
+Such validation MUST live in behavior methods, runtime orchestration, or functions returning Donna-specific errors.
+Invalid input MUST follow the error architecture, never produce partially valid entities.
