@@ -29,7 +29,7 @@ As a bonus, **Donna saves tokens** because the agent does not need to reason abo
 - **Readable workflow sources** — Each workflow is a single Markdown file with a clear structure.
 - **Built-in help for agents** — Your agent can run `donna skill` to get detailed docs written for agents.
 - **Local session state** — Workflow progress stays inspectable and resumable inside the project.
-- **Progress journaling** — Workflow progress can be logged through a configured external command.
+- **Progress journaling** — Live console messages keep agents informed during long operations; an optional command forwards them externally.
 
 ## Example
 
@@ -135,7 +135,8 @@ How to read workflow's source:
 - `Turn On Kettle` is another `request_action` operation. The agent will see the instruction to turn on the kettle and then complete the action request with the `finish` transition.
 - `Finish` is a `finish` operation. The agent will see the final workflow message, and Donna will complete the workflow task.
 
-Here is an example of action request for the `Get Current Time` operation:
+Here is an excerpt of LLM output showing the session status and the `Ask About Tea` action request.
+`<project>` stands for the project directory; generated ids vary between runs.
 
 ````markdown
 --DONNA-CELL OuP2T9brQYmvESMHsbrDlw BEGIN--
@@ -168,8 +169,8 @@ The current time is:
 
 Is it time to drink tea?
 
-1. If yes, `donna -p llm --config '/home/tiendil/repos/mine/donna/.session/readme-example-test/donna.toml' complete-action-request <action-request-id> '@/workflows/tea.donna.md:turn_on_kettle'`.
-1. If no, `donna -p llm --config '/home/tiendil/repos/mine/donna/.session/readme-example-test/donna.toml' complete-action-request <action-request-id> '@/workflows/tea.donna.md:finish'`.
+1. If yes, `donna -p llm --config '<project>/donna.toml' complete-action-request <action-request-id> '@/workflows/examples/time_to_drink_tea.donna.md:turn_on_kettle'`.
+1. If no, `donna -p llm --config '<project>/donna.toml' complete-action-request <action-request-id> '@/workflows/examples/time_to_drink_tea.donna.md:finish'`.
 --DONNA-CELL fxh3PDZ1Qy-c3zvai_T5Qw END--
 
 ````
@@ -275,11 +276,27 @@ List discovered workflow artifacts:
 donna list
 ```
 
-Start a new session:
+Validate all discovered workflows:
+
+```bash
+donna validate --all
+```
+
+Preview a workflow:
+
+```bash
+donna render --mode view @/workflows/examples/time_to_drink_tea.donna.md
+```
+
+`render` emits a protocol cell containing the rendered Markdown.
+
+Start a fresh session, resetting any existing session state:
 
 ```bash
 donna new-session
 ```
+
+Workflows can use the current session; run `new-session` only when you intend to start fresh.
 
 Start a workflow in the current session:
 
@@ -310,6 +327,27 @@ Read the built-in usage documentation:
 ```bash
 donna skill usage
 ```
+
+### Output protocols
+
+Select the output protocol with the global `-p` option before the subcommand:
+
+- `human` — Compact terminal text for people.
+- `llm` — Framed cells for coding agents.
+- `automation` — JSON Lines for programs.
+
+For example:
+
+```bash
+donna -p llm status
+```
+
+Without `-p`, `skill` uses `llm` and other commands use `human`.
+
+Ordinary results appear after successful command completion.
+Journal messages appear as work happens, even without an external journal command; warnings appear last.
+Expected failures discard pending results and exit nonzero.
+All output cells, including errors, go to stdout; framework argument-parsing diagnostics may still use stderr.
 
 ## Workflow Files
 

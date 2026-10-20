@@ -66,7 +66,12 @@ The README MUST explain:
 - This repository uses Donna; its `donna.toml` and `./workflows` are real examples.
 - `donna init` creates starter configuration that should be reviewed and edited.
 - Coding agents can help create or adapt workflows.
-- `human` is the terminal default; `--protocol llm` is for coding agents.
+- protocol audiences, command-specific defaults, and placement of global options before subcommands.
+- buffered result delivery and final warnings.
+- live console journals keeping agents informed during long operations, with optional external forwarding.
+- stdout output cells and nonzero exits for expected failures, distinguished from framework parsing diagnostics on stderr.
+- `new-session` resets existing session state and is not required before each workflow.
+- `render` emits rendered Markdown through the selected output protocol.
 - Development uses Docker-backed `./bin/dev.sh` and `./bin/dev-tests.sh`.
 
 It MUST include PyPI installation examples using both `uv` and `pip`, and an `AGENTS.md` snippet directing agents to use Donna only when instructed by a developer, project instructions, or Donna itself.
@@ -94,6 +99,7 @@ It MUST show command examples for:
 - `donna skill usage`.
 
 Human-facing examples SHOULD use command defaults.
+Captured output MUST identify its protocol, explain generated-id placeholders or variability, and use portable paths consistent with the demonstrated workflow.
 Configuration and command descriptions MUST link to their behavior specs.
 Detailed-documentation guidance MUST link to the skill fixture spec or mention built-in skills.
 The README MUST identify `./specs/` as the behavior and architecture source.
