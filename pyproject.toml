@@ -26,7 +26,7 @@ classifiers = [
 dependencies = [
   # Use the local source below until llm-tool-cli is published.
   "llm-tool-cli>=0.1.0",
-  "markdown-it-py>=4.0,<4.1",
+  "markdown-it-py>=4.2,<4.3",
   "mdformat>=1.0.0,<1.1.0",
   "jinja2>=3.1,<3.2",
 ]
@@ -47,15 +47,15 @@ llm-tool-cli = { path = "../llm-tool-cli", editable = true }
 [dependency-groups]
 dev = [
   "changy==0.4.*",
-  "isort==7.0.*",
-  "black==25.12.*",
-  "autoflake==2.3.*",
+  "isort==9.0.*",
+  "black==26.10.*",
+  "autoflake==2.4.*",
   "codespell==2.4.*",
-  "tach==0.34.*",
-  "flake8==7.3.*",
+  "tach==0.35.*",
+  "flake8==7.4.*",
   "flake8-docstrings==1.7.*",
-  "flake8-functions==0.0.*",
-  "flake8-annotations-complexity==0.1.*",
+  "flake8-functions==0.1.*",
+  "flake8-annotations-complexity==0.2.*",
   "flake8-cognitive-complexity==0.1.*",
   "flake8-pytest==1.4.*",
   "flake8-bandit==4.1.*",
@@ -63,10 +63,10 @@ dev = [
   "flake8-print==5.0.*",
   "flake8-pyproject==1.2.*",
   "flake8-eradicate==1.5.*",
-  "mypy==1.19.*",
+  "mypy==2.4.*",
   "types-PyYAML==6.0.*",
-  "pytest==9.0.*",
-  "pytest-mock==3.15.*",
+  "pytest==9.1.*",
+  "pytest-mock==3.17.*",
 ]
 
 [tool.isort]
@@ -119,7 +119,6 @@ disallow_any_explicit = true
 init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true
-warn_untyped_fields = true
 
 [tool.hatch.build.targets.sdist]
 include = [
