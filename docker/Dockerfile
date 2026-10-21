@@ -18,6 +18,8 @@ ENV UV_LINK_MODE=copy
 ENV PATH="/home/donna/.venv/bin:${PATH}"
 
 COPY --chown=$USER:$USER . /repository
+# Uncomment with the local uv source and Compose build context.
+# COPY --from=llm-tool-cli --chown=$USER:$USER . /llm-tool-cli
 
 RUN uv sync --locked
 

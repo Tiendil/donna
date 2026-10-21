@@ -1,14 +1,13 @@
 import enum
 from typing import cast
 
+from llm_tool_cli.core.entities import BaseEntity
+from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
 from markdown_it import MarkdownIt
 from markdown_it.token import Token
 from markdown_it.tree import SyntaxTreeNode
 from mdformat.renderer import MDRenderer
 
-from donna.core.entities import BaseEntity
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId
 from donna.workspaces import errors as world_errors
 
@@ -23,7 +22,7 @@ class CodeSource(BaseEntity):
     properties: dict[str, str | bool]
     content: str
 
-    def structured_data(self) -> Result[object, ErrorsList]:
+    def structured_data(self) -> Result[object]:
         if "script" in self.properties:
             return Ok({})
 
@@ -38,9 +37,9 @@ class CodeSource(BaseEntity):
             return Ok(yaml.safe_load(self.content))
 
         if self.format == "toml":
-            import tomllib
+            import tomli
 
-            return Ok(tomllib.loads(self.content))
+            return Ok(tomli.loads(self.content))
 
         return Err([world_errors.MarkdownUnsupportedCodeFormat(format=self.format)])
 
@@ -75,7 +74,7 @@ class SectionSource(BaseEntity):
     def as_analysis_markdown(self, with_title: bool) -> str:
         return self._as_markdown(self.analysis_tokens, with_title)
 
-    def config(self) -> Result[dict[str, object], ErrorsList]:
+    def config(self) -> Result[dict[str, object]]:
         config_blocks = [config for config in self.configs if "config" in config.properties]
         if len(config_blocks) > 1:
             return Err(
@@ -92,7 +91,7 @@ class SectionSource(BaseEntity):
         data = config_blocks[0].structured_data().unwrap()
         return Ok(cast(dict[str, object], data))
 
-    def script(self) -> Result[str | None, ErrorsList]:
+    def script(self) -> Result[str | None]:
         script_blocks = [config.content for config in self.configs if "script" in config.properties]
         if len(script_blocks) > 1:
             return Err(
@@ -120,7 +119,7 @@ def clear_heading(text: str) -> str:
 
 def _parse_h1(
     sections: list[SectionSource], node: SyntaxTreeNode, artifact_id: ArtifactId | None
-) -> Result[SyntaxTreeNode | None, ErrorsList]:
+) -> Result[SyntaxTreeNode | None]:
     if sections and any(section.level == SectionLevel.h1 for section in sections):
         return Err([world_errors.MarkdownMultipleH1Sections(artifact_id=artifact_id)])
 
@@ -142,7 +141,7 @@ def _parse_h1(
 
 def _parse_h2(
     sections: list[SectionSource], node: SyntaxTreeNode, artifact_id: ArtifactId | None
-) -> Result[SyntaxTreeNode | None, ErrorsList]:
+) -> Result[SyntaxTreeNode | None]:
 
     if not sections:
         return Err([world_errors.MarkdownH1SectionMustBeFirst(artifact_id=artifact_id)])
@@ -162,7 +161,7 @@ def _parse_h2(
 
 def _parse_heading(
     sections: list[SectionSource], node: SyntaxTreeNode, artifact_id: ArtifactId | None
-) -> Result[SyntaxTreeNode | None, ErrorsList]:
+) -> Result[SyntaxTreeNode | None]:
 
     if node.tag == "h1":
         return _parse_h1(sections, node, artifact_id)
@@ -182,7 +181,7 @@ def _parse_fence(  # noqa: CCR001
     sections: list[SectionSource],
     node: SyntaxTreeNode,
     artifact_id: ArtifactId | None,
-) -> Result[SyntaxTreeNode | None, ErrorsList]:
+) -> Result[SyntaxTreeNode | None]:
     if not sections:
         return Err([world_errors.MarkdownH1SectionMustBeFirst(artifact_id=artifact_id)])
 
@@ -257,7 +256,7 @@ def _parse_others(sections: list[SectionSource], node: SyntaxTreeNode) -> Syntax
 @unwrap_to_error
 def parse(  # noqa: CCR001, CFQ001
     text: str, *, artifact_id: ArtifactId | None = None
-) -> Result[list[SectionSource], ErrorsList]:  # pylint: disable=R0912, R0915
+) -> Result[list[SectionSource]]:  # pylint: disable=R0912, R0915
     md = MarkdownIt("commonmark")  # TODO: later we may want to customize it with plugins
 
     tokens = md.parse(text)

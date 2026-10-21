@@ -1,9 +1,9 @@
 import importlib
 from typing import TYPE_CHECKING, ClassVar
 
-from donna.core.entities import BaseEntity
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.core.entities import BaseEntity
+from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
 from donna.machine import errors as machine_errors
@@ -21,26 +21,24 @@ if TYPE_CHECKING:
 class Primitive(BaseEntity):
     config_class: ClassVar[type[ArtifactSectionConfig]] = ArtifactSectionConfig
 
-    def validate_section(self, artifact: "Artifact", section_id: SectionId) -> Result[None, ErrorsList]:
+    def validate_section(self, artifact: "Artifact", section_id: SectionId) -> Result[None]:
         return Ok(None)
 
     def execute_section(
         self, task: "Task", unit: "WorkUnit", artifact: "Artifact", section_id: SectionId
-    ) -> Result[list["Change"], ErrorsList]:
+    ) -> Result[list["Change"]]:
         raise machine_errors.PrimitiveMethodUnsupported(
-            primitive_name=self.__class__.__name__, method_name="execute_section()"
+            details={"primitive_name": self.__class__.__name__, "method_name": "execute_section()"}
         )
 
-    def apply_directive(
-        self, context: DirectiveContext, *argv: object, **kwargs: object
-    ) -> Result[object, ErrorsList]:
+    def apply_directive(self, context: DirectiveContext, *argv: object, **kwargs: object) -> Result[object]:
         raise machine_errors.PrimitiveMethodUnsupported(
-            primitive_name=self.__class__.__name__, method_name="apply_directive()"
+            details={"primitive_name": self.__class__.__name__, "method_name": "apply_directive()"}
         )
 
 
 @unwrap_to_error
-def resolve_primitive(primitive_id: PythonPath) -> Result[Primitive, ErrorsList]:  # noqa: CCR001
+def resolve_primitive(primitive_id: PythonPath) -> Result[Primitive]:  # noqa: CCR001
     import_path = str(primitive_id)
     if "." not in import_path:
         return Err([machine_errors.PrimitiveInvalidImportPath(import_path=import_path)])

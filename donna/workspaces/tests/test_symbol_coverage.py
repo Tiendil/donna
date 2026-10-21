@@ -1,6 +1,8 @@
 import ast
 import pathlib
 
+import pytest
+
 
 def _pascal_case(name: str) -> str:
     return "".join(part.capitalize() for part in name.strip("_").split("_"))
@@ -15,6 +17,9 @@ def _expected_test_class_name(symbol_name: str, *, symbol_is_class: bool) -> str
 
 def _expected_test_class_for_node(node: ast.AST) -> str | None:
     if isinstance(node, ast.ClassDef):
+        # Declarative classes are exempt from per-class tests under the test architecture.
+        if not any(isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)) for member in node.body):
+            return None
         return _expected_test_class_name(node.name, symbol_is_class=True)
 
     if isinstance(node, ast.FunctionDef):
@@ -53,6 +58,25 @@ def _test_class_names() -> set[str]:
                 names.add(node.name)
 
     return names
+
+
+class TestExpectedTestClassForNode:
+    @pytest.mark.parametrize(
+        ("source", "expected"),
+        [
+            ('class Failure(EnvironmentError):\n    code: str = "failure"', None),
+            (
+                'class Failure(EnvironmentError):\n    def format_message(self):\n        return "failure"',
+                "TestFailure",
+            ),
+        ],
+    )
+    def test_exempts_declarations_but_requires_coverage_for_owned_behavior(
+        self, source: str, expected: str | None
+    ) -> None:
+        node = ast.parse(source).body[0]
+
+        assert _expected_test_class_for_node(node) == expected
 
 
 class TestWorkspaceSymbolCoverage:

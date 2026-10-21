@@ -2,6 +2,12 @@
 
 Initiate operations to polish and refine the donna codebase: running & fixing tests, formatting code, fixing type annotations, etc. This workflow MUST NOT be used to introduce new logic into the project or refactor it — only to fix existing issues.
 
+Polishing MUST preserve intended behavior and MUST NOT weaken checker configuration merely to hide findings.
+Fixes SHOULD address the cause of a finding before adding a suppression.
+Suppressions MUST address understood findings, use the smallest practical scope, and respect the applicable architecture.
+Use the project development environment for all checks.
+Changes requiring new behavior, architectural restructuring, or an uncertain domain decision need developer authorization unless already covered by the current task.
+
 ## Run Tach
 
 ```toml donna
@@ -29,6 +35,11 @@ kind = "donna.lib.request_action"
 ```
 {{ donna.lib.task_variable("tach_output") }}
 ```
+
+Align imports with the module ownership and dependency direction in `specs/architecture/modules_layout.md`.
+Use an existing permitted dependency or public boundary; do not loosen Tach configuration merely to allow an import.
+Do not move modules or create new boundaries unless architectural restructuring is already authorized.
+Ask the developer when the correct dependency direction is unclear.
 
 1. Fix the tach issues based on the output above that you are allowed to fix.
 2. Ask the developer to fix any remaining issues manually.
@@ -61,6 +72,10 @@ kind = "donna.lib.request_action"
 ```
 {{ donna.lib.task_variable("autoflake_output") }}
 ```
+
+Mechanical cleanup MUST preserve required dynamic behavior, public re-exports, and initialization side effects.
+Inspect the purpose of any removed symbol that may serve those roles before accepting its removal.
+Imports retained for side effects SHOULD make their purpose explicit enough to survive cleanup.
 
 1. Fix the autoflake issues based on the output above.
 2. Ensure your changes are saved.
@@ -155,9 +170,20 @@ kind = "donna.lib.request_action"
 {{ donna.lib.task_variable("codespell_output") }}
 ```
 
-1. Fix the codespell issues based on the output above.
+1. Fix spelling when the intended word is clear; ask the developer about unresolved findings.
 2. Ensure your changes are saved.
 3. `{{ donna.lib.goto("run_tach_script") }}`
+
+Do not change compatibility-sensitive values unless the surrounding contract permits the correction:
+
+- external names.
+- serialized values.
+- fixture data.
+- command output expectations.
+- URLs.
+- compatibility strings.
+
+Intentional project terminology SHOULD use the configured spelling allowlist when available.
 
 ## Run Flake8
 
@@ -192,10 +218,14 @@ kind = "donna.lib.request_action"
 
 Instructions on fixing special cases:
 
-- `E800 Found commented out code` — remove the commented out code.
-- `CCR001 Cognitive complexity is too high` — ignore by adding `# noqa: CCR001` at the end of the line.
+- `E800 Found commented out code` — remove the commented-out code unless it is part of documented behavior, example text, or fixture data.
+- `CCR001 Cognitive complexity is too high` — when the behavior is understood and the complexity is accepted for the current design, add a narrow `# noqa: CCR001`; otherwise report the finding without broad refactoring.
 - `F821 undefined name` when there are missing imports — add the necessary import statements at the top of the file.
 - `F821 undefined name` in all other cases — ask the developer to fix it manually.
+
+Prefer clear, local fixes over broad refactoring.
+Security findings MUST NOT be suppressed unless the reported behavior is intentional and its implications are understood; ask the developer when unclear.
+For print-output findings, use the existing output or diagnostic mechanism; test fixes SHOULD follow the test's intent.
 
 ## Run Mypy
 
@@ -247,6 +277,9 @@ Changes you are not allowed to make:
 - Adding `type: ignore[import-untyped]`. If you need to use it, ask the developer to install the missing types first or to fix the issue manually.
 - Adding or removing attributes to classes. If you need to do it, ask the developer to fix the problem manually.
 
+Follow the static typing suppression rules in `specs/architecture/entities.md`.
+Do not invent domain behavior or architectural abstractions to satisfy the checker.
+
 ## Run Tests
 
 ```toml donna
@@ -286,4 +319,4 @@ id = "finish"
 kind = "donna.lib.finish"
 ```
 
-Polishing workflow completed. Report the results and any remaining issues to the developer.
+Polishing workflow completed. Report the checks performed, any unavailable checks, and unresolved findings with enough context for the developer to decide the next action.

@@ -26,7 +26,7 @@ class InternalId(str):
 
     def __new__(cls, value: str) -> "InternalId":
         if not cls.validate(value):
-            raise domain_errors.InvalidInternalId(value=value)
+            raise domain_errors.InvalidInternalId(details={"value": value})
 
         return super().__new__(cls, value)
 

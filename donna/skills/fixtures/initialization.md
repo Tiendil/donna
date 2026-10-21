@@ -40,7 +40,7 @@ Create it at an explicit config path:
 donna -p llm --config /path/to/project/donna.toml init
 ```
 
-`init` does not overwrite an existing file.
+`init` does not overwrite an existing file. The target's parent directory must already exist, and the configuration file must not be a symlink.
 
 Right after creating the starter file, check whether the default workflow discovery directories match the project layout. Ask the developer before changing project structure or introducing new workflow directories.
 

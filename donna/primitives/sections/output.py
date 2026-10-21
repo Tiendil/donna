@@ -1,14 +1,14 @@
 from typing import TYPE_CHECKING, ClassVar, cast
 
-from donna.context.context import context
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.output import output
+from llm_tool_cli.protocol import cell_shortcuts
+
 from donna.domain.artifact_ids import ArtifactId, artifact_section_id, split_artifact_section_id
 from donna.domain.ids import SectionId
 from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta
-from donna.protocol import cell_shortcuts
 from donna.workspaces import markdown
 from donna.workspaces.markdown_parser import MarkdownSectionMixin
 
@@ -43,7 +43,7 @@ class Output(MarkdownSectionMixin, OperationKind):
         section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
-    ) -> Result[ArtifactSectionMeta, ErrorsList]:
+    ) -> Result[ArtifactSectionMeta]:
         output_config = cast(OutputConfig, section_config)
 
         allowed_transitions: set[SectionId] = set()
@@ -61,14 +61,14 @@ class Output(MarkdownSectionMixin, OperationKind):
     @unwrap_to_error
     def execute_section(
         self, task: "Task", unit: "WorkUnit", artifact: Artifact, section_id: SectionId
-    ) -> Result[list["Change"], ErrorsList]:
+    ) -> Result[list["Change"]]:
         from donna.machine.changes import ChangeAddWorkUnit
 
         operation = artifact.get_section(section_id).unwrap()
         meta = cast(OutputMeta, operation.meta)
 
         info = cell_shortcuts.info(operation.description)
-        context().output.emit_cell(info)
+        output.get().emit([info]).unwrap()
 
         next_operation_id = meta.next_operation_id
         assert next_operation_id is not None
@@ -78,7 +78,7 @@ class Output(MarkdownSectionMixin, OperationKind):
 
         return Ok([ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id)])
 
-    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None, ErrorsList]:
+    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None]:
         section = artifact.get_section(section_id).unwrap()
         meta = cast(OutputMeta, section.meta)
 

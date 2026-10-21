@@ -1,16 +1,27 @@
 import pathlib
 
+import pytest
+
 from donna.cli.tests import helpers
 
 
 class TestNewSession:
-    def test_creates_fresh_session_state(self, tmp_path: pathlib.Path) -> None:
+    @pytest.mark.parametrize("protocol", ["llm", "automation"])
+    def test_creates_fresh_session_state(self, tmp_path: pathlib.Path, protocol: str) -> None:
         config_path = helpers.write_config(tmp_path)
 
-        result = helpers.invoke(["--config", str(config_path), "-p", "llm", "new-session"])
+        result = helpers.invoke(["--config", str(config_path), "-p", protocol, "new-session"])
 
         assert result.exit_code == 0
-        assert "kind=operation_succeeded" in result.output
+        assert not result.stderr
+        if protocol == "automation":
+            records = helpers.json_lines(result.stdout)
+            success_records = [record for record in records if record.get("type") == "operation_succeeded"]
+            assert len(success_records) == 1
+            assert success_records[0]["content"] == "Created new session state."
+        else:
+            assert "kind=operation_succeeded" in result.stdout
+            assert "type=operation_succeeded" in result.stdout
         assert (tmp_path / ".session" / "donna" / "state.json").is_file()
 
 

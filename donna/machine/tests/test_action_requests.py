@@ -1,5 +1,6 @@
-from donna.machine.action_requests import ActionRequest, ActionRequestNode
+from donna.machine.action_requests import ActionRequest
 from donna.machine.tests import make
+from donna.protocol import ActionRequestCell
 
 
 class TestActionRequest:
@@ -15,22 +16,11 @@ class TestActionRequest:
         assert request.request == "Choose next step"
         assert request.operation_id == make.PRIMARY_OPERATION_ID
 
-    def test_node__returns_action_request_node(self) -> None:
+    def test_to_cell__returns_action_request_cell(self) -> None:
         request = make.action_request()
 
-        node = request.node()
+        cell = request.to_cell()
 
-        assert isinstance(node, ActionRequestNode)
-
-
-class TestActionRequestNode:
-    def test_status__returns_action_request_status_cell(self) -> None:
-        request = make.action_request()
-
-        cell = ActionRequestNode(request).status()
-
-        assert cell.kind == "action_request"
-        assert cell.media_type == "text/markdown"
-        assert cell.content is not None
-        assert "Do the thing" in cell.content
-        assert cell.meta == {"action_request_id": str(make.ACTION_REQUEST_ID)}
+        assert isinstance(cell, ActionRequestCell)
+        assert cell.action_request_id == request.id
+        assert cell.request == request.request

@@ -1,6 +1,5 @@
 from typing import cast
 
-from donna.context.tests.helpers import FakeJournal, FakeOutputEmitter
 from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
@@ -22,9 +21,3 @@ def operation_id(section: str) -> ArtifactSectionId:
 
 def template_context(**values: object) -> DirectiveContext:
     return cast(DirectiveContext, values)
-
-
-class FakeRuntimeContext:
-    def __init__(self) -> None:
-        self.output = FakeOutputEmitter()
-        self.journal = FakeJournal()

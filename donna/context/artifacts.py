@@ -1,15 +1,17 @@
 from typing import TYPE_CHECKING
 
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+
 from donna.domain.artifact_ids import ArtifactId
+from donna.machine import ArtifactRenderContext
 from donna.machine.artifacts import Artifact
 from donna.machine.tasks import Task, WorkUnit
-from donna.machine.templates import RenderMode
+from donna.machine.templates import RENDER_CONTEXT_VIEW, RenderMode
 from donna.workspaces import errors as workspace_errors
 
 if TYPE_CHECKING:
-    from donna.workspaces.artifacts import ArtifactRenderContext, FilesystemRawArtifact
+    from donna.workspaces.artifacts import FilesystemRawArtifact
     from donna.workspaces.files import FileFingerprint
 
 
@@ -34,20 +36,20 @@ class ArtifactsCache:
         self._cache: dict[ArtifactId, _ArtifactCacheValue] = {}
 
     @unwrap_to_error
-    def _is_cache_stale(self, artifact_id: ArtifactId, fingerprint: "FileFingerprint") -> Result[bool, ErrorsList]:
+    def _is_cache_stale(self, artifact_id: ArtifactId, fingerprint: "FileFingerprint") -> Result[bool]:
         from donna.workspaces.artifacts import artifact_fingerprint
 
         return Ok(artifact_fingerprint(artifact_id).unwrap() != fingerprint)
 
     @staticmethod
     @unwrap_to_error
-    def _load_raw_artifact(artifact_id: ArtifactId) -> Result["FilesystemRawArtifact", ErrorsList]:
+    def _load_raw_artifact(artifact_id: ArtifactId) -> Result["FilesystemRawArtifact"]:
         from donna.workspaces.artifacts import fetch_raw_artifact
 
         return Ok(fetch_raw_artifact(artifact_id).unwrap())
 
     @unwrap_to_error
-    def _refresh_cache_value(self, artifact_id: ArtifactId) -> Result[_ArtifactCacheValue, ErrorsList]:
+    def _refresh_cache_value(self, artifact_id: ArtifactId) -> Result[_ArtifactCacheValue]:
         from donna.workspaces.files import FileFingerprint
 
         raw_artifact = self._load_raw_artifact(artifact_id).unwrap()
@@ -64,7 +66,7 @@ class ArtifactsCache:
         return Ok(refreshed)
 
     @unwrap_to_error
-    def _get_cache_value(self, artifact_id: ArtifactId) -> Result[_ArtifactCacheValue, ErrorsList]:
+    def _get_cache_value(self, artifact_id: ArtifactId) -> Result[_ArtifactCacheValue]:
         cached = self._cache.get(artifact_id)
 
         if cached is None:
@@ -79,9 +81,7 @@ class ArtifactsCache:
     def invalidate(self, artifact_id: ArtifactId) -> None:
         self._cache.pop(artifact_id, None)
 
-    def load_for_view(self, artifact_id: ArtifactId) -> Result[Artifact, ErrorsList]:
-        from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
-
+    def load_for_view(self, artifact_id: ArtifactId) -> Result[Artifact]:
         return self.load(artifact_id, RENDER_CONTEXT_VIEW)
 
     def load_for_execution(
@@ -89,9 +89,7 @@ class ArtifactsCache:
         artifact_id: ArtifactId,
         task: Task,
         work_unit: WorkUnit,
-    ) -> Result[Artifact, ErrorsList]:
-        from donna.workspaces.artifacts import ArtifactRenderContext
-
+    ) -> Result[Artifact]:
         return self.load(
             artifact_id,
             ArtifactRenderContext(
@@ -106,7 +104,7 @@ class ArtifactsCache:
         self,
         artifact_id: ArtifactId,
         render_context: "ArtifactRenderContext",
-    ) -> Result[Artifact, ErrorsList]:
+    ) -> Result[Artifact]:
         cached = self._get_cache_value(artifact_id).unwrap()
 
         if render_context.primary_mode == RenderMode.execute:
@@ -125,13 +123,13 @@ class ArtifactsCache:
     def list(  # noqa: CCR001
         self,
         render_context: "ArtifactRenderContext",
-    ) -> Result[list[Artifact], ErrorsList]:
+    ) -> Result[list[Artifact]]:
         from donna.workspaces.artifacts import list_artifact_ids
 
         artifacts: list[Artifact] = []
-        errors: ErrorsList = []
+        errors: EnvironmentErrors = []
 
-        for artifact_id in list_artifact_ids():
+        for artifact_id in list_artifact_ids().unwrap():
             artifact_result = self.load(artifact_id, render_context)
 
             if artifact_result.is_err():

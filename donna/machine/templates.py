@@ -1,18 +1,20 @@
 import enum
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING, ClassVar, TypeAlias
 
-from donna.core.errors import ErrorsList
-from donna.core.result import Ok, Result
+from llm_tool_cli.core.entities import BaseEntity
+from llm_tool_cli.core.result import Ok, Result
+
 from donna.machine import errors as machine_errors
 from donna.machine.primitives import Primitive
+from donna.machine.tasks import Task, WorkUnit
 from donna.machine.templates_context import DirectiveContext
 
 if TYPE_CHECKING:
     pass
 
 PreparedDirectiveArguments: TypeAlias = tuple[object, ...]
-PreparedDirectiveResult: TypeAlias = Result[PreparedDirectiveArguments, ErrorsList]
+PreparedDirectiveResult: TypeAlias = Result[PreparedDirectiveArguments]
 
 
 class RenderMode(enum.StrEnum):
@@ -35,10 +37,17 @@ class RenderMode(enum.StrEnum):
     analysis = "analysis"
 
 
+class ArtifactRenderContext(BaseEntity):
+    primary_mode: RenderMode
+    current_task: Task | None = None
+    current_work_unit: WorkUnit | None = None
+
+
+RENDER_CONTEXT_VIEW = ArtifactRenderContext(primary_mode=RenderMode.view)
+
+
 class DirectiveUnsupportedRenderMode(machine_errors.InternalError):
-    message: str = "Render mode {render_mode} not implemented in directive {directive_name}."
-    render_mode: object
-    directive_name: str
+    message_template: ClassVar[str] = "Render mode {render_mode} not implemented in directive {directive_name}."
 
 
 class Directive(Primitive, ABC):
@@ -49,7 +58,7 @@ class Directive(Primitive, ABC):
         context: DirectiveContext,
         *argv: object,
         **kwargs: object,
-    ) -> Result[object, ErrorsList]:
+    ) -> Result[object]:
         render_mode = context["render_mode"]
         arguments_result = self._prepare_arguments(context, *argv, **kwargs)
         if arguments_result.is_err():
@@ -65,7 +74,9 @@ class Directive(Primitive, ABC):
             case RenderMode.analysis:
                 return self.render_analyze(context, *argv)
             case _:
-                raise DirectiveUnsupportedRenderMode(render_mode=render_mode, directive_name=self.__class__.__name__)
+                raise DirectiveUnsupportedRenderMode(
+                    details={"render_mode": render_mode, "directive_name": self.__class__.__name__}
+                )
 
     def _prepare_arguments(
         self,
@@ -80,20 +91,20 @@ class Directive(Primitive, ABC):
         self,
         context: DirectiveContext,
         *argv: object,
-    ) -> Result[object, ErrorsList]: ...
+    ) -> Result[object]: ...
 
     def render_execute(
         self,
         context: DirectiveContext,
         *argv: object,
-    ) -> Result[object, ErrorsList]:
+    ) -> Result[object]:
         return self.render_view(context, *argv)
 
     def render_analyze(
         self,
         context: DirectiveContext,
         *argv: object,
-    ) -> Result[object, ErrorsList]:
+    ) -> Result[object]:
         parts = [str(arg) for arg in argv]
         arguments = " ".join(parts)
 

@@ -4,18 +4,18 @@ import tempfile
 from typing import TYPE_CHECKING, ClassVar, cast
 
 import pydantic
+from llm_tool_cli.config.project import project_config
+from llm_tool_cli.core.errors import EnvironmentErrors
+from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.output import output
+from llm_tool_cli.paths import ProjectRootPath
 
-from donna.context.context import context
 from donna.core import errors as core_errors
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactId, artifact_section_id, split_artifact_section_id
 from donna.domain.ids import SectionId
-from donna.domain.paths import ProjectRootPath
 from donna.machine.artifacts import Artifact, ArtifactSectionConfig, ArtifactSectionMeta
 from donna.machine.errors import ArtifactValidationError
 from donna.machine.operations import OperationConfig, OperationKind, OperationMeta
-from donna.workspaces import config as workspace_config
 from donna.workspaces import markdown
 from donna.workspaces.markdown_parser import MarkdownSectionMixin
 
@@ -110,7 +110,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
-    ) -> Result[ArtifactSectionMeta, ErrorsList]:
+    ) -> Result[ArtifactSectionMeta]:
         run_config = cast(RunScriptConfig, section_config)
         script = source.script().unwrap()
         if script is None:
@@ -143,7 +143,7 @@ class RunScript(MarkdownSectionMixin, OperationKind):
     @unwrap_to_error
     def execute_section(
         self, task: "Task", unit: "WorkUnit", artifact: Artifact, section_id: SectionId
-    ) -> Result[list["Change"], ErrorsList]:
+    ) -> Result[list["Change"]]:
         from donna.machine.changes import ChangeAddWorkUnit, ChangeSetTaskContext
 
         operation = artifact.get_section(section_id).unwrap()
@@ -152,23 +152,19 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         script = meta.script
         assert script is not None
 
-        context().journal.add(
-            actor_id="donna",
-            message=f"Run script `{operation.title}`",
-        ).unwrap()
+        output.get().journal(f"Run script `{operation.title}`", actor_id="donna").unwrap()
 
+        project_dir = project_config.get().project_dir
         stdout, stderr, exit_code = _run_script(
             script=script,
             timeout=meta.timeout,
-            project_dir=workspace_config.project_dir(),
+            project_dir=project_dir,
         )
 
-        context().journal.add(
+        output.get().journal(
+            f"Script finished `{operation.title}`, exit code: {exit_code}, "
+            f"has stdout: {bool(stdout)}, has stderr: {bool(stderr)}`",
             actor_id="donna",
-            message=(
-                f"Script finished `{operation.title}`, exit code: {exit_code}, "
-                f"has stdout: {bool(stdout)}, has stderr: {bool(stderr)}`"
-            ),
         ).unwrap()
 
         changes: list["Change"] = []
@@ -186,12 +182,12 @@ class RunScript(MarkdownSectionMixin, OperationKind):
         changes.append(ChangeAddWorkUnit(task_id=task.id, operation_id=full_operation_id))
         return Ok(changes)
 
-    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None, ErrorsList]:  # noqa: CCR001
+    def validate_section(self, artifact: Artifact, section_id: SectionId) -> Result[None]:  # noqa: CCR001
         section = artifact.get_section(section_id).unwrap()
 
         meta = cast(RunScriptMeta, section.meta)
 
-        errors: ErrorsList = []
+        errors: EnvironmentErrors = []
 
         if meta.goto_on_success is None:
             errors.append(RunScriptMissingGotoOnSuccess(artifact_id=artifact.id, section_id=section_id))

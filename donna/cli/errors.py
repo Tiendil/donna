@@ -6,4 +6,4 @@ class InternalError(core_errors.InternalError):
 
 
 class CliError(core_errors.EnvironmentError):
-    cell_kind: str = "cli_error"
+    """Base class for CLI environment errors."""

@@ -32,8 +32,15 @@ Donna supports three protocol modes:
 Use `llm` when invoking `donna` as a coding agent. It is the normal choice for this documentation's examples.
 
 Use `human` for compact terminal inspection by a person.
+Human output shows readable metadata and content without cell borders or generated IDs. Errors start with `Error:` and warnings with `Warning:`.
+
+Without `--protocol`, `skill` uses `llm` and other commands use `human`. An explicit protocol overrides these defaults.
+
+Alongside command results, Donna prints journal records: short progress messages that let you follow ongoing operations, such as when a script starts and finishes. Each record includes a timestamp and execution identifiers when available.
 
 Use `automation` when an agent or another program needs automatic processing of Donna output. Automation output is JSON Lines: each stdout line is one JSON object representing one Donna output cell or journal record.
+
+Ordinary result cells appear when the command completes successfully. Journal records appear as work happens; warnings appear last. A failed command drops pending result cells and reports errors before any warnings. All these records go to stdout.
 
 Example automation command:
 
@@ -44,6 +51,7 @@ donna -p automation list
 Example automation output:
 
 ```jsonl
+{"actor_id":"automation","current_operation_id":null,"current_task_id":null,"current_work_unit_id":null,"message":"List artifacts","timestamp":"2026-10-20T10:00:00Z"}
 {"artifact_id":"@/workflows/polish.donna.md","artifact_kind":"donna.lib.workflow","artifact_title":"Polishing Workflow","content":"Initiate operations to polish and refine the codebase.","id":"WxVlGyfwTs-vnaTh6c46ww"}
 {"artifact_id":"@/workflows/rfc/request.donna.md","artifact_kind":"donna.lib.workflow","artifact_title":"Create a Request for Change","content":"This workflow creates a Request for Change document.","id":"gPY_FHlISKu7HOphsyj-kQ"}
 ```
@@ -78,7 +86,7 @@ Artifact section ids append `:section_id` to an artifact id:
 donna -p llm complete-action-request AR-12-x @/.session/donna/workflow.donna.md:next_step
 ```
 
-`donna skill ...` and `donna init` do not require an existing Donna project config.
+`donna skill ...`, `donna version`, and `donna init` do not require an existing Donna project config.
 
 ## Agent Safety Rules
 
@@ -274,8 +282,8 @@ Use `render` when a workflow does not validate, an operation displays unexpected
 
 Render modes:
 
-- `view`: Use to see how Donna will render workflow instructions to the agent. This is the safest mode for inspecting the workflow text and generated agent-facing instructions.
-- `execute`: Use when debugging the exact operation text Donna would execute in the current session context. This mode may fail when the workflow references data that is expected to exist on the current session stack.
+- `view`: Use to preview workflow text and generated agent-facing instructions. Runtime values such as task variables appear as placeholders.
+- `execute`: Use to inspect execution-mode rendering. The standalone `render` command does not supply a current task, even when a session exists, so task-variable directives fail here. During workflow execution, Donna supplies that context.
 - `analysis`: Use when inspecting machine-readable directive behavior, workflow transitions, and validation-related rendering.
 
 Validate all discovered workflows:
@@ -306,17 +314,23 @@ Initialize Donna in an explicit directory:
 donna -p llm --config /path/to/project/donna.toml init
 ```
 
-`init` creates or refreshes Donna project configuration. Read `donna -p llm skill initialization` and project instructions before using it in an existing repository.
+`init` creates Donna project configuration. If the target file already exists, the command reports an error and leaves the file unchanged. Read `donna -p llm skill initialization` and project instructions before using it in an existing repository.
 
 Print the installed Donna package version:
 
 ```bash
-donna version
+donna -p llm version
 ```
+
+## Warnings And Errors
+
+In LLM and automation output, error cells contain `type = error`, a diagnostic `code`, context fields, and the formatted message in `content`. Human output shows the message and corrective guidance first, followed by diagnostic fields. Read the message and any corrective guidance before continuing.
+
+Success exits with `0`. Explicit invalid arguments use `1`, configuration errors use `2`, and other environment errors, including workflow validation failures, use `3`. When several errors occur, the highest status wins. Framework argument-parsing errors retain status `2` and may use plain-text stderr diagnostics.
 
 ## Journal Forwarding
 
-Donna creates internal journal records for significant workflow events. Projects can forward those records to another tool by configuring `journal.cmd` in `donna.toml`.
+Projects can also send Donna's journal records to another tool by configuring `journal.cmd` in `donna.toml`.
 
 Example:
 
@@ -327,4 +341,4 @@ cmd = ["./bin/taskwarior.sh", "log", "+journal", "+donna", "{message}"]
 
 Supported placeholders are `timestamp`, `actor_id`, `message`, `current_task_id`, `current_work_unit_id`, and `current_operation_id`.
 
-When no journal command is configured, Donna still prints newly created internal journal records through the selected protocol formatter.
+When no journal command is configured, Donna prints journal records through the selected output protocol. When a command is configured, Donna prints each record only after that command succeeds.

@@ -2,9 +2,8 @@ import re
 from typing import TYPE_CHECKING, ClassVar, cast
 
 import pydantic
+from llm_tool_cli.core.result import Ok, Result, unwrap_to_error
 
-from donna.core.errors import ErrorsList
-from donna.core.result import Ok, Result, unwrap_to_error
 from donna.domain import errors as domain_errors
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.ids import SectionId
@@ -35,7 +34,7 @@ def extract_transitions(text: str) -> set[SectionId]:
     for match in matches:
         transition_result = SectionId.parse(match)
         if transition_result.is_err():
-            raise domain_errors.InvalidIdentifier(value=match)
+            raise domain_errors.InvalidIdentifier(details={"value": match})
         transitions.add(transition_result.unwrap())
 
     return transitions
@@ -61,7 +60,7 @@ class RequestAction(MarkdownSectionMixin, OperationKind):
         section_config: ArtifactSectionConfig,
         description: str,
         primary: bool = False,
-    ) -> Result[ArtifactSectionMeta, ErrorsList]:
+    ) -> Result[ArtifactSectionMeta]:
         request_config = cast(RequestActionConfig, section_config)
         analysis = source.as_analysis_markdown(with_title=True)
 
@@ -75,7 +74,7 @@ class RequestAction(MarkdownSectionMixin, OperationKind):
     @unwrap_to_error
     def execute_section(
         self, task: "Task", unit: "WorkUnit", artifact: Artifact, section_id: SectionId
-    ) -> Result[list["Change"], ErrorsList]:
+    ) -> Result[list["Change"]]:
         from donna.machine.changes import ChangeAddActionRequest
 
         operation = artifact.get_section(section_id).unwrap()

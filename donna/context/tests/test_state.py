@@ -1,95 +1,131 @@
 import pathlib
+from collections.abc import Iterator
+from contextlib import contextmanager
 
+import pytest
+from llm_tool_cli.config.project import ProjectConfig, project_config
+from llm_tool_cli.config.tests.fixtures import runtime_settings
+from llm_tool_cli.paths import ProjectConfigPath, RelativeProjectPath
 from pytest_mock import MockerFixture
 
 from donna.context.state import StateCache
+from donna.context.tests import make
 from donna.domain.constants import STATE_FILE_NAME
-from donna.domain.paths import RelativeProjectPath
 from donna.machine import errors as machine_errors
+from donna.machine.caches import caches
 from donna.machine.tests import make as machine_make
+from donna.workspaces import config as workspace_config
 from donna.workspaces import sessions as workspace_sessions
 from donna.workspaces.config import Config
 
 
-def _patch_session_globals(mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
-    mocker.patch("donna.workspaces.sessions.project_dir", return_value=tmp_path)
-    mocker.patch(
-        "donna.workspaces.sessions.config",
-        return_value=Config(session_dir=RelativeProjectPath(pathlib.Path(".session/donna"))),
-    )
+@contextmanager
+def _session_globals(tmp_path: pathlib.Path) -> Iterator[None]:
+    with (
+        project_config.scope(ProjectConfig(config_path=ProjectConfigPath(tmp_path / "donna.toml"))),
+        workspace_config.config.scope(Config(session_dir=RelativeProjectPath(pathlib.Path(".session/donna")))),
+    ):
+        yield
 
 
 class TestStateCache:
+    def test_load__restores_outer_cache_and_detects_nested_scope_writes(self, tmp_path: pathlib.Path) -> None:
+        initial = machine_make.mutable_state().freeze()
+        changed = initial.replace(last_id=12)
+        outer = make.caches()
+        with _session_globals(tmp_path), caches.scope(outer):
+            caches.get().state.save(initial).unwrap()
+            with pytest.raises(ValueError):
+                with caches.scope(make.caches()):
+                    assert caches.get().state.load().unwrap() == initial
+                    caches.get().state.save(changed).unwrap()
+                    raise ValueError("leave nested scope")
+
+            assert caches.get() == outer
+            assert isinstance(caches.get().state.load().unwrap_err()[0], machine_errors.SessionStateChangedExternally)
+            assert isinstance(
+                caches.get().state.save(initial).unwrap_err()[0], machine_errors.SessionStateChangedExternally
+            )
+            with caches.scope(make.caches()):
+                assert caches.get().state.load().unwrap() == changed
+
+        assert not caches.is_set()
+
     def test_load__reports_not_initialized_without_state_file(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
-        _patch_session_globals(mocker, tmp_path)
+        with _session_globals(tmp_path):
 
-        result = StateCache().load()
+            result = StateCache().load()
 
-        assert result.is_err()
-        assert isinstance(result.unwrap_err()[0], machine_errors.SessionStateNotInitialized)
+            assert result.is_err()
+            assert isinstance(result.unwrap_err()[0], machine_errors.SessionStateNotInitialized)
 
     def test_load__reads_consistent_state_from_workspace(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
-        _patch_session_globals(mocker, tmp_path)
-        state = machine_make.mutable_state(tasks=[machine_make.task()]).freeze()
-        workspace_sessions.write_state(state.to_json().encode("utf-8"))
+        with _session_globals(tmp_path):
+            state = machine_make.mutable_state(tasks=[machine_make.task()]).freeze()
+            workspace_sessions.write_state(state.to_json().encode("utf-8"))
 
-        result = StateCache().load()
+            result = StateCache().load()
 
-        assert result.is_ok()
-        assert result.unwrap() == state
+            assert result.is_ok()
+            assert result.unwrap() == state
 
     def test_load__returns_cached_state_while_fingerprint_matches(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
-        _patch_session_globals(mocker, tmp_path)
-        state = machine_make.mutable_state(tasks=[machine_make.task()]).freeze()
-        workspace_sessions.write_state(state.to_json().encode("utf-8"))
-        cache = StateCache()
-        assert cache.load().is_ok()
-        read_state = mocker.patch("donna.workspaces.sessions.read_state")
+        with _session_globals(tmp_path):
+            state = machine_make.mutable_state(tasks=[machine_make.task()]).freeze()
+            workspace_sessions.write_state(state.to_json().encode("utf-8"))
+            cache = StateCache()
+            assert cache.load().is_ok()
+            read_state = mocker.patch("donna.workspaces.sessions.read_state")
 
-        result = cache.load()
+            result = cache.load()
 
-        assert result.is_ok()
-        assert result.unwrap() == state
-        read_state.assert_not_called()
+            assert result.is_ok()
+            assert result.unwrap() == state
+            read_state.assert_not_called()
 
     def test_load__reports_cached_state_changed_externally(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
-        _patch_session_globals(mocker, tmp_path)
-        state = machine_make.mutable_state(tasks=[machine_make.task()]).freeze()
-        workspace_sessions.write_state(state.to_json().encode("utf-8"))
-        cache = StateCache()
-        assert cache.load().is_ok()
-        (tmp_path / ".session" / "donna" / STATE_FILE_NAME).write_bytes(b"external change")
+        with _session_globals(tmp_path):
+            state = machine_make.mutable_state(tasks=[machine_make.task()]).freeze()
+            workspace_sessions.write_state(state.to_json().encode("utf-8"))
+            cache = StateCache()
+            assert cache.load().is_ok()
+            (tmp_path / ".session" / "donna" / STATE_FILE_NAME).write_bytes(b"external change")
 
-        result = cache.load()
+            result = cache.load()
 
-        assert result.is_err()
-        assert isinstance(result.unwrap_err()[0], machine_errors.SessionStateChangedExternally)
+            assert result.is_err()
+            assert isinstance(result.unwrap_err()[0], machine_errors.SessionStateChangedExternally)
 
     def test_save__writes_state_and_updates_cache(self, mocker: MockerFixture, tmp_path: pathlib.Path) -> None:
-        _patch_session_globals(mocker, tmp_path)
-        state = machine_make.mutable_state(tasks=[machine_make.task()]).freeze()
+        with _session_globals(tmp_path):
+            state = machine_make.mutable_state(tasks=[machine_make.task()]).freeze()
 
-        result = StateCache().save(state)
+            result = StateCache().save(state)
 
-        assert result.is_ok()
-        assert workspace_sessions.read_state() == state.to_json().encode("utf-8")
+            assert result.is_ok()
+            assert workspace_sessions.read_state() == state.to_json().encode("utf-8")
 
     def test_save__reports_cached_state_changed_externally(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:
-        _patch_session_globals(mocker, tmp_path)
-        state = machine_make.mutable_state(tasks=[machine_make.task()]).freeze()
-        cache = StateCache()
-        assert cache.save(state).is_ok()
-        (tmp_path / ".session" / "donna" / STATE_FILE_NAME).write_bytes(b"external change")
+        with _session_globals(tmp_path):
+            state = machine_make.mutable_state(tasks=[machine_make.task()]).freeze()
+            cache = StateCache()
+            assert cache.save(state).is_ok()
+            (tmp_path / ".session" / "donna" / STATE_FILE_NAME).write_bytes(b"external change")
 
-        result = cache.save(state)
+            result = cache.save(state)
 
-        assert result.is_err()
-        assert isinstance(result.unwrap_err()[0], machine_errors.SessionStateChangedExternally)
+            assert result.is_err()
+            assert isinstance(result.unwrap_err()[0], machine_errors.SessionStateChangedExternally)
+
+
+__all__ = ["runtime_settings"]
+
+pytestmark = pytest.mark.usefixtures("runtime_settings")

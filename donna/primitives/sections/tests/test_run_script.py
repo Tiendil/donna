@@ -1,9 +1,15 @@
 from pathlib import Path
 
+import pytest
+from llm_tool_cli.config.project import ProjectConfig, project_config
+from llm_tool_cli.config.tests.fixtures import runtime_settings
+from llm_tool_cli.paths import ProjectConfigPath
 from pytest_mock import MockerFixture
 
 from donna.machine.changes import ChangeAddWorkUnit, ChangeSetTaskContext
+from donna.machine.context import ExecutionContext, execution_context
 from donna.machine.tests import make as machine_make
+from donna.machine.tests.helpers import MachineServices, services_scope
 from donna.primitives.sections import run_script
 from donna.primitives.sections.run_script import (
     RunScript,
@@ -127,9 +133,9 @@ class TestRunScript:
         }
 
     def test_execute_section__stores_outputs_and_adds_selected_next_work_unit(self, mocker: MockerFixture) -> None:
-        runtime_context = make.FakeRuntimeContext()
-        mocker.patch("donna.primitives.sections.run_script.context", return_value=runtime_context)
-        mocker.patch.object(run_script.workspace_config, "project_dir", return_value=Path("/project"))
+        machine_context = MachineServices(state=machine_make.mutable_state(tasks=[machine_make.task()]).freeze())
+        unit = machine_make.work_unit(operation_id=make.operation_id("start"))
+        emitter = machine_context.output
         run = mocker.patch.object(run_script, "_run_script", return_value=("stdout", "stderr", 2))
         artifact = machine_make.artifact(
             [
@@ -154,20 +160,32 @@ class TestRunScript:
             ]
         )
 
-        result = RunScript().execute_section(
-            machine_make.task(),
-            machine_make.work_unit(operation_id=make.operation_id("start")),
-            artifact,
-            make.section_id("start"),
-        )
+        with (
+            project_config.scope(ProjectConfig(config_path=ProjectConfigPath(Path("/project/donna.toml")))),
+            services_scope(machine_context),
+            execution_context.scope(
+                ExecutionContext(current_work_unit_id=unit.id, current_operation_id=unit.operation_id)
+            ),
+        ):
+            result = RunScript().execute_section(
+                machine_make.task(),
+                unit,
+                artifact,
+                make.section_id("start"),
+            )
 
         assert result.is_ok()
         run.assert_called_once_with(script="echo ok", timeout=60, project_dir=Path("/project"))
-        assert [message for _, message in runtime_context.journal.messages] == [
+        assert [cell.message for cell in emitter.journal_records] == [
             "Run script `Run checks`",
             "Script finished `Run checks`, exit code: 2, has stdout: True, has stderr: True`",
         ]
         changes = result.unwrap()
+        for cell in emitter.journal_records:
+            assert cell.actor_id == "donna"
+            assert cell.current_task_id == machine_make.TASK_ID
+            assert cell.current_work_unit_id == machine_make.WORK_UNIT_ID
+            assert cell.current_operation_id == make.operation_id("start")
         assert isinstance(changes[0], ChangeSetTaskContext)
         assert changes[0].key == "stdout_key"
         assert changes[0].value == "stdout"
@@ -187,3 +205,8 @@ class TestCoerceOutput:
 
     def test_returns_string_output_unchanged(self) -> None:
         assert _coerce_output("ok") == "ok"
+
+
+__all__ = ["runtime_settings"]
+
+pytestmark = pytest.mark.usefixtures("runtime_settings")

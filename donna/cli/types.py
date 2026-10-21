@@ -1,29 +1,22 @@
 import pathlib
-from typing import Annotated, NoReturn
+from typing import Annotated
 
 import typer
+from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.paths import PathInput
 
-from donna.cli.utils import output_cells
-from donna.core.errors import ErrorsList
 from donna.domain import errors as domain_errors
 from donna.domain.artifact_ids import (
     ARTIFACT_SECTION_DELIMITER,
     ArtifactId,
     ArtifactSectionId,
+    validate_artifact_id,
 )
 from donna.domain.constants import DONNA_ARTIFACT_EXTENSION
 from donna.domain.internal_ids import ActionRequestId
-from donna.domain.paths import PathInput, UntrustedPath
 from donna.machine.templates import RenderMode
-from donna.protocol.errors import environment_error_node
-from donna.protocol.modes import Mode
 from donna.workspaces import paths as workspace_paths
 from donna.workspaces.artifacts import has_donna_artifact_extension
-
-
-def _exit_with_errors(errors: ErrorsList) -> NoReturn:
-    output_cells([environment_error_node(error).info() for error in errors])
-    raise typer.Exit(code=0)
 
 
 def _parse_raw_artifact_path(value: str) -> str:
@@ -37,35 +30,25 @@ def _artifact_filename(value: str) -> str:
     return pathlib.PurePosixPath(value.split(ARTIFACT_SECTION_DELIMITER, maxsplit=1)[0]).name
 
 
-def parse_artifact_id_argument(value: str, project_root: PathInput) -> ArtifactId:
-    artifact_path = workspace_paths.normalize_artifact_path(
-        value, UntrustedPath(project_root), cwd=UntrustedPath(pathlib.Path.cwd())
-    )
-    if artifact_path is None:
-        _exit_with_errors([domain_errors.InvalidIdFormat(id_type=ArtifactId.__name__, value=value)])
+@unwrap_to_error
+def parse_artifact_id_argument(value: str, project_root: PathInput) -> Result[ArtifactId]:
+    artifact_path = workspace_paths.normalize_project_path(
+        value, project_root, cwd=PathInput(pathlib.Path.cwd())
+    ).unwrap()
 
     if not has_donna_artifact_extension(_artifact_filename(artifact_path)):
         raise typer.BadParameter(
             f"Unsupported artifact extension for '{artifact_path}'. Use '*{DONNA_ARTIFACT_EXTENSION}'."
         )
 
-    artifact_id = workspace_paths.normalize_artifact_id(
-        value, UntrustedPath(project_root), cwd=UntrustedPath(pathlib.Path.cwd())
-    )
-    if artifact_id is None:
-        _exit_with_errors([domain_errors.InvalidIdFormat(id_type=ArtifactId.__name__, value=value)])
+    if not validate_artifact_id(artifact_path):
+        return Err([domain_errors.InvalidIdFormat(id_type=ArtifactId.__name__, value=value)])
 
-    return artifact_id
+    return Ok(ArtifactId(artifact_path))
 
 
-def parse_artifact_section_id_argument(value: str, project_root: PathInput) -> ArtifactSectionId:
-    section_id = workspace_paths.normalize_artifact_section_id(
-        value, UntrustedPath(project_root), cwd=UntrustedPath(pathlib.Path.cwd())
-    )
-    if section_id is None:
-        _exit_with_errors([domain_errors.InvalidIdFormat(id_type=f"{ArtifactSectionId.__name__} format", value=value)])
-
-    return section_id
+def parse_artifact_section_id_argument(value: str, project_root: PathInput) -> Result[ArtifactSectionId]:
+    return workspace_paths.normalize_artifact_section_id(value, project_root, cwd=PathInput(pathlib.Path.cwd()))
 
 
 def _parse_action_request_id(value: str) -> ActionRequestId:
@@ -74,18 +57,10 @@ def _parse_action_request_id(value: str) -> ActionRequestId:
     return ActionRequestId(value)
 
 
-def _parse_protocol_mode(value: str) -> Mode:
-    try:
-        return Mode(value)
-    except ValueError as exc:
-        allowed = ", ".join(mode.value for mode in Mode)
-        raise typer.BadParameter(f"Unsupported protocol mode '{value}'. Expected one of: {allowed}.") from exc
-
-
-def _parse_input_path(value: str) -> UntrustedPath:
+def _parse_input_path(value: str) -> PathInput:
     normalized = value.strip()
     if normalized == "-":
-        return UntrustedPath(pathlib.Path("-"))
+        return PathInput(pathlib.Path("-"))
 
     path = pathlib.Path(normalized).expanduser()
     if not path.exists():
@@ -96,7 +71,7 @@ def _parse_input_path(value: str) -> UntrustedPath:
     if not path.is_absolute():
         path = path.resolve()
 
-    return UntrustedPath(path)
+    return PathInput(path)
 
 
 ActionRequestIdArgument = Annotated[
@@ -144,16 +119,6 @@ ArtifactSectionIdArgument = Annotated[
 ]
 
 
-ProtocolModeOption = Annotated[
-    Mode,
-    typer.Option(
-        "--protocol",
-        "-p",
-        parser=_parse_protocol_mode,
-        help="Protocol mode to use (required). Examples: --protocol=llm, -p llm.",
-    ),
-]
-
 RenderModeOption = Annotated[
     RenderMode,
     typer.Option(
@@ -163,20 +128,8 @@ RenderModeOption = Annotated[
 ]
 
 
-ConfigOption = Annotated[
-    pathlib.Path | None,
-    typer.Option(
-        "--config",
-        resolve_path=True,
-        file_okay=True,
-        dir_okay=False,
-        exists=False,
-        help="Optional project config file. If omitted, Donna discovers donna.toml by searching parent directories.",
-    ),
-]
-
 InputPathArgument = Annotated[
-    UntrustedPath,
+    PathInput,
     typer.Argument(
         parser=_parse_input_path,
         help="Path to an existing local file used as input, or '-' to read from stdin.",

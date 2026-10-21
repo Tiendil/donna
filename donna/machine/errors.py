@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from donna.core import errors as core_errors
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
 from donna.domain.ids import SectionId
@@ -9,27 +11,19 @@ class InternalError(core_errors.InternalError):
 
 
 class PrimitiveMethodUnsupported(InternalError):
-    message: str = "Primitive '{primitive_name}' does not support {method_name}."
-    primitive_name: str
-    method_name: str
+    message_template: ClassVar[str] = "Primitive '{primitive_name}' does not support {method_name}."
 
 
 class SessionStateStatusInvalid(InternalError):
-    message: str = "Session state status is invalid."
-
-
-class MachineContextNotSet(InternalError):
-    message: str = "Machine context is not initialized."
+    message_template: ClassVar[str] = "Session state status is invalid."
 
 
 class UnsupportedFormatterMode(InternalError):
-    message: str = "Formatter for mode '{mode}' is not implemented."
+    message_template: ClassVar[str] = "Formatter for mode '{mode}' is not implemented."
 
 
 class EnvironmentError(core_errors.EnvironmentError):
     """Base class for environment errors in donna.machine."""
-
-    cell_kind: str = "machine_error"
 
 
 class SessionStateNotInitialized(EnvironmentError):
@@ -44,15 +38,6 @@ class SessionStateChangedExternally(EnvironmentError):
     ways_to_fix: list[str] = [
         "Stop the current operation and reload the session state before continuing.",
         "Avoid running multiple Donna processes that mutate the same session at the same time.",
-    ]
-
-
-class JournalMessageContainsNewlines(EnvironmentError):
-    code: str = "donna.machine.journal_message_contains_newlines"
-    message: str = "Journal message must be a single line and must not contain newline characters."
-    ways_to_fix: list[str] = [
-        "Provide journal messages as single-line strings.",
-        "Replace newline characters with spaces or split the text into multiple journal records.",
     ]
 
 
@@ -120,15 +105,8 @@ class PrimitiveNotPrimitive(EnvironmentError):
 
 
 class ArtifactValidationError(EnvironmentError):
-    cell_kind: str = "artifact_validation_error"
     artifact_id: ArtifactId
     section_id: SectionId | None = None
-
-    def content_intro(self) -> str:
-        if self.section_id:
-            return f"Error in artifact '{self.artifact_id}', section '{self.section_id}'"
-
-        return f"Error in artifact '{self.artifact_id}'"
 
 
 class MultiplePrimarySectionsError(ArtifactValidationError):

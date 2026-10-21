@@ -16,7 +16,13 @@ The following topics are out of scope except when they affect how specification 
 
 ## Dictionary
 
-- `specification` — a Markdown document in `./specs/` that describes requirements, behavior, terminology, or documentation rules for the project.
+- `specification` — a Markdown document in `./specs/` that describes the project's:
+
+  - requirements.
+  - behavior.
+  - terminology.
+  - documentation rules.
+
 - `top-level section` — a section introduced by an `h2` Markdown header.
 - `nested section` — a section introduced by an `h3` or deeper Markdown header.
 
@@ -67,11 +73,24 @@ The `Dictionary` section SHOULD be placed immediately after the `Scope` section.
 - Specifications MUST use Markdown syntax for formatting the document.
 - Specifications MUST follow [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 - Specifications MUST NOT break long lines to fit within 80 characters or any other number; they MUST use as many characters as needed to express the idea clearly.
-- Long enumerations SHOULD be organized as Markdown lists when possible.
+- When a prose statement names four or more distinct items, those items SHOULD be formatted as a Markdown list rather than inline prose.
+- Specifications SHOULD use Markdown lists for simple enumerations, including terms with definitions and named items with descriptions or a few associated properties.
+- Tables SHOULD be used only when alignment across rows and columns materially helps readers compare items or understand relationships.
+- Having multiple properties per item MUST NOT by itself justify a table; those properties MAY be expressed within list items or nested lists.
+- Formatting choices SHOULD favor readability of Markdown source and clarity of diffs over compactness of the rendered document.
+
+**Example:** Terms with definitions, or configuration fields with defaults and descriptions, ordinarily belong in lists.
+A comparison of supported capabilities across output formats may justify a table.
 
 ## Abstraction level
 
-Specifications MUST describe project behavior, architecture, constraints, terminology, and compatibility contracts at the highest level that is still precise enough to guide implementation.
+Specifications MUST describe the following at the highest level that is still precise enough to guide implementation:
+
+- project behavior.
+- architecture.
+- constraints.
+- terminology.
+- compatibility contracts.
 
 Specifications SHOULD define:
 
@@ -92,15 +111,37 @@ Incidental implementation details include:
 - temporary implementation strategies.
 - repeated examples that restate ownership already defined elsewhere without adding a new constraint.
 
-Specifications MAY name concrete files, modules, symbols, commands, or formats when the name itself is a stable contract.
+Specifications MAY name the following concrete details when the name itself is a stable contract:
+
+- files.
+- modules.
+- symbols.
+- commands.
+- formats.
 
 Stable contracts include:
 
-- public CLI commands, options, arguments, and output records.
+- public CLI contracts covering:
+
+  - commands.
+  - options.
+  - arguments.
+  - output records.
+
 - configuration file names, fields, and values.
 - module ownership boundaries defined by the module-layout specification.
 - naming conventions that all implementations are expected to follow.
 - concrete dependencies or language features that are intentional architectural choices.
+
+Specifications MUST describe intended behavior and architectural constraints independently of the current implementation.
+Concepts MUST be defined through their meaning, responsibilities, and required properties.
+
+Specifications MUST NOT duplicate implementation facts or maintain catalogs that merely mirror code declarations.
+Concrete names, values, and representations MUST be prescribed only when changing them would violate an independently established requirement.
+A detail’s existence, consistency, or visibility in the implementation MUST NOT by itself establish such a requirement.
+
+Enumerations MUST express an intentionally required set or constraints on its membership, rather than document the implementation’s current contents.
+Changes within an existing conceptual contract SHOULD NOT require specification updates solely to synchronize implementation details or catalogs.
 
 When a requirement can be expressed either as an implementation detail or as a general architectural rule, the specification MUST prefer the general rule.
 

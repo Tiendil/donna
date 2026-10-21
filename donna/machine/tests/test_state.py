@@ -1,14 +1,18 @@
-from donna.core.errors import ErrorsList
-from donna.core.result import Ok, Result
-from donna.domain.internal_ids import TaskId, WorkUnitId
+import pytest
+from llm_tool_cli.core.errors import EnvironmentError
+from llm_tool_cli.core.result import Err, Ok, Result
+from pytest_mock import MockerFixture
+
+from donna.domain.internal_ids import ActionRequestId, TaskId, WorkUnitId
 from donna.machine import errors as machine_errors
 from donna.machine.changes import Change, ChangeSetTaskContext
-from donna.machine.context import reset_context, set_context
+from donna.machine.context import ExecutionContext, execution_context
 from donna.machine.operations import OperationKind
 from donna.machine.state import MutableState
 from donna.machine.tasks import Task, WorkUnit
 from donna.machine.tests import make
-from donna.machine.tests.helpers import FakeMachineContext
+from donna.machine.tests.helpers import MachineServices, services_scope
+from donna.protocol import ActionRequestCell, SessionStateCell
 
 
 class _StateOperation(OperationKind):
@@ -18,8 +22,8 @@ class _StateOperation(OperationKind):
         unit: WorkUnit,
         artifact: object,
         section_id: object,
-    ) -> Result[list[Change], ErrorsList]:
-        return Ok([ChangeSetTaskContext(task_id=task.id, key="status", value="done")])
+    ) -> Result[list[Change]]:
+        return Ok([ChangeSetTaskContext(task_id=task.id, key="execution", value=execution_context.get().model_dump())])
 
 
 class TestBaseState:
@@ -63,6 +67,43 @@ class TestBaseState:
 
         assert state.get_next_work_unit() == current_unit
 
+    def test_status_cell__captures_counts_and_started_flag(self) -> None:
+        state = make.mutable_state(
+            tasks=[make.task()], work_units=[make.work_unit()], action_requests=[make.action_request()], started=True
+        )
+
+        cell = state.status_cell()
+
+        assert isinstance(cell, SessionStateCell)
+        assert cell.started
+        assert cell.tasks == 1
+        assert cell.queued_work_units == 1
+        assert cell.pending_action_requests == 1
+
+    def test_status_cell__captures_new_session(self) -> None:
+        cell = MutableState.build().status_cell()
+
+        assert not cell.started
+        assert cell.tasks == cell.queued_work_units == cell.pending_action_requests == 0
+
+    @pytest.mark.parametrize("request_count", [0, 2])
+    def test_details_cells__includes_summary_then_requests_in_order(self, request_count: int) -> None:
+        requests = [
+            make.action_request(request="First request"),
+            make.action_request(id=ActionRequestId("AR-4-e"), request="Second request"),
+        ][:request_count]
+        state = make.mutable_state(action_requests=requests)
+
+        cells = state.details_cells()
+
+        assert len(cells) == request_count + 1
+        assert isinstance(cells[0], SessionStateCell)
+        assert cells[0].pending_action_requests == request_count
+        for cell, request in zip(cells[1:], requests, strict=True):
+            assert isinstance(cell, ActionRequestCell)
+            assert cell.action_request_id == request.id
+            assert cell.request == request.request
+
 
 class TestMutableState:
     def test_build__creates_empty_not_started_state(self) -> None:
@@ -96,18 +137,15 @@ class TestMutableState:
     def test_add_action_request__assigns_id_and_logs_request(self) -> None:
         state = make.mutable_state(last_id=2)
         request = make.action_request(id=None)
-        machine_context = FakeMachineContext()
-        token = set_context(machine_context)
+        machine_context = MachineServices(state=state.freeze())
 
-        try:
+        with services_scope(machine_context):
             state.add_action_request(request)
-        finally:
-            reset_context(token)
 
         assert state.action_requests == [request.replace(id=make.ACTION_REQUEST_ID)]
-        assert machine_context.journal.records == [
-            {"message": "Request agent action `Action title`", "actor_id": "donna"}
-        ]
+        assert [
+            cell.model_dump(include={"message", "actor_id"}) for cell in machine_context.output.journal_records
+        ] == [{"message": "Request agent action `Action title`", "actor_id": "donna"}]
 
     def test_apply_changes__applies_changes_in_order(self) -> None:
         state = make.mutable_state(tasks=[make.task()])
@@ -120,13 +158,10 @@ class TestMutableState:
         task = make.task()
         request = make.action_request()
         state = make.mutable_state(tasks=[task], action_requests=[request], last_id=2)
-        machine_context = FakeMachineContext()
-        token = set_context(machine_context)
+        machine_context = MachineServices(state=state.freeze())
 
-        try:
+        with services_scope(machine_context):
             result = state.complete_action_request(make.ACTION_REQUEST_ID, make.SECONDARY_OPERATION_ID)
-        finally:
-            reset_context(token)
 
         assert result.is_ok()
         assert state.action_requests == []
@@ -134,20 +169,17 @@ class TestMutableState:
         assert state.work_units[0].id == "WU-3-d"
         assert state.work_units[0].task_id == task.id
         assert state.work_units[0].operation_id == make.SECONDARY_OPERATION_ID
-        assert machine_context.journal.records == [
-            {"message": "Complete agent action `Action title`", "actor_id": None}
-        ]
+        assert [
+            cell.model_dump(include={"message", "actor_id"}) for cell in machine_context.output.journal_records
+        ] == [{"message": "Complete agent action `Action title`", "actor_id": "human"}]
 
     def test_start_workflow__creates_task_and_initial_work_unit(self) -> None:
         state = MutableState.build()
         artifact = make.artifact()
-        machine_context = FakeMachineContext(artifact=artifact)
-        token = set_context(machine_context)
+        machine_context = MachineServices(artifact=artifact, state=state.freeze())
 
-        try:
+        with services_scope(machine_context):
             result = state.start_workflow(make.PRIMARY_OPERATION_ID)
-        finally:
-            reset_context(token)
 
         assert result.is_ok()
         assert state.started
@@ -158,79 +190,69 @@ class TestMutableState:
         assert state.work_units[0].id == "WU-2-c"
         assert state.work_units[0].task_id == state.tasks[0].id
         assert machine_context.artifacts.viewed == [make.ARTIFACT_ID]
-        assert machine_context.journal.records == [{"message": "Start workflow `Workflow`", "actor_id": None}]
+        assert [
+            cell.model_dump(include={"message", "actor_id"}) for cell in machine_context.output.journal_records
+        ] == [{"message": "Start workflow `Workflow`", "actor_id": "human"}]
 
     def test_finish_workflow__removes_task_and_logs_workflow_title(self) -> None:
         task = make.task()
         state = make.mutable_state(tasks=[task])
-        machine_context = FakeMachineContext(artifact=make.artifact())
-        token = set_context(machine_context)
+        machine_context = MachineServices(artifact=make.artifact(), state=state.freeze())
 
-        try:
+        with services_scope(machine_context):
             state.finish_workflow(task.id)
-        finally:
-            reset_context(token)
 
         assert state.tasks == []
-        assert machine_context.journal.records == [{"message": "Finish workflow `Workflow`", "actor_id": None}]
+        assert [
+            cell.model_dump(include={"message", "actor_id"}) for cell in machine_context.output.journal_records
+        ] == [{"message": "Finish workflow `Workflow`", "actor_id": "human"}]
 
     def test_execute_next_work_unit__applies_operation_changes_and_removes_unit(self) -> None:
         task = make.task()
         unit = make.work_unit()
         state = make.mutable_state(tasks=[task], work_units=[unit])
-        machine_context = FakeMachineContext(artifact=make.artifact(), primitive=_StateOperation())
-        token = set_context(machine_context)
+        machine_context = MachineServices(artifact=make.artifact(), primitive=_StateOperation(), state=state.freeze())
+        outer = ExecutionContext(
+            current_work_unit_id=WorkUnitId("WU-9-j"), current_operation_id=make.SECONDARY_OPERATION_ID
+        )
 
-        try:
-            result = state.execute_next_work_unit()
-        finally:
-            reset_context(token)
+        with services_scope(machine_context):
+            with execution_context.scope(outer):
+                result = state.execute_next_work_unit()
+                assert execution_context.get() == outer
 
         assert result.is_ok()
         assert state.work_units == []
-        assert state.tasks[0].context == {"status": "done"}
-        assert machine_context.current_work_unit_id.get() is None
+        assert state.tasks[0].context == {
+            "execution": {"current_work_unit_id": unit.id, "current_operation_id": unit.operation_id}
+        }
+        assert not execution_context.is_set()
 
+    @pytest.mark.parametrize("unexpected", [False, True])
+    def test_execute_next_work_unit__restores_both_scopes_after_failure(
+        self, mocker: MockerFixture, unexpected: bool
+    ) -> None:
+        task = make.task()
+        unit = make.work_unit()
+        state = make.mutable_state(tasks=[task], work_units=[unit])
+        machine_context = MachineServices(artifact=make.artifact(), primitive=_StateOperation(), state=state.freeze())
+        failure = EnvironmentError(code="unavailable", message="Unavailable")
+        execute = mocker.patch.object(_StateOperation, "execute_section", return_value=Err([failure]))
+        if unexpected:
+            execute.side_effect = ValueError("unexpected defect")
+        outer = ExecutionContext(
+            current_work_unit_id=WorkUnitId("WU-9-j"), current_operation_id=make.SECONDARY_OPERATION_ID
+        )
 
-class TestStateNode:
-    def test_status__reports_new_session(self) -> None:
-        cell = MutableState.build().node().status()
+        with services_scope(machine_context):
+            with execution_context.scope(outer):
+                if unexpected:
+                    with pytest.raises(ValueError):
+                        state.execute_next_work_unit()
+                else:
+                    assert state.execute_next_work_unit().unwrap_err() == [failure]
+                assert execution_context.get() == outer
 
-        assert cell.kind == "session_state_status"
-        assert cell.content is not None
-        assert "new session" in cell.content
-        assert cell.meta == {"tasks": 0, "queued_work_units": 0, "pending_action_requests": 0}
-
-    def test_status__reports_idle_session(self) -> None:
-        cell = make.mutable_state(tasks=[], work_units=[], action_requests=[], started=True).node().status()
-
-        assert cell.content is not None
-        assert "IDLE" in cell.content
-        assert cell.meta["tasks"] == 0
-
-    def test_status__reports_pending_work_units(self) -> None:
-        cell = make.mutable_state(tasks=[make.task()], work_units=[make.work_unit()]).node().status()
-
-        assert cell.content is not None
-        assert "PENDING WORK UNITS" in cell.content
-        assert cell.meta["queued_work_units"] == 1
-
-    def test_status__reports_pending_action_requests(self) -> None:
-        cell = make.mutable_state(tasks=[make.task()], action_requests=[make.action_request()]).node().status()
-
-        assert cell.content is not None
-        assert "AWAITING YOUR ACTION" in cell.content
-        assert cell.meta["pending_action_requests"] == 1
-
-    def test_status__reports_unfinished_tasks(self) -> None:
-        cell = make.mutable_state(tasks=[make.task()]).node().status()
-
-        assert cell.content is not None
-        assert "unfinished TASKS" in cell.content
-        assert cell.meta["tasks"] == 1
-
-    def test_references__returns_action_request_nodes(self) -> None:
-        references = make.mutable_state(action_requests=[make.action_request()]).node().references()
-
-        assert len(references) == 1
-        assert references[0].status().kind == "action_request"
+        assert state.work_units == [unit]
+        assert state.tasks[0].context == {}
+        assert not execution_context.is_set()

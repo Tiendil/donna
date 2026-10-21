@@ -6,6 +6,11 @@ services:
     build:
       context: ./
       dockerfile: ./docker/Dockerfile
+      # Uncomment with the local uv source and Dockerfile COPY.
+      # additional_contexts:
+      #   llm-tool-cli: ../llm-tool-cli
 
     volumes:
       - ${PWD}:/repository
+      # Uncomment with the local uv source to expose shared-library edits live.
+      # - ../llm-tool-cli:/llm-tool-cli:ro

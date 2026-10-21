@@ -1,27 +1,27 @@
-from donna.core.errors import ErrorsList
-from donna.core.result import Ok, Result
-from donna.protocol.cells import Cell
-from donna.protocol.journal import JournalRecord
+from llm_tool_cli.core.result import Ok, Result
+from llm_tool_cli.output import StreamOutputEmitter
+from llm_tool_cli.protocol.logic_cells.base import LogicCell
+
+from donna.machine.journal import journal_cell
+from donna.protocol.journal import JournalCell
 
 
-class FakeOutputEmitter:
+class FakeOutputEmitter(StreamOutputEmitter):
     def __init__(self) -> None:
-        self.cells: list[Cell] = []
-        self.journal_records: list[JournalRecord] = []
+        super().__init__(journal_factory=journal_cell)
+        self.cells: list[LogicCell] = []
+        self.journal_records: list[JournalCell] = []
 
-    def emit_cell(self, cell: Cell) -> None:
-        self.cells.append(cell)
-
-    def emit_journal(self, record: JournalRecord) -> None:
-        self.journal_records.append(record)
-
-
-class FakeJournal:
-    def __init__(self) -> None:
-        self.messages: list[tuple[str | None, str]] = []
-        self.records: list[dict[str, object]] = []
-
-    def add(self, message: str, actor_id: str | None = None) -> Result[object, ErrorsList]:
-        self.messages.append((actor_id, message))
-        self.records.append({"message": message, "actor_id": actor_id})
+    def emit(self, cells: list[LogicCell]) -> Result[None]:
+        for cell in cells:
+            if isinstance(cell, JournalCell):
+                self.journal_records.append(cell)
+            else:
+                self.cells.append(cell)
         return Ok(None)
+
+    def flush(self) -> None:
+        pass
+
+    def discard(self) -> None:
+        self.cells = [cell for cell in self.cells if cell.is_warning]

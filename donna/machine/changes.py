@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from donna.core.entities import BaseEntity
+from llm_tool_cli.core.entities import BaseEntity
+
 from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import ActionRequestId, TaskId, WorkUnitId
 from donna.machine.action_requests import ActionRequest

@@ -2,12 +2,14 @@ import copy
 from collections.abc import Mapping
 from typing import TYPE_CHECKING
 
-from donna.core.entities import BaseEntity
-from donna.core.errors import ErrorsList
-from donna.core.result import Ok, Result, unwrap_to_error
+from llm_tool_cli.core.entities import BaseEntity
+from llm_tool_cli.core.result import Ok, Result, unwrap_to_error
+from llm_tool_cli.output import output
+
 from donna.domain.artifact_ids import ArtifactSectionId, split_artifact_section_id
 from donna.domain.internal_ids import TaskId, WorkUnitId
-from donna.machine.context import context
+from donna.machine.caches import caches
+from donna.machine.context import execution_context
 
 if TYPE_CHECKING:
     from donna.machine.changes import Change
@@ -55,19 +57,15 @@ class WorkUnit(BaseEntity):
         return unit
 
     @unwrap_to_error
-    def run(self, task: Task) -> Result[list["Change"], ErrorsList]:
-        ctx = context()
-        with ctx.current_operation_id.scope(self.operation_id):
+    def run(self, task: Task) -> Result[list["Change"]]:
+        with execution_context.scope(execution_context.get().replace(current_operation_id=self.operation_id)):
             operation_parts = split_artifact_section_id(self.operation_id)
             assert operation_parts is not None
-            artifact = ctx.artifacts.load_for_execution(operation_parts.artifact_id, task, self).unwrap()
+            artifact = caches.get().artifacts.load_for_execution(operation_parts.artifact_id, task, self).unwrap()
             operation = artifact.get_section(operation_parts.section_id).unwrap()
-            operation_kind = ctx.primitives.resolve(operation.kind).unwrap()
+            operation_kind = caches.get().primitives.resolve(operation.kind).unwrap()
 
-            ctx.journal.add(
-                actor_id="donna",
-                message=operation.title,
-            ).unwrap()
+            output.get().journal(operation.title, actor_id="donna").unwrap()
 
             changes = operation_kind.execute_section(task, self, artifact, operation.id).unwrap()
 

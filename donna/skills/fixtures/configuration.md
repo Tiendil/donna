@@ -126,7 +126,7 @@ Fields:
 
 - `cmd`: optional non-empty list of command arguments.
 
-Supported whole-argument placeholders:
+Common whole-argument placeholders:
 
 - `{timestamp}`: ISO-8601 record timestamp.
 - `{actor_id}`: actor that created the record.
@@ -135,9 +135,13 @@ Supported whole-argument placeholders:
 - `{current_work_unit_id}`: current work unit id, if any.
 - `{current_operation_id}`: current operation artifact section id, if any.
 
-Invalid placeholder names make configuration loading fail.
+Placeholders use the journal record's fields. Missing or null values, including unknown field names, become empty arguments without removing their positions in the command.
 
 Placeholders are recognized only when the whole argument starts with `{` and ends with `}`. For example, `{message}` is a placeholder, but `message:{message}` is a literal argument.
+
+The command runs directly without a shell. Message arguments retain internal line breaks; compact console journals escape those breaks into one physical line.
+
+Only explicit journal messages are forwarded.
 
 Donna still prints newly created journal records through the selected output protocol even when `journal.cmd` is omitted.
 
@@ -151,7 +155,7 @@ Do not broaden `workflow_dirs` to the whole repository unless you plan to do som
 
 Keep default section settings unchanged unless the project has custom primitives and a clear convention for using them.
 
-Configure `journal.cmd` only when the project has a stable journal tool. A failing journal command can make Donna report environment errors during workflow execution.
+Configure `journal.cmd` only when the project has a stable journal tool.
 
 ## Validation
 

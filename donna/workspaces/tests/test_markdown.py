@@ -19,6 +19,11 @@ class TestCodeSource:
         assert make.code_source("yml", "value: 1").structured_data().unwrap() == {"value": 1}
         assert make.code_source("toml", "value = 1").structured_data().unwrap() == {"value": 1}
 
+    def test_structured_data__parses_toml_1_1_multiline_inline_table(self) -> None:
+        source = make.code_source("toml", 'goto_on_code = {\n    "1" = "retry",\n}\n')
+
+        assert source.structured_data().unwrap() == {"goto_on_code": {"1": "retry"}}
+
     def test_structured_data__script_blocks_return_empty_config(self) -> None:
         assert make.code_source("python", "print(1)", script=True).structured_data().unwrap() == {}
 

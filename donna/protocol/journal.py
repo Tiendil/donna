@@ -1,38 +1,20 @@
-import datetime
-import json
+from llm_tool_cli.protocol.logic_cells.journal import JournalCell as BaseJournalCell
 
-import pydantic
-
-from donna.core.entities import BaseEntity
 from donna.domain.artifact_ids import ArtifactSectionId
 from donna.domain.internal_ids import TaskId, WorkUnitId
 
 
-def message_has_newlines(message: str) -> bool:
-    return "\n" in message or "\r" in message
+class JournalCell(BaseJournalCell):
+    current_task_id: TaskId | None = None
+    current_work_unit_id: WorkUnitId | None = None
+    current_operation_id: ArtifactSectionId | None = None
 
+    def human_line(self) -> str:
+        task = self.current_task_id.short if self.current_task_id is not None else "-"
+        return f"{self.timestamp.time().isoformat('seconds')} [{task}] <{self.actor_id or '-'}> {self.message}"
 
-class JournalRecord(BaseEntity):
-    timestamp: datetime.datetime
-    actor_id: str | None
-    message: str
-    current_task_id: TaskId | None
-    current_work_unit_id: WorkUnitId | None
-    current_operation_id: ArtifactSectionId | None
-
-    @pydantic.field_validator("message", mode="after")
-    @classmethod
-    def validate_message_no_newlines(cls, value: str) -> str:
-        if message_has_newlines(value):
-            raise ValueError("Journal message must not contain newline characters.")
-
-        return value
-
-
-def serialize_record(record: JournalRecord) -> bytes:
-    return json.dumps(
-        record.model_dump(mode="json"),
-        ensure_ascii=False,
-        separators=(",", ":"),
-        sort_keys=True,
-    ).encode("utf-8")
+    def llm_line(self) -> str:
+        return (
+            f"{self.timestamp.isoformat()} [{self.current_task_id or '-'}] <{self.actor_id or '-'}> "
+            f"[{self.current_work_unit_id or '-'}] [{self.current_operation_id or '-'}] {self.message}"
+        )

@@ -1,6 +1,7 @@
+from typing import ClassVar
+
 from donna.core import errors as core_errors
 from donna.domain.artifact_ids import ArtifactId
-from donna.domain.paths import ProjectConfigPath
 
 
 class InternalError(core_errors.InternalError):
@@ -8,104 +9,11 @@ class InternalError(core_errors.InternalError):
 
 
 class WorkspaceError(core_errors.EnvironmentError):
-    cell_kind: str = "workspace_error"
-
-
-class WorkspaceConfigError(WorkspaceError):
-    cell_kind: str = "workspace_config_error"
-    config_path: ProjectConfigPath
-
-    def content_intro(self) -> str:
-        return f"Error in Donna config file '{self.config_path}'"
-
-
-class ConfigParseFailed(WorkspaceConfigError):
-    code: str = "donna.workspaces.config_parse_failed"
-    message: str = "Failed to parse config file: {error.details}"
-    details: str
-
-
-class ConfigValidationFailed(WorkspaceConfigError):
-    code: str = "donna.workspaces.config_validation_failed"
-    message: str = "Failed to validate config file: {error.details}"
-    details: str
-
-
-class WorkspaceConfigNotDiscovered(WorkspaceError):
-    code: str = "donna.workspaces.config_not_discovered"
-    message: str = "Could not find a project directory containing `{error.config_name}`."
-    ways_to_fix: list[str] = [
-        "Run Donna from within a project directory that contains the Donna config file.",
-        "Create the Donna project config via CLI command if it does not exist yet.",
-        "Pass `--config PATH` to use a specific Donna config file.",
-    ]
-    config_name: str
-
-
-class WorkspaceAlreadyInitialized(WorkspaceError):
-    code: str = "donna.workspaces.workspace_already_initialized"
-    message: str = "Donna project config already exists at `{error.config_path}`"
-    ways_to_fix: list[str] = [
-        "Continue using the existing project config.",
-        "Remove the existing `donna.toml` file if you want to reinitialize.",
-        "Choose a different project directory.",
-    ]
-    config_path: ProjectConfigPath
-
-
-class WorkspaceConfigNotFound(WorkspaceError):
-    code: str = "donna.workspaces.config_not_found"
-    message: str = "Donna project config does not exist at `{error.config_path}`"
-    ways_to_fix: list[str] = [
-        "Check the config path for typos.",
-        "Create the Donna project config via CLI command if it does not exist yet.",
-        "Omit `--config` to discover `donna.toml` from the current working directory.",
-    ]
-    config_path: ProjectConfigPath
-
-
-class WorkspaceConfigDirNotFound(WorkspaceError):
-    code: str = "donna.workspaces.config_dir_not_found"
-    message: str = "Donna project config directory does not exist for `{error.config_path}`"
-    ways_to_fix: list[str] = [
-        "Check the config path for typos.",
-        "Create the directory that should contain the Donna project config.",
-        "Choose an existing project directory for the Donna project config.",
-    ]
-    config_path: ProjectConfigPath
-
-
-class JournalCommandConfigInvalid(WorkspaceError):
-    code: str = "donna.workspaces.journal_command_config_invalid"
-    message: str = "Journal command config is invalid: {error.details}"
-    ways_to_fix: list[str] = [
-        "Configure `[journal].cmd` as a list of command arguments.",
-        "Use whole-argument placeholders like `{message}` for `JournalRecord` attributes.",
-        "Omit `journal.cmd` to disable external journal writing.",
-    ]
-    argument: str
-    details: str
-
-
-class JournalCommandFailed(WorkspaceError):
-    code: str = "donna.workspaces.journal_command_failed"
-    message: str = "Journal command failed: {error.details}"
-    ways_to_fix: list[str] = [
-        "Check that the configured journal command exists and is executable.",
-        "Check command arguments generated from `[journal].cmd`.",
-        "Omit `journal.cmd` to disable external journal writing.",
-    ]
-    command: list[str]
-    returncode: int | None
-    details: str
+    """Base class for workspace environment errors."""
 
 
 class ArtifactError(WorkspaceError):
-    cell_kind: str = "artifact_error"
     artifact_id: ArtifactId
-
-    def content_intro(self) -> str:
-        return f"Error for artifact '{self.artifact_id}'"
 
 
 class ArtifactNotFound(ArtifactError):
@@ -126,25 +34,11 @@ class ArtifactMultipleFiles(ArtifactError):
 
 
 class MarkdownError(WorkspaceError):
-    cell_kind: str = "markdown_error"
     artifact_id: ArtifactId | None = None
-
-    def content_intro(self) -> str:
-        if self.artifact_id is None:
-            return "Error in markdown source"
-
-        return f"Error in markdown artifact '{self.artifact_id}'"
 
 
 class TemplateDirectiveError(WorkspaceError):
-    cell_kind: str = "template_directive_error"
     artifact_id: ArtifactId | None = None
-
-    def content_intro(self) -> str:
-        if self.artifact_id is None:
-            return "Error in template directive"
-
-        return f"Error in template directive for artifact '{self.artifact_id}'"
 
 
 class DirectivePathIncomplete(TemplateDirectiveError):
@@ -256,15 +150,7 @@ class PrimitiveDoesNotSupportMarkdown(MarkdownError):
 
 
 class MarkdownSectionsCountMismatch(InternalError):
-    message = (
+    message_template: ClassVar[str] = (
         "Artifact `{artifact_id}` has {original_count} sections in the original render "
         "and {analyzed_count} sections in the analysis render."
     )
-
-
-class GlobalConfigAlreadySet(InternalError):
-    message = "Global config value is already set"
-
-
-class GlobalConfigNotSet(InternalError):
-    message = "Global config value is not set"

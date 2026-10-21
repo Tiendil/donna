@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from donna.core import errors as core_errors
 
 
@@ -8,23 +10,17 @@ class InternalError(core_errors.InternalError):
 class EnvironmentError(core_errors.EnvironmentError):
     """Base class for environment errors in donna.domain."""
 
-    cell_kind: str = "domain_error"
-
 
 class InvalidInternalId(InternalError):
-    message: str = "Invalid InternalId: '{value}'."
-    value: str
+    message_template: ClassVar[str] = "Invalid InternalId: '{value}'."
 
 
 class InvalidIdentifier(InternalError):
-    message: str = "Invalid identifier: '{value}'."
-    value: str
+    message_template: ClassVar[str] = "Invalid identifier: '{value}'."
 
 
 class InvalidIdPath(InternalError):
-    message: str = "Invalid {id_type}: '{value}'."
-    id_type: str
-    value: str
+    message_template: ClassVar[str] = "Invalid {id_type}: '{value}'."
 
 
 class InvalidIdFormat(EnvironmentError):

@@ -1,14 +1,51 @@
-from pytest_mock import MockerFixture
+import pathlib
+import re
+from importlib import metadata
+
+import pytest
+from llm_tool_cli.protocol.tests.helpers import cell_payloads
 
 from donna.cli.tests import helpers
 
 
 class TestVersion:
-    def test_prints_package_version_line(self, mocker: MockerFixture) -> None:
-        helpers.load_cli_commands()
-        mocker.patch("donna.cli.commands.version.importlib.metadata.version", return_value="9.8.7")
+    @pytest.mark.parametrize("protocol", [None, "human", "llm", "automation"])
+    def test_prints_version_cell_without_workspace(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: pathlib.Path, protocol: str | None
+    ) -> None:
+        monkeypatch.chdir(tmp_path)
+        version = metadata.version("donna")
 
-        result = helpers.invoke(["version"])
+        options = [] if protocol is None else ["-p", protocol]
+        result = helpers.invoke([*options, "version"])
 
         assert result.exit_code == 0
-        assert result.output == "9.8.7\n"
+        assert not result.stderr
+        assert not (tmp_path / ".session").exists()
+        if protocol == "automation":
+            records = helpers.json_lines(result.stdout)
+            assert len(records) == 1
+            assert cell_payloads(records) == [{"type": "version", "version": version, "content": None}]
+            assert len(result.stdout.splitlines()) == 1
+        else:
+            output = re.sub(r"[A-Za-z0-9_-]{22}", "<id>", result.stdout)
+            if protocol == "llm":
+                assert output == (
+                    f"--DONNA-CELL <id> BEGIN--\nkind=version\ntype=version\nversion={version}\n"
+                    "--DONNA-CELL <id> END--\n"
+                )
+            else:
+                assert output == f"version: {version}\n\n"
+
+    @pytest.mark.parametrize("content", [None, "not valid TOML"])
+    def test_ignores_missing_or_invalid_config(self, tmp_path: pathlib.Path, content: str | None) -> None:
+        config_path = tmp_path / "donna.toml"
+        if content is not None:
+            config_path.write_text(content, encoding="utf-8")
+
+        result = helpers.invoke(["--config", str(config_path), "-p", "automation", "version"])
+
+        assert result.exit_code == 0
+        assert not result.stderr
+        assert helpers.json_lines(result.stdout)[0]["version"] == metadata.version("donna")
+        assert not (tmp_path / ".session").exists()

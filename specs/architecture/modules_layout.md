@@ -2,206 +2,296 @@
 
 ## Goal of the document
 
-This document describes the intended module structure of the project.
+This document describes module ownership and public boundaries.
 
 ## Scope
 
-The scope of this specification is limited to the list of project modules and their intended responsibilities.
+This specification covers project modules and responsibilities.
+The following are out of scope:
 
-The following topics are out of scope:
-
-- detailed implementation design.
+- detailed implementation.
 - runtime behavior.
-- migration planning.
-- entity, error, and test conventions beyond module placement.
+- migrations.
+- entity/error/test conventions beyond placement.
 
 ## Dictionary
 
-- `module` — a Python package or module that owns a coherent area of project functionality.
-- `submodule` — a Python package or module inside another module that owns a narrower part of its parent module's functionality.
-- `test submodule` — a module or file containing tests for a corresponding parent module or submodule.
+- `module` — a Python package/module owning coherent functionality.
+- `submodule` — a narrower responsibility within a module.
+- `test submodule` — tests of a parent module/submodule.
 
 ## Modules
 
-- `./donna/` — root module of the project, contains all code related to the `donna` tool.
-- `./donna/core/` — module responsible for the core functionality not related to domain logic. Contains:
-  - shared entity base classes.
-  - shared error base classes.
-  - shared result types.
-  - domain-independent utilities.
-- `./donna/domain/` — module responsible only for universal domain entities and logic required by all or most other modules. Contains:
-  - shared domain-specific types.
-  - shared domain data structures.
-  - pure domain logic that is independent of more specific subsystems.
-  - no subsystem-specific rule evaluation, protocol rendering, workspace loading, or CLI behavior.
-- `./donna/machine/` — module responsible for Donna workflow execution logic. Contains:
-  - session state entities.
-  - task, work unit, and action request entities.
-  - state changes.
-  - operation and primitive interfaces.
-  - workflow execution orchestration that is independent of CLI argument parsing and protocol-specific formatting.
-  - protocol-facing views of machine-owned concepts expressed as protocol-neutral output values from `./donna/protocol/`.
-- `./donna/runtime/` — module responsible for command-independent runtime orchestration. Contains:
-  - session lifecycle use cases.
-  - workflow execution loop coordination.
-  - invocation-local wiring between context, machine, workspaces, and protocol-facing results.
-  - journal event forwarding orchestration.
-  - no CLI argument parsing.
-- `./donna/context/` — module responsible for invocation-local runtime context. Contains:
-  - context-local caches.
-  - context-local execution scopes.
-  - glue that gives machine and primitive logic access to loaded artifacts, primitive registries, and session state.
-- `./donna/primitives/` — module responsible for built-in primitive implementations. Contains:
-  - artifact primitives.
-  - section primitives.
-  - directive primitives.
-  - primitive-specific validation, rendering, and execution logic.
-- `./donna/lib/` — module responsible for stable public names of built-in primitive instances used by Donna artifact configuration.
-- `./donna/protocol/` — module responsible for Donna output boundary values and protocol formatting. Contains:
-  - protocol-neutral output value definitions used to communicate Donna results between modules.
-  - generic helpers for projecting Donna-owned data and errors into output values.
-  - protocol enums.
-  - formatter selection.
-  - protocol-specific formatters that serialize output values for human, llm, and automation output.
-  - serialized record construction for external output protocols.
-  - low-level output boundary infrastructure that MAY be used by any top-level module.
-- `./donna/skills/` — module responsible for built-in skill text loaded by the CLI and renderers.
-- `./donna/workspaces/` — module responsible for workspace management, including:
-  - finding and parsing config.
-  - detecting current project root.
-  - operations with project files and directories.
-  - artifact discovery and loading.
-  - session state storage.
-  - journal forwarding.
-- `./donna/cli/` — module responsible for the CLI interface of the `donna` tool.
+All Donna code belongs under `donna/`:
+
+- `core` — Donna error-base extensions and domain-independent utilities.
+- `domain` — Universal types, structures, and pure logic used by all/most modules; excludes:
+
+  - Subsystem rules.
+  - Rendering.
+  - Workspace loading.
+  - CLI behavior.
+
+- `machine`:
+
+  - Entities and changes for:
+
+    - Sessions.
+    - Tasks.
+    - Work units.
+    - Action requests.
+
+  - Operation/primitive interfaces.
+  - Execution independent of CLI parsing/formatting.
+  - Scoped execution ids.
+  - Cache interfaces/binding.
+  - Shared artifact-rendering context.
+  - Direct logic-cell construction.
+
+- `runtime` — No CLI parsing; owns:
+
+  - Command-independent session lifecycle.
+  - Execution loop.
+  - Invocation wiring among context/machine/workspaces and results.
+  - Result submission.
+
+- `context` — Artifact, primitive, and session-state cache implementations.
+- `primitives` — Built-in artifact/section/directive primitives with validation, rendering, and execution.
+- `lib` — Stable configured names of constructed built-in primitives.
+- `protocol`:
+
+  - Donna output values.
+  - Typed logic-cell projections.
+  - Execution-aware journal cells.
+  - Serialized records.
+  - Boundary infrastructure available to all modules.
+
+- `skills` — Document definitions and packaged Markdown.
+- `workspaces`:
+
+  - Application schema/starter.
+  - File operations.
+  - Discovery/loading.
+  - Session storage using the project root provided by `llm_tool_cli`.
+
+- `cli`:
+
+  - Parsing.
+  - Runtime invocation.
+  - Protocol/stream selection.
+  - Error handling.
+  - Cell delivery through `llm_tool_cli`.
+
+Domain/runtime MUST assemble cells before returning/submitting them; CLI MUST NOT assemble payloads from internal objects.
+Donna MUST NOT introduce node wrappers/hierarchies.
+Session details MUST compose summary then pending requests in stored order.
+Internal domain/machine APIs MAY retain typed results.
+Skill loading MUST directly use `llm_tool_cli.skills`, preserving errors without adapters.
+Skill fixtures MUST live in `donna/skills/fixtures/` under the library's resource-loading convention; Donna MUST own document definitions and contents.
+CLI MUST use application construction and shared skill/version command registration from `llm_tool_cli`, supplying `donna.skills`, its document definitions, and distribution identity `donna`.
+
+Donna MUST use independent frozen settings from `llm_tool_cli` for static application identity, invocation protocol, and selected project.
+Static settings MUST supply the default configuration filename before parsing; project settings MUST own the active path and derived root.
+
+Donna-owned context bindings MUST use the context-management infrastructure provided by `llm_tool_cli`.
+Complete project settings MUST be bound only after successful preparation and restored at command closure.
+Loaded application settings MUST have an independent typed context binding owned by workspaces, scoped through workspace execution and restored before shared terminal-error reporting.
+Root version and session-directory fields MUST use validation provided by `llm_tool_cli`.
+Donna MUST own supported versions/defaults; shared validation MUST apply its constraint.
+Workflow directories MUST reuse relative-path validation provided by `llm_tool_cli` while Donna owns ordering, deduplication, and serialization.
+Donna MUST NOT retain aggregate global configuration or workspace wrappers duplicating runtime paths.
+
+Project-command context MUST compose command scope from `llm_tool_cli` with Donna runtime preparation/journal factory, without a local command-context subclass or error-journaling catch.
+CLI MUST register project-loading scope from `llm_tool_cli` in framework resources.
+Initialization MUST use the command provided by `llm_tool_cli` with Donna schema/help and the workspace-owned starter template, retaining project scope through framework resources.
+`llm_tool_cli` MUST own:
+
+- discovery.
+- loading.
+- starter creation and validation.
+- project setting construction, binding, and restoration.
+
+Local preparation wrappers MUST NOT remain.
+
+Machine MUST own a frozen, independently bound execution value with optional current work-unit/operation ids.
+CLI MUST bind empty execution context and fresh caches after successful workspace preparation, retain both through execution, and restore prior bindings before shared error reporting.
+Nested work-unit/operation scopes MUST replace only their own id and restore it on success/failure.
+Journals MUST obtain execution ids exclusively from that scope and task ids from cached consistent state, which identifies the processed task until changes are saved.
+
+The machine's public cache boundary MUST expose one bound collection of artifact/primitive/session-state caches through typed interfaces, without importing context/workspace implementations.
+Context MUST own implementations; machine MUST own shared rendering-context data.
+CLI MUST construct caches directly; projectless commands MUST NOT require them.
+Construction MUST NOT require a workspace argument or do workspace I/O.
+The following MUST remain intact:
+
+- artifact refresh.
+- artifact render modes.
+- primitive caching.
+- session external-change detection.
+
+The machine-owned journal-cell factory MUST construct without submission, reading execution scope and cached task on each call.
+Session-load environment errors or no active task MUST still produce events without task ids, preserving actor/execution context.
+The factory MUST preserve explicit actor, including `None`, and MUST NOT accept execution/task overrides.
+Call sites MUST use the active emitter's journal operation provided by `llm_tool_cli`.
+The emitter MUST choose omitted actors and own:
+
+- processing.
+- rendering.
+- buffering.
+- delivery.
+
+Journal cells MUST NOT read context or load state during construction/projection.
+Donna MUST NOT maintain journal services/bindings or aggregate contexts duplicating execution/cache/output scopes.
+External processing MUST precede console delivery.
 
 ## Submodules
 
-Modules can have submodules that are responsible for more specific parts of the functionality.
+Submodules are optional unless required elsewhere.
+Small closed interchangeable-component families SHOULD use one implementation submodule per meaningfully distinct component.
+Shared family code SHOULD contain only:
 
-When a module contains a small closed family of interchangeable components, and each component has meaningful component-specific behavior, the module SHOULD prefer one implementation submodule per component.
+- common types.
+- public unions.
+- selection.
+- iteration glue.
 
-Shared package-level code for such component families SHOULD be limited to common types, public unions, selection helpers, and iteration glue.
+Existing conventional names SHOULD stay consistent:
 
-Submodules are optional implementation details unless another specification explicitly requires them.
+- `utils` — Non-domain technical helpers.
+- `errors` — Module exceptions/errors.
+- `entities` — Owned types/entities.
+- `fixtures` — Reusable configuration/docs/data.
+- `tests` — Colocated tests.
+- `tests.make` — Test-object construction.
+- `tests.helpers` — Setup, mutation, workflows.
 
-Some optional submodules have specific names that reflect their responsibilities and SHOULD be similar across different modules when those submodules exist.
+Errors/entities/tests MUST follow their architecture specs.
+The following MUST be imported directly from their owning modules in `llm_tool_cli`:
 
-List of specific submodules:
+- shared result types.
+- error bases/proxies.
+- `BaseEntity`.
+- `OutputCell`.
+- construction/metadata helpers.
+- cell errors.
 
-- `utils` — submodule responsible for utility functions that are not related to domain logic.
-- `errors` — submodule responsible for defining custom exception types.
-- `entities` — submodule responsible for defining types and entities related to the module's responsibilities.
-- `fixtures` — submodule containing reusable configuration, documentation, or data fixtures owned by the module.
-- `tests` — submodule containing module tests.
-- `tests.make` — test-only submodule containing constructors for test objects related to the parent module.
-- `tests.helpers` — test-only submodule containing reusable test setup, mutation, and workflow helpers.
+Donna domain entities MUST construct typed logic cells without accepting output-cell types; view selection remains Donna-owned.
+Public domain-result cells MUST belong to `donna.protocol.logic_cells` and be exported from `donna.protocol`.
+They MUST construct artifact summaries, action instructions, and session messages during projection.
+Generic messages/prepared documents MAY use content cells from `llm_tool_cli`.
+Donna MUST directly use the following from `llm_tool_cli`:
 
-The `errors`, `entities`, and `tests` submodules MUST follow the corresponding architecture specifications when they are present.
+- error presentation.
+- protocol dispatch.
+- output types.
+- rendering contexts.
 
-The shared `entities` submodule in `./donna/core/` MUST define the common entity base used by higher-level modules.
+Batch rendering/writing MUST belong to `llm_tool_cli` output; individual projection/formatting MUST stay in Donna protocol.
+
+Donna MUST own domain projections and journal attribution.
+Donna journal cells MUST belong to `donna.protocol.journal` and extend the journal cell provided by `llm_tool_cli` with task/work-unit/operation ids, preserving compact human/LLM layouts and the library's escaping/automation serialization.
+Conversion MUST carry captured ids as record attributes without runtime reads.
+Donna MUST NOT duplicate the following from `llm_tool_cli`:
+
+- journal records.
+- formatters.
+- output interfaces/bindings.
+- command processors.
+
+Primitives/runtime/journal output MUST use the active emitter provided by `llm_tool_cli`.
+Setup provided by `llm_tool_cli` MUST bind output independently of projects.
+After runtime preparation, Donna MUST configure its factory and the processor from directly used journal configuration provided by `llm_tool_cli`, without subclasses/field registries.
+Output MUST survive shared finalization; terminal errors MUST bypass Donna factories/restored bindings.
+Programmatic output callers MUST bind emitters explicitly.
+Session commands without useful return values MUST emit cells and return `Result[None]`.
+Render MUST emit a Donna artifact-content logic cell.
+The following cells MUST prohibit journal delivery in their types and construction, without record conversion:
+
+- artifact-status cells.
+- rendered-artifact cells.
+- action-request cells.
+- session-state cells.
+
+Generic content MUST retain shared journal prohibition.
+
+Paths MUST directly use the following from `llm_tool_cli.paths`:
+
+- normalization.
+- resolution.
+- containment.
+- symlink rejection.
+- enumeration.
+
+Donna MUST retain artifact semantics, workflow-directory selection/order, and suffix filtering.
+Fallible discovery MUST return results provided by `llm_tool_cli` and propagate enumeration errors through caches.
 
 ### Submodule nuances
 
 #### `errors`
 
-The `errors` submodule owns module-specific exception classes and error values.
-
-Errors SHOULD express project-level failure modes that callers can handle, not low-level library details.
+Owns errors/exceptions, which SHOULD express actionable project failures rather than low-level details.
 
 #### `entities`
 
-The `entities` submodule owns module-specific types, semantic ids, enums, and entities that represent the module's concepts.
-
-Entities SHOULD describe domain data and boundary data, not storage implementation details unless storage metadata is itself part of the project concept.
+Owns semantic ids, enums, and entities, which SHOULD model domain/boundary data rather than incidental storage details.
 
 #### `utils`
 
-The `utils` submodule owns small helpers that do not naturally belong to entities, settings, integration boundaries, or a more specific submodule.
-
-Utility functions SHOULD be pure or locally technical when practical. If a helper starts to encode module behavior, it SHOULD move to a more specific submodule.
-
-Top-level modules SHOULD avoid depending on another top-level module's `utils` submodule because utilities are not a stable cross-module boundary.
+Owns helpers without a more specific entity/settings/integration owner.
+Helpers SHOULD be pure or locally technical and move when they begin encoding module behavior.
+Top-level modules SHOULD avoid other modules' unstable utilities.
 
 #### `tests`
 
-The `tests` submodule owns colocated tests for the parent module and its submodules.
-
-Tests SHOULD exercise behavior through public boundaries when practical, while storage-focused tests MAY verify storage-specific behavior owned by the module.
-
-Test files SHOULD mirror implementation module names with the `test_` prefix and organize test classes around the tested function or class.
+Owns colocated tests.
+Tests SHOULD use public boundaries, mirror implementation names with `test_`, and group by function/class.
+Storage tests MAY verify owned storage behavior.
 
 #### `make`
 
-The `make` submodule MAY appear only inside tests packages, as `<module>.tests.make`.
-
-`tests.make` owns constructors and factory helpers for test objects related to the parent module.
-
-Tests SHOULD put reusable object construction in `tests.make` instead of duplicating constructors across test files.
-
-Production modules MUST NOT import `tests.make`.
+MAY exist only as `<module>.tests.make` for test factories.
+Reusable construction SHOULD live here; production MUST NOT import it.
 
 #### `helpers`
 
-The `helpers` submodule MAY appear inside tests packages, as `<module>.tests.helpers`.
+MAY exist as `<module>.tests.helpers` for:
 
-`tests.helpers` owns reusable test helpers that perform setup, mutate persisted test state, call module behavior, or wrap common test workflows.
+- setup.
+- persisted mutation.
+- behavior calls.
+- workflows.
 
-Object constructors and pure fake data factories SHOULD live in `tests.make`; helpers that perform actions or coordinate multiple calls SHOULD live in `tests.helpers`.
-
-Production modules MUST NOT import `tests.helpers`.
+Actions/coordinated calls SHOULD live here; pure factories SHOULD live in `make`.
+Production MUST NOT import helpers.
 
 ## Cross-module dependencies
 
 ### Import boundaries
 
-Top-level modules MUST expose stable cross-module APIs through declared public import boundaries.
+Top-level modules MUST expose explicit stable boundaries through package roots or declared public submodules.
+Public submodules SHOULD be cohesive and MUST NOT expose incidental helpers, storage details, or compatibility shims unless intentionally stable.
+Initializers SHOULD export ergonomic common names and define `__all__`, but MUST NOT be required to re-export every submodule name.
+Owned `errors` MUST be public.
+Roots without useful APIs MAY be empty or have empty `__all__`.
 
-A public import boundary MAY be:
+Cross-module imports MUST use declared boundaries, never undeclared internals; same-owner submodules MAY import directly.
+Configured dependency checks MUST enforce the specified ownership and dependency direction.
+Check configuration MUST NOT permit undeclared dependencies merely to silence a finding.
+`utils` is public only if explicitly declared.
+**Example:** CLI may import `donna.workspaces` or its declared public submodules, not its private implementation.
 
-- the top-level module package root, such as `donna.domain`.
-- a declared public submodule, such as `donna.domain.artifact_ids`.
+Modules MAY import protocol boundary values/helpers to expose owned concepts.
+Typed-cell construction MUST NOT count as a boundary violation or protocol-specific rendering.
+Only protocol/CLI modules MAY depend on protocol-specific formatter implementations; non-protocol modules SHOULD NOT own serialization details.
+Protocol rendering means concrete external serialization, such as:
 
-Public import boundaries MUST be explicit enough for maintainers to distinguish stable cross-module API from implementation detail.
-
-A public submodule SHOULD expose cohesive concepts owned by its top-level module.
-
-A public submodule MUST NOT expose low-level helper functions, temporary implementation details, storage-only helpers, or compatibility shims unless those names are intentionally stable.
-
-Top-level module package initializers SHOULD export common public names when doing so improves ergonomics.
-
-Top-level module package initializers MUST NOT be required to re-export every public name from declared public submodules.
-
-When a top-level module owns an `errors` submodule, the package initializer MUST include the `errors` submodule in the public cross-module API.
-
-The package initializer SHOULD define `__all__` to list the names that are intended as the module root public cross-module API.
-
-If a top-level module has no useful module-root public cross-module API, its package initializer MAY be empty or define an empty `__all__`.
-
-Top-level modules MUST import another top-level module only through that module's declared public import boundaries.
-
-For example, `donna.cli` MAY import from `donna.workspaces` and from public submodules declared by `donna.workspaces`, but MUST NOT import from undeclared implementation submodules.
-
-Top-level modules MUST NOT import undeclared implementation submodules from another top-level module.
-
-Submodules inside the same top-level module MAY import each other directly.
-
-The `utils` submodule is not a public import boundary unless a top-level module explicitly declares it as one.
-
-Top-level modules MAY import protocol-owned boundary values and generic projection helpers from `donna.protocol` when they need to expose their owned concepts as Donna output units.
-
-Constructing protocol-neutral output values is not protocol-specific rendering and MUST NOT be treated as a module-boundary violation.
-
-Top-level modules outside `./donna/protocol/` and `./donna/cli/` MUST NOT depend on protocol-specific formatter implementation submodules.
-
-Top-level modules outside `./donna/protocol/` SHOULD NOT own protocol-specific serialization details.
-
-Protocol-specific rendering means selecting or implementing concrete external serialization for a protocol, such as terminal text framing, LLM-oriented boundary syntax, automation JSON Lines records, byte output, or formatter-specific ordering rules.
-
-Constructing protocol-neutral output values with kind, content, media type, and metadata is not protocol-specific rendering.
+- text framing.
+- LLM boundaries.
+- JSON Lines.
+- bytes.
+- formatter ordering.
 
 ## Data structures
 
-Project data structures SHOULD inherit from `donna.core.entities.BaseEntity` unless a third-party interface or standard-library protocol requires another type.
-
-Project data structures MUST NOT use `dataclass` for domain entities.
+Structures SHOULD inherit `BaseEntity` from `llm_tool_cli.core.entities` unless an external/Python protocol requires otherwise.
+Domain entities MUST NOT use `dataclass`.

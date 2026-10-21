@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+
 from donna.machine import errors as machine_errors
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ class StateCache:
         self._session_state: _StateCacheValue | None = None
 
     @unwrap_to_error
-    def load(self) -> Result["ConsistentState", ErrorsList]:
+    def load(self) -> Result["ConsistentState"]:
         from donna.machine.state import ConsistentState
         from donna.workspaces import sessions as workspace_sessions
 
@@ -60,7 +60,7 @@ class StateCache:
         return Ok(state)
 
     @unwrap_to_error
-    def save(self, state: "ConsistentState") -> Result[None, ErrorsList]:
+    def save(self, state: "ConsistentState") -> Result[None]:
         from donna.workspaces import sessions as workspace_sessions
 
         cached = self._session_state

@@ -1,14 +1,15 @@
 import pathlib
 
+from llm_tool_cli.core.result import Err, Ok
+from llm_tool_cli.paths.errors import FilesUnreadable
 from pytest_mock import MockerFixture
 
 from donna.context.artifacts import ArtifactsCache
 from donna.context.tests import make
-from donna.core.result import Ok
 from donna.domain.artifact_ids import ArtifactId
-from donna.machine.templates import RenderMode
+from donna.machine import ArtifactRenderContext
+from donna.machine.templates import RENDER_CONTEXT_VIEW, RenderMode
 from donna.machine.tests import make as machine_make
-from donna.workspaces import artifacts as workspace_artifacts
 from donna.workspaces import errors as workspace_errors
 from donna.workspaces.files import FileFingerprint
 
@@ -31,8 +32,8 @@ class TestArtifactsCache:
         )
         cache = ArtifactsCache()
 
-        first_result = cache.load(machine_make.ARTIFACT_ID, workspace_artifacts.RENDER_CONTEXT_VIEW)
-        second_result = cache.load(machine_make.ARTIFACT_ID, workspace_artifacts.RENDER_CONTEXT_VIEW)
+        first_result = cache.load(machine_make.ARTIFACT_ID, RENDER_CONTEXT_VIEW)
+        second_result = cache.load(machine_make.ARTIFACT_ID, RENDER_CONTEXT_VIEW)
 
         assert first_result.is_ok()
         assert second_result.is_ok()
@@ -46,7 +47,7 @@ class TestArtifactsCache:
         mocker.patch(
             "donna.workspaces.artifacts.artifact_fingerprint", return_value=Ok(FileFingerprint.from_path(path))
         )
-        render_context = workspace_artifacts.ArtifactRenderContext(primary_mode=RenderMode.execute)
+        render_context = ArtifactRenderContext(primary_mode=RenderMode.execute)
         cache = ArtifactsCache()
 
         assert cache.load(machine_make.ARTIFACT_ID, render_context).is_ok()
@@ -69,8 +70,8 @@ class TestArtifactsCache:
         )
         cache = ArtifactsCache()
 
-        assert cache.load(machine_make.ARTIFACT_ID, workspace_artifacts.RENDER_CONTEXT_VIEW).is_ok()
-        result = cache.load(machine_make.ARTIFACT_ID, workspace_artifacts.RENDER_CONTEXT_VIEW)
+        assert cache.load(machine_make.ARTIFACT_ID, RENDER_CONTEXT_VIEW).is_ok()
+        result = cache.load(machine_make.ARTIFACT_ID, RENDER_CONTEXT_VIEW)
 
         assert result.is_ok()
         assert first_raw_artifact.render_modes == [RenderMode.view]
@@ -81,7 +82,7 @@ class TestArtifactsCache:
         raw_artifact = make.FakeRawArtifact(missing_path, machine_make.artifact())
         mocker.patch("donna.workspaces.artifacts.fetch_raw_artifact", return_value=Ok(raw_artifact))
 
-        result = ArtifactsCache().load(machine_make.ARTIFACT_ID, workspace_artifacts.RENDER_CONTEXT_VIEW)
+        result = ArtifactsCache().load(machine_make.ARTIFACT_ID, RENDER_CONTEXT_VIEW)
 
         assert result.is_err()
         error = result.unwrap_err()[0]
@@ -96,10 +97,10 @@ class TestArtifactsCache:
             "donna.workspaces.artifacts.artifact_fingerprint", return_value=Ok(FileFingerprint.from_path(path))
         )
         cache = ArtifactsCache()
-        assert cache.load(machine_make.ARTIFACT_ID, workspace_artifacts.RENDER_CONTEXT_VIEW).is_ok()
+        assert cache.load(machine_make.ARTIFACT_ID, RENDER_CONTEXT_VIEW).is_ok()
 
         cache.invalidate(machine_make.ARTIFACT_ID)
-        assert cache.load(machine_make.ARTIFACT_ID, workspace_artifacts.RENDER_CONTEXT_VIEW).is_ok()
+        assert cache.load(machine_make.ARTIFACT_ID, RENDER_CONTEXT_VIEW).is_ok()
 
         assert raw_artifact.render_modes == [RenderMode.view, RenderMode.view]
 
@@ -112,7 +113,7 @@ class TestArtifactsCache:
         second_path = _write_artifact_file(tmp_path, "second.donna.md", "# Second")
         first_artifact = machine_make.artifact()
         second_artifact = machine_make.artifact().replace(id=second_id)
-        mocker.patch("donna.workspaces.artifacts.list_artifact_ids", return_value=[first_id, second_id])
+        mocker.patch("donna.workspaces.artifacts.list_artifact_ids", return_value=Ok([first_id, second_id]))
         mocker.patch(
             "donna.workspaces.artifacts.fetch_raw_artifact",
             side_effect=[
@@ -121,7 +122,7 @@ class TestArtifactsCache:
             ],
         )
 
-        result = ArtifactsCache().list(workspace_artifacts.RENDER_CONTEXT_VIEW)
+        result = ArtifactsCache().list(RENDER_CONTEXT_VIEW)
 
         assert result.is_ok()
         assert result.unwrap() == [first_artifact, second_artifact]
@@ -130,7 +131,7 @@ class TestArtifactsCache:
         missing_id = ArtifactId("@/workflows/missing.donna.md")
         path = _write_artifact_file(tmp_path, "workflow.donna.md", "# Workflow")
         mocker.patch(
-            "donna.workspaces.artifacts.list_artifact_ids", return_value=[machine_make.ARTIFACT_ID, missing_id]
+            "donna.workspaces.artifacts.list_artifact_ids", return_value=Ok([machine_make.ARTIFACT_ID, missing_id])
         )
         mocker.patch(
             "donna.workspaces.artifacts.fetch_raw_artifact",
@@ -140,9 +141,15 @@ class TestArtifactsCache:
             ],
         )
 
-        result = ArtifactsCache().list(workspace_artifacts.RENDER_CONTEXT_VIEW)
+        result = ArtifactsCache().list(RENDER_CONTEXT_VIEW)
 
         assert result.is_err()
         error = result.unwrap_err()[0]
         assert isinstance(error, workspace_errors.ArtifactNotFound)
         assert error.artifact_id == missing_id
+
+    def test_list__propagates_discovery_failure(self, mocker: MockerFixture) -> None:
+        failure = FilesUnreadable(path="/project", reason="cannot list directory")
+        mocker.patch("donna.workspaces.artifacts.list_artifact_ids", return_value=Err([failure]))
+
+        assert ArtifactsCache().list(RENDER_CONTEXT_VIEW).unwrap_err() == [failure]

@@ -1,29 +1,28 @@
-import typer
+from llm_tool_cli.cli.application import create_app
+from llm_tool_cli.cli.commands.initialization import register_init_command
+from llm_tool_cli.cli.commands.skills import register_skill_command
+from llm_tool_cli.cli.commands.version import register_version_command
+from llm_tool_cli.core import settings
 
-from donna.cli.entities import GLOBAL_OPTIONS_CONTEXT_KEY, GlobalOptions
-from donna.cli.types import ConfigOption, ProtocolModeOption
-from donna.domain.paths import UntrustedPath
-from donna.protocol.modes import Mode
+from donna.skills import SkillDocument
+from donna.workspaces.config import Config
 
-app = typer.Typer(help="Donna CLI: manage hierarchical state machines to guide your AI agents.")
-
-
-@app.callback()
-def initialize(
-    context: typer.Context,
-    protocol: ProtocolModeOption = Mode.human,
-    config_path: ConfigOption = None,
-) -> None:
-    context.meta[GLOBAL_OPTIONS_CONTEXT_KEY] = GlobalOptions(
-        protocol=protocol, config_path=None if config_path is None else UntrustedPath(config_path)
-    )
+app = create_app(help="Donna CLI: manage hierarchical state machines to guide your AI agents.")
+register_skill_command(app, package="donna.skills", documents=SkillDocument)
+register_version_command(app, distribution="donna")
+register_init_command(
+    app,
+    config_class=Config,
+    package="donna.workspaces",
+    template="base_config.toml",
+    help="Initialize Donna project config.",
+)
 
 
 def main() -> None:
+    settings.initialize(label=settings.ToolLabel("DONNA"), config_filename=settings.ConfigFilename("donna.toml"))
+
     from donna.cli.commands import artifacts  # noqa: F401
     from donna.cli.commands import sessions  # noqa: F401
-    from donna.cli.commands import skills  # noqa: F401
-    from donna.cli.commands import version  # noqa: F401
-    from donna.cli.commands import workspaces  # noqa: F401
 
     app()

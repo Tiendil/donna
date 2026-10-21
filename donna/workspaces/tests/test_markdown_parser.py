@@ -1,19 +1,18 @@
 from typing import ClassVar
 
+from llm_tool_cli.core.result import Err, Ok, Result
 from pytest_mock import MockerFixture
 
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result
 from donna.domain.artifact_ids import ArtifactId
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
 from donna.domain.python_path import PythonPath
 from donna.machine.artifacts import Artifact, ArtifactSection, ArtifactSectionConfig
 from donna.machine.primitives import Primitive
+from donna.machine.templates import RENDER_CONTEXT_VIEW
 from donna.primitives.sections.text import Text
 from donna.workspaces import errors as workspace_errors
 from donna.workspaces import markdown_parser
-from donna.workspaces.artifacts import RENDER_CONTEXT_VIEW
 from donna.workspaces.markdown import CodeSource, SectionLevel, SectionSource
 from donna.workspaces.markdown_parser import MarkdownSectionMixin, construct_sections_from_markdown
 from donna.workspaces.tests import make
@@ -33,7 +32,7 @@ class _FailingMarkdownPrimitive(_MarkdownPrimitive):
         source: SectionSource,
         config: dict[str, object],
         primary: bool = False,
-    ) -> Result[ArtifactSection, ErrorsList]:
+    ) -> Result[ArtifactSection]:
         return Err([workspace_errors.MarkdownArtifactWithoutSections(artifact_id=artifact_id)])
 
 
@@ -67,7 +66,7 @@ class TestMarkdownSectionMixin:
         result = primitive.markdown_construct_meta(make.ARTIFACT_ID, make.section_source(), make.section_config(), "")
 
         assert result.is_ok()
-        assert result.unwrap().cells_meta() == {}
+        assert result.unwrap().model_dump() == {}
 
     def test_markdown_construct_section__builds_artifact_section(self) -> None:
         primitive = _MarkdownPrimitive()
@@ -111,8 +110,8 @@ class TestParseArtifactContent:
         try:
             markdown_parser.parse_artifact_content(make.ARTIFACT_ID, "# Workflow\n", RENDER_CONTEXT_VIEW)
         except workspace_errors.MarkdownSectionsCountMismatch as error:
-            assert error.arguments["original_count"] == 1
-            assert error.arguments["analyzed_count"] == 2
+            assert error.details["original_count"] == 1
+            assert error.details["analyzed_count"] == 2
         else:
             raise AssertionError("Expected MarkdownSectionsCountMismatch")
 

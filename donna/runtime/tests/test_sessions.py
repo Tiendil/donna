@@ -1,7 +1,7 @@
+from llm_tool_cli.core.result import Ok, Result
+from llm_tool_cli.protocol import Protocol
 from pytest_mock import MockerFixture
 
-from donna.core.errors import ErrorsList
-from donna.core.result import Ok, Result
 from donna.domain.artifact_ids import ArtifactId, ArtifactSectionId
 from donna.domain.id_paths import NormalizedRawIdPath
 from donna.domain.ids import SectionId
@@ -37,7 +37,7 @@ class _NoopOperation(OperationKind):
         unit: WorkUnit,
         artifact: Artifact,
         section_id: SectionId,
-    ) -> Result[list[Change], ErrorsList]:
+    ) -> Result[list[Change]]:
         return Ok([])
 
 
@@ -48,7 +48,7 @@ class _RequestActionOperation(OperationKind):
         unit: WorkUnit,
         artifact: Artifact,
         section_id: SectionId,
-    ) -> Result[list[Change], ErrorsList]:
+    ) -> Result[list[Change]]:
         request = ActionRequest.build(
             title="Choose next",
             request="Pick the next operation",
@@ -89,8 +89,8 @@ def _context(
     *,
     state: ConsistentState | None = None,
     primitive: OperationKind | None = None,
-) -> make.FakeRuntimeContext:
-    return make.FakeRuntimeContext(
+) -> make.RuntimeServices:
+    return make.RuntimeServices(
         state=state or MutableState.build().freeze(),
         artifact=_artifact(),
         primitive=primitive or _NoopOperation(),
@@ -119,7 +119,7 @@ class TestLoadState:
         state = MutableState.build().freeze()
         runtime_context = _context(state=state)
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.load_state()
 
         assert result.is_ok()
@@ -131,7 +131,7 @@ class TestLoadState:
         runtime_context.state.state = None
         runtime_context.state.errors = [machine_errors.SessionStateNotInitialized()]
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.load_state()
 
         assert result.is_ok()
@@ -144,7 +144,7 @@ class TestLoadState:
         runtime_context = _context()
         runtime_context.state.errors = [error]
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.load_state()
 
         assert result.is_err()
@@ -158,24 +158,31 @@ class TestNewSession:
         existing_state.mark_started()
         runtime_context = _context(state=existing_state.freeze())
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.new_session()
 
         assert result.is_ok()
         assert runtime_context.state.saved == [MutableState.build().freeze()]
-        assert runtime_context.journal.records == [{"message": "Created new session state.", "actor_id": None}]
-        assert result.unwrap()[0].kind == "operation_succeeded"
+        assert [
+            cell.model_dump(include={"message", "actor_id"}) for cell in runtime_context.output.journal_records
+        ] == [{"message": "Created new session state.", "actor_id": "human"}]
+        assert runtime_context.output.cells[0].render(Protocol.human)[0].kind == "operation_succeeded"
 
 
 class TestClear:
     def test_resets_workspace_session_dir_and_reports_success(self, mocker: MockerFixture) -> None:
         reset_dir = mocker.patch("donna.runtime.sessions.workspace_sessions.reset_dir")
 
-        result = sessions.clear()
+        runtime_context = _context()
+        with make.services_scope(runtime_context):
+            result = sessions.clear()
 
         assert result.is_ok()
         reset_dir.assert_called_once_with()
-        assert result.unwrap()[0].kind == "operation_succeeded"
+        assert runtime_context.output.cells[0].render(Protocol.human)[0].kind == "operation_succeeded"
+        output = runtime_context.output.cells[0].render(Protocol.automation)[0]
+        assert output.meta == {"type": "operation_succeeded"}
+        assert output.content == "Cleared session."
 
 
 class TestContinue:
@@ -189,7 +196,7 @@ class TestContinue:
         )
         runtime_context = _context(state=state.freeze(), primitive=_RequestActionOperation())
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.continue_()
 
         assert result.is_ok()
@@ -198,18 +205,23 @@ class TestContinue:
         assert final_state.work_units == []
         assert len(final_state.action_requests) == 1
         assert runtime_context.state.saved[-1] == final_state
-        assert [cell.kind for cell in result.unwrap()] == ["session_state_status", "action_request"]
+        assert [cell.render(Protocol.human)[0].kind for cell in runtime_context.output.cells] == [
+            "session_state_status",
+            "action_request",
+        ]
 
 
 class TestStatus:
     def test_returns_current_state_info_cell(self) -> None:
         runtime_context = _context()
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.status()
 
         assert result.is_ok()
-        assert [cell.kind for cell in result.unwrap()] == ["session_state_status"]
+        assert [cell.render(Protocol.human)[0].kind for cell in runtime_context.output.cells] == [
+            "session_state_status"
+        ]
 
 
 class TestDetails:
@@ -223,18 +235,21 @@ class TestDetails:
         )
         runtime_context = _context(state=state.freeze())
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.details()
 
         assert result.is_ok()
-        assert [cell.kind for cell in result.unwrap()] == ["session_state_status", "action_request"]
+        assert [cell.render(Protocol.human)[0].kind for cell in runtime_context.output.cells] == [
+            "session_state_status",
+            "action_request",
+        ]
 
 
 class TestStartWorkflow:
     def test_starts_primary_workflow_operation_runs_it_and_returns_details(self) -> None:
         runtime_context = _context(primitive=_RequestActionOperation())
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.start_workflow(ARTIFACT_ID)
 
         assert result.is_ok()
@@ -246,7 +261,10 @@ class TestStartWorkflow:
         assert len(final_state.action_requests) == 1
         assert runtime_context.artifacts.loaded[0][0] == ARTIFACT_ID
         assert runtime_context.artifacts.viewed == [ARTIFACT_ID]
-        assert [cell.kind for cell in result.unwrap()] == ["session_state_status", "action_request"]
+        assert [cell.render(Protocol.human)[0].kind for cell in runtime_context.output.cells] == [
+            "session_state_status",
+            "action_request",
+        ]
 
 
 class TestValidateOperationTransition:
@@ -260,7 +278,7 @@ class TestValidateOperationTransition:
         )
         runtime_context = _context()
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions._validate_operation_transition(state, ACTION_REQUEST_ID, NEXT_OPERATION_ID)
 
         assert result.is_ok()
@@ -275,7 +293,7 @@ class TestValidateOperationTransition:
         )
         runtime_context = _context()
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions._validate_operation_transition(state, ACTION_REQUEST_ID, OTHER_OPERATION_ID)
 
         assert result.is_err()
@@ -296,7 +314,7 @@ class TestCompleteActionRequest:
         )
         runtime_context = _context(state=state.freeze())
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.complete_action_request(ACTION_REQUEST_ID, NEXT_OPERATION_ID)
 
         assert result.is_ok()
@@ -306,7 +324,9 @@ class TestCompleteActionRequest:
         assert final_state.work_units == []
         assert len(runtime_context.state.saved) == 2
         assert runtime_context.artifacts.executed[0][0] == ARTIFACT_ID
-        assert [cell.kind for cell in result.unwrap()] == ["session_state_status"]
+        assert [cell.render(Protocol.human)[0].kind for cell in runtime_context.output.cells] == [
+            "session_state_status"
+        ]
 
     def test_returns_error_for_disallowed_transition_without_saving(self) -> None:
         state = MutableState(
@@ -318,7 +338,7 @@ class TestCompleteActionRequest:
         )
         runtime_context = _context(state=state.freeze())
 
-        with make.installed_context(runtime_context):
+        with make.services_scope(runtime_context):
             result = sessions.complete_action_request(ACTION_REQUEST_ID, OTHER_OPERATION_ID)
 
         assert result.is_err()

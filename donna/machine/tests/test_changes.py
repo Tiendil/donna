@@ -11,9 +11,8 @@ from donna.machine.changes import (
     ChangeRemoveWorkUnit,
     ChangeSetTaskContext,
 )
-from donna.machine.context import reset_context, set_context
 from donna.machine.tests import make
-from donna.machine.tests.helpers import FakeMachineContext
+from donna.machine.tests.helpers import MachineServices, services_scope
 
 
 class TestChangeAddTask:
@@ -35,16 +34,15 @@ class TestChangeFinishTask:
     def test_apply_to__finishes_workflow_for_task(self) -> None:
         task = make.task()
         state = make.mutable_state(tasks=[task])
-        machine_context = FakeMachineContext(artifact=make.artifact())
-        token = set_context(machine_context)
+        machine_context = MachineServices(artifact=make.artifact(), state=state.freeze())
 
-        try:
+        with services_scope(machine_context):
             ChangeFinishTask(task_id=task.id).apply_to(state)
-        finally:
-            reset_context(token)
 
         assert state.tasks == []
-        assert machine_context.journal.records == [{"message": "Finish workflow `Workflow`", "actor_id": None}]
+        assert [
+            cell.model_dump(include={"message", "actor_id"}) for cell in machine_context.output.journal_records
+        ] == [{"message": "Finish workflow `Workflow`", "actor_id": "human"}]
 
 
 class TestChangeAddWorkUnit:
@@ -63,13 +61,9 @@ class TestChangeAddActionRequest:
     def test_apply_to__delegates_to_state_action_request_addition(self) -> None:
         state = make.mutable_state(last_id=2)
         request = make.action_request(id=None)
-        machine_context = FakeMachineContext()
-        token = set_context(machine_context)
-
-        try:
+        machine_context = MachineServices(state=state.freeze())
+        with services_scope(machine_context):
             ChangeAddActionRequest(action_request=request).apply_to(state)
-        finally:
-            reset_context(token)
 
         assert state.action_requests == [request.replace(id=make.ACTION_REQUEST_ID)]
 

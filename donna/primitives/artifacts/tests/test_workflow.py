@@ -76,18 +76,6 @@ class TestFindWorkflowSections:
         assert sections == {make.section_id("start"), make.section_id("next"), make.section_id("other")}
 
 
-class TestWorkflowMeta:
-    def test_cells_meta__serializes_explicit_start_operation(self) -> None:
-        meta = WorkflowMeta(start_operation_id=make.section_id("start"))
-
-        assert meta.cells_meta() == {"start_operation_id": "start"}
-
-    def test_cells_meta__omits_missing_start_operation(self) -> None:
-        meta = WorkflowMeta()
-
-        assert meta.cells_meta() == {}
-
-
 class TestWorkflow:
     def test_execute_section__adds_work_unit_for_resolved_start_operation(self) -> None:
         artifact = machine_make.artifact(

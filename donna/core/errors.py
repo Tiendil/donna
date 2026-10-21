@@ -1,44 +1,15 @@
-import pydantic
+from typing import ClassVar
 
-from donna.core.entities import BaseEntity
-
-
-class InternalError(Exception):
-    message = "An internal error occurred"
-
-    def __init__(self, **kwargs: object) -> None:
-        self.arguments = kwargs
-
-    def error_message(self) -> str:
-        return self.message.format(**self.arguments)
-
-    def __str__(self) -> str:
-        return f"{self.__class__.__name__}: {self.error_message()}"
+from llm_tool_cli.core import errors as llm_tool_errors
 
 
-class EnvironmentError(BaseEntity):
-    cell_kind: str
-    cell_media_type: str = "text/markdown"
-
-    code: str
-    message: str
-    ways_to_fix: list[str] = pydantic.Field(default_factory=list)
-
-    def content_intro(self) -> str:
-        return "Error"
+class InternalError(llm_tool_errors.InternalError):
+    message_template: ClassVar[str] = "An internal error occurred"
 
 
-class EnvironmentErrorsProxy(InternalError):
-    message = "This is a technical exception to pass an environment error up the call stack."
-
-    def __init__(self, errors: list[EnvironmentError]) -> None:
-        super().__init__(errors=errors)
+class EnvironmentError(llm_tool_errors.EnvironmentError):
+    """Base class for Donna-owned operational failures."""
 
 
 class CoreEnvironmentError(EnvironmentError):
     """Base class for environment errors in donna.core."""
-
-    cell_kind: str = "core_environment_error"
-
-
-ErrorsList = list[EnvironmentError]

@@ -1,16 +1,17 @@
 import copy
-import textwrap
 from typing import Sequence, cast
 
 import pydantic
+from llm_tool_cli.core.entities import BaseEntity
+from llm_tool_cli.core.result import Err, Ok, Result, unwrap_to_error
+from llm_tool_cli.output import output
+from llm_tool_cli.protocol.logic_cells.base import LogicCell
 
-from donna.core.entities import BaseEntity
-from donna.core.errors import ErrorsList
-from donna.core.result import Err, Ok, Result, unwrap_to_error
 from donna.domain.artifact_ids import ArtifactSectionId, split_artifact_section_id
 from donna.domain.internal_ids import ActionRequestId, InternalId, TaskId, WorkUnitId
 from donna.machine import errors as machine_errors
 from donna.machine.action_requests import ActionRequest
+from donna.machine.caches import caches
 from donna.machine.changes import (
     Change,
     ChangeAddTask,
@@ -19,10 +20,9 @@ from donna.machine.changes import (
     ChangeRemoveTask,
     ChangeRemoveWorkUnit,
 )
-from donna.machine.context import context
+from donna.machine.context import execution_context
 from donna.machine.tasks import Task, WorkUnit
-from donna.protocol.cells import Cell
-from donna.protocol.nodes import Node
+from donna.protocol import SessionStateCell
 
 
 class BaseState(BaseEntity):
@@ -35,8 +35,16 @@ class BaseState(BaseEntity):
     def has_work(self) -> bool:
         return bool(self.work_units)
 
-    def node(self) -> "StateNode":
-        return StateNode(self)
+    def status_cell(self) -> SessionStateCell:
+        return SessionStateCell(
+            started=self.started,
+            tasks=len(self.tasks),
+            queued_work_units=len(self.work_units),
+            pending_action_requests=len(self.action_requests),
+        )
+
+    def details_cells(self) -> list[LogicCell]:
+        return [self.status_cell(), *(request.to_cell() for request in self.action_requests)]
 
     ###########
     # Accessors
@@ -49,7 +57,7 @@ class BaseState(BaseEntity):
 
         return self.tasks[-1]
 
-    def get_action_request(self, request_id: ActionRequestId) -> Result[ActionRequest, ErrorsList]:
+    def get_action_request(self, request_id: ActionRequestId) -> Result[ActionRequest]:
         for request in self.action_requests:
             if request.id == request_id:
                 return Ok(request)
@@ -122,10 +130,7 @@ class MutableState(BaseState):
     def add_action_request(self, action_request: ActionRequest) -> None:
         full_request = action_request.replace(id=self.next_action_request_id())
 
-        context().journal.add(
-            actor_id="donna",
-            message=f"Request agent action `{full_request.title}`",
-        ).unwrap()
+        output.get().journal(f"Request agent action `{full_request.title}`", actor_id="donna").unwrap()
 
         self.action_requests.append(full_request)
 
@@ -155,14 +160,12 @@ class MutableState(BaseState):
     @unwrap_to_error
     def complete_action_request(
         self, request_id: ActionRequestId, next_operation_id: ArtifactSectionId
-    ) -> Result[None, ErrorsList]:
+    ) -> Result[None]:
         current_task = self.current_task
         assert current_task is not None
 
         action_request = self.get_action_request(request_id).unwrap()
-        context().journal.add(
-            message=f"Complete agent action `{action_request.title}`",
-        ).unwrap()
+        output.get().journal(f"Complete agent action `{action_request.title}`").unwrap()
 
         changes = [
             ChangeAddWorkUnit(task_id=current_task.id, operation_id=next_operation_id),
@@ -172,15 +175,13 @@ class MutableState(BaseState):
         return Ok(None)
 
     @unwrap_to_error
-    def start_workflow(self, full_operation_id: ArtifactSectionId) -> Result[None, ErrorsList]:
+    def start_workflow(self, full_operation_id: ArtifactSectionId) -> Result[None]:
         operation_parts = split_artifact_section_id(full_operation_id)
         assert operation_parts is not None
-        artifact = context().artifacts.load_for_view(operation_parts.artifact_id).unwrap()
+        artifact = caches.get().artifacts.load_for_view(operation_parts.artifact_id).unwrap()
         workflow = artifact.get_section(operation_parts.section_id).unwrap()
 
-        context().journal.add(
-            message=f"Start workflow `{workflow.title}`",
-        ).unwrap()
+        output.get().journal(f"Start workflow `{workflow.title}`").unwrap()
 
         changes = [ChangeAddTask(operation_id=full_operation_id)]
         self.apply_changes(changes)
@@ -191,99 +192,24 @@ class MutableState(BaseState):
         assert task is not None
         workflow_parts = split_artifact_section_id(task.workflow_id)
         assert workflow_parts is not None
-        artifact = context().artifacts.load_for_view(workflow_parts.artifact_id).unwrap()
+        artifact = caches.get().artifacts.load_for_view(workflow_parts.artifact_id).unwrap()
         workflow = artifact.get_section(workflow_parts.section_id).unwrap()
 
-        context().journal.add(
-            message=f"Finish workflow `{workflow.title}`",
-        ).unwrap()
+        output.get().journal(f"Finish workflow `{workflow.title}`").unwrap()
 
         changes = [ChangeRemoveTask(task_id=task_id)]
         self.apply_changes(changes)
 
     @unwrap_to_error
-    def execute_next_work_unit(self) -> Result[None, ErrorsList]:
+    def execute_next_work_unit(self) -> Result[None]:
         next_work_unit = self.get_next_work_unit()
         assert next_work_unit is not None
         current_task = self.current_task
         assert current_task is not None
 
-        with context().current_work_unit_id.scope(next_work_unit.id):
+        with execution_context.scope(execution_context.get().replace(current_work_unit_id=next_work_unit.id)):
             changes = next_work_unit.run(current_task).unwrap()
         changes.append(ChangeRemoveWorkUnit(work_unit_id=next_work_unit.id))
 
         self.apply_changes(changes)
         return Ok(None)
-
-
-class StateNode(Node):
-    __slots__ = ("_state",)
-
-    def __init__(self, state: BaseState) -> None:
-        self._state = state
-
-    def status(self) -> Cell:
-        if not self._state.started:
-            message = textwrap.dedent(
-                """
-            This is a new session; no tasks were performed. You can safely run a workflow.
-                """
-            )
-
-        elif not self._state.tasks:
-            message = textwrap.dedent(
-                """
-            The session is IDLE. There are no active tasks.
-
-            - If the developer asked you to start working on a new task, you can do so by running a new workflow.
-            - If you have been working on a task, consider it completed and REPORT THE RESULTS TO THE DEVELOPER.
-                """
-            )
-
-        elif self._state.work_units:
-            message = textwrap.dedent(
-                """
-            The session has PENDING WORK UNITS. Donna has work to complete.
-
-            - If the developer asked you to start working on a new task, you MUST warn that there are pending work
-              units and ask if you should start a new session or continue working on the current work units.
-            - If you have been working on a task, you can continue session.
-                """
-            )
-
-        elif self._state.action_requests:
-            message = textwrap.dedent(
-                """
-            The session is AWAITING YOUR ACTION. You have pending action requests to address.
-
-            - If the developer asked you to start working on a new task, you MUST ask if you should start a new session
-              or continue working on the current action requests.
-            - Otherwise, you MUST address the pending action requests before proceeding.
-                """
-            )
-
-        elif self._state.tasks:
-            message = textwrap.dedent(
-                """
-            The session has unfinished TASKS but no pending work units or action requests.
-
-            - If the developer asked you to start working on a new task , you MUST ask if you should start a new
-              session or run a new workflow in the current one.
-            - If you have been working on a task, you can consider it completed and output the results to the
-              developer.
-                """
-            )
-
-        else:
-            raise machine_errors.SessionStateStatusInvalid()
-
-        return Cell.build_markdown(
-            kind="session_state_status",
-            content=message,
-            tasks=len(self._state.tasks),
-            queued_work_units=len(self._state.work_units),
-            pending_action_requests=len(self._state.action_requests),
-        )
-
-    def references(self) -> list[Node]:
-        return [action_request.node() for action_request in self._state.action_requests]
