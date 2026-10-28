@@ -69,8 +69,7 @@ def walk_filesystem(workflow_dirs: Sequence[RelativeProjectPath]) -> Result[list
     root = project_config.get().project_dir
     artifacts: list[ArtifactId] = []
     for workflow_dir in workflow_dirs:
-        if workflow_dir.parts:
-            resolve_project_path("@/" + workflow_dir.as_posix(), root).unwrap()
+        resolve_project_path("@/" + workflow_dir.as_posix(), root).unwrap()
         pattern = FileGlobPattern("@/" + glob.escape(workflow_dir.as_posix()) + "/**/*")
         artifacts.extend(
             ArtifactId(path) for path in enumerate_files(root, pattern).unwrap() if validate_artifact_id(path)

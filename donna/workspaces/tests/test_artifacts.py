@@ -69,6 +69,18 @@ class TestArtifactIsVisibleInWorkspace:
 
 
 class TestWalkFilesystem:
+    def test_walk_filesystem__lists_artifacts_from_project_root(self, tmp_path: pathlib.Path) -> None:
+        (tmp_path / "a.donna.md").touch()
+        (tmp_path / "ignored.md").touch()
+        nested = tmp_path / "nested"
+        nested.mkdir()
+        (nested / "b.donna.md").touch()
+
+        assert artifacts.walk_filesystem([RelativeProjectPath(pathlib.Path("."))]).unwrap() == [
+            ArtifactId("@/a.donna.md"),
+            ArtifactId("@/nested/b.donna.md"),
+        ]
+
     def test_walk_filesystem__lists_artifacts_in_workflow_dirs(
         self, mocker: MockerFixture, tmp_path: pathlib.Path
     ) -> None:

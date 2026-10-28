@@ -20,6 +20,15 @@ from donna.primitives.tests import make
 
 class TestPath:
     @pytest.mark.parametrize("mode", [PathRenderMode.project, PathRenderMode.absolute])
+    @pytest.mark.parametrize("value", ["@/", ".."])
+    def test_render_view__renders_project_root(self, tmp_path: pathlib.Path, mode: PathRenderMode, value: str) -> None:
+        result = Path(analyze_id="path").render_view(
+            make.template_context(), value, mode, ArtifactId("@/workflows/test.donna.md")
+        )
+
+        assert result.unwrap() == ("@/" if mode == PathRenderMode.project else str(tmp_path))
+
+    @pytest.mark.parametrize("mode", [PathRenderMode.project, PathRenderMode.absolute])
     @pytest.mark.parametrize("value", ["link/file", "link/../file"])
     def test_render_view__rejects_artifact_relative_internal_link(
         self, mocker: MockerFixture, tmp_path: pathlib.Path, mode: PathRenderMode, value: str

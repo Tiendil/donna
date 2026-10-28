@@ -24,7 +24,7 @@ classifiers = [
   "Topic :: Utilities",
 ]
 dependencies = [
-  "llm-tool-cli==0.2.0",
+  "llm-tool-cli==0.2.1",
   "markdown-it-py>=4.2,<4.3",
   "mdformat>=1.0.0,<1.1.0",
   "jinja2>=3.1,<3.2",
