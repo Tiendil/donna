@@ -15,6 +15,12 @@ from donna.workspaces.paths import (
 
 
 class TestNormalizeProjectPath:
+    @pytest.mark.parametrize("relative_to", [None, ArtifactId("@/workflows/source.donna.md")])
+    def test_root_identifier_uses_shared_normalization(
+        self, tmp_path: pathlib.Path, relative_to: ArtifactId | None
+    ) -> None:
+        assert normalize_project_path("@/", PathInput(tmp_path), relative_to=relative_to).unwrap() == "@/"
+
     @pytest.mark.parametrize("value", ["link/file.md", "link/../file.md"])
     def test_artifact_relative_path_rejects_symlinks(self, tmp_path: pathlib.Path, value: str) -> None:
         directory = tmp_path / "workflows"
@@ -157,7 +163,7 @@ class TestNormalizeArtifactId:
         )
 
     def test_rejects_invalid_artifact_id_path(self, tmp_path: pathlib.Path) -> None:
-        for value in ("@/workflow", "@/workflow.md"):
+        for value in ("@/", "@/workflow", "@/workflow.md"):
             result = normalize_artifact_id(value, PathInput(tmp_path))
 
             assert result.is_err()
@@ -190,7 +196,9 @@ class TestNormalizeArtifactSectionId:
             == "@/workflows/plan.donna.md:step"
         )
 
-    @pytest.mark.parametrize("value", ["", "@/workflow.donna.md", "@/workflow.donna.md:---", "@/workflow.md:step"])
+    @pytest.mark.parametrize(
+        "value", ["", "@/:step", "@/workflow.donna.md", "@/workflow.donna.md:---", "@/workflow.md:step"]
+    )
     def test_rejects_missing_or_invalid_section(self, tmp_path: pathlib.Path, value: str) -> None:
         result = normalize_artifact_section_id(value, PathInput(tmp_path))
 

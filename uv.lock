@@ -246,7 +246,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "jinja2", specifier = ">=3.1,<3.2" },
-    { name = "llm-tool-cli", specifier = "==0.2.0" },
+    { name = "llm-tool-cli", specifier = "==0.2.1" },
     { name = "markdown-it-py", specifier = ">=4.2,<4.3" },
     { name = "mdformat", specifier = ">=1.0.0,<1.1.0" },
 ]
@@ -605,16 +605,16 @@ wheels = [
 
 [[package]]
 name = "llm-tool-cli"
-version = "0.2.0"
+version = "0.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "tomli" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fd/e9/77ec0439baae6658e76019ffba6bf1bbe7b4d49859865c6461ad01c85c86/llm_tool_cli-0.2.0.tar.gz", hash = "sha256:553b8df38f09a147920e19b04ad322243f11433d7bb8c136b1b77fc1996ec702", size = 70751, upload-time = "2026-10-21T09:41:34.523Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ff/52/59f36e895505876775d3f51654647ba7b0b0a964485145b1ab647fec337a/llm_tool_cli-0.2.1.tar.gz", hash = "sha256:dc6c0c41566004ca4c425c919876d2fc05c32a09da77b19f2ea496f57af47c37", size = 71159, upload-time = "2026-10-28T13:16:24.357Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0f/b9/87e7296a5098371ddf400a07f5a0cc2ab2ff477e349769145424815b3df7/llm_tool_cli-0.2.0-py3-none-any.whl", hash = "sha256:0fd3f3eee2bde00c404e600177b93a40c67a28ccae017a4a5797832797a3a4a7", size = 112328, upload-time = "2026-10-21T09:41:33.142Z" },
+    { url = "https://files.pythonhosted.org/packages/7d/21/975de77f6b767955c4942a8f2f6c473ff49e865bf2174bf67476e89b31d9/llm_tool_cli-0.2.1-py3-none-any.whl", hash = "sha256:7880eed77c8a6ddc840750d2fa1fd30c625b15f134bac229dc023484573aa8ef", size = 112695, upload-time = "2026-10-28T13:16:22.795Z" },
 ]
 
 [[package]]
