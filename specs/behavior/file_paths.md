@@ -21,7 +21,6 @@ Donna MUST use the project-path contract in `specs/behavior/paths.md` in the `ll
 - CLI inputs.
 - artifact lookup.
 - artifact-relative references.
-- both template path directive modes.
 
 The project root MUST be the local directory containing the active configuration file, selected according to `specs/behavior/config.md`.
 Artifact-relative filesystem inputs MUST use the source artifact's containing directory as their base.
@@ -71,12 +70,7 @@ Normalization MUST precede:
 A Jinja template name beginning with `@/` MUST be a canonical project path under a directory listed in `template_dirs`.
 Template lookup MUST select that exact file from the project root.
 
-## Template path directive
+## Directive paths
 
-The `donna.lib.path("<path>", mode="project"|"absolute")` directive MUST follow the Mixed path normalization contract in `specs/behavior/paths.md` in `llm-tool-cli`, with the rendered artifact's containing directory as the relative filesystem base.
-
-The default mode MUST be `project`.
-In `project` mode, the directive MUST render the canonical root-anchored path; in `absolute` mode, it MUST render the corresponding absolute filesystem path.
-The directive MUST support references to files, directories, and locations that do not yet exist, without imposing an artifact suffix.
-
-Workflow instructions SHOULD use this directive when they need to reference project files from rendered agent-facing text.
+Project path arguments to directives MUST follow the Mixed path normalization contract in `specs/behavior/paths.md` in `llm-tool-cli`.
+Relative filesystem inputs to directives are artifact-relative.

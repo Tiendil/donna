@@ -91,6 +91,7 @@ Workflows MUST describe:
 - `donna.lib.goto` action transitions.
 - `donna.lib.task_variable` rendering.
 - `donna.lib.path` normalized root-anchored/absolute paths.
+- `donna.lib.include` for inserting UTF-8 file text.
 - using reusable template libraries.
 - validation expectations.
 

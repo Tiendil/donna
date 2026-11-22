@@ -1,7 +1,7 @@
 """Shared instances for standard library kind definitions."""
 
 from donna.primitives.artifacts import Workflow
-from donna.primitives.directives import GoTo, Path, TaskVariable
+from donna.primitives.directives import GoTo, Include, Path, TaskVariable
 from donna.primitives.sections import FinishWorkflow, Output, RequestAction, RunScript, Text
 
 workflow = Workflow()
@@ -12,5 +12,6 @@ output = Output()
 run_script = RunScript()
 
 goto = GoTo(analyze_id="goto")
+include = Include(analyze_id="include")
 path = Path(analyze_id="path")
 task_variable = TaskVariable(analyze_id="task_variable")

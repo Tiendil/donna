@@ -27,6 +27,8 @@ For a simple include of a known file, prefer its canonical `@/` path. This selec
 
 For a checklist embedded in an operation, use body text or an H3 heading. An H2 starts a new Donna section. Put the include on its own line so the surrounding Markdown stays separate from the fragment.
 
+For inserting file text with `donna.lib.include`, see `donna -p llm skill workflows`.
+
 ## Generate an Operation With a Macro
 
 A Jinja macro renders text from arguments. A macro can emit a complete Donna operation, including its H2 heading, configuration, and instructions. The workflow supplies the operation ID and the local ID of its successor.

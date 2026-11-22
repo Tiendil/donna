@@ -502,6 +502,14 @@ Assume the project root is `/project` and the current workflow file is `@/workfl
 
 The default mode is `project`, which renders root-anchored paths. Use `mode="absolute"` only when the receiving tool needs a filesystem path.
 
+### `include`
+
+Use `{{ donna.lib.include("@/instructions/review.md") }}` to insert an existing UTF-8 file. It uses the same project path rules as `path`. Relative paths start in the calling workflow's directory. The file can be anywhere in the project allowed by those rules, independent of `template_dirs`.
+
+View and execute insert the file text directly. Jinja expressions in the file stay literal, and Donna parses the resulting Markdown when loading the workflow.
+
+Use Jinja's `{% include %}` tag for fragments that define workflow sections, so the same sections appear in every render mode.
+
 ## Creating Workflows
 
 Start with the workflow's control-flow shape, then fill operation instructions.
