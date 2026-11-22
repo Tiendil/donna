@@ -17,6 +17,9 @@ workflow_dirs = [
     "./.session/donna",
 ]
 
+# Directories where Donna looks for Jinja templates, in search order.
+# template_dirs = ["./templates"]
+
 # Command Donna will execute to log a workflow execution progress.
 # If the command is not specified, Donna will not log anything.
 #

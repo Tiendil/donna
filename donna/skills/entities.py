@@ -6,3 +6,4 @@ class SkillDocument(enum.StrEnum):
     configuration = "configuration"
     initialization = "initialization"
     workflows = "workflows"
+    templates = "templates"

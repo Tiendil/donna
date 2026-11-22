@@ -23,6 +23,7 @@ Requirements govern semantics without prescribing implementation strategy.
 - `project root` — active configuration's containing directory.
 - `session directory` — runtime state and session-created artifacts.
 - `workflow directory` — recursively scanned project directory.
+- `template directory` — project directory searched for Jinja templates.
 - `section default` — fallback for omitted artifact-section configuration.
 - `journal command` — optional external journal destination.
 
@@ -51,6 +52,7 @@ Only these top-level fields MAY appear; unknown fields MUST fail:
 - `version` — Schema version.
 - `session_dir` — Runtime storage.
 - `workflow_dirs` — Discovery directories.
+- `template_dirs` — Jinja template directories.
 - `defaults` — Artifact-section fallbacks.
 - `journal` — External forwarding.
 
@@ -81,6 +83,16 @@ Examples SHOULD use readable `./` prefixes.
 Discovery MUST ignore missing directories, recursively enumerate files in configured directory order under the File enumeration contract in `specs/behavior/paths.md` in `llm-tool-cli`, and select only `.donna.md` files.
 Directory names MUST remain literal, not globs.
 Enumeration failures MUST propagate, not become empty success.
+
+## Template directories
+
+Optional `template_dirs` MUST default to `[]`.
+Provided values MUST be literal project-relative directory paths without absolute paths or parent references.
+Duplicates MUST be removed preserving first occurrence.
+Directory paths MUST be interpreted relative to the project root.
+Examples SHOULD use readable `./` prefixes.
+
+Donna MUST search `template_dirs` in order for ordinary template names and select the first matching file.
 
 ## Defaults
 
@@ -139,6 +151,7 @@ The starter MUST be valid TOML after ignoring comments and contain:
 - version `1`.
 - `session_dir = ".session/donna"`.
 - `workflow_dirs = ["./workflows", "./.session/donna"]`.
+- a commented `template_dirs` example.
 - commented `defaults` examples.
 - commented `journal.cmd` examples.
 
@@ -148,7 +161,7 @@ Loading MUST reject:
 
 - unsupported versions.
 - unknown top-level/nested fields.
-- invalid session/workflow directories.
+- invalid session, workflow, or template directories.
 - invalid default primitive paths or primary id.
 - empty journal commands.
 

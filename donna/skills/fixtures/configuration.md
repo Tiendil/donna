@@ -1,10 +1,10 @@
 # `donna` Configuration
 
-`donna.toml` tells `donna` where a project's workflow virtual machine stores state, where it discovers workflow artifacts, which fallback Markdown section config values to use, and how to forward workflow journal records.
+`donna.toml` tells `donna` where a project's workflow virtual machine stores state, where it finds workflow artifacts and Jinja templates, which fallback Markdown section config values to use, and how to forward workflow journal records.
 
 The configuration file has three main parts:
 
-- Top-level workspace settings configure schema version, session storage, and artifact discovery.
+- Top-level workspace settings configure schema version, session storage, artifact discovery, and template lookup.
 - `defaults` configures fallback config for Markdown artifact sections. Most projects can omit this section.
 - `journal` configures optional forwarding of Donna journal records to an external command.
 
@@ -29,6 +29,8 @@ workflow_dirs = [
     "./workflows",
     "./.session/donna",
 ]
+
+# template_dirs = ["./templates"]
 ```
 
 Top-level fields:
@@ -36,6 +38,7 @@ Top-level fields:
 - `version`: optional integer, currently `1`.
 - `session_dir`: optional relative path to Donna's session directory.
 - `workflow_dirs`: optional list of relative directories scanned for `.donna.md` workflow artifacts.
+- `template_dirs` sets the optional search path for Jinja templates.
 - `defaults`: optional fallback config for Markdown artifact sections.
 - `journal`: optional journal forwarding config.
 
@@ -77,6 +80,18 @@ Each path is resolved from the Donna project root.
 Missing directories are ignored.
 
 Use narrower directories when you want Donna to ignore unrelated `.donna.md` files elsewhere in the project.
+
+## Template Directories
+
+`template_dirs` defaults to `[]`. Each directory is relative to the Donna project root.
+
+```toml
+template_dirs = ["./templates/project", "./templates/shared"]
+```
+
+For `{% include "review/checklist.md" %}`, Donna uses the first directory containing `review/checklist.md`. Put project overrides before shared templates in the list.
+
+Macro imports use the same search order. Run `donna -p llm skill templates` for examples of reusable template libraries.
 
 ## Markdown Section Defaults
 

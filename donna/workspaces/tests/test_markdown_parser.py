@@ -1,5 +1,7 @@
 from typing import ClassVar
 
+import pytest
+from llm_tool_cli.config.tests.fixtures import project_settings
 from llm_tool_cli.core.result import Err, Ok, Result
 from pytest_mock import MockerFixture
 
@@ -16,6 +18,9 @@ from donna.workspaces import markdown_parser
 from donna.workspaces.markdown import CodeSource, SectionLevel, SectionSource
 from donna.workspaces.markdown_parser import MarkdownSectionMixin, construct_sections_from_markdown
 from donna.workspaces.tests import make
+from donna.workspaces.tests.fixtures import default_workspace_config
+
+__all__ = ["default_workspace_config", "project_settings"]
 
 TEXT_KIND = PythonPath(NormalizedRawIdPath("donna.primitives.sections.text.Text"))
 LIB_TEXT_KIND = PythonPath(NormalizedRawIdPath("donna.lib.text"))
@@ -85,6 +90,7 @@ class TestMarkdownSectionMixin:
         assert not section.primary
 
 
+@pytest.mark.usefixtures("project_settings", "default_workspace_config")
 class TestParseArtifactContent:
     def test_returns_original_sections_with_analysis_tokens(self) -> None:
         result = markdown_parser.parse_artifact_content(make.ARTIFACT_ID, "# Workflow\n\nBody\n", RENDER_CONTEXT_VIEW)
@@ -139,6 +145,7 @@ class TestConstructArtifactFromBytes:
         construct.assert_called_once()
 
 
+@pytest.mark.usefixtures("project_settings", "default_workspace_config")
 class TestConstructArtifactFromMarkdownSource:
     def test_constructs_artifact_with_default_primary_and_tail_config(self) -> None:
         result = markdown_parser.construct_artifact_from_markdown_source(

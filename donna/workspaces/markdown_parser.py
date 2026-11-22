@@ -13,7 +13,7 @@ from donna.machine.primitives import Primitive, resolve_primitive
 from donna.machine.templates import RenderMode
 from donna.workspaces import errors as world_errors
 from donna.workspaces import markdown
-from donna.workspaces.templates import render
+from donna.workspaces.templates import render, render_environment
 
 
 class MarkdownSectionConstructor(Protocol):
@@ -109,11 +109,12 @@ def parse_artifact_content(
     # We should consider optimizing this in the future if performance or stability becomes an issue.
     # For now let's wait till we have more artifact analysis logic and till more use cases emerge.
 
-    original_markdown_source = render(artifact_id, text, render_context).unwrap()
+    environment = render_environment()
+    original_markdown_source = render(artifact_id, text, render_context, environment=environment).unwrap()
     original_sections = markdown.parse(original_markdown_source, artifact_id=artifact_id).unwrap()
 
     analysis_context = render_context.replace(primary_mode=RenderMode.analysis)
-    analyzed_markdown_source = render(artifact_id, text, analysis_context).unwrap()
+    analyzed_markdown_source = render(artifact_id, text, analysis_context, environment=environment).unwrap()
     analyzed_sections = markdown.parse(analyzed_markdown_source, artifact_id=artifact_id).unwrap()
 
     if len(original_sections) != len(analyzed_sections):

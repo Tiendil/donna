@@ -8,4 +8,5 @@ class TestSkillDocument:
             "configuration",
             "initialization",
             "workflows",
+            "templates",
         ]

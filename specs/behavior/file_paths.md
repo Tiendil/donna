@@ -2,11 +2,11 @@
 
 ## Goal of the document
 
-This document describes Donna artifact identifiers and the application of shared project paths to CLI inputs and artifact-relative references.
+This document describes Donna artifact identifiers and how project paths apply to CLI inputs, artifact-relative references, and template names.
 
 ## Scope
 
-This specification covers artifact and section identifiers, path input bases, and template path output.
+This specification covers artifact and section identifiers, path input bases, and template paths.
 
 The following topics are out of scope:
 
@@ -65,6 +65,11 @@ Normalization MUST precede:
 - artifact validation.
 - workflow execution.
 - action request completion.
+
+## Exact template paths
+
+A Jinja template name beginning with `@/` MUST be a canonical project path under a directory listed in `template_dirs`.
+Template lookup MUST select that exact file from the project root.
 
 ## Template path directive
 

@@ -270,6 +270,7 @@ The command MUST follow the Skill command contract in `specs/behavior/cli.md` in
 - `configuration`: configuration.
 - `initialization`: project initialization.
 - `workflows`: authoring/execution.
+- `templates` — Reusable workflow template libraries.
 
 Document content MUST follow Donna's `specs/behavior/skill_fixtures.md`.
 

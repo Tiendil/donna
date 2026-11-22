@@ -19,6 +19,7 @@ Use it as the first reference for agent-side command usage in a session. Use the
 - `donna -p llm skill configuration` explains `donna.toml`.
 - `donna -p llm skill initialization` explains project initialization.
 - `donna -p llm skill workflows` explains Donna workflow format, layout, execution and creation best practices.
+- `donna -p llm skill templates` explains Jinja includes, macros, and reusable workflow libraries.
 - `donna -p llm skill usage` prints this document.
 
 ## Output Protocols

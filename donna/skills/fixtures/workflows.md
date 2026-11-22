@@ -437,6 +437,20 @@ donna -p llm render @/workflows/example.donna.md --mode view
 
 Do not use templates that add or remove headings, config blocks, or operation ids depending on render context. Workflow structure should stay stable after rendering.
 
+### Reusable Templates
+
+Set `template_dirs` in `donna.toml`. For a simple include, prefer the file's canonical `@/` path from the project root. The path must be inside a configured template directory.
+
+```jinja
+{% include "@/templates/shared/review/checklist.md" %}
+```
+
+Use a name relative to the template directories, such as `review/checklist.md`, when a project should be able to override the fragment.
+
+You can create template libraries of reusable workflow components, including operations, sections, and command snippets.
+
+Run `donna -p llm skill templates` for lookup rules, macro imports, and worked examples of template overrides.
+
 ### `goto`
 
 `{{ donna.lib.goto("next_operation") }}` declares an allowed transition from a `request_action` operation to another operation in the same workflow.
