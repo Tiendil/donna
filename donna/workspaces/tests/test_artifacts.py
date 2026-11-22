@@ -2,15 +2,17 @@ import pathlib
 
 import pytest
 from llm_tool_cli.config.project import ProjectConfig, project_config
-from llm_tool_cli.config.tests.fixtures import project_settings
+from llm_tool_cli.config.tests.fixtures import project_settings, runtime_settings
 from llm_tool_cli.core.result import Err, Ok
 from llm_tool_cli.paths import ProjectConfigPath, RelativeProjectPath, ResolvedProjectPath
 from llm_tool_cli.paths.errors import FilesUnreadable, InvalidProjectPath, PathResolutionFailed
 from pytest_mock import MockerFixture
 
 from donna.domain.artifact_ids import ArtifactId
+from donna.domain.ids import SectionId
 from donna.machine import ArtifactRenderContext
 from donna.machine.artifacts import Artifact
+from donna.machine.operations import OperationMeta
 from donna.machine.templates import RENDER_CONTEXT_VIEW, RenderMode
 from donna.workspaces import artifacts
 from donna.workspaces import config as workspace_config
@@ -339,6 +341,45 @@ class TestFetchArtifactBytes:
 
 
 class TestRenderMarkdownArtifact:
+    @pytest.mark.usefixtures("runtime_settings")
+    def test_render_markdown_artifact__includes_operations_and_transitions(self, tmp_path: pathlib.Path) -> None:
+        template_dir = tmp_path / "templates"
+        template_dir.mkdir()
+        (template_dir / "decision.md").write_text(
+            """## Decide
+
+```toml donna
+id = "decide"
+kind = "donna.lib.request_action"
+```
+
+Proceed to `{{ donna.lib.goto("finish") }}`.
+""",
+            encoding="utf-8",
+        )
+        source = b"""# Workflow
+
+```toml donna
+start_operation_id = "decide"
+```
+
+{% include "decision.md" %}
+
+## Finish
+
+```toml donna
+id = "finish"
+kind = "donna.lib.finish"
+```
+"""
+
+        with workspace_config.config.scope(Config(template_dirs=[RelativeProjectPath(pathlib.Path("templates"))])):
+            artifact = artifacts.render_markdown_artifact(make.ARTIFACT_ID, source, RENDER_CONTEXT_VIEW).unwrap()
+
+        operation = artifact.get_section(SectionId("decide")).unwrap()
+        assert isinstance(operation.meta, OperationMeta)
+        assert operation.meta.allowed_transitions == {SectionId("finish")}
+
     def test_render_markdown_artifact__uses_workspace_defaults(self, mocker: MockerFixture) -> None:
         expected_artifact = Artifact(id=make.ARTIFACT_ID, sections=[])
         with workspace_config.config.scope(Config()):
@@ -383,6 +424,6 @@ class TestArtifactFingerprint:
         assert result.unwrap() is None
 
 
-__all__ = ["project_settings"]
+__all__ = ["project_settings", "runtime_settings"]
 
 pytestmark = pytest.mark.usefixtures("project_settings")

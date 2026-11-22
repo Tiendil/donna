@@ -437,6 +437,20 @@ donna -p llm render @/workflows/example.donna.md --mode view
 
 Do not use templates that add or remove headings, config blocks, or operation ids depending on render context. Workflow structure should stay stable after rendering.
 
+### Reusable Templates
+
+Set `template_dirs` in `donna.toml`. For a simple include, prefer the file's canonical `@/` path from the project root. The path must be inside a configured template directory.
+
+```jinja
+{% include "@/templates/shared/review/checklist.md" %}
+```
+
+Use a name relative to the template directories, such as `review/checklist.md`, when a project should be able to override the fragment.
+
+You can create template libraries of reusable workflow components, including operations, sections, and command snippets.
+
+Run `donna -p llm skill templates` for lookup rules, macro imports, and worked examples of template overrides.
+
 ### `goto`
 
 `{{ donna.lib.goto("next_operation") }}` declares an allowed transition from a `request_action` operation to another operation in the same workflow.
@@ -487,6 +501,14 @@ Assume the project root is `/project` and the current workflow file is `@/workfl
 - `{{ donna.lib.path("specs/design.md", mode="absolute") }}` renders `/project/workflows/rfc/specs/design.md`.
 
 The default mode is `project`, which renders root-anchored paths. Use `mode="absolute"` only when the receiving tool needs a filesystem path.
+
+### `include`
+
+Use `{{ donna.lib.include("@/instructions/review.md") }}` to insert an existing UTF-8 file. It uses the same project path rules as `path`. Relative paths start in the calling workflow's directory. The file can be anywhere in the project allowed by those rules, independent of `template_dirs`.
+
+View and execute insert the file text directly. Jinja expressions in the file stay literal, and Donna parses the resulting Markdown when loading the workflow.
+
+Use Jinja's `{% include %}` tag for fragments that define workflow sections, so the same sections appear in every render mode.
 
 ## Creating Workflows
 

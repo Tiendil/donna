@@ -28,34 +28,22 @@ def _default_workflow_dirs() -> list[RelativeProjectPath]:
     ]
 
 
-def _serialize_workflow_dir(path: RelativeProjectPath) -> str:
-    return f"./{path.as_posix()}"
-
-
 class Config(BaseEntity):
     version: ConfigVersion[Literal[1]] = 1
     session_dir: SessionDir = RelativeProjectPath(DONNA_DEFAULT_SESSION_DIR)
     defaults: DefaultsConfig = pydantic.Field(default_factory=DefaultsConfig)
     workflow_dirs: list[RelativeProjectPath] = pydantic.Field(default_factory=_default_workflow_dirs)
+    template_dirs: list[RelativeProjectPath] = pydantic.Field(default_factory=list)
     journal: JournalConfig = pydantic.Field(default_factory=JournalConfig)
 
-    @pydantic.field_validator("workflow_dirs", mode="after")
+    @pydantic.field_validator("workflow_dirs", "template_dirs", mode="after")
     @classmethod
-    def validate_workflow_dirs(cls, value: list[RelativeProjectPath]) -> list[RelativeProjectPath]:
-        workflow_dirs: list[RelativeProjectPath] = []
+    def validate_project_dirs(cls, value: list[RelativeProjectPath]) -> list[RelativeProjectPath]:
+        return list(dict.fromkeys(validate_relative_project_path(path) for path in value))
 
-        for path in value:
-            path = validate_relative_project_path(path)
-            if path in workflow_dirs:
-                continue
-
-            workflow_dirs.append(path)
-
-        return workflow_dirs
-
-    @pydantic.field_serializer("workflow_dirs")
-    def serialize_workflow_dirs(self, value: list[RelativeProjectPath]) -> list[str]:
-        return [_serialize_workflow_dir(path) for path in value]
+    @pydantic.field_serializer("workflow_dirs", "template_dirs")
+    def serialize_project_dirs(self, value: list[RelativeProjectPath]) -> list[str]:
+        return [f"./{path.as_posix()}" for path in value]
 
 
 config = ContextValue[Config]("donna_config")

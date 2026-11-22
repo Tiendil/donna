@@ -91,9 +91,23 @@ Workflows MUST describe:
 - `donna.lib.goto` action transitions.
 - `donna.lib.task_variable` rendering.
 - `donna.lib.path` normalized root-anchored/absolute paths.
+- `donna.lib.include` for inserting UTF-8 file text.
+- using reusable template libraries.
 - validation expectations.
 
 It MUST include a complete minimal workflow.
+
+## Templates fixture
+
+The templates fixture MUST cover the following topics.
+
+- Configuring template directories, searching them in order, and selecting exact project paths.
+- Including fragments and importing macros with the caller's context.
+- Organizing libraries of operations, command snippets, and sections.
+- Overriding shared templates.
+- Previewing and validating templated workflows.
+
+It MUST include a complete workflow that imports and calls a parameterized operation macro.
 
 ## Style
 

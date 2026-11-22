@@ -33,6 +33,19 @@ class ArtifactMultipleFiles(ArtifactError):
     ]
 
 
+class TemplateNotFound(ArtifactError):
+    code: str = "donna.workspaces.template_not_found"
+    message: str = "Template `{error.template}` could not be found while rendering `{error.artifact_id}`."
+    ways_to_fix: list[str] = ["Check the template name and the directories listed in `template_dirs`."]
+    template: str
+
+
+class TemplateRenderFailed(ArtifactError):
+    code: str = "donna.workspaces.template_render_failed"
+    message: str = "Could not render `{error.artifact_id}`: {error.reason}."
+    reason: str
+
+
 class MarkdownError(WorkspaceError):
     artifact_id: ArtifactId | None = None
 
