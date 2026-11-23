@@ -36,7 +36,9 @@ class ArtifactMultipleFiles(ArtifactError):
 class TemplateNotFound(ArtifactError):
     code: str = "donna.workspaces.template_not_found"
     message: str = "Template `{error.template}` could not be found while rendering `{error.artifact_id}`."
-    ways_to_fix: list[str] = ["Check the template name and the directories listed in `template_dirs`."]
+    ways_to_fix: list[str] = [
+        "Check `@/` paths from the project root and other template names from the directories in `template_dirs`."
+    ]
     template: str
 
 

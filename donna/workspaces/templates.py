@@ -127,12 +127,11 @@ class DirectivePathUndefined(jinja2.Undefined):
 
 class _ProjectTemplateLoader(jinja2.BaseLoader):
     # Jinja searches template_dirs in order for a name like "steps.md". Donna treats
-    # "@/templates/steps.md" as an exact path from the project root within a configured
-    # template directory. Jinja's ChoiceLoader tries the next loader when a template
-    # is missing, so it could resolve a missing @/ path under a directory literally
+    # "@/templates/steps.md" as an exact path from the project root, regardless of
+    # template_dirs. Jinja's ChoiceLoader tries the next loader when a template is
+    # missing, so it could resolve a missing @/ path under a directory literally
     # named @ in one of the search roots.
     def __init__(self, project_dir: ProjectRootPath, template_dirs: Sequence[RelativeProjectPath]) -> None:
-        self._template_dirs = template_dirs
         self._files = jinja2.FileSystemLoader([project_dir / directory for directory in template_dirs])
         self._exact = jinja2.FileSystemLoader(project_dir)
 
@@ -147,9 +146,6 @@ class _ProjectTemplateLoader(jinja2.BaseLoader):
             raise jinja2.TemplateNotFound(template)
 
         relative_path = PurePosixPath(*project_path_parts(path_id))
-        parent = relative_path.parent
-        if not any(parent.is_relative_to(directory.as_posix()) for directory in self._template_dirs):
-            raise jinja2.TemplateNotFound(template)
 
         try:
             return self._exact.get_source(environment, relative_path.as_posix())

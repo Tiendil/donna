@@ -67,8 +67,8 @@ Normalization MUST precede:
 
 ## Exact template paths
 
-A Jinja template name beginning with `@/` MUST be a canonical project path under a directory listed in `template_dirs`.
-Template lookup MUST select that exact file from the project root.
+A Jinja template name beginning with `@/` MUST be a canonical project path.
+Template lookup MUST select that exact file from the project root regardless of `template_dirs`.
 
 ## Directive paths
 

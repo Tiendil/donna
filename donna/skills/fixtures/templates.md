@@ -13,7 +13,7 @@ template_dirs = ["./templates/project", "./templates/shared"]
 
 Jinja searches these directories in order and uses the first match. For example, `review/steps.jinja` can come from either directory. Includes inside a template use the same search order. Template files use UTF-8 and may have any extension.
 
-Use a canonical `@/` path to select one file from the project root. For example, `@/templates/shared/review/steps.jinja` selects that exact file even when a project override exists. The file must be inside a configured template directory. These lookup rules apply to `include`, `import`, and `extends`.
+Use a canonical `@/` path to select a file directly from the project root, even when `template_dirs` is empty. For example, `@/templates/shared/review/steps.jinja` selects that exact file even when a project override exists. These lookup rules apply to `include`, `import`, and `extends`.
 
 ## Include Shared Markdown
 

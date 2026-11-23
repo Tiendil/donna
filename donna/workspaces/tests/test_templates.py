@@ -265,19 +265,30 @@ class TestProjectTemplateLoader:
         assert isinstance(error, workspace_errors.TemplateNotFound)
         assert error.template == name
 
-    def test_render__rejects_exact_path_outside_configured_root(self, template_directory: Path) -> None:
-        outside = template_directory.with_name("templates-other")
-        outside.mkdir()
-        (outside / "fragment.md").write_text("Unavailable", encoding="utf-8")
-        fallback = template_directory / "@" / "templates-other"
-        fallback.mkdir(parents=True)
-        (fallback / "fragment.md").write_text("Also unavailable for an exact path", encoding="utf-8")
+    @pytest.mark.parametrize("template_dirs", [[], ["./templates"]])
+    def test_render__loads_exact_path_independently_of_template_dirs(
+        self, tmp_path: Path, template_dirs: list[str]
+    ) -> None:
+        (tmp_path / "fragment.md").write_text("Project fragment", encoding="utf-8")
+        (tmp_path / "templates").mkdir()
+        (tmp_path / "templates" / "fragment.md").write_text("Search directory fragment", encoding="utf-8")
+        config = workspace_config.Config.model_validate({"template_dirs": template_dirs})
 
-        result = render(make.ARTIFACT_ID, '{% include "@/templates-other/fragment.md" %}', RENDER_CONTEXT_VIEW)
+        with workspace_config.config.scope(config):
+            result = render(make.ARTIFACT_ID, '{% include "@/fragment.md" %}', RENDER_CONTEXT_VIEW)
+
+        assert result.unwrap() == "Project fragment"
+
+    def test_render__does_not_search_template_dirs_for_missing_exact_path(self, template_directory: Path) -> None:
+        fallback = template_directory / "@"
+        fallback.mkdir()
+        (fallback / "fragment.md").write_text("Search directory fragment", encoding="utf-8")
+
+        result = render(make.ARTIFACT_ID, '{% include "@/fragment.md" %}', RENDER_CONTEXT_VIEW)
 
         error = result.unwrap_err()[0]
         assert isinstance(error, workspace_errors.TemplateNotFound)
-        assert error.template == "@/templates-other/fragment.md"
+        assert error.template == "@/fragment.md"
 
     @pytest.mark.parametrize("name", ["../fragment.md", "@/templates/../fragment.md", "@/templates/./fragment.md"])
     def test_render__rejects_invalid_template_paths(self, template_directory: Path, name: str) -> None:

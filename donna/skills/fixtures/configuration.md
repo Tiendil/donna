@@ -91,7 +91,7 @@ template_dirs = ["./templates/project", "./templates/shared"]
 
 For `{% include "review/checklist.md" %}`, Donna uses the first directory containing `review/checklist.md`. Put project overrides before shared templates in the list.
 
-Macro imports use the same search order. Run `donna -p llm skill templates` for examples of reusable template libraries.
+A canonical `@/` path selects a file directly from the project root, even when the list is empty. These lookup rules also apply to `import` and `extends`. Run `donna -p llm skill templates` for examples of reusable template libraries.
 
 ## Markdown Section Defaults
 

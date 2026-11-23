@@ -439,13 +439,13 @@ Do not use templates that add or remove headings, config blocks, or operation id
 
 ### Reusable Templates
 
-Set `template_dirs` in `donna.toml`. For a simple include, prefer the file's canonical `@/` path from the project root. The path must be inside a configured template directory.
+For a simple include, prefer the file's canonical `@/` path from the project root. This works with an empty `template_dirs` list.
 
 ```jinja
 {% include "@/templates/shared/review/checklist.md" %}
 ```
 
-Use a name relative to the template directories, such as `review/checklist.md`, when a project should be able to override the fragment.
+To let a project override the fragment, set `template_dirs` in `donna.toml` and use a name relative to those directories, such as `review/checklist.md`.
 
 You can create template libraries of reusable workflow components, including operations, sections, and command snippets.
 
